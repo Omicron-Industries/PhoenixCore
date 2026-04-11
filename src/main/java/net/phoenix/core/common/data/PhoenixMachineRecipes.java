@@ -18,6 +18,7 @@ import net.phoenix.core.common.data.materials.PhoenixBeeMaterials;
 import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
 import net.phoenix.core.common.data.materials.PhoenixOres;
 import net.phoenix.core.common.data.recipe.custom.SourceIngredient;
+import net.phoenix.core.common.data.recipeConditions.SoulCondition;
 import net.phoenix.core.common.machine.PhoenixMachines;
 
 import java.util.function.Consumer;
@@ -292,12 +293,25 @@ public class PhoenixMachineRecipes {
                 .outputItems(ELECTRONIC_CIRCUIT_MV)
                 .save(provider);
 
+        /*
+         * PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("soul_infused_zirconium_rod")
+         * .input(SourceRecipeCapability.CAP, new SourceIngredient(1000))
+         * .addCondition(new SoulCondition(false, 3.0f))
+         * .addData("soul_growth_perm", 0.01f)
+         * .addData("soul_growth_temp", 0.5f)
+         * .save(provider);
+         * 
+         */
+
         PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("source_imbued_titanium")
                 .inputItems(ingot, Titanium, 1)
                 .input(SourceRecipeCapability.CAP, new SourceIngredient(180))
                 .duration(160)
                 .EUt(GTValues.VA[GTValues.HV] / 3)
                 .outputItems(ingot, SOURCE_IMBUED_TITANIUM, 1)
+                .addData("soul_growth_perm", 0.01f)
+                .addData("soul_growth_temp", 0.5f)
+                .addCondition(new SoulCondition(false, 0.5f))
                 .save(provider);
         PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("source_gem")
                 .inputItems(gem, Amethyst, 1)

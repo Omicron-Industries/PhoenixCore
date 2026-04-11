@@ -10,13 +10,14 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.condition.RecipeConditionType;
 import com.gregtechceu.gtceu.api.recipe.lookup.ingredient.MapIngredientTypeManager;
-import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -36,6 +37,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.phoenix.core.api.PhoenixColors;
 import net.phoenix.core.api.PhoenixSounds;
+import net.phoenix.core.api.block.PhoenixMaterialContent;
+import net.phoenix.core.api.block.RoseGenerator;
 import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.api.recipe.lookup.MapSourceIngredient;
 import net.phoenix.core.client.PhoenixClient;
@@ -48,6 +51,7 @@ import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.*;
 import net.phoenix.core.common.data.recipe.custom.SourceIngredient;
 import net.phoenix.core.common.data.recipeConditions.FluidInHatchCondition;
+import net.phoenix.core.common.data.recipeConditions.SoulCondition;
 import net.phoenix.core.common.event.SourceHatchJarTransferTick;
 import net.phoenix.core.common.machine.*;
 import net.phoenix.core.common.machine.multiblock.Shield;
@@ -106,6 +110,7 @@ public class PhoenixCore {
         modEventBus.addListener(this::addMaterialRegistries);
         modEventBus.addListener(this::addMaterials);
         modEventBus.addListener(this::modifyMaterials);
+
         MENUS.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -130,20 +135,28 @@ public class PhoenixCore {
             () -> IForgeMenuType.create((IContainerFactory<SourceHatchMenu>) SourceHatchMenu::fromNetwork));
 
     public void registerConditions(GTCEuAPI.RegisterEvent<String, RecipeConditionType<?>> event) {
-        FluidInHatchCondition.TYPE = GTRegistries.RECIPE_CONDITIONS.register("plasma_temp_condition",
-                new RecipeConditionType<>(
-                        FluidInHatchCondition::new,
-                        FluidInHatchCondition.CODEC));
+        // 1. Create and assign the Fluid/Plasma condition type
+        FluidInHatchCondition.TYPE = new RecipeConditionType<>(
+                FluidInHatchCondition::new,
+                FluidInHatchCondition.CODEC);
+        event.register("plasma_temp_condition", FluidInHatchCondition.TYPE);
+
+        SoulCondition.TYPE = new RecipeConditionType<>(
+                SoulCondition::new,
+                SoulCondition.CODEC);
+        event.register("soul_resonance", SoulCondition.TYPE);
     }
 
     @SubscribeEvent
     public void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             PhoenixNetwork.init(); // ADD THIS
+
             MapIngredientTypeManager.registerMapIngredient(Shield.ShieldTypes.class, MapShieldIngredient::from);
             MapIngredientTypeManager.registerMapIngredient(
                     SourceIngredient.class,
                     MapSourceIngredient::convertToMapIngredient);
+
         });
     }
 
@@ -152,8 +165,9 @@ public class PhoenixCore {
         LOGGER.info("PhoenixCore: Client setup complete.");
 
         event.enqueueWork(() -> {
-            // This is a "Safety Check" to ensure the class is loaded on the client
-            // but the actual link happens in PhoenixArmorItem.java
+            PhoenixMaterialContent.CRYSTAL_ROSES.values().forEach(block -> {
+                ItemBlockRenderTypes.setRenderLayer(block.get(), RenderType.cutout());
+            });
         });
     }
 
@@ -176,6 +190,8 @@ public class PhoenixCore {
 
     private void modifyMaterials(PostMaterialEvent event) {
         PhoenixMaterials.modifyMaterials();
+        PhoenixMaterialContent.registerMaterialCrystalRoses();
+        RoseGenerator.generate();
     }
 
     private void registerRecipeTypes(GTCEuAPI.RegisterEvent<ResourceLocation, GTRecipeType> event) {

@@ -6,11 +6,14 @@ import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.common.data.models.GTModels;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.PhoenixCore;
@@ -47,6 +50,17 @@ public class PhoenixBlocks {
                 .build()
                 .register();
     }
+
+    public static final BlockEntry<FlowerBlock> CRYSTAL_ROSE = REGISTRATE
+            .block("crystal_rose", p -> new FlowerBlock(() -> MobEffects.GLOWING, 5, p))
+            .initialProperties(() -> Blocks.POPPY)
+            .addLayer(() -> RenderType::cutout) // Handles the transparent background
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.get(),
+                    prov.models().cross(ctx.getName(), prov.modLoc("item/crystal_rose"))))
+            .item()
+            .model((ctx, prov) -> prov.generated(ctx, prov.modLoc("item/crystal_rose")))
+            .build()
+            .register();
 
     public static final BlockEntry<TeslaBatteryBlock> TESLA_BATTERY_UHV = createTeslaBattery(
             TeslaBatteryBlock.TeslaBatteryType.UHV);

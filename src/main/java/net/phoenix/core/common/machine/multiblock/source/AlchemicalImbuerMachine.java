@@ -16,6 +16,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.api.recipe.PhoenixRecipeModifier;
+import net.phoenix.core.common.data.PTags;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
 import net.phoenix.core.saveddata.SoulSavedData;
 
@@ -26,6 +27,8 @@ import java.util.List;
 
 public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
 
+    private static final long HARMONIZATION_THRESHOLD = 72000L;
+
     @Getter
     private float cachedFloraBoost = 0.0f;
 
@@ -33,24 +36,63 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
     @Persisted
     private long totalWorkTicks = 0L;
 
-    private static final long HARMONIZATION_THRESHOLD = 72000L;
+    @Persisted
+    private boolean wasWorking = false;
+
+    private int scanTimer = 0;
 
     public AlchemicalImbuerMachine(IMachineBlockEntity holder) {
         super(holder);
     }
 
+    // -------------------------------------------------------------------------
+    // Structure Lifecycle
+    // -------------------------------------------------------------------------
+
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
         if (getLevel() instanceof ServerLevel level) {
-            this.cachedFloraBoost = getEnvironmentBoost(level, getPos());
+            this.cachedFloraBoost = scanEnvironment(level, getPos());
         }
     }
 
-    private float getEnvironmentBoost(ServerLevel level, BlockPos pos) {
+    // -------------------------------------------------------------------------
+    // Main Machine Logic
+    // -------------------------------------------------------------------------
+
+    @Override
+    public boolean onWorking() {
+        boolean isWorking = super.onWorking();
+
+        if (isWorking) {
+            // 1. Progress Harmonization
+            if (totalWorkTicks < HARMONIZATION_THRESHOLD) {
+                totalWorkTicks++;
+            }
+
+            // 2. Periodic Environment Scan (Every 10 seconds)
+            scanTimer++;
+            if (scanTimer >= 200) {
+                if (getLevel() instanceof ServerLevel level) {
+                    this.cachedFloraBoost = scanEnvironment(level, getPos());
+                    this.markDirty();
+                }
+                scanTimer = 0;
+            }
+        }
+
+        wasWorking = isWorking;
+        return isWorking;
+    }
+
+    // -------------------------------------------------------------------------
+    // Tag-Based Environment Scanning
+    // -------------------------------------------------------------------------
+
+    private float scanEnvironment(ServerLevel level, BlockPos pos) {
         float boost = 0.0f;
         ChunkPos centerChunk = new ChunkPos(pos);
-
         int minY = Math.max(level.getMinBuildHeight(), pos.getY() - 40);
         int maxY = Math.min(level.getMaxBuildHeight(), pos.getY() + 40);
 
@@ -66,17 +108,8 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
                                     new BlockPos((centerChunk.x + x) << 4 | bx, by, (centerChunk.z + z) << 4 | bz));
                             if (state.isAir()) continue;
 
-                            if (state.is(BlockTags.FLOWERS)) {
-                                boost += 0.005f;
-                            } else {
-                                String blockId = state.getBlock().getDescriptionId();
-                                if (blockId.contains("magebloom")) boost += 0.01f;
-                                else if (blockId.contains("sourceberry")) boost += 0.01f;
-                                else if (blockId.contains("arcane_core") || blockId.contains("source_gem_block"))
-                                    boost += 0.05f;
-                            }
-
-                            if (boost >= 3.0f) return 3.0f;
+                            boost += getBlockBoost(state);
+                            if (boost >= 3.0f) return 3.0f; // Max Cap
                         }
                     }
                 }
@@ -84,6 +117,17 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
         }
         return Math.min(boost, 3.0f);
     }
+
+    private float getBlockBoost(BlockState state) {
+        // if (state.is(PTags.MAGICAL_STRUCTURE_BLOCKS)) return 0.05f;
+        if (state.is(PTags.SOUL_FLOWERS)) return 0.01f;
+        if (state.is(BlockTags.FLOWERS)) return 0.005f;
+        return 0.0f;
+    }
+
+    // -------------------------------------------------------------------------
+    // Recipe Modifiers
+    // -------------------------------------------------------------------------
 
     public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
         if (!(machine instanceof AlchemicalImbuerMachine imbuer)) {
@@ -112,28 +156,9 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    private int scanTimer = 0;
-
-    @Override
-    public boolean onWorking() {
-        boolean isWorking = super.onWorking();
-
-        if (isWorking) {
-            if (totalWorkTicks < HARMONIZATION_THRESHOLD) {
-                totalWorkTicks++;
-            }
-
-            scanTimer++;
-            if (scanTimer >= 200) {
-                if (getLevel() instanceof ServerLevel level) {
-                    this.cachedFloraBoost = getEnvironmentBoost(level, getPos());
-                    this.markDirty();
-                }
-                scanTimer = 0;
-            }
-        }
-        return isWorking;
-    }
+    // -------------------------------------------------------------------------
+    // Display Text
+    // -------------------------------------------------------------------------
 
     @Override
     public void addDisplayText(@NotNull List<Component> textList) {
@@ -147,22 +172,9 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
 
             textList.add(Component.literal("§7-".repeat(15)));
             textList.add(Component.literal("§5Alchemical Analysis:"));
-            textList.add(Component.literal("  §7Chunk Base Soul: §d" + String.format("%.2f", baseSoul)));
-            textList.add(Component.literal("  §7Garden Resonance: §b+" + String.format("%.2f", cachedFloraBoost)));
-
-            var recipe = recipeLogic.getLastRecipe();
-            if (recipe != null) {
-                boolean isExtraction = recipe.recipeType == PhoenixRecipeTypes.SOURCE_EXTRACTION_RECIPES;
-                if (isExtraction) {
-                    textList.add(Component.literal("§6Current Logic: §eHarmonic Extraction"));
-                    textList.add(
-                            Component.literal("  §7Yield Bonus: §a+" + String.format("%.0f%%", (totalPotency * 10))));
-                } else {
-                    textList.add(Component.literal("§5Current Logic: §dSoul Imbuement"));
-                    float efficiency = (1.0f / totalPotency) * 100;
-                    textList.add(Component.literal("  §7Source Cost: §a" + String.format("%.1f%%", efficiency)));
-                }
-            }
+            textList.add(Component.literal("  §7Soul Resonance: §d" + String.format("%.2f", baseSoul)));
+            textList.add(Component.literal("  §7Garden Boost:   §b+" + String.format("%.2f", cachedFloraBoost)));
+            textList.add(Component.literal("  §eTotal Potency:  §l" + String.format("%.2fx", totalPotency)));
 
             if (harmonicBonus > 0) {
                 textList.add(Component.literal("§6Status: §l§nCHUNK HARMONIZED §a(+0.50)"));
@@ -170,8 +182,6 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
                 int percent = (int) ((totalWorkTicks / (double) HARMONIZATION_THRESHOLD) * 100);
                 textList.add(Component.literal("§8Harmonizing: " + percent + "%"));
             }
-
-            textList.add(Component.literal("  §eTotal Potency: §l" + String.format("%.2fx", totalPotency)));
         }
     }
 }

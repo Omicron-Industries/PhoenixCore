@@ -21,10 +21,12 @@ import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMa
 import com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
+import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.recipe.OverclockingLogic;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.registry.registrate.MachineBuilder;
+import com.gregtechceu.gtceu.api.registry.registrate.MultiblockMachineBuilder;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
 import com.gregtechceu.gtceu.common.data.models.GTMachineModels;
@@ -40,10 +42,12 @@ import com.gregtechceu.gtceu.integration.kjs.helpers.MachineModifiers;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -53,7 +57,6 @@ import net.phoenix.core.api.pattern.PhoenixPredicates;
 import net.phoenix.core.client.renderer.machine.multiblock.PhoenixDynamicRenderHelpers;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
-import net.phoenix.core.common.machine.multiblock.BlazingCleanroom;
 import net.phoenix.core.common.machine.multiblock.electric.research.PhoenixHPCAMachine;
 import net.phoenix.core.common.machine.multiblock.part.ShieldRenderProperty;
 import net.phoenix.core.common.machine.multiblock.part.fluid.PlasmaHatchPartMachine;
@@ -62,12 +65,16 @@ import net.phoenix.core.common.machine.multiblock.part.special.SourceHatchPartMa
 import net.phoenix.core.common.machine.multiblock.source.AlchemicalImbuerMachine;
 import net.phoenix.core.common.machine.multiblock.source.BioAethericEngineMachine;
 import net.phoenix.core.common.machine.multiblock.source.SourceReactorMachine;
+import net.phoenix.core.common.machine.multiblock.unique.BlazingCleanroom;
+import net.phoenix.core.common.machine.multiblock.unique.SourceMultiblockTankMachine;
 import net.phoenix.core.common.registry.PhoenixRegistration;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.datagen.models.PhoenixMachineModels;
 
 import java.util.Locale;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.capability.recipe.IO.IN;
@@ -79,11 +86,13 @@ import static com.gregtechceu.gtceu.common.data.GTBlocks.*;
 import static com.gregtechceu.gtceu.common.data.GTMachines.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gregtechceu.gtceu.common.data.GTRecipeModifiers.*;
+import static com.gregtechceu.gtceu.common.data.GTRecipeTypes.DUMMY_RECIPES;
 import static com.gregtechceu.gtceu.common.data.machines.GTMachineUtils.*;
 import static com.gregtechceu.gtceu.common.data.models.GTMachineModels.*;
 import static com.hollingsworth.arsnouveau.setup.registry.BlockRegistry.VOID_PRISM;
 import static net.phoenix.core.api.machine.PhoenixPartAbility.SOURCE_INPUT;
 import static net.phoenix.core.api.machine.PhoenixPartAbility.SOURCE_OUTPUT;
+import static net.phoenix.core.client.tooltips.PhoenixMachineTooltips.*;
 import static net.phoenix.core.common.block.PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
@@ -124,6 +133,67 @@ public class PhoenixMachines {
                     .register();
         }
     }
+    String technicallyTrue = "false";
+
+    public static MultiblockMachineDefinition registerMultiblockSourceTank(String name, String displayName,
+                                                                           int capacity,
+                                                                           Supplier<? extends Block> casing,
+                                                                           int maxConsumption,
+                                                                           BiConsumer<MultiblockMachineBuilder<?, ?>, ResourceLocation> rendererSetup) {
+        return registerMultiblockSourceTank(PhoenixRegistration.REGISTRATE, name, displayName, capacity, maxConsumption,
+                casing, rendererSetup);
+    }
+
+    public static MultiblockMachineDefinition registerMultiblockSourceTank(GTRegistrate registrate, String name,
+                                                                           String displayName, int capacity,
+                                                                           int maxConsumption,
+                                                                           Supplier<? extends Block> casing,
+                                                                           BiConsumer<MultiblockMachineBuilder<?, ?>, ResourceLocation> rendererSetup) {
+        MultiblockMachineBuilder<?, ?> builder = registrate
+                .multiblock(name, holder -> new SourceMultiblockTankMachine(holder, capacity, maxConsumption))
+                .langValue(displayName)
+                .tooltips(
+                        Component.translatable("phoenixcore.machine.multiblock.source_tank.tooltip"),
+                        Component.translatable("phoenixcore.universal.tooltip.source_storage_capacity", capacity))
+                .rotationState(RotationState.ALL)
+                .recipeType(DUMMY_RECIPES) // Since it's a tank, DUMMY_RECIPES or null is fine
+                .pattern(definition -> FactoryBlockPattern.start()
+                        .aisle("CCC", "CCC", "CCC")
+                        .aisle("CCC", "C#C", "CCC")
+                        .aisle("CCC", "CSC", "CCC")
+                        .where('S', controller(blocks(definition.get())))
+                        .where('C', blocks(casing.get())
+                                // This allows any block with these abilities to substitute for a 'C' block
+                                .or(abilities(PhoenixPartAbility.SOURCE_INPUT).setExactLimit(1))
+                                .or(abilities(PhoenixPartAbility.SOURCE_OUTPUT).setExactLimit(1))
+                                // Usually, you also want maintenance or bus capabilities for tanks
+                                .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1)))
+                        .where('#', air())
+                        .build())
+                .shapeInfo(definition -> MultiblockShapeInfo.builder()
+                        // Fixed shape info to match the pattern (S in the middle of a wall)
+                        .aisle("CCC", "CCC", "CCC")
+                        .aisle("CCC", "C#C", "CCC")
+                        .aisle("CCC", "CSC", "CCC")
+                        .where('S', definition.get(), Direction.NORTH)
+                        .where('C', casing.get().defaultBlockState())
+                        .where('#', Blocks.AIR.defaultBlockState())
+                        .build())
+                .appearanceBlock(casing);
+
+        rendererSetup.accept(builder, GTCEu.id("block/multiblock/multiblock_tank"));
+        return builder.register();
+    }
+
+    public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
+            "refined_multiblock_source_tank",
+            "Refined Multiblock Source Tank",
+            50000 * 1000,           // Capacity
+            SOURCE_FIBER_MACHINE_CASING, // Casing Supplier
+            100,                  // maxConsumption (The missing piece!)
+            (builder, overlay) -> builder
+                    .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
+                            overlay));
 
     public static final MachineDefinition[] SOURCE_IMPORT_HATCH = registerSourceHatch(
             "source_input_hatch", "Source Input Hatch",
@@ -1137,8 +1207,7 @@ public class PhoenixMachines {
             .multiblock("alchemical_imbuer", AlchemicalImbuerMachine::new)
             .langValue("§5Alchemical Imbuer")
             .recipeTypes(PhoenixRecipeTypes.SOURCE_EXTRACTION_RECIPES, PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES) // PhoenixRecipeTypes.SOURCE_IMBUMENT_RECIPES)//"SOURCE_IMBUMENT_RECIPES","SOURCE_EXTRACTION_RECIPES")
-            .recipeModifiers(AlchemicalImbuerMachine::recipeModifier, GTRecipeModifiers.OC_NON_PERFECT_SUBTICK,
-                    BATCH_MODE)
+            .recipeModifiers(AlchemicalImbuerMachine::recipeModifier) // Remove BATCH_MODE and OC_NON_PERFECT
             .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
             .rotationState(RotationState.NON_Y_AXIS)
             .pattern(definition -> FactoryBlockPattern.start()
@@ -1179,6 +1248,7 @@ public class PhoenixMachines {
                     .build())
             .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
                     PhoenixCore.id("block/multiblock/alchemical_imbuer"))
+            .tooltipBuilder(ALCHEMICAL_IMBUER_TOOLTIPS)
             .register();
 
     public static final MultiblockMachineDefinition SOURCE_REACTOR = REGISTRATE
@@ -1203,11 +1273,12 @@ public class PhoenixMachines {
             })
             .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
                     PhoenixCore.id("block/multiblock/source_spin"))
+            .tooltipBuilder(SOURCE_REACTOR_TOOLTIPS)
             .register();
     public static final MultiblockMachineDefinition BIO_AETHERIC_ENGINE = REGISTRATE
             .multiblock("bio_aetheric_engine", BioAethericEngineMachine::new)
             .rotationState(RotationState.ALL)
-            .langValue("§dBio Aetheric Engine")
+            .langValue("§5Bio Aetheric Engine")
             .recipeType(PhoenixRecipeTypes.BIO_ENGINE_RECIPES)
             .recipeModifiers(BioAethericEngineMachine::recipeModifier, BATCH_MODE)
             .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
@@ -1244,6 +1315,7 @@ public class PhoenixMachines {
                                     .addDynamicRenderer(
                                             PhoenixDynamicRenderHelpers::getEngineGearboxRenderer)))
             .hasBER(true)
+            .tooltipBuilder(BIO_ENGINE_TOOLTIPS)
             .register();
     public static final MultiblockMachineDefinition EMBERWAKE_ALLOY_HEARTH = REGISTRATE
             .multiblock("emberwake_alloy_hearth", CoilWorkableElectricMultiblockMachine::new)
@@ -1425,6 +1497,7 @@ public class PhoenixMachines {
             .recipeTypes(PhoenixRecipeTypes.DIMENSIONAL_ANCHORING_RECIPES)
             .recipeModifiers(GTRecipeModifiers.OC_NON_PERFECT_SUBTICK, GTRecipeModifiers.BATCH_MODE)
             .appearanceBlock(CASING_TITANIUM_STABLE)
+            .tooltipBuilder(DIMENSIONAL_ANCHOR_TOOLTIPS)
             .pattern(definition -> {
                 return FactoryBlockPattern.start()
                         .aisle("BCDCB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB",
@@ -1447,7 +1520,6 @@ public class PhoenixMachines {
                         .where("G", Predicates.blocks(FIREBOX_TITANIUM.get()))
                         .where("H", Predicates.blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get()))
                         .where("I", Predicates.controller(Predicates.blocks(definition.get())))
-
                         .build();
             })
             .workableCasingModel(GTCEu.id("gtceu:block/casings/solid/machine_casing_stable_titanium"),
@@ -1486,6 +1558,7 @@ public class PhoenixMachines {
             })
             .workableCasingModel(GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
                     GTCEu.id("block/multiblock/large_miner"))
+            .tooltipBuilder(AETHERIAL_FABRICATOR_TOOLTIPS)
             .register();
 
     public static void init() {}

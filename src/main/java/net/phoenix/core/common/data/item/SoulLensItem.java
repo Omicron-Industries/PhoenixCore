@@ -66,8 +66,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIFactory, IInte
                     interactable.onDataStickUse(player, stack);
         }
 
-        // For any other block including machines and sand,
-        // return FAIL to stop ComponentItem from re-calling useOn
         return InteractionResult.FAIL;
     }
 
@@ -76,13 +74,10 @@ public class SoulLensItem extends ComponentItem implements IItemUIFactory, IInte
                                                            @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Open the Soul Map UI on right-click (Air or Block)
-        // ComponentItem handles the factory registration, but we call it manually here for 'use'
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             HeldItemUIFactory.INSTANCE.openUI(new HeldItemUIFactory.HeldItemHolder(player, hand), serverPlayer);
         }
 
-        // Using sidedSuccess prevents the "swinging" animation from repeating unnecessarily on the server
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
@@ -95,7 +90,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIFactory, IInte
         ui.widget(new ImageWidget(0, 0, 220, 200, new ColorBorderTexture(2, 0xFF000000)));
         ui.widget(new LabelWidget(50, 6, "Soul Field Topography").setTextColor(0x8F00FF));
 
-        // Map Widget
         WidgetGroup mapBorder = new WidgetGroup(48, 78, 114, 114);
         mapBorder.setBackground(new ColorBorderTexture(2, 0xFF000000));
 
@@ -106,7 +100,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIFactory, IInte
         mapBorder.addWidget(mapGroup);
         ui.widget(mapBorder);
 
-        // Info Panel
         WidgetGroup infoGroup = new WidgetGroup(160, 20, 85, 110);
         String biomeName = tag.getString("BiomeName");
         float current = tag.getFloat("CurrentSoul");

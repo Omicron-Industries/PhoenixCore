@@ -45,8 +45,8 @@ import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.api.gui.PhoenixGuiTextures;
 import net.phoenix.core.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.common.data.item.PhoenixItems;
-import net.phoenix.core.common.machine.multiblock.UniqueWorkableElectricMultiblockMachine;
 import net.phoenix.core.common.machine.multiblock.part.special.TeslaEnergyHatchPartMachine;
+import net.phoenix.core.common.machine.multiblock.unique.UniqueWorkableElectricMultiblockMachine;
 import net.phoenix.core.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
 

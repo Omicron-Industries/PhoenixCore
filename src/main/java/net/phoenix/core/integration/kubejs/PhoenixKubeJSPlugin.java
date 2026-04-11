@@ -12,6 +12,8 @@ import net.phoenix.core.common.data.materials.PhoenixMaterials;
 import net.phoenix.core.common.data.materials.PhoenixOres;
 import net.phoenix.core.common.machine.PhoenixMachines;
 import net.phoenix.core.common.machine.multiblock.*;
+import net.phoenix.core.common.machine.multiblock.unique.BlazingCleanroom;
+import net.phoenix.core.common.machine.multiblock.unique.CreativeEnergyMultiMachine;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.kubejs.recipe.PhoenixRecipeSchema;
 

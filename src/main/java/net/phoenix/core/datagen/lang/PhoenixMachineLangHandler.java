@@ -143,6 +143,8 @@ public class PhoenixMachineLangHandler {
         provider.add("jade.phoenixcore.tesla_providing", "Providing: %s EU/t");
         provider.add("block.phoenixcore.tesla_battery.tooltip_empty", "§7A hollow casing. Provides no storage.");
         provider.add("block.phoenixcore.tesla_battery.tooltip_filled", "§aCapacity: §f%s EU");
+        // Add this line to resolve the missing config translation error
+        provider.add("config.jade.plugin_phoenixcore.imbuer_threads_info", "Alchemical Imbuer Threads Info");
 
         provider.add("jade.phoenixcore.blanket_input", "Blanket Fuel: %s");
         provider.add("jade.phoenixcore.blanket_output", "Breeding Product: %s");
@@ -158,8 +160,99 @@ public class PhoenixMachineLangHandler {
         provider.add("jade.phoenixcore.source_consumption", "Source Consumption:");
         provider.add("jade.phoenixcore.source_production", "Source Production:");
 
+        // Multiblock Tooltip Builder
+        provider.add("multiblock.tooltip.machinetype", "Machine Type: %s");
+        provider.add("multiblock.yellowline", "§e━━━━━━━━━━━━━━━━━━━━");
+        provider.add("multiblock.underyellowline", "Hold §e§lSHIFT§r to display structure details!");
+        provider.add("multiblock.structureadvtooltip", "Structure:");
+
+        // Feature Flags (Checks)
+        provider.add("multiblock.pchaccess1", "\u00A0\u00A0\u00A0§9Parallel Control Hatch: ✓");
+        provider.add("multiblock.pchaccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock can use PCHs to increase it's efficiency.");
+        provider.add("multiblock.subtickaccess1", "\u00A0\u00A0\u00A0§3SubTick: ✓");
+        provider.add("multiblock.subtickaccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock performs subtick recipes!");
+        provider.add("multiblock.perfocaccess1", "\u00A0\u00A0\u00A0§dPerfect OCs: ✓");
+        provider.add("multiblock.perfocaccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock supports perfect overclocks (4/4).");
+        provider.add("multiblock.nooc1", "\u00A0\u00A0\u00A0§cOverclocks: X");
+        provider.add("multiblock.nooc2", "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock can not overclock.");
+
+        // Laser & Power
+        provider.add("multiblock.laseraccess1", "\u00A0\u00A0\u00A0§6Laser Target Access: ✓");
+        provider.add("multiblock.laseraccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock can be powered with Laser Target Hatches.");
+        provider.add("multiblock.needlaseraccess1", "\u00A0\u00A0\u00A0§6Laser Target Access: ✓");
+        provider.add("multiblock.needlaseraccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock MUST be powered with Laser Target Hatches.");
+        provider.add("multiblock.nopower1", "\u00A0\u00A0\u00A0§cEnergy Output: X");
+        provider.add("multiblock.nopower2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock does NOT produce/use §3Energy§7.");
+        provider.add("multiblock.energyoutputaccess1", "\u00A0\u00A0\u00A0§3Energy Output: ✓");
+        provider.add("multiblock.energyoutputaccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock provides §3Energy§7 output!");
+
+        // Source
+        provider.add("multiblock.sourceoutputaccess1", "\u00A0\u00A0\u00A0§zSource Output: §3✓");
+        provider.add("multiblock.sourceoutputaccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock provides §zSource§7 output!");
+        provider.add("multiblock.sourceinputaccess1", "\u00A0\u00A0\u00A0§zSource Input: §3✓");
+        provider.add("multiblock.sourceinputaccess2",
+                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0§7This multiblock requires §zSource §7input!");
+
+        // Structure Components (Shift Tooltips)
+        provider.add("multiblock.tooltip.controller", "\u00A0\u00A0\u00A0Controller: %s");
+        provider.add("multiblock.tooltip.iteminput", "\u00A0\u00A0\u00A0Input Bus: %s");
+        provider.add("multiblock.tooltip.fluidinput", "\u00A0\u00A0\u00A0Input Hatch: %s");
+        provider.add("multiblock.tooltip.itemoutput", "\u00A0\u00A0\u00A0Output Bus: %s");
+        provider.add("multiblock.tooltip.fluidoutput", "\u00A0\u00A0\u00A0Output Hatch: %s");
+        provider.add("multiblock.tooltip.energy", "\u00A0\u00A0\u00A0Energy Input: %s");
+        provider.add("multiblock.tooltip.energyoutput", "\u00A0\u00A0\u00A0Energy Output: %s");
+        provider.add("multiblock.tooltip.maintenance", "\u00A0\u00A0\u00A0Maintenance Hatch: %s");
+        provider.add("multiblock.tooltip.muffler", "\u00A0\u00A0\u00A0Muffler Hatch: %s");
+        provider.add("multiblock.tooltip.pch", "\u00A0\u00A0\u00A0Parallel Control Hatch: %s");
+
+        // Custom/Special Tooltips
+        provider.add("gtultimate.custom.tooltip_one_energy_hatch", "§fAccepts §lEXACTLY §61 energy hatch.");
+        provider.add("gtultimate.custom.tooltip_dimensional_anchor",
+                "§9§oOpens stable rifts to other dimensions, determined by its placement.\\n§7These gateways allow for accelerated resource extraction unique to each realm.\\n§7Requires distinct recipes for Overworld, Nether, and End configurations.");
+
+        String anchorDesc = "§9§oOpens stable rifts to other dimensions, determined by its placement.\n" +
+                "§7These gateways allow for accelerated resource extraction unique to each realm.\n" +
+                "§7Requires distinct recipes for Overworld, Nether, and End configurations.";
+        String fabricatorDesc = "§d§oUtilizes raw aetherial energy to create complex constructs.\n§5Transmutes pure magical essence into tangible matter.";
+        String alchemicalImbuerDesc = "§7The hub of your §zSource network§7, acting as a link for natural §zsoul§7.\n" +
+                "§7Handles the §rextraction§7 of §zsource§r from §rcarbon§7 based sources as well as imbuing §zsource§r into §runique materials.\n" +
+                "§7Source §rproduction and consumption§7 is decided by the current base §zsoul, §rflora§7, and §rharmonization§7 in your area.";
+        String sourceReactorDesc = "§7A §zSource§7 based reactor capable of converting §fmundane materials§7 for use in further §zSource§7 related processes.\n" +
+                "Reactor ability is handled by the current §zsoul§7 of your area. \n" +
+                "§zSource gem §7blocks can also be used near the reactor to provide further boost. \n" +
+                "Reactor will §cNOT RUN§7 below a §zsoul§7 cap of 1.";
+        String bioEngineDesc = "§7An §zEngine§7 capable of converting §zSource§7 into power.\n" +
+                "§7It's power flows throughout it's chassis §zdenoting it's strength.\n" +
+                "§fEU provided §7is dependent on the base §zsoul§7 and §aflora §7power in your area.\n" +
+                "§7Caps out at a §r5x boost.";
+
+        String largeSteamSifterDesc = "§bSifts through the chaff to get to the good stuff. \n" +
+                "§7Good Vibrations.";
+
+        // Machine tooltips
+        PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_large_steam_sifter",
+                largeSteamSifterDesc);
+        PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_dimensional_anchor", anchorDesc);
+        PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_aetherial_fabricator", fabricatorDesc);
+        PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_alchemical_imbuer", alchemicalImbuerDesc);
+        PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_source_reactor", sourceReactorDesc);
+        PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_bio_engine", bioEngineDesc);
+
         // Multi-line Tooltips
         PhoenixLangHandler.multiLang(provider, "tooltip.phoenixcore.shield_stability_hatch", "Outputs shield stability",
                 "as a redstone signal.");
+
+        // Source Tank Tooltips
+        provider.add("phoenixcore.machine.multiblock.source_tank.tooltip",
+                "Fill and drain through the controller or source hatches.");
+        provider.add("phoenixcore.universal.tooltip.source_storage_capacity", "§zSource §9Capacity: §f%d mB");
     }
 }

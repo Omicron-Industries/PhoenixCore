@@ -10,14 +10,25 @@ import org.lwjgl.glfw.GLFW;
 public class PhoenixKeybinds {
 
     public static final KeyMapping OPEN_WING_GUI = new KeyMapping(
-            "key.phoenixcore.wing_flight_gui",   // translation key
+            "key.phoenixcore.wing_flight_gui",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_KP_9,                  // Numpad 9
-            "key.categories.phoenixcore"          // category
-    );
+            GLFW.GLFW_KEY_KP_9,
+            "key.categories.phoenixcore");
+    public static final KeyMapping TESLA_MODE = new KeyMapping(
+            "key.phoenixcore.tesla_mode",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_M,
+            "key.categories.phoenixcore");
+    public static final KeyMapping TESLA_DISCHARGE = new KeyMapping(
+            "key.phoenixcore.tesla_discharge",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_KP_7,
+            "key.categories.phoenixcore");
 
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);
+        event.register(TESLA_MODE);
+        event.register(TESLA_DISCHARGE);
     }
 }

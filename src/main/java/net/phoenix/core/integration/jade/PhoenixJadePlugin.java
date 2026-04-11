@@ -4,10 +4,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
 import net.minecraft.world.level.block.Block;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.integration.jade.provider.FissionMachineProvider;
-import net.phoenix.core.integration.jade.provider.HighPressurePlasmaArcFurnaceProvider;
-import net.phoenix.core.integration.jade.provider.SourceMachineProvider;
-import net.phoenix.core.integration.jade.provider.TeslaNetworkProvider;
+import net.phoenix.core.integration.jade.provider.*;
 
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
@@ -21,20 +18,30 @@ public class PhoenixJadePlugin implements IWailaPlugin {
     public void register(IWailaCommonRegistration registration) {
         PhoenixCore.LOGGER.info("[PhoenixJade] register(common) called");
 
+        // Server-side data providers (gathering the NBT)
         registration.registerBlockDataProvider(new SourceMachineProvider(), MetaMachineBlockEntity.class);
+        registration.registerBlockDataProvider(new SourceTankJadeProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new TeslaNetworkProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new HighPressurePlasmaArcFurnaceProvider(),
                 MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new FissionMachineProvider(), MetaMachineBlockEntity.class);
+
+        // Add the Threaded Recipe Provider here
+        registration.registerBlockDataProvider(new ThreadedRecipeOutputProvider(), MetaMachineBlockEntity.class);
     }
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
         PhoenixCore.LOGGER.info("[PhoenixJade] register(client) called");
 
+        // Client-side component providers (rendering the tooltip)
         registration.registerBlockComponent(new SourceMachineProvider(), Block.class);
+        registration.registerBlockComponent(new SourceTankJadeProvider(), Block.class);
         registration.registerBlockComponent(new TeslaNetworkProvider(), Block.class);
         registration.registerBlockComponent(new HighPressurePlasmaArcFurnaceProvider(), Block.class);
         registration.registerBlockComponent(new FissionMachineProvider(), Block.class);
+
+        // Add the Threaded Recipe Provider here
+        registration.registerBlockComponent(new ThreadedRecipeOutputProvider(), Block.class);
     }
 }

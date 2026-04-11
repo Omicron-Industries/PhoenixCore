@@ -1,4 +1,4 @@
-package net.phoenix.core.client.renderer.tooltips;
+package net.phoenix.core.client.tooltips;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;

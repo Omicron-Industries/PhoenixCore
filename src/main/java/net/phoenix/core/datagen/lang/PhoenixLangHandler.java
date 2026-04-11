@@ -42,11 +42,31 @@ public class PhoenixLangHandler {
         provider.add("tooltip.phoenixcore.crystal_rose.made_from", "Forged from %s.");
         provider.add("tooltip.phoenixcore.nanites.generic", "Microscopic machines swarming with potential.");
         provider.add("tooltip.phoenixcore.nanites.made_from", "Constructed from %s.");
+        provider.add("metaarmor.tooltip.wings", "Contains Phoenix Wings");
+        provider.add("metaarmor.tooltip.tesla_connection", "Controls Tesla Network Connection");
+
+        // Jade Threaded Output Tooltips
+        provider.add("gtceu.top.recipe_output", "Predicted Output:");
+        provider.add("item.phoenixcore.jade.thread_header", "Alchemical Thread #%s: %s%%");
+        provider.add("item.phoenixcore.jade.threads_active", "Active Alchemical Threads:");
+        provider.add("gtceu.gui.content.range", "%s - %s");
+        provider.add("gtceu.gui.content.times_item", "x %s");
+
+        // General Source Machine Tooltips
+        provider.add("jade.phoenixcore.source_container", "Source Energy");
+
+        // Specialized Tank Tooltips
+        provider.add("jade.phoenixcore.source_tank_header", "Source Tank Content");
+        provider.add("jade.phoenixcore.source_tank_format", "Capacity %s / %s - %d%%");
+        // This fixes the "Missing config translation" crash
+        provider.add("config.jade.plugin_phoenixcore.source_tank_info", "Source Tank Info");
 
         // Keybinds
 
         provider.add("key.categories.phoenixcore", "PhoenixCore");
         provider.add("key.phoenixcore.wing_flight_gui", "Wing Flight Settings");
+        provider.add("key.phoenixcore.tesla_mode", "Enable Tesla Mode");
+        provider.add("key.phoenixcore.tesla_discharge", "Activate Tesla Discharge");
 
         // Tesla Binder Item
         provider.add("item.phoenixcore.tesla_binder.linked", "§aLinked to: §f%s");
@@ -65,6 +85,11 @@ public class PhoenixLangHandler {
         for (var i = 0; i < values.length; i++) {
             provider.add(getSubKey(key, i), values[i]);
         }
+    }
+
+    protected static void multilineLang(RegistrateLangProvider provider, String key, String multiline) {
+        var lines = multiline.split("\n");
+        multiLang(provider, key, lines);
     }
 
     protected static String getSubKey(String key, int index) {

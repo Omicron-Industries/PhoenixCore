@@ -3,7 +3,7 @@ package net.phoenix.core.common.block;
 import com.gregtechceu.gtceu.api.block.IFilterType;
 import com.gregtechceu.gtceu.api.machine.multiblock.CleanroomType;
 
-import net.phoenix.core.common.machine.multiblock.BlazingCleanroom;
+import net.phoenix.core.common.machine.multiblock.unique.BlazingCleanroom;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

@@ -63,7 +63,6 @@ public class PhoenixTeslaMachines {
                 Component.literal("Transmits EU §7inter-dimensionally§f with §7infinite§f range."));
         list.add(
                 Component.literal("Internal buffer is §7determined§f by the tier of §7Tesla Battery§f it has."));
-
     };
 
     public static final MultiblockMachineDefinition TESLA_TOWER = REGISTRATE
@@ -402,7 +401,7 @@ public class PhoenixTeslaMachines {
                                 Component.translatable("gtceu.universal.tooltip.voltage_in",
                                         FormattingUtil.formatNumbers(GTValues.V[tier]), GTValues.VNF[tier]),
                                 Component.translatable(
-                                        "gtceu.universal.tooltip.amperage_" + (io == IO.OUT ? "in" : "out"), amperage),
+                                        "gtceu.universal.tooltip.amperage_" + (io == IO.OUT ? "out" : "in"), amperage),
                                 Component.translatable("gtceu.universal.tooltip.energy_storage_capacity",
                                         FormattingUtil.formatNumbers(
                                                 GTValues.V[tier] * (io == IO.OUT ? 16L : 64L) * amperage)),

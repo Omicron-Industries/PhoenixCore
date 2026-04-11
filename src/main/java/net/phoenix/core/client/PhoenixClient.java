@@ -14,6 +14,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -40,6 +41,7 @@ public class PhoenixClient {
     public static void init(IEventBus modBus) {
         // FIX: This tells Forge to actually look at our particle list.
         // Without this, TESLA_SPARK.get() returns null!
+        MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
 
         // GTCEu Dynamic Renders
         DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);

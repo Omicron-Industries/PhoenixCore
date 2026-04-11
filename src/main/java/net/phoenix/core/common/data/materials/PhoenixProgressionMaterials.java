@@ -13,6 +13,7 @@ import net.phoenix.core.PhoenixCore;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 
 import static appeng.core.definitions.AEItems.FLUIX_CRYSTAL;
+import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags.*;
 import static com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty.GasTier.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
@@ -24,7 +25,7 @@ public class PhoenixProgressionMaterials {
     public static Material ALUMINFROST, SOURCE_IMBUED_TITANIUM, RESONANT_RHODIUM_ALLOY;
     public static Material EightyFivePercentPureNevonianSteel, AURUM_STEEL,
             FIERY_BRONZE, VOID_TOUCHED_TUNGSTEN_STEEL, FROST_REINFORCED_STAINED_STEEL, FROST,
-            ADVANCED_QUIN_NAQUADIAN_ALLOY;
+            ADVANCED_QUIN_NAQUADIAN_ALLOY, NEBULAR_GOLD;
 
     // Superconductors
     public static Material MAGMATIC_MANGANESE_LEAD, CRYOGENIC_ALUMINUM_STRAND, ICY_STEEL_MATRIX,
@@ -268,7 +269,7 @@ public class PhoenixProgressionMaterials {
                 .buildAndRegister();
         AURUM_STEEL = new Material.Builder(PhoenixCore.id("aurum_steel")).ingot().fluid().color(0xd0a860)
                 .secondaryColor(0xc0c0c0).iconSet(MaterialIconSet.METALLIC)
-                .cableProperties(GTValues.LV, 1, 2, false)
+                .cableProperties(LV, 1, 2, false)
                 .fluidPipeProperties(5000, 50, true, true, false, false)
                 .flags(GENERATE_PLATE, GENERATE_RING, GENERATE_ROUND, GENERATE_GEAR, PHOSPHORESCENT, GENERATE_ROD,
                         GENERATE_BOLT_SCREW, GENERATE_FRAME, GENERATE_DENSE, GENERATE_ROTOR, GENERATE_FOIL,
@@ -284,7 +285,7 @@ public class PhoenixProgressionMaterials {
 
         // Superconductors
         MAGMATIC_MANGANESE_LEAD = new Material.Builder(PhoenixCore.id("magmatic_manganese_lead")).ingot().fluid()
-                .color(0x8B4513).cableProperties(GTValues.V[GTValues.LV], 2, 2).buildAndRegister();
+                .color(0x8B4513).cableProperties(GTValues.V[LV], 2, 2).buildAndRegister();
         CRYOGENIC_ALUMINUM_STRAND = new Material.Builder(PhoenixCore.id("cryogenic_aluminum_strand")).ingot().fluid()
                 .color(0xADD8E6).cableProperties(GTValues.V[GTValues.MV], 4, 0, true).buildAndRegister();
         ICY_STEEL_MATRIX = new Material.Builder(PhoenixCore.id("icy_steel_matrix")).ingot().fluid().color(0xE0FFFF)

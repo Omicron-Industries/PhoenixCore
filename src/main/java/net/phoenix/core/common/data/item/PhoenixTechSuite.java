@@ -38,6 +38,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.phoenix.core.client.keybind.PhoenixKeybinds;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.mixin.accessor.AbilitiesAccessor;
 import net.phoenix.core.saveddata.TeslaTeamEnergyData;
@@ -99,7 +100,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         // Toggle Logic (NBT-Optimized)
         boolean currentTeslaMode = data.getBoolean("teslaMode");
-        if (SyncedKeyMappings.ARMOR_MODE_SWITCH.isKeyDown(player)) {
+        if (PhoenixKeybinds.TESLA_MODE.isDown()) {
             long lastToggle = data.getLong("lastToggleTime");
             if (world.getGameTime() - lastToggle > 10) {
                 currentTeslaMode = !currentTeslaMode;
@@ -235,7 +236,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                 ArmorUtils.NIGHTVISION_DURATION;
 
         // We use the global toggleTimer handled at the start of onArmorTick
-        if (data.getInt("toggleTimer") == 10 && SyncedKeyMappings.ARMOR_MODE_SWITCH.isKeyDown(player)) {
+        if (data.getInt("toggleTimer") == 0 && SyncedKeyMappings.ARMOR_MODE_SWITCH.isKeyDown(player)) {
             nightVision = !nightVision;
             if (item.getCharge() < ArmorUtils.MIN_NIGHTVISION_CHARGE) {
                 nightVision = false;
@@ -274,10 +275,12 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         // 1. Tesla Discharge (Sneak + Jump)
         if (serverLevel != null) {
             int dischargeCooldown = data.getInt("dischargeCooldown");
-            if (sneaking && jumping && dischargeCooldown == 0) {
+
+            if (PhoenixKeybinds.TESLA_DISCHARGE.isDown() && dischargeCooldown == 0) {
                 doTeslaDischarge(serverLevel, player, item);
                 data.putInt("dischargeCooldown", 100);
             }
+
             if (dischargeCooldown > 0) data.putInt("dischargeCooldown", dischargeCooldown - 1);
         }
 
@@ -927,7 +930,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         int hitCount = 0;
         for (Entity target : targets) {
             if (target instanceof LivingEntity living && !(target instanceof Player)) {
-                living.hurt(level.damageSources().lightningBolt(), 10.0f);
+                living.hurt(level.damageSources().lightningBolt(), 20.0f);
                 living.setSecondsOnFire(3);
                 level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                         living.getX(), living.getY() + 1, living.getZ(),
@@ -1116,6 +1119,8 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         } else if (type == ArmorItem.Type.CHESTPLATE) {
             lines.add(Component.translatable("metaarmor.tooltip.burning"));
             lines.add(Component.translatable("metaarmor.tooltip.freezing"));
+            lines.add(Component.translatable("metaarmor.tooltip.wings"));
+            lines.add(Component.translatable("metaarmor.tooltip.tesla_connection"));
 
             if (itemStack.hasTag()) {
                 assert itemStack.getTag() != null;
@@ -1138,6 +1143,24 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         }
     }
 
+    public static int getPhoenixLightLevel(Player player) {
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        if (chest.getItem() instanceof PhoenixArmorItem) {
+            CompoundTag nbt = chest.getTag();
+            if (nbt != null) {
+                // 1. Brightest: During Rebirth (Level 15)
+                if (nbt.getInt("rebirthCooldown") > 1150) return 15;
+
+                // 2. High: During Sonic Flight or Tesla Discharge (Level 12)
+                if (nbt.getBoolean("IsSonicFlight") || nbt.getInt("dischargeCooldown") > 90) return 12;
+
+                // 3. Constant: If Tesla Mode or Night Vision is on (Level 9)
+                if (nbt.getBoolean("teslaMode") || nbt.getBoolean("nightVision")) return 9;
+            }
+        }
+        return 0;
+    }
+
     @Override
     public boolean isPPE() {
         return true;
@@ -1153,7 +1176,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                 if (player.isFallFlying()) {
                     // Use actual velocity to determine if we play 'Sonic' or 'Fly'
                     // This replaces the NBT check and stops the blinking
-                    if (player.getDeltaMovement().length() > 0.8) {
+                    if (player.getDeltaMovement().length() > 0.6) {
                         return event.setAndContinue(RawAnimation.begin().thenLoop("animation.phoenix.sonic"));
                     }
                     return event.setAndContinue(RawAnimation.begin().thenLoop("animation.phoenix.fly"));

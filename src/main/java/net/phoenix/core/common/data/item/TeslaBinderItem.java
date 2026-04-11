@@ -693,7 +693,7 @@ public class TeslaBinderItem extends ComponentItem
 
     @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
-        target.hurt(target.damageSources().playerAttack((Player) attacker), 6.0f);
+        target.hurt(target.damageSources().playerAttack((Player) attacker), 16.0f);
 
         target.level().playSound(null, target.blockPosition(),
                 SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS, 0.5f, 2.0f);

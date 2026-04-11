@@ -59,7 +59,7 @@ public final class CompactCount {
         return fmt(v, 1_000L, "k");
     }
 
-    private static String fmt(long v, long unit, String suf) {
+    public static String fmt(long v, long unit, String suf) {
         double d = (double) v / (double) unit;
 
         if (d >= 100.0) return ((long) d) + suf;

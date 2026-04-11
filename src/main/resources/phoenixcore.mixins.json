@@ -10,9 +10,11 @@
     "accessor.RelayTileDisabledAccessor",
     "ars.DominionWandMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
+    "gtceu.WorkableMultiblockMachineMixin",
     "minecraft.ItemStackTooltipMixin"
   ],
   "client": [
+    "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
     "minecraft.GuiGraphicsCountSuffixMixin"
   ],

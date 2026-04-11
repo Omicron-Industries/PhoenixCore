@@ -1,4 +1,4 @@
-package net.phoenix.core.common.machine.multiblock;
+package net.phoenix.core.common.machine.multiblock.unique;
 
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;

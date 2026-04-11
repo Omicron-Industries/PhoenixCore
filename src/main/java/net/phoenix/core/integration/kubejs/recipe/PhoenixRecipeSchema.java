@@ -5,8 +5,8 @@ import com.gregtechceu.gtceu.integration.kjs.recipe.GTRecipeSchema;
 
 import net.phoenix.core.api.capability.PhoenixRecipeCapabilities;
 import net.phoenix.core.common.data.recipeConditions.FluidInHatchCondition;
-import net.phoenix.core.common.machine.multiblock.BlazingCleanroom;
 import net.phoenix.core.common.machine.multiblock.Shield;
+import net.phoenix.core.common.machine.multiblock.unique.BlazingCleanroom;
 
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
 import lombok.experimental.Accessors;
