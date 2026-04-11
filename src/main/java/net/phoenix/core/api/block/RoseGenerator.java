@@ -1,58 +1,57 @@
 package net.phoenix.core.api.block;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
-import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-
-import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class RoseGenerator {
 
-    // Adjust this path to your local project structure
-    private static final String ASSETS_PATH = "src/main/resources/assets/phoenixcore/";
+    // Using your exact provided path as the base
+    private static final String BASE_PATH = "C:/Users/conno/Desktop/PFT Core/PhoenixCore/src/main/resources/assets/phoenixcore/";
 
-    public static void generate() {
-        System.out.println("Starting Crystal Rose JSON Generation...");
+    public static void main(String[] args) {
+        List<String> materials = List.of(
+                "amethyst", "apatite", "bauxite", "cinnabar", "cobalt", "cobaltite", "copper", "diamond",
+                "electrotine", "emerald", "galena", "gold", "ilmenite", "invar", "iron", "lapis",
+                "lead", "lepidolite", "malachite", "nickel", "opal", "pitchblende", "pyrope", "realgar",
+                "ruby", "salt", "sapphire", "scheelite", "silicon", "silver", "steel", "stibnite", "topaz",
+                "tricalcium_phosphate", "tungstate", "zinc", "barite", "bastnasite", "bismuth", "chromite",
+                "graphite", "molybdenum", "oilsands", "platinum", "pyrochlore", "pyrolusite", "sphalerite",
+                "sulfur", "tantalite", "tetrahedrite", "thorium", "titanium", "vanadium_magnetite",
+                "nether_quartz", "rock_salt", "sodalite", "coal", "redstone", "tin", "obsidian",
+                "netherite", "certus_quartz", "voidglass_shard", "saltpeter", "fluorite", "source_gem",
+                "glowstone", "ice", "ignisium", "resonant_ender", "fluix", "sponge", "sculk", "slime",
+                "magma", "blaze", "bone", "zombie", "withered", "ghostly", "silky", "prismarine"
+        );
 
-        // Ensure directories exist
-        new File(ASSETS_PATH + "blockstates").mkdirs();
-        new File(ASSETS_PATH + "models/item").mkdirs();
+        try {
+            Path bsDir = Paths.get(BASE_PATH + "blockstates/");
+            Path itemDir = Paths.get(BASE_PATH + "models/item/");
 
-        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
-            if (!material.hasFlag(PhoenixMaterialFlags.GENERATE_CRYSTAL_ROSE)) continue;
+            // Create directories if they don't exist
+            Files.createDirectories(bsDir);
+            Files.createDirectories(itemDir);
 
-            String name = material.getName() + "_crystal_rose";
+            for (String mat : materials) {
+                String name = mat.toLowerCase() + "_crystal_rose";
 
-            try {
-                // 1. Generate Blockstate
-                // Points to the "master" model crystal_rose.json
-                String blockstateJson = "{\n" +
-                        "  \"variants\": {\n" +
-                        "    \"\": { \"model\": \"phoenixcore:block/crystal_rose\" }\n" +
-                        "  }\n" +
-                        "}";
-                write(ASSETS_PATH + "blockstates/" + name + ".json", blockstateJson);
+                // 1. Write Blockstate
+                String bsJson = "{\"variants\":{\"\":{\"model\":\"phoenixcore:block/crystal_rose\"}}}";
+                Files.writeString(bsDir.resolve(name + ".json"), bsJson);
 
-                // 2. Generate Item Model
-                // Inherits from the "master" block model to get the cross shape and tinting
-                String itemJson = "{\n" +
-                        "  \"parent\": \"phoenixcore:block/crystal_rose\"\n" +
-                        "}";
-                write(ASSETS_PATH + "models/item/" + name + ".json", itemJson);
-
-            } catch (IOException e) {
-                System.err.println("Failed to generate JSON for " + name);
-                e.printStackTrace();
+                // 2. Write Item Model
+                String itemJson = "{\"parent\":\"phoenixcore:block/crystal_rose\"}";
+                Files.writeString(itemDir.resolve(name + ".json"), itemJson);
             }
-        }
-        System.out.println("Generation Complete! Refresh your resources folder.");
-    }
 
-    private static void write(String path, String content) throws IOException {
-        Files.writeString(Paths.get(path), content);
+            System.out.println("DONE! Generated " + materials.size() + " sets of JSON files.");
+            System.out.println("Files written to: " + BASE_PATH);
+
+        } catch (IOException e) {
+            System.err.println("CRITICAL ERROR: Could not write to the path. Make sure IntelliJ has permission!");
+            e.printStackTrace();
+        }
     }
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "phoenixcore:block/blazing_core_stabilizer"
+  }
+}

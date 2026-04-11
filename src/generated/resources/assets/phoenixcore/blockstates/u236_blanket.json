@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/u236_blanket"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/u236_blanket_active"
+    }
+  }
+}

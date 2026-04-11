@@ -191,7 +191,6 @@ public class PhoenixCore {
     private void modifyMaterials(PostMaterialEvent event) {
         PhoenixMaterials.modifyMaterials();
         PhoenixMaterialContent.registerMaterialCrystalRoses();
-        RoseGenerator.generate();
     }
 
     private void registerRecipeTypes(GTCEuAPI.RegisterEvent<ResourceLocation, GTRecipeType> event) {

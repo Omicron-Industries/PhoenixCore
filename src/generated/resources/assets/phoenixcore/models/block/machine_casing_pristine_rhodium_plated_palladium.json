@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "phoenixcore:block/casings/multiblock/machine_casing_pristine_rhodium_plated_palladium"
+  }
+}

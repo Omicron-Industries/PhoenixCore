@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "phoenixcore:machine_casing_pristine_rhodium_plated_palladium"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "phoenixcore:blocks/machine_casing_pristine_rhodium_plated_palladium"
+}

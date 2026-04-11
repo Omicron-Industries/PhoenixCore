@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "phoenixcore:item/frost_reinforced_stained_steel_drilling_kit"
+  }
+}

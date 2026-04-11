@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/heavy_blanket"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/heavy_blanket_active"
+    }
+  }
+}

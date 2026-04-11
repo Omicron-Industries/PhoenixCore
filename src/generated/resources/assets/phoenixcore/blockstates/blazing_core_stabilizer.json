@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "phoenixcore:block/blazing_core_stabilizer"
+    }
+  }
+}
