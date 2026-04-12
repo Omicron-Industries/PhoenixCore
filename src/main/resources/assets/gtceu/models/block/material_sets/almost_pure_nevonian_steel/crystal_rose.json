@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "gtceu:item/material_sets/metallic/crystal_rose"
+  }
+}

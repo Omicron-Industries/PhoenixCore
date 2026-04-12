@@ -37,8 +37,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.phoenix.core.api.PhoenixColors;
 import net.phoenix.core.api.PhoenixSounds;
-import net.phoenix.core.api.block.PhoenixMaterialContent;
-import net.phoenix.core.api.block.RoseGenerator;
 import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.api.recipe.lookup.MapSourceIngredient;
 import net.phoenix.core.client.PhoenixClient;
@@ -152,6 +150,7 @@ public class PhoenixCore {
         event.enqueueWork(() -> {
             PhoenixNetwork.init(); // ADD THIS
 
+
             MapIngredientTypeManager.registerMapIngredient(Shield.ShieldTypes.class, MapShieldIngredient::from);
             MapIngredientTypeManager.registerMapIngredient(
                     SourceIngredient.class,
@@ -165,9 +164,7 @@ public class PhoenixCore {
         LOGGER.info("PhoenixCore: Client setup complete.");
 
         event.enqueueWork(() -> {
-            PhoenixMaterialContent.CRYSTAL_ROSES.values().forEach(block -> {
-                ItemBlockRenderTypes.setRenderLayer(block.get(), RenderType.cutout());
-            });
+
         });
     }
 
@@ -190,7 +187,6 @@ public class PhoenixCore {
 
     private void modifyMaterials(PostMaterialEvent event) {
         PhoenixMaterials.modifyMaterials();
-        PhoenixMaterialContent.registerMaterialCrystalRoses();
     }
 
     private void registerRecipeTypes(GTCEuAPI.RegisterEvent<ResourceLocation, GTRecipeType> event) {

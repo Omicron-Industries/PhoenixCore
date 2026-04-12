@@ -1,12 +1,11 @@
 package net.phoenix.core.client.renderer;
 
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.block.PhoenixMaterialContent;
+/*
 
 @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class PhoenixColorHandlers {
@@ -23,3 +22,6 @@ public class PhoenixColorHandlers {
                 .register((stack, tintIndex) -> tintIndex == 0 ? mat.getMaterialRGB() : -1, block.get()));
     }
 }
+
+
+ */

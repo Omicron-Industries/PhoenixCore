@@ -26,6 +26,7 @@ import net.phoenix.core.client.renderer.NukePrimedRenderer;
 import net.phoenix.core.client.renderer.gui.SourceHatchScreen;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
+import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
 import net.phoenix.core.common.registry.PhoenixFissionEntities;
 
 import org.jetbrains.annotations.NotNull;
@@ -104,6 +105,7 @@ public class PhoenixClient {
             MenuScreens.register(PhoenixCore.SOURCE_HATCH_MENU.get(), SourceHatchScreen::new);
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
+
         });
     }
 }
