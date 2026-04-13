@@ -43,7 +43,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
         machine = metaBE.getMetaMachine();
         if (machine == null) return;
 
-        // 1. Handle Recipe Logic (Static Values)
         if (machine instanceof IRecipeLogicMachine rlm) {
             var logic = rlm.getRecipeLogic();
             if (logic != null && logic.isWorking()) {
@@ -52,13 +51,11 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
                     long totalSource = 0;
                     boolean isInput = true;
 
-                    // Try Inputs first (Total Recipe value, not per-tick)
                     var inputContents = recipe.getInputContents(SourceRecipeCapability.CAP);
                     if (!inputContents.isEmpty()) {
                         totalSource = sumSource(inputContents);
                         isInput = true;
                     } else {
-                        // Try Outputs
                         var outputContents = recipe.getOutputContents(SourceRecipeCapability.CAP);
                         if (!outputContents.isEmpty()) {
                             totalSource = sumSource(outputContents);
@@ -74,7 +71,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
             }
         }
 
-        // 2. Handle Stored Source (Hatches & Single Blocks)
         if (machine instanceof ISourceProviderCapability provider) {
             addSourceData(tag, provider.getSource());
         } else if (machine instanceof MultiblockControllerMachine controller && controller.isFormed()) {
@@ -101,10 +97,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
         }
     }
 
-    /**
-     * Helper to sum up source from recipe contents.
-     * Uses .content() for Modern GTCEu Content wrappers.
-     */
     private long sumSource(List<com.gregtechceu.gtceu.api.recipe.content.Content> contents) {
         long sum = 0;
         for (var c : contents) {
@@ -128,7 +120,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
         if (!config.get(UID)) return;
         CompoundTag data = accessor.getServerData();
 
-        // 1. Source Bar
         if (data.contains(KEY_STORED) && data.contains(KEY_CAP)) {
             int stored = data.getInt(KEY_STORED);
             int cap = data.getInt(KEY_CAP);
@@ -143,7 +134,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
             }
         }
 
-        // 2. Taking/Giving Message (Static Value)
         if (data.contains(KEY_RECIPE_VAL)) {
             long val = data.getLong(KEY_RECIPE_VAL);
             boolean isInput = data.getBoolean(KEY_IS_INPUT);

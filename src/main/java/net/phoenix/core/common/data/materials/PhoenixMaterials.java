@@ -2,7 +2,6 @@ package net.phoenix.core.common.data.materials;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags.*;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.*;
 import com.gregtechceu.gtceu.api.fluids.FluidBuilder;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKey;
@@ -11,20 +10,13 @@ import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.phoenix.core.PhoenixAPI;
-import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.PhoenixColors;
 import net.phoenix.core.api.item.tool.PhoenixToolType;
 import net.phoenix.core.common.data.recipe.generated.BeePrefixHelper;
 import net.phoenix.core.common.data.recipe.generated.CrystalRoseHelper;
-import net.phoenix.core.configs.PhoenixConfigs;
 
 import org.jetbrains.annotations.NotNull;
 
-import static com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags.*;
-import static com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIconSet.*;
-import static com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty.GasTier.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
-import static net.phoenix.core.common.data.materials.PhoenixMaterialHelpers.*;
 import static net.phoenix.core.common.data.materials.PhoenixOres.*;
 import static net.phoenix.core.common.data.materials.PhoenixOres.IGNISIUM;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
@@ -32,36 +24,6 @@ import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials
 public class PhoenixMaterials {
 
     public static void register() {
-        // Access the String array from the config
-        String[] colorSettings = PhoenixConfigs.INSTANCE.colors.customColors;
-
-        if (colorSettings != null) {
-            for (String entry : colorSettings) {
-                // Basic validation: ensure it's not null and contains our delimiter
-                if (entry == null || !entry.contains(":")) continue;
-
-                try {
-                    // Split "z:BF00FF" into ["z", "BF00FF"]
-                    String[] parts = entry.split(":", 2);
-                    if (parts.length < 2) continue;
-
-                    String codePart = parts[0].trim();
-                    String hexPart = parts[1].replace("#", "").trim();
-
-                    if (!codePart.isEmpty() && !hexPart.isEmpty()) {
-                        char codeChar = codePart.charAt(0);
-                        int colorInt = Integer.parseInt(hexPart, 16);
-
-                        PhoenixColors.registerCustomColor(codeChar, colorInt);
-
-                        // Optional: Log it so you can verify in the console during startup
-                        PhoenixCore.LOGGER.info("Phoenix Colors: Mapping §{} to #{}", codeChar, hexPart);
-                    }
-                } catch (Exception e) {
-                    PhoenixCore.LOGGER.error("Phoenix Core: Failed to parse color config entry '{}'", entry);
-                }
-            }
-        }
         GTMaterials.Francium.setProperty(PropertyKey.INGOT, new IngotProperty());
         GTMaterials.Technetium.setProperty(PropertyKey.INGOT, new IngotProperty());
         GTMaterials.Radium.setProperty(PropertyKey.INGOT, new IngotProperty());
@@ -98,7 +60,7 @@ public class PhoenixMaterials {
     @NotNull
     public static Material get(String name) {
         var mat = PhoenixAPI.materialManager.getMaterial(name);
-        // material could be null here due to the registry grabbing a material that isn't in the map
+
         if (mat == null) {
             PhoenixAPI.LOGGER.warn("{} is not a known Material", name);
             return GTMaterials.NULL;
@@ -121,7 +83,24 @@ public class PhoenixMaterials {
                 Coal, Redstone, Tin, Obsidian, Netherite, CertusQuartz, NetherQuartz, VOIDGLASS_SHARD, Saltpeter,
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
-                PRISMARINE
+                PRISMARINE, Goethite,
+                Magnetite, Vanadium,
+                Bentonite, Olivine,
+                Almandine, Spessartine, Grossular,
+                Chalcopyrite, Pyrite,
+                Cassiterite, CassiteriteSand,
+                Monazite, Neodymium,
+                Bornite, Chalcocite,
+                Pentlandite,
+                Lazurite,
+                Grossular,
+                Mica, Pollucite,
+
+                Naquadah, NaquadahEnriched,
+                Beryllium,
+                Garnierite,
+                Cooperite, Palladium,
+                Tungsten
         // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
         );
 

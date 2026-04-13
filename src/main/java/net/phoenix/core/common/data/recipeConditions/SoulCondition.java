@@ -46,7 +46,6 @@ public class SoulCondition extends RecipeCondition<SoulCondition> {
     @Override
     public Component getTooltips() {
         String header = isReverse ? "§dRequires Soul Resonance Below:" : "§dRequires Soul Resonance:";
-        // Adding \n here forces the value to the next line in the UI
         return Component.literal(header + "\n§l" + minSoul);
     }
 

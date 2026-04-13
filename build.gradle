@@ -218,7 +218,8 @@ dependencies {
     modRuntimeOnly("curse.maven:phoenixs-chromatic-colors-1483210:7863211")
     modImplementation("dev.emi:emi-forge:${emi_version}+${minecraft_version}")
     modImplementation("curse.maven:applied-energistics-2-223794:7148487")
-    modImplementation("curse.maven:guideme-1173950:7127447")
+    modImplementation("curse.maven:ex-pattern-provider-892005:7248944")
+    modImplementation("curse.maven:glodium-957920:5226922")
     modImplementation("curse.maven:guideme-1173950:7127447")
 
 

@@ -27,7 +27,6 @@ public class PhoenixQuestDesigner extends JFrame {
         canvas = new QuestCanvas();
         canvas.setBackground(new Color(30, 30, 30));
 
-        // Toolbar for Global Actions
         JPanel toolbar = new JPanel();
         JButton btnExport = new JButton("Export SNBT to Console");
         btnExport.addActionListener(e -> System.out.println(exportToSNBT("new_chapter", quests)));
@@ -46,11 +45,10 @@ public class PhoenixQuestDesigner extends JFrame {
         add(canvas, BorderLayout.CENTER);
     }
 
-    // --- Core Data Model ---
     public static class QuestNode {
 
         String id, title, icon, shape = "rsquare";
-        double x, y; // Quest Coordinates (scaled)
+        double x, y;
         List<String> dependencies = new ArrayList<>();
 
         public QuestNode(String title, double x, double y) {
@@ -62,12 +60,10 @@ public class PhoenixQuestDesigner extends JFrame {
         }
 
         public Rectangle getBounds() {
-            // Mapping Quest-space to Pixel-space (1.0d = 50px)
             return new Rectangle((int) (x * 50) + 450, (int) (y * 50) + 300, 60, 60);
         }
     }
 
-    // --- The Visual Engine ---
     private class QuestCanvas extends JPanel {
 
         public QuestCanvas() {
@@ -86,7 +82,6 @@ public class PhoenixQuestDesigner extends JFrame {
                     if (SwingUtilities.isRightMouseButton(e) && selectedNode != null) {
                         showTemplateMenu(e.getPoint());
                     } else if (selectedNode == null && SwingUtilities.isLeftMouseButton(e)) {
-                        // Create new basic quest at click location
                         double qX = (e.getX() - 450) / 50.0;
                         double qY = (e.getY() - 300) / 50.0;
                         quests.add(new QuestNode("New Quest", qX, qY));
@@ -118,12 +113,10 @@ public class PhoenixQuestDesigner extends JFrame {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Draw Grid
             g2.setColor(new Color(50, 50, 50));
             for (int i = 0; i < getWidth(); i += 50) g2.drawLine(i, 0, i, getHeight());
             for (int i = 0; i < getHeight(); i += 50) g2.drawLine(0, i, getWidth(), i);
 
-            // Draw Quests
             for (QuestNode q : quests) {
                 Rectangle r = q.getBounds();
                 g2.setColor(q == selectedNode ? Color.CYAN : Color.LIGHT_GRAY);
@@ -136,7 +129,6 @@ public class PhoenixQuestDesigner extends JFrame {
         }
     }
 
-    // --- Template Logic ---
     private void showTemplateMenu(Point p) {
         JPopupMenu menu = new JPopupMenu();
 
@@ -161,7 +153,6 @@ public class PhoenixQuestDesigner extends JFrame {
         menu.show(canvas, p.x, p.y);
     }
 
-    // --- SNBT Compiler ---
     public String exportToSNBT(String filename, List<QuestNode> nodes) {
         StringBuilder sb = new StringBuilder("{\n\tfilename: \"" + filename + "\"\n\tquests: [\n");
         for (QuestNode q : nodes) {

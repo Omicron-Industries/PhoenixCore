@@ -58,7 +58,6 @@ public class PhoenixLangHandler {
         // Specialized Tank Tooltips
         provider.add("jade.phoenixcore.source_tank_header", "Source Tank Content");
         provider.add("jade.phoenixcore.source_tank_format", "Capacity %s / %s - %d%%");
-        // This fixes the "Missing config translation" crash
         provider.add("config.jade.plugin_phoenixcore.source_tank_info", "Source Tank Info");
 
         // Keybinds

@@ -8,7 +8,6 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 
 public class PhoenixRenderTypes extends RenderType {
 
-    // A robust, solid RenderType with no backface culling.
     private static final RenderType BLACK_HOLE_TEST_SOLID = RenderType.create(
             "phoenix_black_hole_test_solid",
             DefaultVertexFormat.POSITION_COLOR,
@@ -22,7 +21,6 @@ public class PhoenixRenderTypes extends RenderType {
                     .setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
                     .createCompositeState(false));
 
-    // A robust, translucent RenderType with no backface culling and no depth writing.
     private static final RenderType BLACK_HOLE_TEST_TRANSLUCENT = RenderType.create(
             "phoenix_black_hole_test_translucent",
             DefaultVertexFormat.POSITION_COLOR,
@@ -35,10 +33,9 @@ public class PhoenixRenderTypes extends RenderType {
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setCullState(RenderStateShard.NO_CULL)
                     .setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
-                    .setWriteMaskState(new WriteMaskStateShard(true, false)) // Do not write to the depth buffer
+                    .setWriteMaskState(new WriteMaskStateShard(true, false))
                     .createCompositeState(false));
 
-    // Your other working render types
     private static final RenderType HONEY_FOG = RenderType.create(
             "phoenix_honey_fog",
             DefaultVertexFormat.POSITION_COLOR,

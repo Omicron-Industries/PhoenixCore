@@ -39,40 +39,32 @@ public class NukePrimedRenderer extends EntityRenderer<NukePrimedEntity> {
         int fuse = e.getFuse();
         float fuseF = fuse - partialTicks;
 
-        // 0..1 where 1 is "about to explode"
         float danger = 1.0f - (fuseF / 80.0f);
         danger = Mth.clamp(danger, 0.0f, 1.0f);
 
-        // Pulse ramps up with danger
         float pulse = 0.5f + 0.5f * Mth.sin((e.tickCount + partialTicks) * (0.2f + danger * 1.2f));
         float pulseStrong = Mth.lerp(danger, 0.15f, 1.0f) * pulse;
 
-        // Base scaling: make it feel like a "device" not TNT
         float baseScale = 1.4f;
 
-        // Near detonation, do an aggressive swell
         float swell = 1.0f;
         if (fuseF < 20.0f) {
-            float t = 1.0f - fuseF / 20.0f; // 0..1
+            float t = 1.0f - fuseF / 20.0f;
             t = Mth.clamp(t, 0.0f, 1.0f);
             t *= t;
             swell = 1.0f + t * 0.8f;
         }
 
-        // Strobe: last 3 seconds
         boolean flash = fuseF < 60.0f && ((int) (fuseF / 2) % 2 == 0);
 
         ps.pushPose();
 
-        // Center + scale
         ps.translate(0.0D, 0.25D, 0.0D);
         ps.scale(baseScale * swell, baseScale * swell, baseScale * swell);
 
-        // Spin slowly, faster as danger rises
         float spin = (e.tickCount + partialTicks) * (1.2f + 8.0f * danger);
         ps.mulPose(Axis.YP.rotationDegrees(spin));
 
-        // Render the "device" as a block (you can swap to your own blockstate later)
         ps.pushPose();
         ps.translate(-0.5D, 0.0D, -0.5D);
         BlockState state = PhoenixFissionBlocks.NUKE_BLOCK.getDefaultState();
@@ -115,13 +107,13 @@ public class NukePrimedRenderer extends EntityRenderer<NukePrimedEntity> {
     private void renderShockwaveRing(NukePrimedEntity e, float partialTicks, PoseStack ps, MultiBufferSource buffer,
                                      float danger) {
         float t = Mth.clamp(danger, 0.0f, 1.0f);
-        float radius = 0.5f + t * 10.0f;          // expand outward
+        float radius = 0.5f + t * 10.0f;
         float alpha = (1.0f - t) * 0.25f + t * 0.55f;
         alpha = Mth.clamp(alpha, 0.0f, 0.8f);
 
         ps.pushPose();
         ps.translate(0.0D, 0.05D, 0.0D);
-        ps.mulPose(Axis.XP.rotationDegrees(90.0f)); // lay flat
+        ps.mulPose(Axis.XP.rotationDegrees(90.0f));
         ps.scale(radius, radius, radius);
 
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(RING));

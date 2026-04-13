@@ -45,10 +45,6 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
         super(holder);
     }
 
-    // -------------------------------------------------------------------------
-    // Structure Lifecycle
-    // -------------------------------------------------------------------------
-
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
@@ -57,21 +53,16 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Main Machine Logic
-    // -------------------------------------------------------------------------
-
     @Override
     public boolean onWorking() {
         boolean isWorking = super.onWorking();
 
         if (isWorking) {
-            // 1. Progress Harmonization
+
             if (totalWorkTicks < HARMONIZATION_THRESHOLD) {
                 totalWorkTicks++;
             }
 
-            // 2. Periodic Environment Scan (Every 10 seconds)
             scanTimer++;
             if (scanTimer >= 200) {
                 if (getLevel() instanceof ServerLevel level) {
@@ -85,10 +76,6 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
         wasWorking = isWorking;
         return isWorking;
     }
-
-    // -------------------------------------------------------------------------
-    // Tag-Based Environment Scanning
-    // -------------------------------------------------------------------------
 
     private float scanEnvironment(ServerLevel level, BlockPos pos) {
         float boost = 0.0f;
@@ -109,7 +96,7 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
                             if (state.isAir()) continue;
 
                             boost += getBlockBoost(state);
-                            if (boost >= 3.0f) return 3.0f; // Max Cap
+                            if (boost >= 3.0f) return 3.0f;
                         }
                     }
                 }
@@ -119,15 +106,10 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
     }
 
     private float getBlockBoost(BlockState state) {
-        // if (state.is(PTags.MAGICAL_STRUCTURE_BLOCKS)) return 0.05f;
         if (state.is(PTags.SOUL_FLOWERS)) return 0.01f;
         if (state.is(BlockTags.FLOWERS)) return 0.005f;
         return 0.0f;
     }
-
-    // -------------------------------------------------------------------------
-    // Recipe Modifiers
-    // -------------------------------------------------------------------------
 
     public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
         if (!(machine instanceof AlchemicalImbuerMachine imbuer)) {
@@ -155,10 +137,6 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
                     .build();
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Display Text
-    // -------------------------------------------------------------------------
 
     @Override
     public void addDisplayText(@NotNull List<Component> textList) {

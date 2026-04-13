@@ -85,7 +85,6 @@ public class BeeRecipeData {
             Map.entry("acidic", "Acidic Bee"),
             Map.entry("voidglass_shard", "Voidglass Shard Bee"));
 
-    // Simplified to all T1 per request
     public static int tierFor(String beeId) {
         return 1;
     }
@@ -94,16 +93,13 @@ public class BeeRecipeData {
 
     private static List<ApisProgenitorConfig> createProgenitorConfigs() {
         List<ApisProgenitorConfig> p = new ArrayList<>();
-        String jelly = "phoenixcore:royal_jelly"; // Using string for the helper method
+        String jelly = "phoenixcore:royal_jelly";
 
-        // --- THE ROOT BEES (Start with Royal Jelly) ---
-        // These transform basic productive bees into your starting materials
         p.add(progenitor("root_copper", "crystalline", "copper", jelly, 360, DEFAULT_IV_EUT));
         p.add(progenitor("root_iron", "crystalline", "iron", jelly, 360, DEFAULT_IV_EUT));
         p.add(progenitor("root_coal", "leafcutter", "coal", jelly, 360, DEFAULT_IV_EUT));
         p.add(progenitor("root_nickel", "quartz", "nickel", jelly, 360, DEFAULT_IV_EUT));
 
-        // --- METAL BRANCH (Iron/Copper base) ---
         p.add(progenitor("iron_to_tin", "iron", "tin", "4x gtceu:tin_block", 360, DEFAULT_IV_EUT));
         p.add(progenitor("tin_to_lead", "tin", "lead", "4x gtceu:lead_block", 360, DEFAULT_IV_EUT));
         p.add(progenitor("lead_to_zinc", "lead", "zinc", "4x gtceu:zinc_block", 360, DEFAULT_IV_EUT));
@@ -112,7 +108,6 @@ public class BeeRecipeData {
         p.add(progenitor("gold_to_platinum", "gold", "platinum", "4x gtceu:raw_platinum_block", 400, DEFAULT_LUV_EUT));
         p.add(progenitor("iron_to_steel", "iron", "steel", "4x gtceu:steel_block", 360, DEFAULT_IV_EUT));
 
-        // --- GEM BRANCH (Ender base) ---
         p.add(progenitor("ender_to_diamond", "resonant_ender", "diamond", "4x minecraft:diamond_block", 360,
                 DEFAULT_IV_EUT));
         p.add(diamondProg("emerald", "4x minecraft:emerald_block", DEFAULT_IV_EUT));
@@ -123,7 +118,6 @@ public class BeeRecipeData {
         p.add(diamondProg("opal", "4x gtceu:opal_block", DEFAULT_IV_EUT));
         p.add(diamondProg("lapis", "4x minecraft:lapis_block", DEFAULT_IV_EUT));
 
-        // --- GEOLOGY/EARTH BRANCH (Coal/Quarry base) ---
         p.add(progenitor("coal_to_sulfur", "coal", "sulfur", "4x gtceu:sulfur_block", 360, DEFAULT_IV_EUT));
         p.add(progenitor("quarry_to_apatite", "quarry", "apatite", "4x gtceu:apatite_block", 360, DEFAULT_IV_EUT));
         p.add(progenitor("quarry_to_quartz", "quarry", "nether_quartz", "4x minecraft:quartz_block", 360,
@@ -131,13 +125,11 @@ public class BeeRecipeData {
         p.add(progenitor("quartz_to_certus", "nether_quartz", "certus_quartz", "4x gtceu:certus_quartz_block", 360,
                 DEFAULT_IV_EUT));
 
-        // --- MOB/SPECIAL BRANCH (Royal Jelly Gate) ---
         p.add(progenitor("jelly_to_blaze", "magma", "blaze", jelly, 400, DEFAULT_IV_EUT));
         p.add(progenitor("jelly_to_wither", "bone", "withered", jelly, 600, DEFAULT_LUV_EUT));
         p.add(progenitor("jelly_to_ghostly", "withered", "ghostly", jelly, 400, DEFAULT_IV_EUT));
         p.add(progenitor("jelly_to_sculk", "obsidian", "sculk", jelly, 400, DEFAULT_IV_EUT));
 
-        // --- END GAME ---
         p.add(progenitor("diamond_to_netherite", "diamond", "netherite", "4x minecraft:ancient_debris", 600,
                 DEFAULT_LUV_EUT));
         p.add(progenitor("ender_to_draconic", "resonant_ender", "draconic", "1x minecraft:dragon_egg", 1200,
@@ -196,7 +188,6 @@ public class BeeRecipeData {
             String outputId = namespace + ":raw_" + id;
             int outputCount = 10;
 
-            // Specialized Overrides
             switch (id) {
                 case "coal" -> outputId = "gtceu:coal_ore";
                 case "redstone" -> outputId = "gtceu:raw_redstone";

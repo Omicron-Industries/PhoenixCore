@@ -1,4 +1,4 @@
-package net.phoenix.core.mixin;
+package net.phoenix.core.mixin.emi;
 
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 

@@ -180,8 +180,6 @@ public class PhoenixFissionMachines {
                             .where('Q', FLUID_EXPORT_HATCH[GTValues.LV], Direction.NORTH)
                             .where('Z', ENERGY_OUTPUT_HATCH[GTValues.LV], Direction.SOUTH)
                             .where('A', Blocks.AIR.defaultBlockState())
-
-                            // Front cap
                             .aisle("ABBBBBA",
                                     "BBBCBBB",
                                     "BBCCCBB",
@@ -189,8 +187,6 @@ public class PhoenixFissionMachines {
                                     "BBCCCBB",
                                     "BBBCBBB",
                                     "ABBBBBA")
-
-                            // First 3 layers with steel frame + gearbox
                             .aisle("ABCCCBA",
                                     "BBAAABB",
                                     "CAAEAAC",
@@ -213,7 +209,6 @@ public class PhoenixFissionMachines {
                                     "BBAAABB",
                                     "ABCCCBA");
 
-                    // Repeatable layers
                     for (int i = 0; i < length; i++) {
                         builder.aisle("ABCCCBA",
                                 "BBAAABB",
@@ -224,7 +219,6 @@ public class PhoenixFissionMachines {
                                 "ABCCCBA");
                     }
 
-                    // Back cap
                     builder.aisle("ABBBBBA",
                             "BBBCBBB",
                             "BBCCCBB",

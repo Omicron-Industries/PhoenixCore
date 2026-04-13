@@ -37,12 +37,11 @@ public class PhoenixBlocks {
         return REGISTRATE
                 .block(id, Block::new)
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                // ADD THESE TAGS HERE
-                .tag(BlockTags.MINEABLE_WITH_PICKAXE) // Standard Minecraft pickaxe speed
-                .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH) // GregTech Wrench support
+                .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false)
-                        .strength(5.0f, 6.0f) // Sets hardness (Iron block is 5.0f)
-                        .requiresCorrectToolForDrops()) // Ensures you need a pickaxe to get the item back
+                        .strength(5.0f, 6.0f)
+                        .requiresCorrectToolForDrops())
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                         prov.models().cubeAll(ctx.getName(), PhoenixCore.id("block/" + texture))))
                 .lang(name)
@@ -54,7 +53,7 @@ public class PhoenixBlocks {
     public static final BlockEntry<FlowerBlock> CRYSTAL_ROSE = REGISTRATE
             .block("crystal_rose", p -> new FlowerBlock(() -> MobEffects.GLOWING, 5, p))
             .initialProperties(() -> Blocks.POPPY)
-            .addLayer(() -> RenderType::cutout) // Handles the transparent background
+            .addLayer(() -> RenderType::cutout)
             .blockstate((ctx, prov) -> prov.simpleBlock(ctx.get(),
                     prov.models().cross(ctx.getName(), prov.modLoc("item/crystal_rose"))))
             .item()

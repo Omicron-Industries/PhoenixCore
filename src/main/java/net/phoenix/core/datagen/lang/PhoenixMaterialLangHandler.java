@@ -55,7 +55,7 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.icy_steel_matrix", "Icy Steel Matrix");
         provider.add("material.phoenixcore.source_titanium_filament", "Source Titanium Filament");
 
-        // Endgame "Big" List
+        // Endgame List
         provider.add("material.phoenixcore.akashic_zeronium", "§dAkashic Zeronium");
         provider.add("material.phoenixcore.phoenix_enriched_naquadah", "§6Phoenix Enriched Naquadah");
         provider.add("material.phoenixcore.phoenix_enriched_tritanium", "§cPhoenix Enriched Tritanium");

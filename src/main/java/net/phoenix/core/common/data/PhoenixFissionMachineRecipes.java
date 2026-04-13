@@ -31,7 +31,7 @@ public class PhoenixFissionMachineRecipes {
                 .inputFluids(FROST.getFluid(100))
                 .outputItems(PhoenixFissionBlocks.FISSILE_HEAT_SAFE_CASING.asItem(), 2)
                 .duration(160)
-                .EUt(VA[HV]) // Standardized from HV / 2
+                .EUt(VA[HV])
                 .save(provider);
 
         assembler.recipeBuilder("fissile_reaction_safe_casing")
@@ -42,7 +42,7 @@ public class PhoenixFissionMachineRecipes {
                 .inputFluids(StainlessSteel.getFluid(250))
                 .outputItems(PhoenixFissionBlocks.FISSILE_REACTION_SAFE_CASING.asItem(), 2)
                 .duration(145)
-                .EUt(VA[HV]) // Standardized from HV / 2
+                .EUt(VA[HV])
                 .save(provider);
 
         assembler.recipeBuilder("fisile_safe_gearbox_casing")
@@ -64,7 +64,7 @@ public class PhoenixFissionMachineRecipes {
                 .inputFluids(SolderingAlloy.getFluid(613))
                 .outputItems(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR, 1)
                 .duration(320)
-                .EUt(VA[HV]) // Standardized from HV / 2
+                .EUt(VA[HV])
                 .save(provider);
 
         assembler.recipeBuilder("heat_exhanger")
@@ -76,7 +76,7 @@ public class PhoenixFissionMachineRecipes {
                 .inputFluids(SolderingAlloy.getFluid(613))
                 .outputItems(PhoenixFissionMachines.HEAT_EXCHANGER.asStack(), 1)
                 .duration(180)
-                .EUt(VA[EV]) // Standardized from EV / 2
+                .EUt(VA[EV])
                 .save(provider);
 
         assembler.recipeBuilder("high_performnce_breeder_reactor")
@@ -89,7 +89,7 @@ public class PhoenixFissionMachineRecipes {
                 .inputFluids(CRYO_GRAPHITE_BINDING_SOLUTION.getFluid(6000))
                 .outputItems(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack(), 1)
                 .duration(800)
-                .EUt(VA[IV]) // Standardized from IV / 2
+                .EUt(VA[IV])
                 .save(provider);
 
         GTRecipeTypes.CHEMICAL_BATH_RECIPES.recipeBuilder(id("zirconium_dust_to_hafnium_chloride"))

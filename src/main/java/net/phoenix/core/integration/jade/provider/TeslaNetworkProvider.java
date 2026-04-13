@@ -47,7 +47,6 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
                 TeslaTeamEnergyData data = TeslaTeamEnergyData.get(overworld);
                 MetaMachine machine = metaBE.getMetaMachine();
 
-                // 1. Check if the block is a specialized Tesla Component
                 if (machine instanceof TeslaEnergyHatchPartMachine hatch) {
                     team = hatch.getOwnerTeamUUID();
                     if (team != null) {
@@ -56,9 +55,9 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
                     }
                 } else if (machine instanceof TeslaTowerMachine tower) {
                     team = tower.getOwnerUUID();
-                    mode = -1; // Controller shows global stats, no specific local flow mode
+                    mode = -1;
                 }
-                // 2. Check if it's a Soul-Linked Machine (Generator or Consumer)
+
                 else {
                     for (var entry : data.getNetworksView().entrySet()) {
                         TeslaTeamEnergyData.TeamEnergy teamData = entry.getValue();
@@ -68,23 +67,21 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
                             team = entry.getKey();
                             transferRate = teamData.machineDisplayFlow.getOrDefault(pos, 0L);
 
-                            // UNIVERSAL CHECK: If the machine is outputting energy (negative flow), call it a Generator
                             if (transferRate < 0) {
-                                mode = 3; // Generator/Providing Mode
+                                mode = 3;
                             } else {
-                                mode = 1; // Consumer/Taking Mode
+                                mode = 1;
                             }
                             break;
                         } else if (teamData.activeChargers.contains(pos)) {
                             team = entry.getKey();
-                            mode = 2; // Wireless Charger Mode
+                            mode = 2;
                             transferRate = teamData.machineDisplayFlow.getOrDefault(pos, 0L);
                             break;
                         }
                     }
                 }
 
-                // 3. Package data for the client
                 if (team != null) {
                     TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(team);
                     tag.putUUID("TeslaTeam", team);
@@ -111,22 +108,18 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
         CompoundTag data = accessor.getServerData();
         if (!data.contains("TeslaTeam")) return;
 
-        // Header: Network Name
         tooltip.add(Component.literal("Network: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(data.getString("TeamName")).withStyle(ChatFormatting.AQUA)));
 
-        // Cloud Storage Info
         tooltip.add(Component.literal("Cloud: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(data.getString("Stored")).withStyle(ChatFormatting.GOLD))
                 .append(Component.literal(" / " + data.getString("Capacity") + " EU")
                         .withStyle(ChatFormatting.YELLOW)));
 
-        // Connection Count
         int connections = data.getInt("TotalConnections");
         tooltip.add(Component.literal("Connections: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(String.valueOf(connections)).withStyle(ChatFormatting.WHITE)));
 
-        // Local Flow Status
         if (data.contains("TransferMode") && data.getInt("TransferMode") != -1) {
             long rate = data.getLong("LocalTransfer");
             int mode = data.getInt("TransferMode");
@@ -156,7 +149,6 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
                 }
             }
 
-            // We use Math.abs because generators are stored as negative flow internally
             long displayRate = Math.abs(rate);
 
             if (displayRate > 0) {

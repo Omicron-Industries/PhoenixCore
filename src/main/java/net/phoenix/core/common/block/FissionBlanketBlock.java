@@ -54,7 +54,7 @@ public class FissionBlanketBlock extends ActiveBlock {
             tooltip.add(Component.literal("• (none)")
                     .withStyle(ChatFormatting.DARK_GRAY));
         } else {
-            // show up to 5 lines so tooltips don't get huge
+
             int shown = 0;
             for (BlanketOutput o : outs) {
                 if (o == null) continue;

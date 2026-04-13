@@ -71,7 +71,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
 
         Object obj = getMultiblockState().getMatchContext().get("BlanketTypes");
         if (obj instanceof List<?> list) {
-            // noinspection unchecked
             this.activeBlankets = (List<IFissionBlanketType>) list;
         } else {
             this.activeBlankets = new ArrayList<>();
@@ -97,7 +96,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
 
     @Override
     protected void handleReactorLogic(boolean running) {
-        // parallels still matter for scaling before base logic uses them
         if (running) {
             lastParallels = Math.max(1, computeParallels());
         }
@@ -114,14 +112,8 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         if (!isFormed()) return false;
         if (activeFuelRods == null || activeFuelRods.isEmpty()) return false;
 
-        // Only fuel should determine whether the reactor can run.
-        // Blankets are a side-process; they should never prevent startup.
         return hasFuelAvailableForNextTick();
     }
-
-    // ------------------------------------------------------------------------
-    // Breeding mechanics
-    // ------------------------------------------------------------------------
 
     private void selectPrimaryBlanket() {
         this.primaryBlanket = activeBlankets.stream()
@@ -130,7 +122,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
     }
 
     private void resolveBlanketsFromPersisted() {
-        // persistedBlanketIDs is expected to exist in your base/dynamic (same as your prior version)
         if (this.persistedBlanketIDs == null || this.persistedBlanketIDs.isEmpty()) return;
 
         this.activeBlankets = new ArrayList<>();
@@ -146,7 +137,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
     private void processBreeding(PhoenixConfigs.FissionConfigs cfg, int parallels) {
         if (activeBlankets == null || activeBlankets.isEmpty()) return;
 
-        // Use primary blanket duration as pacing clock
         IFissionBlanketType primary = primaryBlanket != null ? primaryBlanket : activeBlankets.get(0);
 
         int duration = Math.max(1, primary.getDurationTicks());
@@ -154,7 +144,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
 
         if (blanketCycleTicks < duration) return;
 
-        // cycle triggers
         blanketCycleTicks = 0;
         blanketCycleCount++;
 
@@ -165,7 +154,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         Random rng = makeBlanketRng();
 
         if (!cfg.blanketUsageAdditive) {
-            // Primary-only mode
+
             int basePerCycle = Math.max(0, primary.getAmountPerCycle());
             int amount = (int) Math.ceil(basePerCycle * p * burnMul);
             if (amount <= 0) return;
@@ -178,7 +167,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             return;
         }
 
-        // Additive mode: process each blanket independently
         for (var blanket : activeBlankets) {
             int basePerCycle = Math.max(0, blanket.getAmountPerCycle());
             int amount = (int) Math.ceil(basePerCycle * p * burnMul);
@@ -275,10 +263,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         return new ItemStack(item, amount);
     }
 
-    // ------------------------------------------------------------------------
-    // IO helpers (same as your prior breeder class)
-    // ------------------------------------------------------------------------
-
     private boolean tryConsumeResource(String key, int amount) {
         if (amount <= 0) return true;
 
@@ -337,7 +321,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
     private int getReactorSpectrumBias() {
         int bias = 0;
 
-        // fuel rod bias
         IFissionFuelRodType rod = getFuelRodForConsumption();
         if (rod != null) {
             try {
@@ -345,14 +328,12 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             } catch (Throwable ignored) {}
         }
 
-        // moderator shifts
         if (activeModerators != null && !activeModerators.isEmpty()) {
             for (var m : activeModerators) {
                 try {} catch (Throwable ignored) {}
             }
         }
 
-        // clamp to keep math sane
         return Math.max(-100, Math.min(100, bias));
     }
 
@@ -365,8 +346,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             int w = Math.max(0, bo.weight());
             if (w <= 0) continue;
 
-            // exponential bias curve: weight * exp(bias * instability * k)
-            // k controls how strong moderators/fuel matter.
             double k = 0.45;
             double adjusted = w * Math.exp(bias * bo.instability() * k);
 
@@ -376,7 +355,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
     }
 
     private Random makeBlanketRng() {
-        // deterministic per-cycle RNG:
         long seed = 0x9E3779B97F4A7C15L;
         if (getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             seed ^= serverLevel.getSeed();
@@ -395,8 +373,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         for (var w : dist) total += w.weight();
         if (total <= 0.0) return result;
 
-        // Fast path: expected-value allocation for big amounts
-        // then roulette remainder (keeps stochastic feel without N loops)
         if (amount > 256) {
             int allocated = 0;
             for (var w : dist) {
@@ -414,7 +390,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             return result;
         }
 
-        // Small amounts: pure roulette
         for (int i = 0; i < amount; i++) {
             String k = roulettePick(dist, total, rng);
             result.merge(k, 1, Integer::sum);
@@ -429,7 +404,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             cum += w.weight();
             if (r <= cum) return w.key();
         }
-        return dist.get(dist.size() - 1).key(); // fallback
+        return dist.get(dist.size() - 1).key();
     }
 
     private void outputBatch(Map<String, Integer> outputs) {

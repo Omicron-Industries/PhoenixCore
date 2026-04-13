@@ -14,7 +14,7 @@ public class SourceHatchMenu extends AbstractContainerMenu {
     public static MenuType<SourceHatchMenu> TYPE;
 
     private final BlockPos pos;
-    private final ContainerData data; // [0]=cur, [1]=max, [2]=rate, [3]=ioOrdinal
+    private final ContainerData data;
 
     public SourceHatchMenu(int id, Inventory inv, BlockPos pos, ContainerData data) {
         super(TYPE, id);
@@ -26,7 +26,6 @@ public class SourceHatchMenu extends AbstractContainerMenu {
     public static SourceHatchMenu fromNetwork(int id, Inventory inv, FriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
 
-        // dummy data; will be replaced by server-provided data via addDataSlots()
         ContainerData data = new ContainerData() {
 
             private final int[] a = new int[4];

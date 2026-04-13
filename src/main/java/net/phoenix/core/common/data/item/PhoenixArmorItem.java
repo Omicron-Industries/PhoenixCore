@@ -34,7 +34,7 @@ public class PhoenixArmorItem extends ArmorComponentItem implements GeoItem {
     public PhoenixArmorItem(ArmorMaterial material, Type type, Properties properties, PhoenixTechSuite logic) {
         super(material, type, properties);
         this.logic = logic;
-        this.setArmorLogic(logic); // add this
+        this.setArmorLogic(logic);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class PhoenixArmorItem extends ArmorComponentItem implements GeoItem {
             Entity entity = event.getData(DataTickets.ENTITY);
 
             if (entity instanceof Player player) {
-                // 1. ELYTRA / SONIC FLIGHT
+
                 if (player.isFallFlying()) {
                     if (player.getDeltaMovement().length() > 1.1) {
                         return event.setAndContinue(RawAnimation.begin().thenPlay("animation.phoenix.sonic"));
@@ -80,7 +80,6 @@ public class PhoenixArmorItem extends ArmorComponentItem implements GeoItem {
                     return event.setAndContinue(RawAnimation.begin().thenPlay("animation.phoenix.fly"));
                 }
 
-                // 2. CREATIVE-STYLE FLIGHT (Hovering/Flying)
                 if (player.getAbilities().flying) {
                     return event.setAndContinue(RawAnimation.begin().thenLoop("animation.phoenix.creative_fly"));
                 }
@@ -91,7 +90,6 @@ public class PhoenixArmorItem extends ArmorComponentItem implements GeoItem {
                     return event.setAndContinue(RawAnimation.begin().thenPlay("animation.phoenix.flap"));
                 }
 
-                // 4. ON GROUND - WING FOLDING
                 return event.setAndContinue(RawAnimation.begin()
                         .thenPlay("animation.phoenix.fold"));
             }

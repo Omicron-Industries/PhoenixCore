@@ -10,14 +10,12 @@ import java.util.function.BiConsumer;
 
 public class PhoenixMachineTooltips {
 
-    // In PhoenixMachineTooltips.java
     public static void addMultiline(List<Component> tooltip, String baseKey) {
         int i = 0;
         while (true) {
             String indexedKey = baseKey + "." + i;
             Component line = Component.translatable(indexedKey);
 
-            // If the translation returns the key itself, it means the key doesn't exist
             if (line.getString().equals(indexedKey)) {
                 break;
             }

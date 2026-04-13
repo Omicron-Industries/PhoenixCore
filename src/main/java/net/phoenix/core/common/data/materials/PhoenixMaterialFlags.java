@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlag;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.item.MaterialBlockItem;
+
 import net.minecraft.client.renderer.RenderType;
 import net.phoenix.core.common.block.CrystalRoseBlock;
 
@@ -70,8 +70,7 @@ public class PhoenixMaterialFlags {
             .blockConstructor(CrystalRoseBlock::new)
             .blockProperties(new TagPrefix.BlockProperties(
                     () -> RenderType::cutout,
-                    p -> p.noCollission().noOcclusion().instabreak()
-            ))
+                    p -> p.noCollission().noOcclusion().instabreak()))
             .materialIconType(PhoenixMaterialSet.CRYSTAL_ROSE)
             .generationCondition(mat -> mat.hasFlag(PhoenixMaterialFlags.GENERATE_CRYSTAL_ROSE));
 

@@ -55,7 +55,7 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
                         pct,
                         Component.literal(stored + " / " + cap),
                         helper.progressStyle()
-                                .color(0x8F00FF, 0x8F00FF) // Ars source color
+                                .color(0x8F00FF, 0x8F00FF)
                                 .textColor(0xFFFFFFFF),
                         BoxStyle.DEFAULT,
                         true));

@@ -143,7 +143,6 @@ public class PhoenixMachineLangHandler {
         provider.add("jade.phoenixcore.tesla_providing", "Providing: %s EU/t");
         provider.add("block.phoenixcore.tesla_battery.tooltip_empty", "§7A hollow casing. Provides no storage.");
         provider.add("block.phoenixcore.tesla_battery.tooltip_filled", "§aCapacity: §f%s EU");
-        // Add this line to resolve the missing config translation error
         provider.add("config.jade.plugin_phoenixcore.imbuer_threads_info", "Alchemical Imbuer Threads Info");
 
         provider.add("jade.phoenixcore.blanket_input", "Blanket Fuel: %s");

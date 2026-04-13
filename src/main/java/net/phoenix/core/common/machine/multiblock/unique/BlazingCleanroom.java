@@ -10,12 +10,6 @@ public class BlazingCleanroom extends CleanroomType {
             "blazing_cleanroom",
             "gtceu.recipe.cleanroom_blazing.display_name");
 
-    /**
-     * Constructs a new CleanroomType instance.
-     * 
-     * @param name           The unique name of the cleanroom type.
-     * @param translationKey The translation key for the cleanroom's display name.
-     */
     public BlazingCleanroom(@NotNull String name, @NotNull String translationKey) {
         super(name, translationKey);
     }

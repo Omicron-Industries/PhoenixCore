@@ -22,7 +22,6 @@ public class TeslaSparkParticle extends TextureSheetParticle {
         this.lifetime = 10 + level.random.nextInt(10);
         this.hasPhysics = false;
 
-        // Start with Electric Purple
         this.rCol = 160 / 255f;
         this.gCol = 32 / 255f;
         this.bCol = 240 / 255f;
@@ -42,10 +41,9 @@ public class TeslaSparkParticle extends TextureSheetParticle {
         this.alpha = 1.0f - ageProgress;
     }
 
-    // This is the proper way to make particles glow in the dark
     @Override
     public int getLightColor(float partialTick) {
-        return 15728880; // This is a magic number for "Full Bright" (Block 15, Sky 15)
+        return 15728880;
     }
 
     @Override

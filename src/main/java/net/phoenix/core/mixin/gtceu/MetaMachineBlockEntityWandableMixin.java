@@ -30,7 +30,6 @@ public abstract class MetaMachineBlockEntityWandableMixin implements IWandable {
         MetaMachine m = phoenix$getMachine();
         if (!phoenix$isSourceHatch(m)) return;
 
-        // If you ever add custom behavior on the hatch machine, delegate here.
         if (m instanceof IWandable wandable) {
             wandable.onFinishedConnectionFirst(storedPos, entity, player);
         }

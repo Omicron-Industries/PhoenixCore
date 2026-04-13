@@ -33,17 +33,9 @@ import static com.gregtechceu.gtceu.common.data.GTRecipeTypes.*;
 import static net.phoenix.core.common.data.PhoenixRecipeTypes.*;
 import static net.phoenix.core.common.data.bees.BeeRecipeData.MOD_ID;
 
-/**
- * 100% Fully Updated Bee Recipe Generator
- * Fixed: Registry race conditions, null stack crashes, and dynamic material mapping.
- */
 @SuppressWarnings({ "unused", "removal" })
 public class PhoenixBeeRecipeGenerator {
 
-    /**
-     * Helper to safely fetch items from registry during recipe gen.
-     * Prevents "Input item is empty" crashes.
-     */
     private static ItemStack safeStack(String id, int count) {
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(id));
         if (item == null || item == Items.AIR) return ItemStack.EMPTY;
@@ -51,7 +43,6 @@ public class PhoenixBeeRecipeGenerator {
     }
 
     public static void loadBeeRecipes(Consumer<FinishedRecipe> provider) {
-        // Resolve base item inside the method, not as a static field
         ItemStack honeyCombBase = safeStack("phoenixcore:honey_comb_base", 1);
 
         if (honeyCombBase.isEmpty()) {
@@ -77,7 +68,6 @@ public class PhoenixBeeRecipeGenerator {
     }
 
     private static Material getMaterial(String id) {
-        // Priority Materials
         Material mat = switch (id) {
             case "fluorite" -> PhoenixOres.FLUORITE;
             case "voidglass_shard" -> PhoenixOres.VOIDGLASS_SHARD;
@@ -90,7 +80,6 @@ public class PhoenixBeeRecipeGenerator {
             default -> GTCEuAPI.materialManager.getMaterial(id);
         };
 
-        // Fallback for capitalized names (Sulfur, etc)
         if (mat == null && !id.isEmpty()) {
             String cap = id.substring(0, 1).toUpperCase() + id.substring(1);
             mat = GTCEuAPI.materialManager.getMaterial(cap);
@@ -128,13 +117,10 @@ public class PhoenixBeeRecipeGenerator {
                     .inputItems(base)
                     .inputItems(pollinationInput)
                     .inputFluids(sugarWater)
-                    .outputItems(combOutput.copyWithCount(4)) // Buffed from 1 -> 4
+                    .outputItems(combOutput.copyWithCount(4))
                     .save(provider);
 
-            // Boosted Logic
             ItemStack crystalRose = ChemicalHelper.get(PhoenixMaterialFlags.crystal_rose, mat);
-            // Inside generateSimulatedColonyRecipes
-            // Boosted Logic
             if (!crystalRose.isEmpty()) {
                 SIMULATED_COLONY_RECIPES.recipeBuilder(MOD_ID + "/simulated_colony_boosted/" + config.beeId())
                         .EUt(config.boostedDecantingEut()).duration(config.boostedDecantingDuration())
@@ -143,7 +129,7 @@ public class PhoenixBeeRecipeGenerator {
                         .inputItems(pollinationInput)
                         .inputFluids(sugarWater)
                         .inputItems(crystalRose.copyWithCount(1))
-                        .outputItems(combOutput.copyWithCount(16)) // Buffed from 2 -> 16
+                        .outputItems(combOutput.copyWithCount(16))
                         .save(provider);
             }
         }
@@ -183,7 +169,6 @@ public class PhoenixBeeRecipeGenerator {
                     .inputFluids(honeyedMat.getFluid(1000))
                     .outputFluids(PhoenixBeeMaterials.IMPURE_HONEY.getFluid(500));
 
-            // Logic for specialized outputs (Salmon, Wannabee, etc)
             if (beeId.equals("water")) {
                 centrifuge.outputItems(new ItemStack(Items.SALMON));
             } else if (!config.finalOutputItem().isEmpty()) {

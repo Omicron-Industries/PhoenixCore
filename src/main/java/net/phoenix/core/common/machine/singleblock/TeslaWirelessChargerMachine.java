@@ -73,7 +73,7 @@ public class TeslaWirelessChargerMachine extends TieredEnergyMachine
         super.onLoad();
         if (!isRemote()) {
             tickSubs = subscribeServerTick(tickSubs, this::tickCharge);
-            registerToNetwork(); // Add this
+            registerToNetwork();
         }
     }
 
@@ -93,7 +93,6 @@ public class TeslaWirelessChargerMachine extends TieredEnergyMachine
         TeslaTeamEnergyData data = TeslaTeamEnergyData.get(level);
         TeslaTeamEnergyData.TeamEnergy network = data.getOrCreate(boundTeam);
 
-        // Run every 10 ticks (0.5 seconds) to save TPS
         if (getOffsetTimer() % 10 == 0) {
             if (network.stored.signum() <= 0) {
                 this.lastTransferred = 0L;
@@ -116,8 +115,6 @@ public class TeslaWirelessChargerMachine extends TieredEnergyMachine
             long amps = 4;
             long ticksInBatch = 10;
 
-            // The total amount of energy this machine can "output" in a 10-tick burst
-            // For HV: 512V * 4A * 10 ticks = 20,480 EU
             long totalBatchBudget = voltage * amps * ticksInBatch;
 
             for (Player player : playersToCharge) {
@@ -138,14 +135,12 @@ public class TeslaWirelessChargerMachine extends TieredEnergyMachine
                             long itemNeeded = electric.getMaxCharge() - electric.getCharge();
                             if (itemNeeded <= 0) continue;
 
-                            // Check network availability
                             long networkAvailable = network.stored.min(BigInteger.valueOf(totalBatchBudget))
                                     .longValue();
                             long offer = Math.min(itemNeeded, Math.min(totalBatchBudget, networkAvailable));
 
                             if (offer > 0) {
-                                // ignoreTransferLimit = true is CRITICAL here.
-                                // It allows the 10-tick burst to bypass the item's 1-tick intake limit.
+
                                 long accepted = electric.charge(offer, getTier(), true, false);
 
                                 if (accepted > 0) {
@@ -159,18 +154,15 @@ public class TeslaWirelessChargerMachine extends TieredEnergyMachine
                 }
             }
 
-            // Calculate average EU/t for the UI (Total Burst / Ticks in Burst)
             this.lastTransferred = movedInThisCycle / ticksInBatch;
             network.machineDisplayFlow.put(getPos(), this.lastTransferred);
 
             if (movedInThisCycle > 0) {
-                // Update the real-time flow for the Binder UI [C] row
                 network.machineCurrentFlow.merge(getPos(), movedInThisCycle, Long::sum);
                 network.markHatchActive(getPos(), level.getGameTime());
                 data.setDirty();
                 changeState(State.RUNNING);
             } else {
-                // If players are present but no energy moved, show "Finished" (Yellow)
                 changeState(playersToCharge.isEmpty() ? State.IDLE : State.FINISHED);
             }
         }

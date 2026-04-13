@@ -63,10 +63,9 @@ public final class TeslaWirelessRegistry {
         if (hatches == null) return;
 
         for (TeslaEnergyHatchPartMachine hatch : hatches) {
-            // Only tick if wireless
+
             if (!hatch.isWireless()) continue;
 
-            // Make sure IN pushes to tower, OUT pulls from tower
             hatch.tickWireless();
         }
     }

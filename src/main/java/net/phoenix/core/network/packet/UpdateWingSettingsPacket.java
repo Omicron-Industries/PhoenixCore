@@ -17,7 +17,6 @@ import java.util.function.Supplier;
  */
 public class UpdateWingSettingsPacket {
 
-    // Must exactly match the strings used in WingFlightScreen.cycleMode()
     private static final Set<String> VALID_MODES = Set.of(
             "basic",
             "powered",

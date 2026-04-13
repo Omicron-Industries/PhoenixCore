@@ -31,9 +31,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class FissionFuelRodBlock extends ActiveBlock {
 
-    /**
-     * Needed for tinting (BlockColor/ItemColor) and general introspection.
-     */
     private final IFissionFuelRodType fuelRodType;
 
     public FissionFuelRodBlock(Properties props, IFissionFuelRodType type) {
@@ -73,7 +70,6 @@ public class FissionFuelRodBlock extends ActiveBlock {
                         .withStyle(ChatFormatting.GOLD))
                 .withStyle(ChatFormatting.GRAY));
 
-        // NEW: neutron bias (affects blanket output distribution)
         int bias = 0;
         try {
             bias = fuelRodType.getNeutronBias();

@@ -73,29 +73,23 @@ public class TeslaBinderItem extends ComponentItem
 
     @Override
     public @NotNull InteractionResult onItemUseFirst(@NotNull ItemStack itemStack, UseOnContext context) {
-        Player player = context.getPlayer(); // So this is how we actually use a player's interactions. I see.
+        Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
 
         Level level = context.getLevel();
         BlockPos clickedPos = context.getClickedPos();
-        MetaMachine machine = MetaMachine.getMachine(level, clickedPos); // Checks if the clicked block is a meta
-        // machine, holds that data for further use.
+        MetaMachine machine = MetaMachine.getMachine(level, clickedPos);
 
-        if (machine instanceof IDataStickInteractable interactable) { // If the machine clicked is data stick
-            // interactable, hands off the logic.
+        if (machine instanceof IDataStickInteractable interactable) {
+
             return player.isShiftKeyDown() ?
                     interactable.onDataStickShiftUse(player, itemStack) :
                     interactable.onDataStickUse(player, itemStack);
         }
 
-        if (!level.isClientSide && machine != null) { // If clicked on a machine, runs.
+        if (!level.isClientSide && machine != null) {
             if (level instanceof ServerLevel serverLevel &&
-                    machine instanceof TieredEnergyMachine tiered && tiered.energyContainer != null) { // If on the
-                // server level
-                // and has an
-                // energy
-                // container,
-                // runs.
+                    machine instanceof TieredEnergyMachine tiered && tiered.energyContainer != null) {
 
                 CompoundTag tag = itemStack.getOrCreateTag();
                 if (tag.hasUUID("TargetTeam")) {
@@ -111,18 +105,15 @@ public class TeslaBinderItem extends ComponentItem
                     UUID teamUUID = tag.getUUID("TargetTeam");
                     TeslaTeamEnergyData data = TeslaTeamEnergyData.get(serverLevel);
 
-                    boolean isNowLinked = data.toggleSoulLink(teamUUID, level, clickedPos); // Is activated when machine
-                    // is right-clicked with
-                    // bound binder.
+                    boolean isNowLinked = data.toggleSoulLink(teamUUID, level, clickedPos);
 
-                    if (isNowLinked) { // If the machine is linked, runs.
+                    if (isNowLinked) {
                         player.sendSystemMessage(
                                 Component.literal("Core Synchronized: Machine linked to soul frequency.")
                                         .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC));
                         serverLevel.playSound(null, clickedPos, SoundEvents.BEACON_POWER_SELECT,
                                 SoundSource.PLAYERS, 1f, 1.5f);
-                    } else { // If still clicking on a matching machine but is already linked, removes the block pos and
-                        // machine name from list of linked machines.
+                    } else {
                         if (tag.contains("MachineData")) {
                             ListTag machineList = tag.getList("MachineData", Tag.TAG_COMPOUND);
                             long targetPosLong = clickedPos.asLong();
@@ -143,32 +134,28 @@ public class TeslaBinderItem extends ComponentItem
                     }
                     return InteractionResult.SUCCESS;
 
-                } else { // If clicking on a machine but the binder is not bound to player, fail but pass a chat
-                    // message.
+                } else {
+
                     player.sendSystemMessage(
                             Component.literal("Binder is not initialized. Shift-Right Click the air first.")
                                     .withStyle(ChatFormatting.RED));
                     return InteractionResult.FAIL;
                 }
-            } else { // If clicking on a machine but does not have an internal energy buffer, fails but passes a
-                // message.
+            } else {
                 player.sendSystemMessage(Component.literal("Invalid Target: Machine has no internal soul-buffer.")
                         .withStyle(ChatFormatting.RED));
                 return InteractionResult.FAIL;
             }
         }
 
-        return InteractionResult.PASS; // If there are any other cases, just silently moves on.
+        return InteractionResult.PASS;
     }
 
-    // If shift right-clicked, binds to player.
-    // If right-clicked on a non IDataStickInteractable machine or a normal block, opens ui.
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
 
-        // Trigger binding logic when Sneaking + Right-Clicking a block
         if (player.isShiftKeyDown()) {
             if (!context.getLevel().isClientSide) {
                 bindToPlayer(player, context.getItemInHand());
@@ -181,7 +168,6 @@ public class TeslaBinderItem extends ComponentItem
         return InteractionResult.PASS;
     }
 
-    // If shift right-clicked on air, binds to player. If right-clicked on air, opens the ui.
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player,
                                                            @NotNull InteractionHand hand) {
@@ -237,7 +223,6 @@ public class TeslaBinderItem extends ComponentItem
         }
     }
 
-    // Helper method for grabbing the name of the player.
     @Override
     public @NotNull Component getName(ItemStack stack) {
         if (stack.hasTag()) {
@@ -356,11 +341,6 @@ public class TeslaBinderItem extends ComponentItem
                 } else if (isHatch) {
                     sign = hTag.getBoolean("isOut") ? "+" : "-";
                 } else {
-                    // Soul-linked machines: negative flow means it's a generator (giving energy to the tower)
-                    // In pullFromSoulLinkedGenerators, team.machineCurrentFlow.merge(targetPos, -pulledThisTick,
-                    // Long::sum);
-                    // So if flowVal < 0, it's a generator -> "+"
-                    // if flowVal > 0, it's a consumer -> "-"
                     sign = (flowVal < 0) ? "+" : (flowVal > 0 ? "-" : "");
                 }
 
@@ -490,12 +470,11 @@ public class TeslaBinderItem extends ComponentItem
             }
             default -> { // Soul-linked machines
                 typeLabel = "[S]";
-                // FIX: If flow is negative, it's a generator (Network Input)
                 if (flowVal < 0) {
-                    colorCode = "§a"; // Green for production
+                    colorCode = "§a";
                     sign = "+";
                 } else {
-                    colorCode = "§d"; // Purple for consumption
+                    colorCode = "§d";
                     sign = "-";
                 }
             }
@@ -517,8 +496,6 @@ public class TeslaBinderItem extends ComponentItem
         String rawName = data.contains("name") ? data.getString("name") :
                 (type.equals("hatch") ? "Tesla Hatch" : (type.equals("charger") ? "Wireless Charger" : "Soul Machine"));
 
-        // FIX: Use Math.abs(flowVal) to prevent compactTeslaValue from adding its own minus sign
-        // This allows our 'sign' variable to control the display entirely.
         String flowStr = " §8(" + colorCode + sign + compactTeslaValue(String.valueOf(Math.abs(flowVal))) + "EU§8)";
 
         String displayName = rawName;

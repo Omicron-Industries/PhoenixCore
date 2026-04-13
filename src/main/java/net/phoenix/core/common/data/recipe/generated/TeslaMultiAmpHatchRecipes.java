@@ -27,8 +27,6 @@ public class TeslaMultiAmpHatchRecipes {
     private static void processMultiAmpAssemblerHatch(Consumer<FinishedRecipe> provider, int tier, long[] V) {
         if (getQuadWireForTier(tier).isEmpty()) return;
 
-        // --- 4A RECIPES ---
-        // Only create the recipe if both the 4A machine and its 2A ingredient exist for this tier
         if (PhoenixTeslaMachines.TESLA_INPUT_4A[tier] != null && PhoenixTeslaMachines.TESLA_INPUT_2A[tier] != null) {
             GTRecipeTypes.ASSEMBLER_RECIPES.recipeBuilder("tesla_input_hatch_4a_" + VN[tier].toLowerCase())
                     .inputItems(PhoenixTeslaMachines.TESLA_INPUT_2A[tier])
@@ -47,8 +45,6 @@ public class TeslaMultiAmpHatchRecipes {
                     .EUt(V[tier]).duration(100).save(provider);
         }
 
-        // --- 16A RECIPES ---
-        // Only create if 16A exists and 4A (the ingredient) exists
         if (PhoenixTeslaMachines.TESLA_INPUT_16A[tier] != null && PhoenixTeslaMachines.TESLA_INPUT_4A[tier] != null) {
             GTRecipeTypes.ASSEMBLER_RECIPES.recipeBuilder("tesla_input_hatch_16a_" + VN[tier].toLowerCase())
                     .inputItems(GTMachines.TRANSFORMER[tier])
@@ -69,7 +65,6 @@ public class TeslaMultiAmpHatchRecipes {
                     .EUt(V[tier]).duration(100).save(provider);
         }
 
-        // --- 64A RECIPES ---
         if (PhoenixTeslaMachines.TESLA_INPUT_64A[tier] != null && PhoenixTeslaMachines.TESLA_INPUT_16A[tier] != null) {
             GTRecipeTypes.ASSEMBLER_RECIPES.recipeBuilder("tesla_input_hatch_64a_" + VN[tier].toLowerCase())
                     .inputItems(GTMachines.HI_AMP_TRANSFORMER_2A[tier], 1)

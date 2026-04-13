@@ -32,8 +32,8 @@ public class WingFlightScreen extends Screen {
     private static final int COLOR_POWERED = 0xFFAA00;
     private static final int COLOR_CREATIVE = 0xFF55FF;
     private static final int COLOR_WINGED = 0x55FFFF;
-    private static final int COLOR_FILLED = 0x8800CC; // Purple
-    private static final int COLOR_EMPTY = 0x333333; // Gray
+    private static final int COLOR_FILLED = 0x8800CC;
+    private static final int COLOR_EMPTY = 0x333333;
     private static final int COLOR_PANEL_BG = 0xEE050010;
     private static final int COLOR_BORDER = 0x66BF00FF;
 
@@ -80,21 +80,18 @@ public class WingFlightScreen extends Screen {
         int barWidth = W - 10 - 44;
         int segW = barWidth / STEPS;
 
-        // Minus Button
         addRenderableWidget(Button.builder(Component.literal("-"), btn -> {
             if (isSpeed) flightSpeed = Math.max(1, flightSpeed - 1);
             else flightDrift = Math.max(1, flightDrift - 1);
             sendUpdate();
         }).bounds(left + 5, y, 18, 18).build());
 
-        // Plus Button
         addRenderableWidget(Button.builder(Component.literal("+"), btn -> {
             if (isSpeed) flightSpeed = Math.min(STEPS, flightSpeed + 1);
             else flightDrift = Math.min(STEPS, flightDrift + 1);
             sendUpdate();
         }).bounds(left + W - 23, y, 18, 18).build());
 
-        // Invisible hitboxes for segments
         for (int i = 0; i < STEPS; i++) {
             final int seg = i + 1;
             addRenderableWidget(Button.builder(Component.empty(), btn -> {
@@ -120,13 +117,11 @@ public class WingFlightScreen extends Screen {
         int left = (width - W) / 2;
         int top = (height - H) / 2;
 
-        // Background Panel
         gfx.fill(left, top, left + W, top + currentH, COLOR_PANEL_BG);
         renderBorders(gfx, left, top, W, currentH);
 
         gfx.drawString(font, "Wing Flight Control", left + 8, top + 6, COLOR_TITLE, false);
 
-        // Status Area
         gfx.fill(left + 5, top + 18, left + W - 5, top + 66, 0x55000000);
         gfx.drawString(font, "Current: " + getModeDisplayName(), left + 10, top + 24, getModeColor(), false);
         gfx.drawString(font, getDrainDescription(), left + 10, top + 36, COLOR_LABEL, false);
@@ -157,7 +152,6 @@ public class WingFlightScreen extends Screen {
             // Draw segment
             gfx.fill(xPos, y, xPos + segW - 2, y + 18, color);
 
-            // Draw number ONLY on the current active segment
             if (step == val) {
                 String s = String.valueOf(step);
                 gfx.drawCenteredString(font, s, xPos + (segW / 2), y + 5, 0xFFFFFF);
@@ -185,7 +179,7 @@ public class WingFlightScreen extends Screen {
         return switch (flightMode) {
             case "basic" -> "Vanilla Elytra";
             case "powered" -> "Powered Elytra";
-            case "creative" -> "Creative"; // Renamed from Creative Hover
+            case "creative" -> "Creative";
             case "creative+wings" -> "Creative + Wings";
             default -> "Unknown";
         };
@@ -204,10 +198,8 @@ public class WingFlightScreen extends Screen {
     }
 
     private String getDrainDescription() {
-        // Access the config instance
         var cfg = PhoenixConfigs.wingFlight;
 
-        // Helper to format BigInt into your HUD style (e.g., 5k EU/t)
         java.util.function.Function<Long, String> fmt = (val) -> formatTeslaEnergy(java.math.BigInteger.valueOf(val)) +
                 " EU/t";
 
@@ -215,8 +207,6 @@ public class WingFlightScreen extends Screen {
             case "basic" -> "No EU drain";
 
             case "powered" -> {
-                // Logic: Base drain at slider 1, scales up to 2x at slider 10
-                // Or use a flat rate if you prefer. Here is a scaling example:
                 long base = cfg.poweredFlightEUt;
                 long actualDrain = base + (long) (base * ((flightSpeed - 1) / 9.0));
                 yield fmt.apply(actualDrain) + " - High EU Sonic Flight";

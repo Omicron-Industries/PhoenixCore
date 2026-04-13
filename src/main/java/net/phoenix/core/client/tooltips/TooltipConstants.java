@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class TooltipConstants {
 
-    // We use a Map to keep the order and link the "key suffix" to the "casing description"
     public static final Map<String, String> STURDY_CASING = new LinkedHashMap<>();
 
     static {

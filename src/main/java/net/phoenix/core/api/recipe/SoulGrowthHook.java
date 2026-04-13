@@ -14,21 +14,18 @@ public class SoulGrowthHook {
         ChunkPos chunkPos = new ChunkPos(pos);
         boolean dirty = false;
 
-        // Permanent Max Capacity Boost
         if (recipe.data.contains("soul_growth_perm")) {
             float amount = recipe.data.getFloat("soul_growth_perm");
             SoulSavedData.get(level).modifySoul(chunkPos, amount, true);
             dirty = true;
         }
 
-        // Temporary Refill
         if (recipe.data.contains("soul_growth_temp")) {
             float amount = recipe.data.getFloat("soul_growth_temp");
             SoulSavedData.get(level).modifySoul(chunkPos, amount, false);
             dirty = true;
         }
 
-        // Visual feedback (Optional: Spawn a purple soul particle when it boosts)
         if (dirty && level.random.nextFloat() < 0.1f) {
             level.sendParticles(ParticleTypes.WITCH,
                     pos.getX() + 0.5, pos.getY() + 2.0, pos.getZ() + 0.5,

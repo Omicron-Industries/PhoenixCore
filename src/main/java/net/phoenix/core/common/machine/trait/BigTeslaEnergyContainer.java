@@ -17,9 +17,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-/**
- * BigInteger-compatible energy container with notification support for Tesla system.
- */
 public class BigTeslaEnergyContainer {
 
     @Getter

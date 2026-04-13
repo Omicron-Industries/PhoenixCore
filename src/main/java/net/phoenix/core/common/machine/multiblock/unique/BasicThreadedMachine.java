@@ -26,15 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
-    // -------------------------------------------------------------------------
-    // Constants
-    // -------------------------------------------------------------------------
 
     private static final int THREAD_COUNT = 8;
-
-    // -------------------------------------------------------------------------
-    // Per-thread state
-    // -------------------------------------------------------------------------
 
     public static class RecipeThread {
 
@@ -61,10 +54,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
-
     @Getter
     private final BasicThreadedMachine.RecipeThread[] threads = new BasicThreadedMachine.RecipeThread[THREAD_COUNT];
 
@@ -81,10 +70,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
     @Persisted
     private final long[] threadDuration = new long[THREAD_COUNT];
 
-    // -------------------------------------------------------------------------
-    // Constructor
-    // -------------------------------------------------------------------------
-
     public BasicThreadedMachine(IMachineBlockEntity holder) {
         super(holder);
 
@@ -92,14 +77,8 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
             threads[i] = new BasicThreadedMachine.RecipeThread();
         }
 
-        // The base RecipeLogic handles the main recipe completely on its own.
-        // We only need our own tick for the extra threads and bookkeeping.
         subscribeServerTick(this::threadedTick);
     }
-
-    // -------------------------------------------------------------------------
-    // Structure lifecycle
-    // -------------------------------------------------------------------------
 
     @Override
     public void onStructureFormed() {
@@ -113,31 +92,22 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         for (BasicThreadedMachine.RecipeThread t : threads) t.clear();
     }
 
-    // -------------------------------------------------------------------------
-    // Main tick — only handles extra threads and bookkeeping.
-    // The primary recipe runs via the normal RecipeLogic tick, untouched.
-    // -------------------------------------------------------------------------
-
     private void threadedTick() {
         if (!isFormed()) return;
 
-        // Extra threads only run while the main recipe is actively working.
         boolean mainRunning = recipeLogic.isWorking();
 
-        // Tick all already-active threads every tick.
         for (int i = 0; i < THREAD_COUNT; i++) {
             if (threads[i].isActive() && mainRunning) {
                 tickThread(threads[i]);
             }
         }
 
-        // Start at most ONE new thread per tick, always filling from index 0 upward.
-        // This ensures thread 0 is always filled before thread 1, etc.
         if (mainRunning && getOffsetTimer() % 5 == 0) {
             for (int i = 0; i < THREAD_COUNT; i++) {
                 if (!threads[i].isActive()) {
                     tryStartExtraRecipe(threads[i]);
-                    break; // only start one per search tick
+                    break;
                 }
             }
         }
@@ -148,14 +118,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Extra recipe search
-    // -------------------------------------------------------------------------
-
-    /**
-     * Finds a recipe that is NOT the same as the currently running main recipe,
-     * then atomically consumes its inputs and assigns it to the given thread.
-     */
     private void tryStartExtraRecipe(BasicThreadedMachine.RecipeThread thread) {
         GTRecipe mainRecipe = recipeLogic.getLastRecipe();
 
@@ -166,13 +128,10 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
             GTRecipe candidate = iterator.next();
             if (candidate == null) continue;
 
-            // Skip the recipe that the main logic is already running.
             if (mainRecipe != null && candidate.id.equals(mainRecipe.id)) continue;
 
-            // Skip if another thread is already running this recipe.
             if (isRecipeAlreadyThreaded(candidate)) continue;
 
-            // Apply modifier.
             ModifierFunction modifier = recipeModifier(this, candidate);
             if (modifier == ModifierFunction.NULL) continue;
             GTRecipe modifiedRecipe = modifier.apply(candidate.copy());
@@ -180,10 +139,8 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
 
             var chanceCaches = new HashMap<RecipeCapability<?>, Object2IntMap<?>>();
 
-            // Dry-run check.
             if (!RecipeHelper.matchRecipe(this, modifiedRecipe).isSuccess()) continue;
 
-            // Atomically consume inputs.
             var result = RecipeHelper.handleRecipeIO(this, modifiedRecipe, IO.IN, chanceCaches);
             if (!result.isSuccess()) continue;
 
@@ -203,16 +160,12 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         return false;
     }
 
-    // -------------------------------------------------------------------------
-    // Per-thread tick
-    // -------------------------------------------------------------------------
-
     private void tickThread(BasicThreadedMachine.RecipeThread thread) {
         GTRecipe recipe = thread.recipe;
 
         var euResult = RecipeHelper.handleTickRecipeIO(this, recipe, IO.IN, thread.chanceCaches);
         if (!euResult.isSuccess()) {
-            // Not enough energy — stall without losing progress.
+
             return;
         }
 
@@ -224,10 +177,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Recipe modifier
-    // -------------------------------------------------------------------------
-
     public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
         if (!(machine instanceof BasicThreadedMachine imbuer)) {
             return RecipeModifier.nullWrongType(BasicThreadedMachine.class, machine);
@@ -235,10 +184,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
 
         return ModifierFunction.IDENTITY;
     }
-
-    // -------------------------------------------------------------------------
-    // Persistence
-    // -------------------------------------------------------------------------
 
     private void restoreThreadsFromPersisted() {
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -258,10 +203,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Accessors
-    // -------------------------------------------------------------------------
-
     public List<GTRecipe> getActiveRecipes() {
         List<GTRecipe> list = new ArrayList<>();
         for (BasicThreadedMachine.RecipeThread t : threads) {
@@ -269,10 +210,6 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
         }
         return list;
     }
-
-    // -------------------------------------------------------------------------
-    // Display text
-    // -------------------------------------------------------------------------
 
     @Override
     public void addDisplayText(@NotNull List<Component> textList) {

@@ -5,12 +5,10 @@ import com.gregtechceu.gtceu.api.registry.GTRegistries;
 
 public class PhoenixElements {
 
-    // Radioactive & Existing
     public static Element URANIUM_233;
     public static Element URANIUM_236;
     public static Element AMERICIUM_241;
 
-    // Fantasy & Alloy Elements from KJS
     public static Element PHOENIX_ENRICHED_TRITANIUM;
     public static Element EMBER;
     public static Element PHOENIX_ENRICHED_NAQUADAH;
@@ -56,12 +54,10 @@ public class PhoenixElements {
     public static Element ICY_STEEL_MATRIX;
 
     public static void init() {
-        // Radioactive
         URANIUM_233 = create("uranium_233", 92L, 141L, -1L, null, "Uranium-233", "U²²³", true);
         URANIUM_236 = create("uranium_236", 92L, 144L, -1L, null, "Uranium-236", "U²³⁶", true);
         AMERICIUM_241 = create("americium_241", 95L, 146L, -1L, null, "Americium-241", "Am-241", true);
 
-        // Fantasy Elements
         PHOENIX_ENRICHED_TRITANIUM = create("phoenix_enriched_tritanium", 1, 32, "PET");
         EMBER = create("ember", 1, 2, "🔥");
         PHOENIX_ENRICHED_NAQUADAH = create("phoenix_enriched_naquadah", 25, 32, "PENaq");
@@ -80,7 +76,6 @@ public class PhoenixElements {
         NEBULAR_RESONANCE_INGOT = create("nebular_resonance_ingot", -1, -1, "NRI");
         PARADOXIUM = create("paradoxium", -1, -1, "Px");
 
-        // Specific Physics Materials
         SUBSPACE_COBALT = create("subspace_cobalt", 27, 33, "QIC");
         SINGULARITY_FORGED_TITANIUM = create("singularity_forged_titanium", 22, 26, "SFTi");
         EXOTIC_VANADIUM_COMPOSITE = create("exotic_vanadium_composite", 23, 28, "EVC");

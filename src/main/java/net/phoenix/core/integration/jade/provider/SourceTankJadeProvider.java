@@ -23,7 +23,6 @@ public class SourceTankJadeProvider implements IBlockComponentProvider, IServerD
 
     public static final ResourceLocation UID = PhoenixCore.id("source_tank_info");
 
-    // Color Constants for consistency
     private static final int COLOR_CYAN = 0xFF00FFFF;
     private static final int COLOR_PURPLE = 0xFFD466FF;
 
@@ -48,21 +47,17 @@ public class SourceTankJadeProvider implements IBlockComponentProvider, IServerD
             int cap = data.getInt("TankCap");
             float pct = cap > 0 ? (float) stored / cap : 0;
 
-            // Header: "Source Tank Content" (Localized)
             tooltip.add(Component.translatable("jade.phoenixcore.source_tank_header")
                     .withStyle(ChatFormatting.LIGHT_PURPLE));
 
-            // Theme-accurate colors: Cyan for low/empty, Purple for full
             int barColor = pct < 0.3f ? COLOR_CYAN : COLOR_PURPLE;
 
-            // Bar Text: "Capacity Stored/Total - Pct%" (Localized)
             Component barText = Component.translatable(
                     "jade.phoenixcore.source_tank_format",
                     fmt(stored),
                     fmt(cap),
                     (int) (pct * 100));
 
-            // Progress Bar render
             tooltip.add(tooltip.getElementHelper().progress(
                     pct,
                     barText,

@@ -91,20 +91,16 @@ public class HeatExchangerMachine extends WorkableElectricMultiblockMachine impl
         int validLayers = 0;
         Direction back = getFrontFacing().getOpposite();
 
-        // Scan up to the max repeatable limit (20) + the fixed starting layers
         for (int depth = 1; depth <= 30; depth++) {
             BlockPos scanPos = getPos().relative(back, depth);
-            // In your pattern, 'S' (Gearbox) is at the center of the repeating aisles
             Block blockAtCenter = getLevel().getBlockState(scanPos).getBlock();
 
             if (blockAtCenter == PhoenixFissionBlocks.FISSILE_SAFE_GEARBOX_CASING.get()) {
                 validLayers++;
             } else if (depth > 5) {
-                // If we've passed the front cap and don't see gearboxes anymore, we've hit the end
                 break;
             }
         }
-        // If validLayers is 0 for some reason, default to 1 so the multiplier isn't broken
         this.length = Math.max(1, validLayers);
     }
 
@@ -140,22 +136,16 @@ public class HeatExchangerMachine extends WorkableElectricMultiblockMachine impl
         return isFormed() ? this.dynamoTier : GTValues.ULV;
     }
 
-    /**
-     * The Recipe Modifier now only scales based on the length of the machine.
-     * The EUt production is defined in the recipe itself (e.g., -128 for MV).
-     */
     public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
         if (!(machine instanceof HeatExchangerMachine exchanger))
             return ModifierFunction.IDENTITY;
 
-        // Base 1.5x boost + 0.25x (25%) per unit of length beyond the first
-        // Example: Length 10 = 1.5 + (9 * 0.25) = 3.75x production
         double multiplier = 1.5 + (Math.max(0, exchanger.getLength() - 1) * 0.25);
 
         if (exchanger.heliumActive) multiplier *= 2.0;
 
         return ModifierFunction.builder()
-                .eutMultiplier(multiplier * multiplier) // This handles the power output scaling
+                .eutMultiplier(multiplier * multiplier)
                 .build();
     }
 

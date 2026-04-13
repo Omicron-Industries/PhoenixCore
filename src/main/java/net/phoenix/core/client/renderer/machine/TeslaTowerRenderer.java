@@ -43,7 +43,6 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
 
     @Override
     public @NotNull AABB getRenderBoundingBox(TeslaTowerMachine m) {
-        // Inflated to ensure arcs don't disappear when the controller is off-screen
         return new AABB(m.getPos()).inflate(40);
     }
 
@@ -59,16 +58,11 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         long time = machine.getLevel().getGameTime();
         VertexConsumer vc = buffer.getBuffer(PhoenixRenderTypes.LIGHT_RING());
 
-        // Settings
         float RING_RADIUS = 6.5f;
         float TEEPEE_DROP = 2.5f;
         int ARC_POINTS = 30;
 
-        // Folded translate(-1.5, 0.5, -3.5) into positions to avoid
-        // singleplayer vs dedicated server origin discrepancy.
-        // xPositions: 8.0 - 1.5 = 6.5
-        // zPositions: 4.0 - 3.5 = 0.5
-        float[] yPositions = new float[] { 5.5f, 14.5f, 22.5f }; // y + 0.5
+        float[] yPositions = new float[] { 5.5f, 14.5f, 22.5f };
         float[] xPositions = new float[] { 1.0f, 1.0f, 1.0f };
         float[] zPositions = new float[] { 6f, 6.0f, 6.0f };
 
@@ -115,7 +109,7 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         }
 
         Vec3 mid = start.add(end).scale(0.5);
-        // Use the sinNoise we made earlier to keep it high-performance
+
         float seed = (float) (time + start.x + start.y + start.z);
 
         mid = mid.add(
@@ -133,24 +127,16 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
             Vec3 s = path.get(i);
             Vec3 e = path.get(i + 1);
 
-            // Calculate a 'normal' to the line to give it width
-            // In a perfect world, this would face the camera, but for a
-            // high-performance render, a fixed offset or Y-offset works well.
             float dx = (float) (e.x - s.x);
             float dy = (float) (e.y - s.y);
             float dz = (float) (e.z - s.z);
 
-            // Perpendicular vector for thickness
             float nx = -dz * width;
             float nz = dx * width;
 
-            // Quad Vertex 1
             vc.vertex(pose, (float) s.x - nx, (float) s.y, (float) s.z - nz).color(r, g, b, a).endVertex();
-            // Quad Vertex 2
             vc.vertex(pose, (float) s.x + nx, (float) s.y, (float) s.z + nz).color(r, g, b, a).endVertex();
-            // Quad Vertex 3
             vc.vertex(pose, (float) e.x + nx, (float) e.y, (float) e.z + nz).color(r, g, b, a).endVertex();
-            // Quad Vertex 4
             vc.vertex(pose, (float) e.x - nx, (float) e.y, (float) e.z - nz).color(r, g, b, a).endVertex();
         }
     }
@@ -177,9 +163,6 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
 
         Vec3 mid = s.add(e).scale(0.5);
 
-        // --- THE PERFORMANCE FIX ---
-        // Instead of RandomSource.create(), we use a deterministic "Pseudo-random" math function.
-        // This is much faster and uses 0 memory allocations.
         float seed = (float) (time + s.x * 31 + s.y * 17 + s.z);
         float jitter = 0.25f * depth;
 
@@ -201,18 +184,15 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
     private void renderArc(PoseStack stack, VertexConsumer vc, Vec3 start, Vec3 end, long time) {
         Matrix4f pose = stack.last().pose();
 
-        // Smooth time for drifting, integer time for snapping
         float smoothTime = time * 0.05f;
-        long snapTime = time / 4; // Change the "base" shape every 4 ticks
+        long snapTime = time / 4;
 
         POINT_CACHE[0] = start;
-        // We pass both to the path generator
         int totalPoints = generatePath(start, end, 1, 5, 0.18f, snapTime, smoothTime);
         POINT_CACHE[totalPoints - 1] = end;
 
-        // Inside renderArc
-        drawRibbon(vc, pose, totalPoints, 0.08f, 1.0f, 0.7f, 0.8f, 0.3f, time); // Glow
-        drawRibbon(vc, pose, totalPoints, 0.02f, 0.6f, 0.1f, 0.9f, 1.0f, time); // Core
+        drawRibbon(vc, pose, totalPoints, 0.08f, 1.0f, 0.7f, 0.8f, 0.3f, time);
+        drawRibbon(vc, pose, totalPoints, 0.02f, 0.6f, 0.1f, 0.9f, 1.0f, time);
     }
 
     private int generatePath(Vec3 s, Vec3 e, int index, int depth, float jitter, long snapTime, float smoothTime) {
@@ -223,11 +203,8 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
 
         Vec3 mid = s.add(e).scale(0.5);
 
-        // combine snapTime (big jumps) with smoothTime (gentle vibration)
         float seed = (float) (snapTime + (index * 1.5f) + smoothTime);
 
-        // This creates the "Arcing" look:
-        // The bolt structure is stable, but the midpoints "vibrate"
         float currentJitter = jitter * (float) Math.sqrt(depth);
 
         mid = mid.add(
@@ -245,33 +222,23 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
             Vec3 s = POINT_CACHE[i];
             Vec3 e = POINT_CACHE[i + 1];
 
-            // 1. Direction of the segment
             float dx = (float) (e.x - s.x);
             float dy = (float) (e.y - s.y);
             float dz = (float) (e.z - s.z);
 
-            // 2. The "Twist" Math
-            // We calculate a 'roll' angle that changes per segment and over time
             float twistSpeed = time * 0.1f;
             float roll = (i * 0.5f) + twistSpeed;
 
-            // 3. Calculate the Perpendicular "Width" Vectors
-            // We use Sin/Cos to rotate the offset around the segment's axis
             float angleX = (float) Math.cos(roll) * width;
             float angleY = (float) Math.sin(roll) * width;
 
-            // Using a basic billboarding-style offset that rotates
             float nx = -dz * angleX;
             float ny = angleY;
             float nz = dx * angleX;
 
-            // 4. Draw the Quad
-            // Vertices at S (Start)
             vc.vertex(pose, (float) s.x - nx, (float) s.y - ny, (float) s.z - nz).color(r, g, b, a).endVertex();
             vc.vertex(pose, (float) s.x + nx, (float) s.y + ny, (float) s.z + nz).color(r, g, b, a).endVertex();
 
-            // Vertices at E (End) - Note: To be perfectly professional,
-            // the End vertices of segment I should use the same 'roll' as the Start of I+1
             float nextRoll = ((i + 1) * 0.5f) + twistSpeed;
             float nnx = -dz * (float) Math.cos(nextRoll) * width;
             float nny = (float) Math.sin(nextRoll) * width;

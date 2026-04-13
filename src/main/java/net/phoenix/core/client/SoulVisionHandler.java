@@ -21,7 +21,6 @@ public class SoulVisionHandler {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // Check if player is holding the Soul Lens
         ItemStack stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
         boolean holdingLens = stack.getItem() instanceof SoulLensItem;
 
@@ -30,7 +29,6 @@ public class SoulVisionHandler {
             float max = stack.getOrCreateTag().getFloat("MaxSoul");
             float ratio = (max > 0) ? (current / max) : 1.0f;
 
-            // Trigger grayscale if soul levels are low (e.g., below 40%)
             if (ratio < 0.4f && !effectActive) {
                 mc.gameRenderer.loadEffect(GRAYSCALE_SHADER);
                 effectActive = true;

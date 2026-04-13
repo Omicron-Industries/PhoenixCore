@@ -412,7 +412,6 @@ public class PhoenixMachineRecipes {
                 .EUt(VA[MV])
                 .save(provider);
 
-        // 1. Resonant Ender Catalyst (The Gem Root)
         APIS_PROGENITOR_RECIPES.recipeBuilder("synth_resonant_ender")
                 .inputItems(HONEY_COMB_BASE)
                 .inputItems(PhoenixItems.ROYAL_JELLY, 4)
@@ -421,7 +420,6 @@ public class PhoenixMachineRecipes {
                 .duration(600).EUt(VA[IV])
                 .save(provider);
 
-        // 2. Iron Catalyst (The Metal Root)
         APIS_PROGENITOR_RECIPES.recipeBuilder("synth_iron")
                 .inputItems(HONEY_COMB_BASE)
                 .inputItems(PhoenixItems.ROYAL_JELLY, 4)
@@ -430,7 +428,6 @@ public class PhoenixMachineRecipes {
                 .duration(600).EUt(VA[IV])
                 .save(provider);
 
-        // 3. Coal Catalyst (The Earth Root)
         APIS_PROGENITOR_RECIPES.recipeBuilder("synth_coal")
                 .inputItems(HONEY_COMB_BASE)
                 .inputItems(PhoenixItems.ROYAL_JELLY, 4)
@@ -439,7 +436,6 @@ public class PhoenixMachineRecipes {
                 .duration(400).EUt(VA[IV])
                 .save(provider);
 
-        // 4. Quarry Catalyst (The Utility Root)
         APIS_PROGENITOR_RECIPES.recipeBuilder("synth_quarry")
                 .inputItems(HONEY_COMB_BASE)
                 .inputItems(PhoenixItems.ROYAL_JELLY, 4)
@@ -448,7 +444,6 @@ public class PhoenixMachineRecipes {
                 .duration(400).EUt(VA[IV])
                 .save(provider);
 
-        // 5. Lumber Catalyst (The Nature Root)
         APIS_PROGENITOR_RECIPES.recipeBuilder("synth_lumber")
                 .inputItems(HONEY_COMB_BASE)
                 .inputItems(PhoenixItems.ROYAL_JELLY, 4)

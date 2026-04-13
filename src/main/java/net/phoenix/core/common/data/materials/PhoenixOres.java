@@ -9,7 +9,6 @@ import net.phoenix.core.PhoenixCore;
 
 public class PhoenixOres {
 
-    // Existing Materials
     public static Material NEVVONIAN_IRON;
     public static Material FLUORITE;
     public static Material IGNISIUM;
@@ -18,7 +17,6 @@ public class PhoenixOres {
     public static Material CRYSTALLIZED_FLUXSTONE;
     public static Material PERMAFROST;
 
-    // New Materials from KJS
     public static Material QUANTARIUMITE;
     public static Material PHOENIXITE;
     public static Material AKASHIC_BISMUTHITE;

@@ -27,18 +27,15 @@ public class TeslaHatchRecipes {
         final long[] V = GTValues.V;
 
         for (int tier = LV; tier <= OpV; tier++) {
-            // 1. Basic Existence Checks
+
             if (PhoenixTeslaMachines.TESLA_INPUT_2A[tier] == null) continue;
 
-            // Ensure the base GTCEu hatches exist for this tier to use as ingredients
             if (tier >= GTMachines.ENERGY_INPUT_HATCH.length || GTMachines.ENERGY_INPUT_HATCH[tier] == null) continue;
 
             ItemStack baseHatch = GTMachines.ENERGY_INPUT_HATCH[tier].asStack();
             ItemStack outputBaseHatch = GTMachines.ENERGY_OUTPUT_HATCH[tier].asStack();
             if (baseHatch.isEmpty()) continue;
 
-            // 2. Process Base (2A) Hatches
-            // We use an if/else chain here because 2A hatches have different base recipes per tier
             if (tier >= ZPM) {
                 processAssemblyLineHatchStation(provider, tier, V, baseHatch, outputBaseHatch);
             } else if (tier == LuV) {
@@ -79,7 +76,7 @@ public class TeslaHatchRecipes {
                                                         ItemStack baseHatch, ItemStack outputBaseHatch) {
         ItemStack researchStack = PhoenixTeslaMachines.TESLA_INPUT_2A[tier - 1].asStack();
         ItemStack outputResearchStack = PhoenixTeslaMachines.TESLA_OUTPUT_2A[tier - 1].asStack();
-        if (researchStack.isEmpty()) return; // Research must have a valid item
+        if (researchStack.isEmpty()) return;
 
         GTRecipeTypes.ASSEMBLY_LINE_RECIPES.recipeBuilder("tesla_input_hatch_2a_scanner_" + VN[tier].toLowerCase())
                 .inputItems(baseHatch)

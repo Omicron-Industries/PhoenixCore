@@ -49,7 +49,7 @@ public class PhoenixRecipeTypes {
                 .setSound(GTSoundEntries.ARC);
         PHOENIXWARE_FUSION_MK1 = register("phoenixware_fusion_mk1", MULTIBLOCK)
                 .setEUIO(IO.IN)
-                .setMaxIOSize(0, 0, 2, 1) // 0 Items, 2 Fluid Inputs, 1 Fluid Output
+                .setMaxIOSize(0, 0, 2, 1)
                 .setSlotOverlay(false, false, GuiTextures.SOLIDIFIER_OVERLAY)
                 .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, ProgressTexture.FillDirection.LEFT_TO_RIGHT)
                 .setSound(GTSoundEntries.ARC);
@@ -131,7 +131,7 @@ public class PhoenixRecipeTypes {
                     widgetGroup.setSize(size.width, size.height + 5);
                 });
 
-        SOURCE_IMBUEMENT_RECIPES = register("source_imbuement", MULTIBLOCK) // Imbue
+        SOURCE_IMBUEMENT_RECIPES = register("source_imbuement", MULTIBLOCK)
                 .setMaxIOSize(3, 3, 1, 0)
                 .setMaxSize(IO.IN, SourceRecipeCapability.CAP, 1)
                 .setSlotOverlay(false, false, GuiTextures.SOLIDIFIER_OVERLAY)
@@ -143,7 +143,7 @@ public class PhoenixRecipeTypes {
                 })
                 .setEUIO(IO.IN);
 
-        SOURCE_EXTRACTION_RECIPES = register("source_extraction", MULTIBLOCK) // Extract
+        SOURCE_EXTRACTION_RECIPES = register("source_extraction", MULTIBLOCK)
                 .setMaxIOSize(2, 1, 1, 0)
                 .setSlotOverlay(false, false, GuiTextures.SOLIDIFIER_OVERLAY)
                 .setMaxSize(IO.OUT, SourceRecipeCapability.CAP, 1)

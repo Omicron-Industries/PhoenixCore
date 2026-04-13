@@ -77,7 +77,7 @@ public class TeslaBatteryBlock extends Block {
 
         @Override
         public BigInteger getStored() {
-            return stored != null ? stored : BigInteger.ZERO; // defensive
+            return stored != null ? stored : BigInteger.ZERO;
         }
 
         @Override

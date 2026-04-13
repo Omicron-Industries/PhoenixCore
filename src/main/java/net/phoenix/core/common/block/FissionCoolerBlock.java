@@ -30,7 +30,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class FissionCoolerBlock extends ActiveBlock {
 
-    /** Needed for tinting + introspection */
     private final IFissionCoolerType coolerType;
 
     public FissionCoolerBlock(Properties props, IFissionCoolerType type) {

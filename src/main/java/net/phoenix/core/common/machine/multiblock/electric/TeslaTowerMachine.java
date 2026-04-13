@@ -69,7 +69,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
             TeslaTowerMachine.class, UniqueWorkableElectricMultiblockMachine.MANAGED_FIELD_HOLDER);
 
-    // Inside your constructor
     public TeslaTowerMachine(IMachineBlockEntity holder) {
         super(holder);
         this.energyBank = new TeslaEnergyBank(this, List.of());
@@ -139,14 +138,11 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                     player.sendSystemMessage(Component.literal("The Signal Has Begun.")
                             .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
 
-                    // Set the state for the delay
-                    // Change to -1 to indicate "not active"
-                    int messageDelay = 100; // 5 seconds
+                    int messageDelay = 100;
                 }
             }
         }
 
-        // 2. Register for wireless logic
         if (ownerTeamUUID != null) {
             registerTower(this);
         }
@@ -156,13 +152,11 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         List<IEnergyContainer> inputs = new ArrayList<>();
         List<IEnergyContainer> outputs = new ArrayList<>();
 
-        // Handle Parts
         for (IMultiPart part : getParts()) {
             if (part instanceof IMaintenanceMachine maintenanceMachine) {
                 maintenance = maintenanceMachine;
             }
 
-            // Wired energy containers (Standard GT hatches)
             var handlerLists = part.getRecipeHandlers();
             for (var handlerList : handlerLists) {
                 IO io = handlerList.getHandlerIO();
@@ -175,7 +169,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                 if (io.support(IO.OUT)) outputs.addAll(containers);
             }
 
-            // Tesla wired hatches
             if (part instanceof TeslaEnergyHatchPartMachine hatch && !hatch.isWireless()) {
                 if (hatch.getIO() == IO.IN) inputs.add(hatch.getEnergyContainer());
                 else if (hatch.getIO() == IO.OUT) outputs.add(hatch.getEnergyContainer());
@@ -185,7 +178,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         this.inputHatches = new EnergyContainerList(inputs);
         this.outputHatches = new EnergyContainerList(outputs);
 
-        // 3. Collect batteries from MatchContext
         List<ITeslaBattery> batteries = new ArrayList<>();
         for (Map.Entry<String, Object> entry : getMultiblockState().getMatchContext().entrySet()) {
             if (entry.getKey().startsWith(TTB_BATTERY_HEADER) &&
@@ -199,7 +191,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             return;
         }
 
-        // 4. Initialize Energy Bank
         if (this.energyBank == null) {
             this.energyBank = new TeslaEnergyBank(this, batteries);
         } else {
@@ -208,9 +199,8 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
 
         updateBatteryTier();
 
-        // 5. Cloud Handshake
         if (!getLevel().isClientSide && ownerTeamUUID != null) {
-            syncToTeslaSavedData(); // Pull energy from cloud into the batteries we just built
+            syncToTeslaSavedData();
         }
     }
 
@@ -218,20 +208,16 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         if (team.soulLinkedMachines.isEmpty()) return;
 
         for (BlockPos targetPos : team.soulLinkedMachines) {
-            // 1. Get the correct dimension for this specific machine
+
             ResourceKey<Level> dimKey = team.getMachineDimension(targetPos);
             ServerLevel targetLevel = level.getServer().getLevel(dimKey);
 
-            // 2. Check if the level is loaded and the chunk is active in that dimension
             if (targetLevel == null || !targetLevel.isLoaded(targetPos)) continue;
 
-            // ALWAYS heartbeat regardless of energy availability
             team.markHatchActive(targetPos, targetLevel.getGameTime());
 
-            // Only bother with energy logic if we actually have something to give
             if (team.stored.signum() == 0) continue;
 
-            // 3. Fetch the machine from the target dimension
             MetaMachine machine = MetaMachine.getMachine(targetLevel, targetPos);
             if (machine == null) continue;
 
@@ -269,7 +255,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                             if (injectedThisTick > 0) {
                                 energy.addEnergy(injectedThisTick);
 
-                                // Particles must be sent in the target dimension
                                 if (targetLevel.getGameTime() % 10 == 0) {
                                     targetLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                                             targetPos.getX() + 0.5, targetPos.getY() + 1.1, targetPos.getZ() + 0.5,
@@ -291,17 +276,14 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         if (team.soulLinkedMachines.isEmpty()) return;
 
         for (BlockPos targetPos : team.soulLinkedMachines) {
-            // 1. Get the correct dimension for this specific machine
+
             ResourceKey<Level> dimKey = team.getMachineDimension(targetPos);
             ServerLevel targetLevel = level.getServer().getLevel(dimKey);
 
-            // 2. Check if the level is loaded in its own dimension
             if (targetLevel == null || !targetLevel.isLoaded(targetPos)) continue;
 
-            // ALWAYS heartbeat so idle generators stay "connected" in UI
             team.markHatchActive(targetPos, targetLevel.getGameTime());
 
-            // 3. Fetch the machine from the target dimension
             MetaMachine machine = MetaMachine.getMachine(targetLevel, targetPos);
             if (machine == null) continue;
 
@@ -330,7 +312,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             if (pulledThisTick > 0) {
                 team.machineCurrentFlow.merge(targetPos, -pulledThisTick, Long::sum);
 
-                // Particles must be sent in the target dimension
                 if (targetLevel.getGameTime() % 12 == 0) {
                     targetLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
                             targetPos.getX() + 0.5, targetPos.getY() + 1.2, targetPos.getZ() + 0.5,
@@ -350,7 +331,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         ServerLevel sl = (ServerLevel) getLevel();
         boolean isDoingWork = false;
 
-        // 1. Every 20 ticks: Aggregate and Reset Flow Maps
         if (sl.getGameTime() % 20 == 0) {
             syncToTeslaSavedData();
 
@@ -361,7 +341,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                 long totalWirelessInput = 0;
                 long totalWirelessOutput = 0;
 
-                // Standard Hatches (Uplinks/Downlinks)
                 for (var entry : team.energyOutput.entrySet()) {
                     totalWirelessInput += entry.getValue().longValue();
                     team.machineDisplayFlow.put(entry.getKey(), entry.getValue().longValue() / 20);
@@ -371,12 +350,9 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                     team.machineDisplayFlow.put(entry.getKey(), -entry.getValue().longValue() / 20);
                 }
 
-                // Soul-Linked Machines
-                // We use a copy to avoid ConcurrentModificationException if a machine unlinks mid-tick
                 for (BlockPos mPos : new HashSet<>(team.soulLinkedMachines)) {
                     long accumulated = team.machineCurrentFlow.getOrDefault(mPos, 0L);
 
-                    // Calculate display flow (EU/t average over the last second)
                     team.machineDisplayFlow.put(mPos, accumulated / 20);
 
                     if (accumulated < 0) {
@@ -385,7 +361,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                         totalWirelessOutput += accumulated;
                     }
 
-                    // RESET the flow for the next 20-tick window
                     team.machineCurrentFlow.put(mPos, 0L);
                 }
 
@@ -403,12 +378,10 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             netOutLastSec = 0;
         }
 
-        // 2. Every Tick: Energy Processing
         if (ownerTeamUUID != null) {
             TeslaTeamEnergyData data = TeslaTeamEnergyData.get(sl);
             TeslaTeamEnergyData.TeamEnergy team = data.getOrCreate(ownerTeamUUID);
 
-            // A. Wired Input (Physical Hatches on the Tower)
             if (inputHatches != null) {
                 long incoming = inputHatches.getEnergyStored();
                 if (incoming > 0) {
@@ -421,18 +394,11 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                 }
             }
 
-            // B. Soul-Linked PULL (Generators -> Tower)
-            // We do this BEFORE push so generators can power machines in the same tick
             pullFromSoulLinkedGenerators(sl, team);
 
-            // Check if any generator actually moved energy this tick
-            // (You'd need a boolean return or check the flow map)
-
-            // C. Soul-Linked PUSH (Tower -> Consumers)
             if (!team.soulLinkedMachines.isEmpty() && team.stored.signum() > 0) {
                 pushToSoulLinkedMachines(sl, team);
-                // Note: isDoingWork is usually set inside push/pull methods
-                // but we can assume if stored > 0 and links exist, we are "Active"
+
                 isDoingWork = true;
             }
 
@@ -615,11 +581,9 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             TeslaTeamEnergyData data = TeslaTeamEnergyData.get(server);
             TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(ownerTeamUUID);
 
-            // Get the real values from your Tower's internal Bank trait
             teamData.stored = this.energyBank.getStored();
             teamData.capacity = this.energyBank.getCapacity();
 
-            // This is what the command sees!
             data.setDirty();
         }
     }
@@ -629,15 +593,10 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             TeslaTeamEnergyData data = TeslaTeamEnergyData.get(serverLevel);
             TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(ownerTeamUUID);
 
-            // 1. Tower tells the cloud its current battery capacity
             teamData.capacity = this.energyBank.getCapacity();
 
-            // 2. Tower PULLS its stored value from the Cloud.
-            // This makes cross-dim work: if a hatch in the Nether drained the cloud,
-            // the tower now updates its physical batteries to match.
             this.energyBank.setStored(teamData.stored);
 
-            // 3. Mark the network status
             data.setOnline(ownerTeamUUID, isWorkingEnabled() && isFormed());
             data.setDirty();
         }
@@ -821,14 +780,13 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
 
         var tag = binder.getTag();
         if (!getLevel().isClientSide && tag != null && tag.hasUUID("TargetTeam")) {
-            // Apply frequency
+
             this.ownerTeamUUID = tag.getUUID("TargetTeam");
 
-            // Force immediate registration
             registerTower(this);
 
             if (isFormed()) {
-                syncToTeslaSavedData(); // Connect the battery bank to this cloud frequency
+                syncToTeslaSavedData();
                 self().markDirty();
             }
 
@@ -845,7 +803,7 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         if (!binder.is(PhoenixItems.TESLA_BINDER.get())) return InteractionResult.PASS;
 
         if (!getLevel().isClientSide) {
-            ensureOwnerTeamUUID(); // Make sure the tower knows who it belongs to
+            ensureOwnerTeamUUID();
             if (this.ownerTeamUUID != null) {
                 var tag = binder.getOrCreateTag();
                 tag.putUUID("TargetTeam", this.ownerTeamUUID);
@@ -873,19 +831,15 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     private void ensureOwnerTeamUUID() {
         if (!(getLevel() instanceof ServerLevel sl)) return;
 
-        // 1. If we already have a persistent UUID from NBT, we're good
         if (this.ownerTeamUUID != null) return;
 
-        // 2. Try to get the UUID of the player who placed this block
         UUID ownerUUID = getOwnerUUID();
         if (ownerUUID != null) {
-            // 3. Use TeamUtils to find the Team/Player ID even if they are offline
+
             this.ownerTeamUUID = TeamUtils.getTeamIdOrPlayerFallback(ownerUUID);
 
-            // 4. Mark for save so it persists across restarts
             self().markDirty();
 
-            // 5. Log for debugging
             if (TESLA_DEBUG) {
                 PhoenixCore.LOGGER.info("Tesla Tower at {} auto-assigned to Team {}",
                         getPos().toShortString(), ownerTeamUUID);
@@ -905,17 +859,14 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         Style GREEN = Style.EMPTY.withColor(ChatFormatting.GREEN);
         Style RED = Style.EMPTY.withColor(ChatFormatting.RED);
 
-        // 1. Online / Offline Status
         textList.add(Component.literal("Tesla Network: ")
                 .append(Component.literal(isWorkingEnabled() ? "ONLINE" : "OFFLINE")
                         .withStyle(isWorkingEnabled() ? ChatFormatting.GREEN : ChatFormatting.RED)));
 
-        // 2. Team Name
         textList.add(Component.literal("Team: ")
                 .append(Component.literal(ownerTeamUUID == null ? "None" : TeamUtils.getTeamName(ownerTeamUUID))
                         .withStyle(AQUA)));
 
-        // 3. Stored & Capacity
         if (energyBank != null) {
             textList.add(Component.literal("Stored: ")
                     .append(Component
@@ -930,8 +881,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                             .withStyle(ChatFormatting.YELLOW)));
         }
 
-        // 4. Input & Output (The Network Flow)
-        // We check if we are on Server to get real data; on Client, we show 0 or cached data
         long inputVal = 0;
         long outputVal = 0;
 
@@ -951,7 +900,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                         .literal("-" + formatTeslaValue(FormattingUtil.formatNumbers(outputVal), false) + " EU/t")
                         .withStyle(RED)));
 
-        // 5. Battery Tier
         if (energyBank != null) {
             textList.add(Component.literal("Battery Tier: ")
                     .append(Component.literal(GTValues.VN[energyBank.getHighestTier()]).withStyle(AQUA)));
@@ -961,35 +909,29 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     private String formatTeslaValue(String valueStr, boolean forceScientific) {
         if (valueStr == null || valueStr.isEmpty()) return "0";
         try {
-            // 1. Clean the string so Double.parseDouble can read it
-            // We strip: color codes (§), commas (,), plus/minus, and any "suffix" letters like k, M, G
+
             String cleanValue = valueStr.replaceAll("[§][0-9a-fk-or]", "")
                     .replace(",", "")
                     .replace("+", "")
                     .replace("-", "")
-                    .replaceAll("[a-zA-Z]", "") // Strips 'k', 'M', 'G' if FormattingUtil added them
+                    .replaceAll("[a-zA-Z]", "")
                     .trim();
 
             double value = Double.parseDouble(cleanValue);
             if (value == 0) return "0";
 
-            // 2. Handle Force Scientific (Used in the scrollable list rows to save space)
             if (forceScientific && value >= 1000) {
                 return String.format("%.1e", value);
             }
 
-            // 3. Handle the "1 Trillion" Threshold for the Header
-            // Above 1 Trillion: Uses 3-decimal scientific notation (e.g., 1.250e+12)
             if (value >= 1_000_000_000_000L) {
                 return String.format("%.3e", value);
             }
 
-            // 4. Below 1 Trillion: Uses standard formatting with COMMAS
-            // We use String.format with %,.0f to add thousands separators
             return String.format("%,.0f", value);
 
         } catch (NumberFormatException ignored) {
-            // If parsing fails, return the original string stripped of colors
+
             return valueStr.replaceAll("[§][0-9a-fk-or]", "");
         }
     }

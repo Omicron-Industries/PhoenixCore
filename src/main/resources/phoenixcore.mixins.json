@@ -5,11 +5,17 @@
   "minVersion": "0.8",
   "refmap": "mixins.phoenixcore.refmap.json",
   "mixins": [
-    "EmiApiMixin",
+    "emi.EmiApiMixin",
     "accessor.AbilitiesAccessor",
+    "accessor.GTOresAccessor",
     "accessor.RelayTileDisabledAccessor",
+    "ae2.MEPatternBufferAccessor",
+    "ae2.MEPatternBufferInvoker",
+    "ae2.MixinContainerRenamer",
+    "ae2.MixinCutterHook",
     "ars.DominionWandMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
+    "gtceu.MixinGTOres",
     "gtceu.WorkableMultiblockMachineMixin",
     "minecraft.ItemStackTooltipMixin"
   ],

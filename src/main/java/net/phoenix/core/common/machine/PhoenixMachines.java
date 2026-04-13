@@ -156,22 +156,19 @@ public class PhoenixMachines {
                         Component.translatable("phoenixcore.machine.multiblock.source_tank.tooltip"),
                         Component.translatable("phoenixcore.universal.tooltip.source_storage_capacity", capacity))
                 .rotationState(RotationState.ALL)
-                .recipeType(DUMMY_RECIPES) // Since it's a tank, DUMMY_RECIPES or null is fine
+                .recipeType(DUMMY_RECIPES)
                 .pattern(definition -> FactoryBlockPattern.start()
                         .aisle("CCC", "CCC", "CCC")
                         .aisle("CCC", "C#C", "CCC")
                         .aisle("CCC", "CSC", "CCC")
                         .where('S', controller(blocks(definition.get())))
                         .where('C', blocks(casing.get())
-                                // This allows any block with these abilities to substitute for a 'C' block
                                 .or(abilities(PhoenixPartAbility.SOURCE_INPUT).setExactLimit(1))
                                 .or(abilities(PhoenixPartAbility.SOURCE_OUTPUT).setExactLimit(1))
-                                // Usually, you also want maintenance or bus capabilities for tanks
                                 .or(abilities(PartAbility.MAINTENANCE).setExactLimit(1)))
                         .where('#', air())
                         .build())
                 .shapeInfo(definition -> MultiblockShapeInfo.builder()
-                        // Fixed shape info to match the pattern (S in the middle of a wall)
                         .aisle("CCC", "CCC", "CCC")
                         .aisle("CCC", "C#C", "CCC")
                         .aisle("CCC", "CSC", "CCC")
@@ -188,9 +185,9 @@ public class PhoenixMachines {
     public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
             "refined_multiblock_source_tank",
             "Refined Multiblock Source Tank",
-            50000 * 1000,           // Capacity
-            SOURCE_FIBER_MACHINE_CASING, // Casing Supplier
-            100,                  // maxConsumption (The missing piece!)
+            50000 * 1000,
+            SOURCE_FIBER_MACHINE_CASING,
+            100,
             (builder, overlay) -> builder
                     .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
                             overlay));
@@ -465,15 +462,13 @@ public class PhoenixMachines {
                     .where("G", Predicates.blocks(FUSION_GLASS.get()))
                     .where("H", PhoenixPredicates.lampsByColor(DyeColor.BLUE))
                     .where("I", Predicates.blocks(CASING_STEEL_SOLID.get()))
-                    .where("J", Predicates.blocks(CASING_STAINLESS_CLEAN.get())) // Robust casing
+                    .where("J", Predicates.blocks(CASING_STAINLESS_CLEAN.get()))
                     .where("K", Predicates.blocks(CASING_TUNGSTENSTEEL_ROBUST.get()))
                     .where("L", Predicates.blocks(CASING_PRIMITIVE_BRICKS.get()))
                     .build())
             .modelProperty(GTMachineModelProperties.RECIPE_LOGIC_STATUS, RecipeLogic.Status.IDLE)
             .model(createWorkableCasingMachineModel(
-                    // Replace the fusion casing texture with your Tesla Casing texture
                     new ResourceLocation(PhoenixCore.MOD_ID, "block/casings/multiblock/tesla_casing"),
-                    // Keep the fusion reactor overlay (or change to your own)
                     GTCEu.id("block/multiblock/fusion_reactor")))
             .hasBER(true)
             .register();
@@ -1206,8 +1201,8 @@ public class PhoenixMachines {
     public static final MultiblockMachineDefinition ALCHEMICAL_IMBUER = REGISTRATE
             .multiblock("alchemical_imbuer", AlchemicalImbuerMachine::new)
             .langValue("§5Alchemical Imbuer")
-            .recipeTypes(PhoenixRecipeTypes.SOURCE_EXTRACTION_RECIPES, PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES) // PhoenixRecipeTypes.SOURCE_IMBUMENT_RECIPES)//"SOURCE_IMBUMENT_RECIPES","SOURCE_EXTRACTION_RECIPES")
-            .recipeModifiers(AlchemicalImbuerMachine::recipeModifier) // Remove BATCH_MODE and OC_NON_PERFECT
+            .recipeTypes(PhoenixRecipeTypes.SOURCE_EXTRACTION_RECIPES, PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES)
+            .recipeModifiers(AlchemicalImbuerMachine::recipeModifier, OC_NON_PERFECT_SUBTICK)
             .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
             .rotationState(RotationState.NON_Y_AXIS)
             .pattern(definition -> FactoryBlockPattern.start()

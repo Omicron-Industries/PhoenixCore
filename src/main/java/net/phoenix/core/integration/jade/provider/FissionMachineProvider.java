@@ -45,8 +45,8 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
     private static final String NBT_COOLING_POWER = "pf_cooling_power";
     private static final String NBT_GATE_FAIL = "pf_gate_fail";
     private static final String NBT_BLANKET_INPUT = "pf_blanket_input";
-    private static final String NBT_BLANKET_OUTPUT = "pf_blanket_output"; // legacy "primary"
-    private static final String NBT_BLANKET_OUTPUTS = "pf_blanket_outputs"; // NEW list
+    private static final String NBT_BLANKET_OUTPUT = "pf_blanket_output";
+    private static final String NBT_BLANKET_OUTPUTS = "pf_blanket_outputs";
     private static final String NBT_BLANKET_AMOUNT = "pf_blanket_amount";
 
     @Override
@@ -100,7 +100,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         tooltip.add(Component.literal("Max Cooling Power: " + coolingPower + " HU/t")
                 .withStyle(s -> s.withColor(0x55FFFF)));
 
-        // ---- Breeder blanket info ----
         if (data.getBoolean(NBT_IS_BREEDER) && data.getInt(NBT_BLANKETS) > 0 && data.contains(NBT_BLANKET_INPUT)) {
             String inKey = data.getString(NBT_BLANKET_INPUT);
             Component inName = resolveKeyToDisplayName(inKey);
@@ -108,7 +107,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
             tooltip.add(Component.translatable("jade.phoenixcore.blanket_input", inName)
                     .withStyle(s -> s.withColor(0xAAAAFF)));
 
-            // Legacy primary output line (first entry)
             if (data.contains(NBT_BLANKET_OUTPUT)) {
                 String outKey = data.getString(NBT_BLANKET_OUTPUT);
                 if (!outKey.isEmpty()) {
@@ -118,7 +116,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
                 }
             }
 
-            // NEW: list of possible outputs
             if (data.contains(NBT_BLANKET_OUTPUTS, Tag.TAG_LIST)) {
                 ListTag list = data.getList(NBT_BLANKET_OUTPUTS, Tag.TAG_STRING);
                 if (!list.isEmpty()) {
@@ -130,7 +127,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
                         if (shown++ >= 5) break;
 
                         String entry = list.getString(i);
-                        // entry format: "key|w|inst"
                         String[] parts = entry.split("\\|");
                         String key = parts.length > 0 ? parts[0] : entry;
                         String w = parts.length > 1 ? parts[1] : "?";
@@ -195,7 +191,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
                 tag.putString(NBT_BLANKET_INPUT, primary.getInputKey());
                 tag.putInt(NBT_BLANKET_AMOUNT, Math.max(0, primary.getAmountPerCycle()));
 
-                // Legacy single-output compatibility: first entry in outputs list
                 String primaryOut = "";
                 if (primary.getOutputs() != null && !primary.getOutputs().isEmpty() &&
                         primary.getOutputs().get(0) != null) {
@@ -203,12 +198,11 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
                 }
                 tag.putString(NBT_BLANKET_OUTPUT, primaryOut);
 
-                // NEW list for distribution display
                 ListTag outs = new ListTag();
                 if (primary.getOutputs() != null) {
                     for (var o : primary.getOutputs()) {
                         if (o == null) continue;
-                        // compact encoding: key|w|inst
+
                         outs.add(StringTag.valueOf(o.key() + "|" + o.weight() + "|" + o.instability()));
                     }
                 }

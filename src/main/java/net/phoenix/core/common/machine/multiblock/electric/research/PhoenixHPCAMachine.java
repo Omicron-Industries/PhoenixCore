@@ -313,62 +313,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         return ChatFormatting.RED;
     }
 
-    /*
-     * @Override
-     * protected void addWarningText(List<Component> textList) {
-     * MultiblockDisplayText.builder(textList, isFormed(), false)
-     * .addLowPowerLine(hasNotEnoughEnergy)
-     * .addCustom(tl -> {
-     * if (isStructureFormed()) {
-     * if (temperature > 500) {
-     * // Temperature warning
-     * tl.add(TextComponentUtil.translationWithColor(
-     * TextFormatting.YELLOW,
-     * "gtceu.multiblock.hpca.warning_temperature"));
-     *
-     * // Active cooler overdrive warning
-     * tl.add(TextComponentUtil.translationWithColor(
-     * TextFormatting.GRAY,
-     * "gtceu.multiblock.hpca.warning_temperature_active_cool"));
-     * }
-     *
-     * // Structure warnings
-     * hpcaHandler.addWarnings(tl);
-     * }
-     * })
-     * .addMaintenanceProblemLines(getMaintenanceProblems());
-     * }
-     *
-     * @Override
-     * protected void addErrorText(List<Component> textList) {
-     * super.addErrorText(textList);
-     * if (isFormed()) {
-     * if (temperature > 1000) {
-     * textList.add(Component.translatable("gtceu.multiblock.hpca.error_temperature").withStyle(ChatFormatting.RED));
-     * }
-     * hpcaHandler.addErrors(textList);
-     * }
-     * }
-     *
-     * @Override
-     * public void addBarHoverText(List<Component> hoverList, int index) {
-     * if (index == 0) {
-     * Component cwutInfo = Component.literal(
-     * hpcaHandler.cachedCWUt + " / " + hpcaHandler.getMaxCWUt() + " CWU/t").withStyle(ChatFormatting.AQUA);
-     * hoverList.add(Component.translatable(
-     * "gtceu.multiblock.hpca.computation",
-     * cwutInfo).withStyle(ChatFormatting.GRAY));
-     * } else {
-     * Component tempInfo = Component.literal(,
-     * Math.round(temperature / 10.0D) + "°C").withStyle(getDisplayTemperatureColor());
-     * hoverList.add(TextComponentUtil.translationWithColor(
-     * TextFormatting.GRAY,
-     * "gtceu.multiblock.hpca.temperature",
-     * tempInfo));
-     * }
-     * }
-     */
-
     // Handles the logic of this structure's specific HPCA component grid
     public static class HPCAGridHandler implements IManaged {
 
@@ -577,11 +521,11 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
                 int slot = getStrongestAvailableCoolantSlot(tank);
                 switch (slot) {
                     case 2:
-                        return PhoenixConfigs.INSTANCE.features.CoolantBoost2; // ActiveCoolerCoolant2
+                        return PhoenixConfigs.INSTANCE.features.CoolantBoost2;
                     case 1:
-                        return PhoenixConfigs.INSTANCE.features.CoolantBoost1; // ActiveCoolerCoolant1
+                        return PhoenixConfigs.INSTANCE.features.CoolantBoost1;
                     default:
-                        return PhoenixConfigs.INSTANCE.features.BaseCoolantBoost; // Base
+                        return PhoenixConfigs.INSTANCE.features.BaseCoolantBoost;
                 }
             } catch (Throwable t) {
                 return 1.0D;

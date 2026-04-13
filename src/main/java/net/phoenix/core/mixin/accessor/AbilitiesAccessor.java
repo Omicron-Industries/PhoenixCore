@@ -11,6 +11,6 @@ public interface AbilitiesAccessor {
     @Accessor("flyingSpeed")
     float getFlyingSpeed();
 
-    @Accessor("flyingSpeed") // Must match the MCP/Yarn/Mojang field name
+    @Accessor("flyingSpeed")
     void setFlyingSpeed(float speed);
 }

@@ -37,31 +37,20 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     public static final boolean TESLA_DEBUG = false;
 
-    // ---------------------------------------
-    // Managed fields
-    // ---------------------------------------
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
             TeslaEnergyHatchPartMachine.class, EnergyHatchPartMachine.MANAGED_FIELD_HOLDER);
 
     @Persisted
     private UUID ownerTeamUUID;
 
-    /**
-     * @return true if this hatch PUSHES energy TO the cloud (Network Input/Uplink)
-     */
     public boolean isUplink() {
-        // If physical IO is OUT, it pushes energy out of its internal buffer into the cloud.
         return getIO() == IO.OUT;
     }
 
-    /**
-     * @return true if this hatch PULLS energy FROM the cloud (Network Output/Downlink)
-     */
     public boolean isDownlink() {
         return getIO() == IO.IN;
     }
 
-    // Cached reference to tower (not persisted)
     private TeslaTowerMachine boundTower;
 
     private TickableSubscription tickSubscription;
@@ -89,7 +78,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                         BigInteger.valueOf(energyContainer.getEnergyStored()),
                         getIO() == IO.OUT);
             }
-            // MISSING: subscribe/unsubscribe based on current controller state
             updateTickSubscription();
         }
     }
@@ -101,7 +89,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
             if (self().getHolder().self().isRemoved()) {
                 TeslaTeamEnergyData.get(server).removeMachineFromAllTeams(getPos());
             } else if (ownerTeamUUID != null) {
-                // Flush accurate final state so it persists correctly across restarts
                 TeslaTeamEnergyData.get(server).setEnergyBuffered(
                         ownerTeamUUID,
                         getLevel(),
@@ -124,13 +111,12 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
         if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] addedToController: {} at {}, isTeslaTower={}",
                 controller.getClass().getSimpleName(), getPos(), controller instanceof TeslaTowerMachine);
 
-        // Only disable self-ticking if added to Tesla Tower
         if (controller instanceof TeslaTowerMachine) {
             if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] Unsubscribing from tick (Tesla Tower)");
             unsubscribeFromTick();
         } else {
             if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] Updating tick subscription (Other multiblock)");
-            // For other multiblocks
+
             updateTickSubscription();
         }
     }
@@ -154,11 +140,10 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
         if (isWireless()) {
             if (getControllers().isEmpty()) {
-                // Not in any multiblock - should tick
+
                 shouldTick = true;
                 if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] Not in multiblock, should tick");
             } else {
-                // In a multiblock - only tick if NOT Tesla Tower
                 shouldTick = getControllers().stream()
                         .noneMatch(ctrl -> ctrl instanceof TeslaTowerMachine);
                 if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] In multiblock, shouldTick={}", shouldTick);
@@ -245,7 +230,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                 moved = teamData.drain(toPull);
                 if (moved.signum() > 0) {
                     energyContainer.changeEnergy(moved.longValue());
-                    // energyInput feeds the tower's 20-tick display loop for downlinks
+
                     teamData.energyInput.merge(getPos(), moved, BigInteger::add);
                 }
             }
@@ -256,7 +241,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                 moved = teamData.fill(toPush);
                 if (moved.signum() > 0) {
                     energyContainer.changeEnergy(-moved.longValue());
-                    // energyOutput feeds the tower's 20-tick display loop for uplinks
+
                     teamData.energyOutput.merge(getPos(), moved, BigInteger::add);
                 }
             }
@@ -281,7 +266,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
         UUID ownerUUID = getOwnerUUID();
         if (ownerUUID == null) return;
 
-        // Resolve the team using the UUID directly (works for online and offline players)
         UUID team = TeamUtils.getTeamIdOrPlayerFallback(ownerUUID);
 
         if (this.ownerTeamUUID == null || !team.equals(this.ownerTeamUUID)) {
@@ -292,15 +276,13 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
             TeslaWirelessRegistry.registerHatch(this);
             updateTickSubscription();
 
-            // Sync initial buffer state to the cloud
-            // Only register position/team mapping on load; let tickWireless handle the real buffer sync
             TeslaTeamEnergyData.get(sl).setEnergyBuffered(
                     ownerTeamUUID,
                     getLevel(),
                     getPos(),
-                    BigInteger.valueOf(energyContainer.getEnergyStored()), // fine, will be corrected next tick
+                    BigInteger.valueOf(energyContainer.getEnergyStored()),
                     getIO() == IO.OUT);
-            // This is acceptable — tickWireless will overwrite with real data within 1 tick
+
         }
     }
 

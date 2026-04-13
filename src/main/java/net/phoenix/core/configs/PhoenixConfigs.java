@@ -161,6 +161,9 @@ public class PhoenixConfigs {
 
     public static class FeatureConfigs {
 
+        @Configurable.Comment({ "Whether the ME Tag Input Bus and Hatch are enabled" })
+        public boolean tagInputsEnabled = true;
+
         @Configurable
         @Configurable.Comment({ "Whether the Creative Energy Multiblock is enabled" })
         public boolean creativeEnergyEnabled = true;

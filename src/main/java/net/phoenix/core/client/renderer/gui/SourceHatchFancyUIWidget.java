@@ -25,11 +25,9 @@ public class SourceHatchFancyUIWidget extends FancyMachineUIWidget {
 
     private final SourceHatchPartMachine hatch;
 
-    // Background: Deep Obsidian with Purple undertones
     private static final int BG_COLOR_A = 0xFF0a050f;
     private static final int BG_COLOR_B = 0xFF050208;
 
-    // Pure Purple Theme
     private static final int PURPLE_MIST = 0x8F00FF;
     private static final int BUTTON_BG = 0xB0100518;
     private static final int PURPLE_ACCENT = 0xFF8F00FF;
@@ -38,17 +36,12 @@ public class SourceHatchFancyUIWidget extends FancyMachineUIWidget {
         super(mainPage, width, height);
         this.hatch = (SourceHatchPartMachine) mainPage;
 
-        // Remove default GT background so our custom background shows.
         setBackground((IGuiTexture) null);
     }
 
     @Override
     public void initWidget() {
         super.initWidget();
-
-        // DO NOT disable configuratorPanel.
-        // Covers rely on the configurator panel being present/active.
-        // (If covers still don't work after this, the issue is coverability/capability, not the UI.)
 
         addExitButton();
     }
@@ -84,19 +77,14 @@ public class SourceHatchFancyUIWidget extends FancyMachineUIWidget {
         int w = getSize().width;
         int h = getSize().height;
 
-        // 1) Custom background (under everything)
         DrawerHelper.drawGradientRect(graphics, x, y, w, h, BG_COLOR_A, BG_COLOR_B, false);
         drawGridPattern(graphics, x, y, w, h);
         drawMist(graphics, x, y, w, h);
 
-        // 2) Let GTCEu/LDLib draw and manage all widgets normally
-        // This is REQUIRED for covers + inventory behavior.
         super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
 
-        // 3) Draw HUD only on the home page, clipped to the actual page widget bounds
         drawOverlayHudForHomePageOnly(graphics);
 
-        // 4) Accent border
         int accent = getAccentColor();
         DrawerHelper.drawBorder(graphics, x, y, w, h, (0xAA << 24) | (accent & 0xFFFFFF), 1);
     }
@@ -108,13 +96,11 @@ public class SourceHatchFancyUIWidget extends FancyMachineUIWidget {
 
         var page = pageContainer.widgets.get(0);
 
-        // IMPORTANT: use the page widget's position directly (most reliable coord space)
         int pageX = page.getPosition().x;
         int pageY = page.getPosition().y;
         int pageW = page.getSize().width;
         int pageH = page.getSize().height;
 
-        // Slightly expand scissor so the font doesn't get clipped on edges
         int expand = 2;
 
         graphics.enableScissor(

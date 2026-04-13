@@ -48,10 +48,6 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
 
     public static final ResourceLocation UID = PhoenixCore.id("imbuer_threads_info");
 
-    // -------------------------------------------------------------------------
-    // Server side
-    // -------------------------------------------------------------------------
-
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
         if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity metaBE)) return;
@@ -135,10 +131,6 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
         if (!fluidTags.isEmpty()) tag.put("OutputFluids", fluidTags);
     }
 
-    // -------------------------------------------------------------------------
-    // Client side
-    // -------------------------------------------------------------------------
-
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
@@ -152,12 +144,8 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
         for (int i = 0; i < threadsNbt.size(); i++) {
             CompoundTag tag = threadsNbt.getCompound(i);
 
-            // Thread header
             tooltip.add(Component.literal("§6Thread #" + tag.getInt("ID") + ":"));
 
-            // Progress bar: white text overlaid so it reads against any bar color.
-            // We set the text color explicitly to white via ChatFormatting to
-            // guarantee readability regardless of the bar's background.
             String timerText = formatTicks(tag.getLong("CurrentTick")) + " / " + formatTicks(tag.getLong("MaxTick"));
             Component timerComponent = Component.literal(timerText).withStyle(ChatFormatting.WHITE);
 
@@ -207,10 +195,6 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
             }
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Rendering — mirrors GTCEu RecipeOutputProvider style
-    // -------------------------------------------------------------------------
 
     private void addItemTooltips(ITooltip tooltip, IElementHelper helper, List<Ingredient> items) {
         for (Ingredient ing : items) {

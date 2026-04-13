@@ -36,7 +36,6 @@ public class SoulSavedData extends SavedData {
 
     public SoulSavedData(ServerLevel level, CompoundTag nbt) {
         this.level = level;
-        // FIX: Changed "Entries" to "SoulData" to match the save() method
         ListTag list = nbt.getList("SoulData", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag entryTag = list.getCompound(i);
@@ -44,27 +43,17 @@ public class SoulSavedData extends SavedData {
         }
     }
 
-    // Add to SoulSavedData.java
-
-    /**
-     * Modifies the soul of a chunk.
-     * 
-     * @param isPermanent If true, increases the Max Capacity (The "Hotspot" value).
-     *                    If false, just refills the current soul (like a battery).
-     */
     public void modifySoul(ChunkPos pos, float amount, boolean isPermanent) {
-        // 1. Call getMultiplier first.
-        // This ensures the chunk rolls its unique "Hotspot" value if it's new.
         getMultiplier(pos);
 
         SoulChunkEntry entry = soulMap.get(pos);
         if (entry != null) {
             if (isPermanent) {
-                // This allows the "Popping" colors to get even brighter over time
+
                 entry.maxCapacity += amount;
                 entry.currentSoul += amount;
             } else {
-                // Refill current soul, capped at the (randomized or boosted) max
+
                 entry.currentSoul = Math.min(entry.maxCapacity, entry.currentSoul + amount);
             }
             this.setDirty();
@@ -84,28 +73,23 @@ public class SoulSavedData extends SavedData {
             else if (path.contains("dead") || path.contains("corruption")) base = 0.1f;
         }
 
-        // ADD NATURAL NOISE:
-        // Uses chunk coordinates to create a consistent but varied offset (±0.15)
-        // This makes the map look "bumpy" and organic instead of flat blocks of color.
         float noise = ((Math.abs(pos.x * 31 + pos.z * 17) % 100) / 333.0f) - 0.15f;
 
         return Math.max(0.05f, base + noise);
     }
 
     private void applyNaturalRegen(SoulChunkEntry entry, long currentTime) {
-        // Only regen if current is less than max
         if (entry.currentSoul < entry.maxCapacity) {
             long timePassed = currentTime - entry.lastUpdateTime;
 
-            // Example: Regen 0.01 soul every 1200 ticks (1 minute)
             if (timePassed >= 1200) {
                 float regenAmount = (timePassed / 1200f) * 0.01f;
                 entry.currentSoul = Math.min(entry.maxCapacity, entry.currentSoul + regenAmount);
                 entry.lastUpdateTime = currentTime;
-                this.setDirty(); // Ensure the regen is saved!
+                this.setDirty();
             }
         } else {
-            // Update time anyway so we don't have a massive "burst" of regen later
+
             entry.lastUpdateTime = currentTime;
         }
     }
@@ -122,10 +106,9 @@ public class SoulSavedData extends SavedData {
         return tag;
     }
 
-    // In your static load method
     public static SoulSavedData load(CompoundTag tag, ServerLevel level) {
         SoulSavedData data = new SoulSavedData(level);
-        // FIX: Changed "Entries" to "SoulData"
+
         ListTag list = tag.getList("SoulData", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag chunkTag = list.getCompound(i);
@@ -134,25 +117,18 @@ public class SoulSavedData extends SavedData {
         return data;
     }
 
-    /**
-     * Gets the current multiplier for a chunk.
-     * If the chunk is new, it rolls a unique max capacity based on the biome's range.
-     */
     public float getMultiplier(ChunkPos pos) {
-        // 1. If we already have data for this chunk, use it!
         if (soulMap.containsKey(pos)) {
             SoulChunkEntry entry = soulMap.get(pos);
 
-            // Handle natural regeneration here if needed
             applyNaturalRegen(entry, level.getGameTime());
 
             return entry.currentSoul;
         }
 
-        // 2. ONLY if it's a brand new chunk, calculate the base biome soul
         float baseSoul = calculateBiomeBase(pos);
         soulMap.put(pos, new SoulChunkEntry(baseSoul, baseSoul, level.getGameTime()));
-        this.setDirty(); // Save the fact that we've mapped a new chunk
+        this.setDirty();
         return baseSoul;
     }
 
@@ -160,11 +136,9 @@ public class SoulSavedData extends SavedData {
         long ticksPassed = level.getGameTime() - entry.lastUpdateTime;
         if (ticksPassed <= 0) return;
 
-        // We still need the profile to know the REGEN RATE for this biome
         Holder<Biome> biomeHolder = level.getBiome(pos.getMiddleBlockPosition(64));
         SoulBalance.SoulProfile profile = SoulBalance.get(biomeHolder, level);
 
-        // Update soul: Add (regen * time), capped at the chunk's unique maxCapacity
         float updatedSoul = entry.currentSoul + (ticksPassed * profile.regenPerTick());
         entry.currentSoul = Math.min(entry.maxCapacity, updatedSoul);
 

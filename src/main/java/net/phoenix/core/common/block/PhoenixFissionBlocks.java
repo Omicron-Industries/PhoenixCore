@@ -25,7 +25,6 @@ public class PhoenixFissionBlocks {
 
     public static void init() {}
 
-    // Mapping the registration fields to the correct Enum constants
     public static final BlockEntry<FissionCoolerBlock> COOLER_BASIC = createCoolerBlock(
             FissionCoolerBlock.FissionCoolerTypes.COOLER_BASIC);
     public static final BlockEntry<FissionCoolerBlock> COOLER_EV = createCoolerBlock(
@@ -35,8 +34,6 @@ public class PhoenixFissionBlocks {
     public static final BlockEntry<FissionCoolerBlock> COOLER_LUV = createCoolerBlock(
             FissionCoolerBlock.FissionCoolerTypes.COOLER_LUV);
 
-    // --- MODERATORS ---
-    // Updated to reference the enum constants (GRAPHITE, BERYLLIUM, etc.)
     public static final BlockEntry<FissionModeratorBlock> MODERATOR_GRAPHITE = createModeratorBlock(
             FissionModeratorBlock.FissionModeratorTypes.GRAPHITE);
     public static final BlockEntry<FissionModeratorBlock> MODERATOR_BERYLLIUM = createModeratorBlock(
@@ -46,7 +43,6 @@ public class PhoenixFissionBlocks {
     public static final BlockEntry<FissionModeratorBlock> MODERATOR_NIOBIUM_SIC = createModeratorBlock(
             FissionModeratorBlock.FissionModeratorTypes.NIOBIUM_SIC);
 
-    // --- FUEL RODS ---
     public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T1 = createFuelRodBlock(
             FissionFuelRodBlock.FissionFuelRodTypes.T1_FUEL_ROD);
     public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T2 = createFuelRodBlock(
@@ -57,8 +53,7 @@ public class PhoenixFissionBlocks {
             FissionFuelRodBlock.FissionFuelRodTypes.T4_FUEL_ROD);
     public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T5 = createFuelRodBlock(
             FissionFuelRodBlock.FissionFuelRodTypes.T5_FUEL_ROD);
-    // --- BLANKET RODS ---
-    // Updated to match your BreederBlanketTypes Enum naming
+
     public static final BlockEntry<FissionBlanketBlock> THORIUM_BLANKET = createBlanketBlock(
             FissionBlanketBlock.BreederBlanketTypes.THORIUM_BLANKET);
     public static final BlockEntry<FissionBlanketBlock> U236_BLANKET = createBlanketBlock(
@@ -67,7 +62,7 @@ public class PhoenixFissionBlocks {
             FissionBlanketBlock.BreederBlanketTypes.LEAD_BLANKET);
     public static final BlockEntry<FissionBlanketBlock> HEAVY_BLANKET = createBlanketBlock(
             FissionBlanketBlock.BreederBlanketTypes.HEAVY_BLANKET);
-    // --- Casings & Nuke ---
+
     public static BlockEntry<Block> FISSILE_HEAT_SAFE_CASING = registerSimpleBlock("§bFissile Heat Safe Casing",
             "fissile_heat_safe_casing", "fissile_heat_safe_casing", BlockItem::new);
     public static BlockEntry<Block> FISSILE_REACTION_SAFE_CASING = registerSimpleBlock("§bFissile Reaction Safe Casing",
@@ -88,7 +83,6 @@ public class PhoenixFissionBlocks {
             .build()
             .register();
 
-    // Registration Methods
     private static BlockEntry<FissionModeratorBlock> createModeratorBlock(IFissionModeratorType type) {
         var moderator = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionModeratorBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)

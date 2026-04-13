@@ -38,7 +38,6 @@ public class TeslaDebugCommand {
 
         var networks = data.getNetworksView();
 
-        // 1. GLOBAL REGISTRY VERIFICATION (Checks if Mixin lookup is valid)
         source.sendSuccess(() -> Component.literal("Global Machine Registry:").withStyle(ChatFormatting.YELLOW,
                 ChatFormatting.UNDERLINE), false);
 
@@ -69,7 +68,6 @@ public class TeslaDebugCommand {
 
         source.sendSuccess(() -> Component.literal("--------------------------------"), false);
 
-        // 2. DETAILED TEAM BREAKDOWN
         if (networks.isEmpty()) {
             source.sendSuccess(() -> Component.literal("No active team networks found.").withStyle(ChatFormatting.RED),
                     false);
@@ -81,14 +79,12 @@ public class TeslaDebugCommand {
             TeslaTeamEnergyData.TeamEnergy teamData = entry.getValue();
             boolean online = data.isOnline(team);
 
-            // Network Identity
             MutableComponent teamHeader = Component.literal("Network: ")
                     .append(Component.literal(team.toString().substring(0, 8)).withStyle(ChatFormatting.AQUA))
                     .append(online ? Component.literal(" [ONLINE]").withStyle(ChatFormatting.GREEN) :
                             Component.literal(" [OFFLINE]").withStyle(ChatFormatting.RED));
             source.sendSuccess(() -> teamHeader, false);
 
-            // Energy & Heartbeat Stats
             source.sendSuccess(() -> Component.literal("  EU: ").withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(teamData.stored.toString()).withStyle(ChatFormatting.YELLOW))
                     .append(" / ")
@@ -104,7 +100,6 @@ public class TeslaDebugCommand {
                     .append(Component.literal(String.valueOf(finalLiveCount)).withStyle(ChatFormatting.LIGHT_PURPLE)),
                     false);
 
-            // Device List (Hatches & Soul-Links)
             var hatches = data.getHatches(team);
             if (!hatches.isEmpty()) {
                 source.sendSuccess(() -> Component.literal("  Connected Hardware:").withStyle(ChatFormatting.GRAY,
@@ -123,7 +118,6 @@ public class TeslaDebugCommand {
                 }
             }
 
-            // Wireless Chargers
             if (!teamData.activeChargers.isEmpty()) {
                 source.sendSuccess(() -> Component.literal("  Active Chargers:").withStyle(ChatFormatting.BLUE), false);
                 for (BlockPos cPos : teamData.activeChargers) {
@@ -132,7 +126,7 @@ public class TeslaDebugCommand {
                 }
             }
 
-            source.sendSuccess(() -> Component.literal(" "), false); // Spacer
+            source.sendSuccess(() -> Component.literal(" "), false);
         }
 
         return 1;

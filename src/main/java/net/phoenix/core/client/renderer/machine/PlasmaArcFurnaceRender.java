@@ -65,7 +65,6 @@ public class PlasmaArcFurnaceRender extends DynamicRender<WorkableElectricMultib
         if (!furnace.isFormed() || furnace.getShieldType() != Shield.ShieldTypes.NORMAL) {
             return;
         }
-        // --------------------------------
 
         float tick = (machine.getOffsetTimer() + partialTick);
         double x = 0.5;

@@ -313,7 +313,6 @@ public class PhoenixProgressionMaterials {
                 .iconSet(MaterialIconSet.DULL)
                 .buildAndRegister();
 
-        // Big List - Registration
         AKASHIC_ZERONIUM = new Material.Builder(PhoenixCore.id("akashic_zeronium")).ingot().fluid().color(0x8F00FF)
                 .cableProperties(GTValues.V[GTValues.MAX], 400000, 400000, true)
                 .blastTemp(200000, HIGHEST, GTValues.VA[GTValues.MAX], 100000000).flags(GENERATE_PLATE, GENERATE_ROD)

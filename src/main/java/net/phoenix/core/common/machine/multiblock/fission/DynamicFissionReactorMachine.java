@@ -227,8 +227,6 @@ public class DynamicFissionReactorMachine extends FissionWorkableElectricMultibl
         int toConsumeNow = (int) Math.floor(fuelRemainder);
         if (toConsumeNow <= 0) return;
 
-        // NOTE: do NOT subtract remainder unless we successfully consume,
-        // so we don't "lose" required fuel during starvation.
         String inItemId = getFuelItemIdCompat(fuelType);
         if (inItemId.isEmpty()) return;
 
@@ -240,10 +238,8 @@ public class DynamicFissionReactorMachine extends FissionWorkableElectricMultibl
             return;
         }
 
-        // Successful consumption: apply it.
         fuelRemainder -= toConsumeNow;
 
-        // Output spent/depleted fuel item (hot-coolant analogue).
         String outItemId = getFuelOutputItemIdCompat(fuelType);
         if (!outItemId.isEmpty() && !"none".equalsIgnoreCase(outItemId) && !outItemId.equalsIgnoreCase(inItemId)) {
 

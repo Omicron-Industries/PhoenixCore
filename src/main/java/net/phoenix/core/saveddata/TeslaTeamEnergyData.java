@@ -23,7 +23,6 @@ public class TeslaTeamEnergyData extends SavedData {
     private final Map<UUID, TeamEnergy> networks = new HashMap<>();
     private final Set<UUID> onlineNetworks = new HashSet<>();
 
-    // Global lookup for the Mixin to stay connected after server restarts
     public final Map<BlockPos, UUID> machineToTeam = new HashMap<>();
 
     public static class HatchInfo {
@@ -50,7 +49,6 @@ public class TeslaTeamEnergyData extends SavedData {
 
         Map<BlockPos, HatchInfo> map = new HashMap<>();
 
-        // 1. Add Physical Hatches
         e.energyBuffered.forEach((pos, buf) -> {
             HatchInfo info = map.computeIfAbsent(pos, p -> new HatchInfo(p, e.getMachineDimension(p)));
             info.buffered = buf;
@@ -58,7 +56,6 @@ public class TeslaTeamEnergyData extends SavedData {
             info.displayFlow = e.machineDisplayFlow.getOrDefault(pos, 0L);
         });
 
-        // 2. Add Soul-Linked Machines (EV Lathes, etc.)
         e.soulLinkedMachines.forEach(pos -> {
             HatchInfo info = map.computeIfAbsent(pos, p -> new HatchInfo(p, e.getMachineDimension(p)));
             info.isSoulLinked = true;
@@ -68,26 +65,15 @@ public class TeslaTeamEnergyData extends SavedData {
         return map.values();
     }
 
-    /**
-     * Checks if a specific team's network is currently toggled "ON".
-     */
     public boolean isOnline(UUID team) {
-        // If it's a new solo player, default to true so the network actually works
         if (!networks.containsKey(team)) return true;
         return onlineNetworks.contains(team);
     }
 
-    /**
-     * Provides a read-only view of all active networks.
-     * Used by the debug command and UI synchronization.
-     */
     public Map<UUID, TeamEnergy> getNetworksView() {
         return Collections.unmodifiableMap(networks);
     }
 
-    /**
-     * Updates the last seen time for a specific machine to track if it is "Live".
-     */
     public void markHatchActive(UUID team, BlockPos pos, long time) {
         TeamEnergy e = networks.get(team);
         if (e != null) {
@@ -108,7 +94,6 @@ public class TeslaTeamEnergyData extends SavedData {
         public final Map<BlockPos, Boolean> hatchIsOutput = new HashMap<>();
         public final Map<BlockPos, ResourceKey<Level>> posToDimension = new HashMap<>();
 
-        // Transient (non-persisted) tracking
         public final Map<BlockPos, Long> lastSeen = new HashMap<>();
         public final Map<BlockPos, Long> machineDisplayFlow = new HashMap<>();
         public final Map<BlockPos, Long> machineCurrentFlow = new HashMap<>();
@@ -127,10 +112,10 @@ public class TeslaTeamEnergyData extends SavedData {
 
         public long calculateTotalNetworkFlow() {
             long total = 0;
-            // Sum flow from all machines currently in the display map
+
             for (Long flow : machineDisplayFlow.values()) {
                 if (flow != null) {
-                    total += Math.abs(flow); // Use absolute to show total throughput
+                    total += Math.abs(flow);
                 }
             }
             return total;
@@ -139,7 +124,6 @@ public class TeslaTeamEnergyData extends SavedData {
         public int getLiveHatchCount(long gameTime) {
             int count = 0;
             for (long time : lastSeen.values()) {
-                // If the machine has sent a "heartbeat" in the last 2 seconds (40 ticks)
                 if (gameTime - time < 40) {
                     count++;
                 }
@@ -152,7 +136,6 @@ public class TeslaTeamEnergyData extends SavedData {
         }
 
         public BigInteger fill(BigInteger amount) {
-            // Ensure space is never negative
             BigInteger space = capacity.subtract(stored).max(BigInteger.ZERO);
             BigInteger toAdd = amount.min(space);
             stored = stored.add(toAdd);
@@ -160,7 +143,6 @@ public class TeslaTeamEnergyData extends SavedData {
         }
 
         public BigInteger drain(BigInteger amount) {
-            // Ensure we never drain more than we have
             BigInteger toTake = amount.min(stored).max(BigInteger.ZERO);
             stored = stored.subtract(toTake);
             return toTake;
@@ -183,7 +165,6 @@ public class TeslaTeamEnergyData extends SavedData {
             activeChargers.forEach(p -> chargerList.add(net.minecraft.nbt.LongTag.valueOf(p.asLong())));
             tag.put("Chargers", chargerList);
 
-            // CRITICAL: Save Dimension Mappings so links persist across restarts
             ListTag dimList = new ListTag();
             posToDimension.forEach((pos, dim) -> {
                 CompoundTag entry = new CompoundTag();
@@ -226,15 +207,15 @@ public class TeslaTeamEnergyData extends SavedData {
 
     public boolean toggleSoulLink(UUID team, Level level, BlockPos pos) {
         TeamEnergy e = getOrCreate(team);
-        BlockPos p = pos.immutable(); // Always use immutable for Map keys
+        BlockPos p = pos.immutable();
         boolean removed = e.soulLinkedMachines.remove(p);
 
         if (!removed) {
             e.soulLinkedMachines.add(p);
-            machineToTeam.put(p, team); // Global Registry
+            machineToTeam.put(p, team);
             e.posToDimension.put(p, level.dimension());
         } else {
-            machineToTeam.remove(p); // Global Un-registry
+            machineToTeam.remove(p);
             e.posToDimension.remove(p);
         }
         setDirty();
@@ -280,7 +261,6 @@ public class TeslaTeamEnergyData extends SavedData {
     public TeamEnergy getOrCreate(UUID team) {
         return networks.computeIfAbsent(team, k -> {
             TeamEnergy e = new TeamEnergy();
-            // Default online for single players/new teams so power isn't voided immediately
             onlineNetworks.add(k);
             return e;
         });
@@ -328,12 +308,10 @@ public class TeslaTeamEnergyData extends SavedData {
             data.networks.put(teamUUID, teamData);
             if (teamTag.getBoolean("Online")) data.onlineNetworks.add(teamUUID);
 
-            // Re-populate machineToTeam from persisted sets
             for (BlockPos p : teamData.soulLinkedMachines) data.machineToTeam.put(p, teamUUID);
             for (BlockPos p : teamData.activeChargers) data.machineToTeam.put(p, teamUUID);
             for (BlockPos p : teamData.energyBuffered.keySet()) data.machineToTeam.put(p, teamUUID);
 
-            // Add this inside the per-team loop in load(), after loading teamData:
             for (BlockPos p : teamData.soulLinkedMachines) {
                 teamData.machineCurrentFlow.put(p, 0L);
                 teamData.machineDisplayFlow.put(p, 0L);
@@ -344,14 +322,12 @@ public class TeslaTeamEnergyData extends SavedData {
             }
         }
 
-        // *** THIS IS THE MISSING PIECE — read GlobalLookup back ***
         if (tag.contains("GlobalLookup")) {
             ListTag lookupList = tag.getList("GlobalLookup", Tag.TAG_COMPOUND);
             for (int i = 0; i < lookupList.size(); i++) {
                 CompoundTag entry = lookupList.getCompound(i);
                 BlockPos pos = BlockPos.of(entry.getLong("p"));
                 UUID uuid = entry.getUUID("t");
-                // Only add if not already covered by the per-team sets above
                 data.machineToTeam.putIfAbsent(pos, uuid);
             }
         }

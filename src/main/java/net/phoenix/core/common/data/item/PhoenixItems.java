@@ -125,7 +125,6 @@ public class PhoenixItems {
             .lang("§2Zirconium Rod")
             .register();
 
-    // Drilling Kits
     public static final ItemEntry<TooltipItem> SPACE_GRADE_STEEL_DRILLING_KIT = REGISTRATE
             .item("space_grade_steel_drilling_kit", p -> new TooltipItem(p,
                     "§d§oA state-of-the-art drilling kit, engineered for extraterrestrial exploration.",
@@ -154,7 +153,6 @@ public class PhoenixItems {
             .lang("§6Aurum Steel Drill Kit")
             .register();
 
-    // Modules
     public static final ItemEntry<TooltipItem> SPACE_MINER_MODULE = REGISTRATE
             .item("space_miner_module", p -> new TooltipItem(p,
                     "§d§oDesigned for deep-space resource extraction.",
@@ -169,7 +167,6 @@ public class PhoenixItems {
             .lang("§eEarth Bound Miner Module")
             .register();
 
-    // Drill Heads
     public static final ItemEntry<TooltipItem> SPACE_GRADE_STEEL_DRILL_HEAD = REGISTRATE
             .item("space_grade_steel_drill_head", p -> new TooltipItem(p,
                     "§d§lAn orbital-grade drill head, designed to pierce lunar regolith or asteroid cores.",
@@ -198,7 +195,6 @@ public class PhoenixItems {
             .lang("§6Aurum Steel Drill Head")
             .register();
 
-    // Miscellaneous
     public static final ItemEntry<TooltipItem> FLAMING_MESH = REGISTRATE
             .item("flaming_mesh", p -> new TooltipItem(p,
                     "§6A superheated lattice used to filter neural essences.",
@@ -225,7 +221,7 @@ public class PhoenixItems {
                     .setArmorLogic(new PhoenixTechSuite(ArmorItem.Type.HELMET,
                             16384,
                             500_000_000L,
-                            8))) // MAX tier
+                            8)))
             .lang("Phoenix Tech Suite Helmet")
             .properties(p -> p.rarity(Rarity.EPIC))
             .tag(Tags.Items.ARMORS_HELMETS)

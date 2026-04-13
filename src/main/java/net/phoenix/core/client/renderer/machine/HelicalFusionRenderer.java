@@ -71,7 +71,6 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         RecipeLogic logic = machine.getRecipeLogic();
         int recipeColor = machine.getColor();
 
-        // --- Color carryover & alpha fade ---
         if (logic.isWorking()) {
             lastColor = recipeColor;
             delta = FADEOUT;
@@ -81,16 +80,12 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
 
         float alpha = Mth.clamp(delta / FADEOUT, 0f, 1f);
 
-        /* ---------------- COLOR STABILIZATION ---------------- */
-
         float rf = FastColor.ARGB32.red(lastColor) / 255f;
         float gf = FastColor.ARGB32.green(lastColor) / 255f;
         float bf = FastColor.ARGB32.blue(lastColor) / 255f;
 
-        // Perceived luminance (Rec.709)
         float lum = 0.2126f * rf + 0.7152f * gf + 0.0722f * bf;
 
-        // Luminance clamp for additive blending
         final float MAX_LUM = 0.65f;
         if (lum > MAX_LUM) {
             float scale = MAX_LUM / lum;
@@ -99,7 +94,6 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
             bf *= scale;
         }
 
-        // Oxygen-plasma safety tweak (near-white blue)
         if (bf > rf && bf > gf && lum > 0.55f) {
             bf *= 0.90f;
             gf *= 0.95f;
@@ -109,11 +103,8 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         int gBase = (int) (gf * 255f);
         int bBase = (int) (bf * 255f);
 
-        /* ---------------------------------------------------- */
-
         float time = (machine.getOffsetTimer() + partialTick) * 0.02f;
 
-        // --- LOD calculation ---
         Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         Vec3 center = Vec3.atCenterOf(machine.getPos());
         double distSq = cam.distanceToSqr(center);
@@ -130,7 +121,6 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
             crossSections = 8;
         }
 
-        // --- Translate 20 blocks in front ---
         Vec3 frontStep = new Vec3(
                 machine.getFrontFacing().step().x(),
                 machine.getFrontFacing().step().y(),
@@ -141,7 +131,6 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
 
         VertexConsumer vc = buffer.getBuffer(PhoenixRenderTypes.LIGHT_RING());
 
-        // Two counter-wound helices
         renderHelix(poseStack, vc, time, 0f,
                 rBase, gBase, bBase, alpha,
                 segments, crossSections);
@@ -153,13 +142,10 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         poseStack.popPose();
     }
 
-    /* ---------------- HELIX & RINGS ---------------- */
-
     private void renderHelix(PoseStack stack, VertexConsumer vc,
                              float time, float phase,
                              int rBase, int gBase, int bBase, float alpha,
                              int segments, int crossSections) {
-        // Tunables (safe defaults)
         final float OUTER_ALPHA = 0.35f;
         final float INNER_ALPHA = 0.15f;
         final float OUTER_DEPTH_NUDGE = 0.015f;
@@ -173,18 +159,13 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         Vec3[] normals = new Vec3[ringCount];
         Vec3[] binorms = new Vec3[ringCount];
 
-        /* -------- Curve & frame -------- */
-
         computeCurve(time, phase, segments, centers, tangents);
         computeBishopFrame(segments, tangents, normals, binorms);
 
-        // Close loop
         centers[segments] = centers[0];
         tangents[segments] = tangents[0];
         normals[segments] = normals[0];
         binorms[segments] = binorms[0];
-
-        /* -------- Tube geometry -------- */
 
         Vec3[][] outer = new Vec3[ringCount][crossSections + 1];
         Vec3[][] inner = new Vec3[ringCount][crossSections + 1];
@@ -238,11 +219,9 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
                 float cos = Mth.cos(angle);
                 float sin = Mth.sin(angle);
 
-                // Outer tube: fully stable, no pulse
                 o[i][v] = c[i].add(nt.scale(cos * OUTER_RADIUS))
                         .add(bt.scale(sin * OUTER_RADIUS));
 
-                // Inner tube: subtle pulse for a living effect
                 float pulse = 0.96f + 0.04f * Mth.sin(i * 0.1f + time * 3f);
                 in[i][v] = c[i].add(nt.scale(cos * innerRadius * pulse))
                         .add(bt.scale(sin * innerRadius * pulse));
@@ -258,7 +237,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         for (int i = 0; i < segments; i++) {
             int nextI = i + 1;
 
-            float finalAlpha = alpha; // Only use global alpha, no sine modulation
+            float finalAlpha = alpha;
 
             for (int v = 0; v < crossSections; v++) {
                 int nextV = v + 1;
@@ -306,7 +285,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         float scale = 0.6f;
         float x = 2f * scale * Mth.cos(4 * t);
         float y = 2f * scale * Mth.sin(4 * t);
-        float z = 17f * scale * Mth.cos(t); // 10.2f
+        float z = 17f * scale * Mth.cos(t);
 
         float c = Mth.cos(time);
         float s = Mth.sin(time);

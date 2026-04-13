@@ -105,10 +105,6 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
         }
     }
 
-    /////////////////////////////////////
-    // *********** GUI ***********//
-    /////////////////////////////////////
-
     @Override
     public ModularUI createUI(Player player) {
         final int w = 176;
@@ -119,7 +115,7 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
 
     @Override
     public Widget createUIWidget() {
-        return new WidgetGroup(0, 0, 176, 74); // Just an empty group
+        return new WidgetGroup(0, 0, 176, 74);
     }
 
     public static String compactIfNumeric(String s) {

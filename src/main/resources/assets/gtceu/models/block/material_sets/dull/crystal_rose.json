@@ -1,8 +1,4 @@
 {
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "phoenixcore:item/material_sets/dull/crystal_rose"
-  },
   "ambientocclusion": false,
   "gui_light": "front",
   "textures": {
@@ -30,5 +26,26 @@
         "east": {"uv": [0, 0, 16, 16], "texture": "#cross", "tintindex": 0}
       }
     }
-  ]
+  ],
+  "display": {
+    "gui": {
+      "rotation": [ 0, 0, 0 ],
+      "translation": [ 0, 0, 0 ],
+      "scale": [ 1, 1, 1 ]
+    },
+    "fixed": {
+      "rotation": [ 0, 180, 0 ],
+      "scale": [ 0.5, 0.5, 0.5 ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [ 0, 0, 0 ],
+      "translation": [ 0, 3, 1 ],
+      "scale": [ 0.55, 0.55, 0.55 ]
+    },
+    "firstperson_righthand": {
+      "rotation": [ 0, -90, 25 ],
+      "translation": [ 1.13, 3.2, 1.13 ],
+      "scale": [ 0.68, 0.68, 0.68 ]
+    }
+  }
 }

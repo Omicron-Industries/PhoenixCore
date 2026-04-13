@@ -32,7 +32,6 @@ public final class PhoenixToolRecipes {
 
     private PhoenixToolRecipes() {}
 
-    // --- Tier Maps ---
     private static final Int2ReferenceMap<ItemEntry<? extends Item>> motorItems = new Int2ReferenceArrayMap<>();
     private static final Int2ReferenceMap<Material> baseMaterials = new Int2ReferenceArrayMap<>();
     private static final Int2ReferenceMap<List<ItemEntry<? extends Item>>> batteryItems = new Int2ReferenceArrayMap<>();
@@ -41,7 +40,6 @@ public final class PhoenixToolRecipes {
         initTierMaps();
         registerPowerUnitRecipes(provider);
 
-        // Optionally run material-based recipes if needed
         for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
             net.phoenix.core.common.data.recipe.generated.PhoenixToolRecipeHelper.run(provider, material);
         }
@@ -72,7 +70,6 @@ public final class PhoenixToolRecipes {
                 ItemStack batteryStack = batteryItem.asStack();
                 long maxCharge = GTCapabilityHelper.getElectricItem(batteryStack).getMaxCharge();
 
-                // Create a fully charged power unit stack
                 ItemStack powerUnitStack = ToolItemHelper.getMaxChargeOverrideStack(powerUnitEntry.get(), maxCharge);
 
                 String recipeName = String.format(

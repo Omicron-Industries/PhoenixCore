@@ -753,7 +753,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
     }
 
     protected String getCoolerCoolantFluidIdCompat(IFissionCoolerType cooler) {
-        // Try likely method names, and accept String or ResourceLocation
         for (String name : new String[] {
                 "getRequiredCoolantFluidId",
                 "getCoolantFluidId",

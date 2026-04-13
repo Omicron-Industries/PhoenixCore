@@ -41,7 +41,6 @@ public class WingFlightGui {
 
         if (!(stack.getItem() instanceof PhoenixArmorItem)) return null;
 
-        // Initialise NBT defaults
         CompoundTag tag = stack.getOrCreateTag();
         if (!tag.contains(NBT_MODE)) tag.putString(NBT_MODE, MODE_POWERED);
         if (!tag.contains(NBT_SPEED)) tag.putInt(NBT_SPEED, 5);
@@ -55,10 +54,8 @@ public class WingFlightGui {
 
         WidgetGroup root = new WidgetGroup(0, 0, W, H);
 
-        // ── Title ──────────────────────────────────────────────────────────────
         root.addWidget(new LabelWidget(8, 6, "§5Wing Flight Control"));
 
-        // ── Header info panel ──────────────────────────────────────────────────
         WidgetGroup header = new WidgetGroup(5, 18, W - 10, 46);
         header.setBackground(TESLA_BACKGROUND);
         header.addWidget(new ComponentPanelWidget(5, 4, text -> {
@@ -73,7 +70,6 @@ public class WingFlightGui {
         }));
         root.addWidget(header);
 
-        // ── Mode toggle button ─────────────────────────────────────────────────
         int btnY = 72;
         root.addWidget(new ButtonWidget(5, btnY, W - 10, 20, GuiTextures.BUTTON, c -> {
             if (player.level().isClientSide) return;
@@ -86,31 +82,23 @@ public class WingFlightGui {
         root.addWidget(new LabelWidget(W / 2 - 55, btnY + 6,
                 MODE_POWERED.equals(currentMode) ? "§eSwitch to ✦ Creative Flight" : "§6Switch to ⚡ Powered Flight"));
 
-        // ── Speed control ──────────────────────────────────────────────────────
         root.addWidget(new LabelWidget(8, 102, "§7Flight Speed"));
         root.addWidget(buildStepControl(holder, player, stack, NBT_SPEED, 118, W));
 
-        // ── Drift control ──────────────────────────────────────────────────────
         root.addWidget(new LabelWidget(8, 158, "§7Flight Drift"));
         root.addWidget(buildStepControl(holder, player, stack, NBT_DRIFT, 174, W));
 
-        // ── Close hint ─────────────────────────────────────────────────────────
         root.addWidget(new LabelWidget(8, H - 12, "§8Press Numpad9 or Esc to close"));
 
         ui.widget(root);
         return ui;
     }
 
-    /**
-     * Builds a [ - ] [== segmented bar ==] [ + ] row for a 0–10 int NBT value.
-     * Clicking a segment sets the value directly.
-     */
     private static WidgetGroup buildStepControl(HeldItemUIFactory.HeldItemHolder holder,
                                                 Player player, ItemStack stack,
                                                 String nbtKey, int y, int W) {
         WidgetGroup group = new WidgetGroup(5, y, W - 10, 34);
 
-        // Decrement
         group.addWidget(new ButtonWidget(0, 0, 18, 18, GuiTextures.BUTTON, c -> {
             if (player.level().isClientSide) return;
             CompoundTag t = stack.getOrCreateTag();
@@ -119,7 +107,6 @@ public class WingFlightGui {
         }));
         group.addWidget(new LabelWidget(6, 5, "§f-"));
 
-        // Increment
         group.addWidget(new ButtonWidget(W - 28, 0, 18, 18, GuiTextures.BUTTON, c -> {
             if (player.level().isClientSide) return;
             CompoundTag t = stack.getOrCreateTag();
@@ -128,9 +115,8 @@ public class WingFlightGui {
         }));
         group.addWidget(new LabelWidget(W - 23, 5, "§f+"));
 
-        // Segmented bar — each segment is a clickable button
         int barX = 22;
-        int barW = W - 10 - 22 - 22; // total bar width
+        int barW = W - 10 - 22 - 22;
         int segW = barW / STEPS;
         int filled = stack.getOrCreateTag().getInt(nbtKey);
 
@@ -146,7 +132,6 @@ public class WingFlightGui {
                     }));
         }
 
-        // Value label below the bar
         int current = stack.getOrCreateTag().getInt(nbtKey);
         group.addWidget(new LabelWidget(0, 22,
                 String.format("§8%s: §f%d / %d",

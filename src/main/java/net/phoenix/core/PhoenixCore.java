@@ -16,8 +16,6 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -35,7 +33,6 @@ import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import net.phoenix.core.api.PhoenixColors;
 import net.phoenix.core.api.PhoenixSounds;
 import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.api.recipe.lookup.MapSourceIngredient;
@@ -89,15 +86,12 @@ public class PhoenixCore {
 
         modEventBus.addListener(this::commonSetup);
 
-        // --- CRITICAL FIX ---
-        // Only register the client setup listener if we are physically on a client.
         PhoenixParticles.init(modEventBus);
         if (Platform.isClient()) {
             modEventBus.addListener(this::clientSetup);
-            modEventBus.addListener(PhoenixKeybinds::register); // ADD THIS
+            modEventBus.addListener(PhoenixKeybinds::register);
             PhoenixClient.init(modEventBus);
         }
-        // --------------------
 
         modEventBus.addGenericListener(RecipeConditionType.class, this::registerConditions);
         modEventBus.addGenericListener(GTRecipeType.class, this::registerRecipeTypes);
@@ -117,7 +111,6 @@ public class PhoenixCore {
 
     public static void init() {
         PhoenixConfigs.init();
-        PhoenixColors.loadColorsFromConfig();
         REGISTRATE.registerRegistrate();
         PhoenixFissionEntities.init();
         PhoenixBlocks.init();
@@ -133,7 +126,6 @@ public class PhoenixCore {
             () -> IForgeMenuType.create((IContainerFactory<SourceHatchMenu>) SourceHatchMenu::fromNetwork));
 
     public void registerConditions(GTCEuAPI.RegisterEvent<String, RecipeConditionType<?>> event) {
-        // 1. Create and assign the Fluid/Plasma condition type
         FluidInHatchCondition.TYPE = new RecipeConditionType<>(
                 FluidInHatchCondition::new,
                 FluidInHatchCondition.CODEC);
@@ -148,8 +140,7 @@ public class PhoenixCore {
     @SubscribeEvent
     public void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            PhoenixNetwork.init(); // ADD THIS
-
+            PhoenixNetwork.init();
 
             MapIngredientTypeManager.registerMapIngredient(Shield.ShieldTypes.class, MapShieldIngredient::from);
             MapIngredientTypeManager.registerMapIngredient(
@@ -159,7 +150,6 @@ public class PhoenixCore {
         });
     }
 
-    // This method is now safe because it's only registered on the client side in the constructor
     private void clientSetup(final FMLClientSetupEvent event) {
         LOGGER.info("PhoenixCore: Client setup complete.");
 
@@ -168,9 +158,7 @@ public class PhoenixCore {
         });
     }
 
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        // Implementation remains same
-    }
+    private void addCreative(BuildCreativeModeTabContentsEvent event) {}
 
     private void addMaterialRegistries(MaterialRegistryEvent event) {
         GTCEuAPI.materialManager.createRegistry(MOD_ID);

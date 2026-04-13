@@ -24,7 +24,6 @@ public abstract class DominionWandMixin {
     @Inject(method = "useOn", at = @At("HEAD"))
     private void phoenix$captureStoredData(UseOnContext ctx, CallbackInfoReturnable<InteractionResult> cir) {
         ItemStack stack = ctx.getItemInHand();
-        // DominionData reads from stack NBT via its ItemstackData base
         boolean had = new DominionData(stack).hasStoredData();
         phoenix$hadStoredData.set(had);
     }
@@ -35,14 +34,11 @@ public abstract class DominionWandMixin {
             Level level = ctx.getLevel();
             if (level.isClientSide) return;
 
-            // Only in "finishing a connection" mode (relay first, hatch second)
             if (!Boolean.TRUE.equals(phoenix$hadStoredData.get())) return;
 
             BlockEntity be = level.getBlockEntity(ctx.getClickedPos());
             if (be == null) return;
 
-            // If the clicked thing is our hatch endpoint, and Ars returned PASS,
-            // swallow it so GTCEu doesn't open the hatch UI.
             if (be.getCapability(ISourceProviderCapability.CAPABILITY).isPresent() &&
                     cir.getReturnValue() == InteractionResult.PASS) {
                 cir.setReturnValue(InteractionResult.CONSUME);

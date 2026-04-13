@@ -48,12 +48,10 @@ public abstract class RelayTileMixin {
 
     @Unique
     private static boolean phoenix$invalidDistanceOrSelf(RelayTile relay, BlockPos pos) {
-        // invalid if too far OR same block
         return BlockUtil.distanceFrom(pos, relay.getBlockPos()) > relay.getMaxDistance() ||
                 pos.equals(relay.getBlockPos());
     }
 
-    // Allow linking (send-to) to capability endpoints
     @Inject(method = "setSendTo", at = @At("HEAD"), cancellable = true)
     private void phoenix$setSendTo(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         RelayTile relay = phoenix$self();
@@ -65,7 +63,6 @@ public abstract class RelayTileMixin {
             return;
         }
 
-        // Accept ASM or our capability
         if (phoenix$resolve(level, pos) != null) {
             relay.setToPos(pos.immutable());
             relay.updateBlock();
@@ -73,7 +70,6 @@ public abstract class RelayTileMixin {
         }
     }
 
-    // Wand connection: first click (send-to)
     @Inject(method = "onFinishedConnectionFirst", at = @At("HEAD"), cancellable = true)
     private void phoenix$onFinishedConnectionFirst(BlockPos pos, LivingEntity entity, Player player, CallbackInfo ci) {
         RelayTile relay = phoenix$self();
@@ -93,7 +89,6 @@ public abstract class RelayTileMixin {
         ci.cancel();
     }
 
-    // Wand connection: last click (take-from)
     @Inject(method = "onFinishedConnectionLast", at = @At("HEAD"), cancellable = true)
     private void phoenix$onFinishedConnectionLast(BlockPos pos, LivingEntity entity, Player player, CallbackInfo ci) {
         RelayTile relay = phoenix$self();
@@ -101,7 +96,7 @@ public abstract class RelayTileMixin {
         if (level == null || pos == null) return;
 
         if (pos.equals(relay.getBlockPos())) return;
-        if (level.getBlockEntity(pos) instanceof RelayTile) return; // keep vanilla rule
+        if (level.getBlockEntity(pos) instanceof RelayTile) return;
         if (phoenix$resolve(level, pos) == null) return;
 
         if (relay.setTakeFrom(pos.immutable())) {
@@ -114,7 +109,6 @@ public abstract class RelayTileMixin {
         ci.cancel();
     }
 
-    // Tick transfer + Ars particles
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void phoenix$tick(CallbackInfo ci) {
         RelayTile relay = phoenix$self();

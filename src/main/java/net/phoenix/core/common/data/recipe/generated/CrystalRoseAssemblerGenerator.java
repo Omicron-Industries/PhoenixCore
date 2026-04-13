@@ -26,29 +26,23 @@ public class CrystalRoseAssemblerGenerator {
     public static void generateCrystalRoseRecipes(Consumer<FinishedRecipe> provider) {
         BeeRecipeData.ALL_BEE_CONFIGS.forEach((id, config) -> {
 
-            // 1. Robust Material Lookup
             Material material = getMaterial(id);
 
             if (material == null || material.isNull()) return;
 
-            // 2. Universal Input: 4x Dust
-            // Dust is the most consistent form across all namespaces
             ItemStack inputStack = ChemicalHelper.get(TagPrefix.dust, material, 4);
 
-            // Fallback: If no dust exists, try gem (Diamond, Emerald, etc.)
             if (inputStack.isEmpty()) {
                 inputStack = ChemicalHelper.get(TagPrefix.gem, material, 4);
             }
 
             if (inputStack.isEmpty()) return;
 
-            // 3. Get the Crystal Rose output
             ItemStack roseStack = ChemicalHelper.get(PhoenixMaterialFlags.crystal_rose, material, 1);
             if (roseStack.isEmpty()) return;
 
             FluidStack crystalRoseFluid = CRYO_GRAPHITE_BINDING_SOLUTION.getFluid(144);
 
-            // 4. Build Recipe
             GTRecipeBuilder builder = GTRecipeTypes.ASSEMBLER_RECIPES.recipeBuilder(
                     "phoenixcore:crystal_rose_" + material.getName())
                     .EUt(GTValues.V[GTValues.IV])
@@ -61,10 +55,6 @@ public class CrystalRoseAssemblerGenerator {
         });
     }
 
-    /**
-     * Specialized material lookup with direct hardcoded references for Phoenix materials
-     * to bypass registry lifecycle issues.
-     */
     private static Material getMaterial(String id) {
         if (id == null || id.isEmpty()) return null;
 
@@ -133,7 +123,6 @@ public class CrystalRoseAssemblerGenerator {
         BeeRecipeData.ALL_BEE_CONFIGS.forEach((id, config) -> {
             Material material = getMaterial(id);
             if (material != null && !material.isNull()) {
-                // Injects the Rose generation flag into the material properties
                 material.addFlags(PhoenixMaterialFlags.GENERATE_CRYSTAL_ROSE);
             }
         });

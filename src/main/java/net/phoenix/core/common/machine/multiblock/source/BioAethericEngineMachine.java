@@ -115,10 +115,8 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
     }
 
     private float getFloraBoost(BlockState state) {
-        // Tag-based checks (highest priority, most specific first)
-        if (state.is(PTags.SOUL_FLOWERS)) return 0.01f;   // your custom high-value tag
-        if (state.is(BlockTags.FLOWERS)) return 0.005f;          // vanilla flowers
-
+        if (state.is(PTags.SOUL_FLOWERS)) return 0.01f;
+        if (state.is(BlockTags.FLOWERS)) return 0.005f;
         return 0.0f;
     }
 
@@ -129,17 +127,14 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
 
         float baseSoul = 1.0f;
         if (engine.getLevel() instanceof ServerLevel serverLevel) {
-            // Fetch the chunk-based soul value
+
             baseSoul = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(engine.getPos()));
         }
 
-        // This is your core stat: Base Soul + Flora Boost
         float totalResonance = baseSoul + engine.getLastBotanicalBoost();
 
-        // Speed boost: 10% per point of resonance
         double durationMultiplier = 1.0 / (1.0 + (totalResonance * 0.1));
 
-        // Night-time speed bonus (25% faster)
         if (engine.getLevel() != null && engine.getLevel().isNight()) {
             durationMultiplier /= 1.25;
         }

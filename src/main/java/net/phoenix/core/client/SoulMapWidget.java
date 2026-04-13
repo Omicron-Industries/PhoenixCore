@@ -15,7 +15,7 @@ public class SoulMapWidget extends Widget {
     private final ItemStack stack;
 
     public SoulMapWidget(int x, int y, ItemStack stack) {
-        super(x, y, 102, 102); // 17 chunks * 6 pixels = 102
+        super(x, y, 102, 102);
         this.stack = stack;
     }
 
@@ -27,8 +27,6 @@ public class SoulMapWidget extends Widget {
 
         ListTag mapData = tag.getList("MapData", Tag.TAG_COMPOUND);
 
-        // In LDLib, getGuiPosition() usually returns the absolute screen position.
-        // If that's private or missing, we use the internal position fields.
         int renderX = getPosition().x;
         int renderY = getPosition().y;
         int cellSize = 6;
@@ -38,11 +36,9 @@ public class SoulMapWidget extends Widget {
             int rx = chunk.getInt("relX");
             int rz = chunk.getInt("relZ");
 
-            // Circular mask logic
             double dist = Math.sqrt(rx * rx + rz * rz);
             if (dist > 8.5) continue;
 
-            // Shift coordinates from -8..8 to 0..16 for rendering
             int drawX = renderX + ((rx + 8) * cellSize);
             int drawY = renderY + ((rz + 8) * cellSize);
 
@@ -52,14 +48,12 @@ public class SoulMapWidget extends Widget {
             graphics.fill(drawX, drawY, drawX + cellSize - 1, drawY + cellSize - 1, color);
         }
 
-        // Center Player Indicator (Crosshair)
         int centerX = renderX + (8 * cellSize);
         int centerY = renderY + (8 * cellSize);
         graphics.renderOutline(centerX, centerY, cellSize, cellSize, 0xFFFFFFFF);
     }
 
     private int getSoulColor(float density) {
-        // Map 0.0 -> Dark Grayish Purple, 2.5+ -> Vibrant Neon Purple
         float factor = Math.min(density / 2.5f, 1.0f);
         int r = (int) (30 + (180 * factor));
         int g = (int) (10 * factor);

@@ -32,9 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * High-Pressure Plasma Arc Furnace with Shield System
- */
 @SuppressWarnings("all")
 public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultiblockMachine implements ShieldedMachine {
 

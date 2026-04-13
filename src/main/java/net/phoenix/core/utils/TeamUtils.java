@@ -16,14 +16,9 @@ public final class TeamUtils {
 
         return FTBTeamsAPI.api().getManager().getTeamForPlayerID(playerUUID)
                 .map(team -> {
-                    // If the player is in a Party or a Server-wide team,
-                    // use that ID so everyone in that group shares power.
                     if (team.isPartyTeam() || team.isServerTeam()) {
                         return team.getTeamId();
                     }
-
-                    // If it's a 'Player' team (personal), ignore the Team UUID
-                    // and use the Player's actual UUID to keep their data private.
                     return playerUUID;
                 })
                 .orElse(playerUUID);

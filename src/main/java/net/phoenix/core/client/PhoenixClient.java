@@ -26,7 +26,6 @@ import net.phoenix.core.client.renderer.NukePrimedRenderer;
 import net.phoenix.core.client.renderer.gui.SourceHatchScreen;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
-import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
 import net.phoenix.core.common.registry.PhoenixFissionEntities;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,15 +35,9 @@ public class PhoenixClient {
 
     private PhoenixClient() {}
 
-    /**
-     * Called from your main Mod class (PhoenixCore) constructor or CommonSetup.
-     */
     public static void init(IEventBus modBus) {
-        // FIX: This tells Forge to actually look at our particle list.
-        // Without this, TESLA_SPARK.get() returns null!
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
 
-        // GTCEu Dynamic Renders
         DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("plasma_arc_furnace"), PlasmaArcFurnaceRender.TYPE);
@@ -55,16 +48,11 @@ public class PhoenixClient {
         DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
     }
 
-    // --- 2. PARTICLE FACTORY REGISTRATION ---
     @SubscribeEvent
     public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
-        // Reference the common registry object
         event.registerSpriteSet(PhoenixParticles.TESLA_SPARK.get(), TeslaSparkProvider::new);
     }
 
-    /**
-     * The bridge between the Particle Engine and your TeslaSparkParticle class.
-     */
     public static class TeslaSparkProvider implements ParticleProvider<SimpleParticleType> {
 
         private final SpriteSet sprites;
@@ -79,7 +67,6 @@ public class PhoenixClient {
                                        double xSpeed, double ySpeed, double zSpeed) {
             TeslaSparkParticle particle = new TeslaSparkParticle(level, x, y, z);
 
-            // Safety check: only pick if sprites exist
             if (this.sprites != null) {
                 particle.pickSprite(this.sprites);
             }
@@ -88,7 +75,6 @@ public class PhoenixClient {
         }
     }
 
-    // --- 3. MODEL & SETUP LOGIC ---
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(EyeOfHarmonyRender.SPACE_SHELL_MODEL_RL);

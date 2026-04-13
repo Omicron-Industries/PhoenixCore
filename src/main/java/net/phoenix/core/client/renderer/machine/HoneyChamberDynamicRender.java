@@ -306,7 +306,7 @@ public class HoneyChamberDynamicRender extends
         void reset(Random r) {
             pos = new Vec3(
                     (r.nextFloat() - 0.5f) * FIELD_RADIUS,
-                    (r.nextFloat() - 0.5f) * 20.0f, // Y-range of bees
+                    (r.nextFloat() - 0.5f) * 20.0f,
                     (r.nextFloat() - 0.5f) * FIELD_RADIUS);
             size = 1.5f + r.nextFloat() * 2.5f;
             alpha = 0.0f;
@@ -318,7 +318,6 @@ public class HoneyChamberDynamicRender extends
                 life = 0;
             }
 
-            // Fade in and out
             float lifeRatio = life / maxLife;
             alpha = Mth.sin(lifeRatio * Mth.PI);
 

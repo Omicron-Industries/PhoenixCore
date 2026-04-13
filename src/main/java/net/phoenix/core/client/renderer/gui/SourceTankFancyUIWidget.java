@@ -31,16 +31,12 @@ public class SourceTankFancyUIWidget extends FancyMachineUIWidget {
     private static final int PURPLE_MIST = 0x8F00FF;
     private static final int BUTTON_BG = 0xB0100518;
     private static final int PURPLE_ACCENT = 0xFF8F00FF;
-    // Deep dark purple for the "empty" track
     private static final int BAR_EMPTY = 0xFF120520;
 
-    // A bright Cyan for low levels
     private static final int BAR_LOW = 0xFF00E5FF;
 
-    // A soft, bright Lavender/Light Purple for mid levels
     private static final int BAR_MID = 0xFFD466FF;
 
-    // A vibrant, glowing Purple for full capacity
     private static final int BAR_FULL = 0xFFBD00FF;
 
     public SourceTankFancyUIWidget(IFancyUIProvider mainPage, int width, int height) {
@@ -121,42 +117,30 @@ public class SourceTankFancyUIWidget extends FancyMachineUIWidget {
     private void drawOverlayHUD(GuiGraphics graphics, int x, int y, int usableWidth) {
         var font = Minecraft.getInstance().font;
 
-        // Get current and max values
         int cur = tank.getSourceTank().getSource();
         int max = Math.max(1, tank.getSourceTank().getMaxSource());
         int pct = (int) ((cur * 100L) / max);
 
-        // Vertical spacing
         int labelY = y + 18;
         int barY = y + 32;
-        int barH = 5; // Slightly thinner bar for a sleeker look
+        int barH = 5;
 
-        // Title
         graphics.drawString(font, "SOURCE TANK", x, y, PURPLE_ACCENT, false);
 
-        // The compact format: "Capacity 500/1k - 50%"
-        // Using your fmt() method to keep the strings short
         String sourceLabel = String.format("Capacity %s/%s - %d%%", fmt(cur), fmt(max), pct);
         graphics.drawString(font, sourceLabel, x, labelY, 0xFFE6E6FF, false);
 
-        // --- Progress Bar ---
-
-        // Background
         graphics.fill(x, barY, x + usableWidth, barY + barH, BAR_EMPTY);
 
-        // Color logic (Cyan -> Lavender -> Purple)
         int barColor = pct < 30 ? BAR_LOW : pct < 75 ? BAR_MID : BAR_FULL;
 
-        // Fill
         int fillW = (int) ((cur * (long) usableWidth) / max);
         if (fillW > 0) {
             graphics.fill(x, barY, x + fillW, barY + barH, barColor);
         }
 
-        // Subtle Cyan glow border (0x33 alpha is very faint/classy)
         DrawerHelper.drawBorder(graphics, x, barY, usableWidth, barH, (0x33 << 24) | 0x00FFFF, 1);
 
-        // Divider Line
         int lineY = barY + barH + 10;
         graphics.fill(x, lineY, x + usableWidth, lineY + 1, (0x44 << 24) | (PURPLE_ACCENT & 0xFFFFFF));
     }
