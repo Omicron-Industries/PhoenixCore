@@ -55,10 +55,10 @@ You have been warned.
 
 Now, back to talking about blanket rod blocks.
 
-They are registered in two parts, an interface named `IFissionBlanketType` and a block class named `FissionBlanketBlock`. 
+They are registered in two parts, an interface named `IFissionBlanketType` and a block class named `FissionBlanketBlock`.
 
 ```java
-package net.phoenix.core.api.block;
+package net.phoenix.core.integration.phoenix_fission.api.block;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -85,7 +85,8 @@ public interface IFissionBlanketType {
         if (m != null && m != GTMaterials.NULL) {
             try {
                 return 0xFF000000 | m.getMaterialRGB();
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
         return 0xFFFFFFFF;
     }
@@ -95,14 +96,15 @@ public interface IFissionBlanketType {
     int getDurationTicks();
 
     int getAmountPerCycle();
-    
+
     @NotNull
     String getInputKey();
 
-    public record BlanketOutput(String key, int weight, int instability) {}
+    public record BlanketOutput(String key, int weight, int instability) {
+    }
 
     List<BlanketOutput> getOutputs();
-    
+
     @NotNull
     ResourceLocation getTexture();
 
@@ -152,8 +154,8 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
-import net.phoenix.core.api.block.IFissionBlanketType;
-import net.phoenix.core.api.block.IFissionBlanketType.BlanketOutput;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType.BlanketOutput;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -166,7 +168,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Getter
 @ParametersAreNonnullByDefault
 public class FissionBlanketBlock extends ActiveBlock {
-    
+
     private final IFissionBlanketType blanketType;
 
     public FissionBlanketBlock(Properties properties, IFissionBlanketType blanketType) {
@@ -260,7 +262,7 @@ public class FissionBlanketBlock extends ActiveBlock {
         @Getter
         @NotNull
         private final ResourceLocation texture;
-        
+
         @Getter
         private final int tintColor;
 

@@ -321,7 +321,7 @@ public class PhoenixConfigs {
 
         @Configurable
         @Configurable.Comment("How many blocks to process per tick during cube wipe.")
-        public int nukeBatchPerTick = 8000;
+        public int nukeBatchPerTick = 4000;
 
         @Configurable
         @Configurable.Comment("Skip blocks that have a BlockEntity (machines/chests).")
@@ -341,7 +341,7 @@ public class PhoenixConfigs {
 
         @Configurable
         @Configurable.Comment("Max bonus percent from continuous running (power + breeder output). Example: 60 = up to +60%.")
-        public double burnBonusMaxPercent = 60.0;
+        public double burnBonusMaxPercent = 30.0;
 
         @Configurable
         @Configurable.Comment("Seconds of continuous running required to reach the max burn bonus. Example: 1200 = 20 minutes.")
@@ -373,7 +373,7 @@ public class PhoenixConfigs {
 
         @Configurable
         @Configurable.Comment("How much heat is required to add +1 to the recipe parallel multiplier.")
-        public double heatPerParallel = 2000.0;
+        public double heatPerParallel = 10000.0;
 
         @Configurable
         @Configurable.Comment("Hard cap for parallels.")
@@ -405,7 +405,7 @@ public class PhoenixConfigs {
 
         @Configurable
         @Configurable.Comment("Clamp for total EU boost percent from moderators.")
-        public int maxEUBoostPercent = 500;
+        public int maxEUBoostPercent = 100;
 
         @Configurable
         @Configurable.Comment("If true, cooling only applies when coolant is present.")
@@ -458,7 +458,7 @@ public class PhoenixConfigs {
 
         @Configurable
         @Configurable.Comment("Minimum grace seconds when extremely above safe heat.")
-        public double minGraceSeconds = 10.0;
+        public double minGraceSeconds = 15.0;
 
         @Configurable
         @Configurable.Comment("Severity multiplier: higher = faster meltdown when over safe heat.")

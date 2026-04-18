@@ -21,6 +21,24 @@ public class PhoenixRenderTypes extends RenderType {
                     .setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
                     .createCompositeState(false));
 
+    private static final RenderType RADIAL_LINES = RenderType.create(
+            "phoenix_radial_lines",
+            DefaultVertexFormat.POSITION_COLOR_NORMAL,
+            VertexFormat.Mode.LINES,
+            256,
+            false,
+            false,
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER) // Use the specific lines shader
+                    .setLineState(new RenderStateShard.LineStateShard(java.util.OptionalDouble.of(2.5D))) // 2.5 thickness
+                    .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING) // Ensures it draws over the background
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .createCompositeState(false));
+
+
+
     private static final RenderType BLACK_HOLE_TEST_TRANSLUCENT = RenderType.create(
             "phoenix_black_hole_test_translucent",
             DefaultVertexFormat.POSITION_COLOR,
@@ -86,5 +104,9 @@ public class PhoenixRenderTypes extends RenderType {
 
     public static RenderType BLACK_HOLE_TEST_TRANSLUCENT() {
         return BLACK_HOLE_TEST_TRANSLUCENT;
+    }
+
+    public static RenderType RADIAL_LINES() {
+        return RADIAL_LINES;
     }
 }

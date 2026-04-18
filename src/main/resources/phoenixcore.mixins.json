@@ -5,7 +5,6 @@
   "minVersion": "0.8",
   "refmap": "mixins.phoenixcore.refmap.json",
   "mixins": [
-    "emi.EmiApiMixin",
     "accessor.AbilitiesAccessor",
     "accessor.GTOresAccessor",
     "accessor.RelayTileDisabledAccessor",
@@ -14,6 +13,7 @@
     "ae2.MixinContainerRenamer",
     "ae2.MixinCutterHook",
     "ars.DominionWandMixin",
+    "emi.EmiApiMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
     "gtceu.MixinGTOres",
     "gtceu.WorkableMultiblockMachineMixin",
@@ -22,6 +22,7 @@
   "client": [
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
+    "minecraft.GameRendererMixin",
     "minecraft.GuiGraphicsCountSuffixMixin"
   ],
   "injectors": {

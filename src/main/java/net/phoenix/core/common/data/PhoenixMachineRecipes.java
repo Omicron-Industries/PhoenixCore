@@ -11,14 +11,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.phoenix.core.api.capability.SourceRecipeCapability;
+import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.PhoenixBeeMaterials;
 import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
 import net.phoenix.core.common.data.materials.PhoenixOres;
-import net.phoenix.core.common.data.recipe.custom.SourceIngredient;
-import net.phoenix.core.common.data.recipeConditions.SoulCondition;
+import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.SourceIngredient;
+import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
 import net.phoenix.core.common.machine.PhoenixMachines;
 
 import java.util.function.Consumer;
@@ -27,18 +27,13 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTBlocks.*;
 import static com.gregtechceu.gtceu.common.data.GTItems.*;
-import static com.gregtechceu.gtceu.common.data.GTMachines.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gregtechceu.gtceu.common.data.GTRecipeTypes.*;
-import static com.gregtechceu.gtceu.common.data.machines.GTResearchMachines.*;
-import static com.gregtechceu.gtceu.data.recipe.GTCraftingComponents.*;
 import static com.hollingsworth.arsnouveau.setup.registry.BlockRegistry.SOURCE_GEM_BLOCK;
 import static com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry.SOURCE_GEM;
 import static net.phoenix.core.common.data.PhoenixRecipeTypes.*;
 import static net.phoenix.core.common.data.item.PhoenixItems.*;
-import static net.phoenix.core.common.data.materials.PhoenixMaterials.*;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
-import static net.phoenix.core.common.data.recipe.generated.TeslaHatchRecipes.*;
 
 @SuppressWarnings("removal")
 public class PhoenixMachineRecipes {

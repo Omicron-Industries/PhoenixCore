@@ -54,35 +54,47 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.status.safe_working", "Status: §6ACTIVE");
         provider.add("phoenixcore.status.danger_timer", "§cCRITICAL: Meltdown in %s seconds!");
         provider.add("phoenixcore.status.no_coolant", "§eWARNING: Coolant Supply Exhausted");
+        provider.add("phoenixcore.nuke_radius", "Blast area: %s");
+
+        // Breeding & Transmutation
+        provider.add("phoenixcore.blanket.input", "Breeding Target");
+        provider.add("phoenixcore.blanket.potential_outputs", "Potential Transmutations:");
+        provider.add("phoenixcore.blanket.bias_hint", "§d§oHigher instability yields are favored by a Fast Neutron Spectrum (High Heat/Bias).");
         provider.add("phoenixcore.blanket_outputs", "§7Possible Products:");
-        provider.add("phoenixcore.coolant_output", "Hot Coolant Produced: %s");
+        provider.add("phoenixcore.blanket_input", "§7Target Material: §f%s");
+        provider.add("phoenixcore.blanket_output", "§7Breeding Product: §f%s");
+        provider.add("phoenixcore.blanket_desc", "Irradiate target materials to produce specialized isotopes.");
+        provider.add("phoenixcore.blanket_cycle", "Transmutes §f%s§7 units every §6%s§7 seconds");
+
+        // Core Stats & Heat
         provider.add("phoenixcore.neutron_bias", "§7Neutron Bias: §f%s");
         provider.add("phoenixcore.spectrum_shift", "§7Spectrum Shift: §f%s");
         provider.add("phoenixcore.current_heat", "Core Temperature: %s HU");
         provider.add("phoenixcore.net_heat", "Net Heat Change: %s HU/t");
+        provider.add("phoenixcore.heat_production", "Heat Production: %s");
         provider.add("phoenixcore.eu_generation", "Output: %s EU/t");
         provider.add("phoenixcore.parallels", "Parallel Processing: %sx");
-        provider.add("phoenixcore.heat_production", "Heat Production: %s");
-        provider.add("phoenixcore.nuke_radius", "Blast area: %s");
+
+        // Components & Cooling
         provider.add("phoenixcore.moderator", "Primary Moderator: %s");
         provider.add("phoenixcore.moderator_fuel_discount", "Fuel Efficiency: +%s%%");
         provider.add("phoenixcore.cooler", "Primary Cooling: %s");
         provider.add("phoenixcore.coolant", "Coolant: %s");
         provider.add("phoenixcore.coolant_rate", "Coolant Flow: %s mb/t");
+        provider.add("phoenixcore.coolant_output", "Hot Coolant Produced: %s");
         provider.add("phoenixcore.coolant_status.ok", "§aCoolant Supply OK");
         provider.add("phoenixcore.coolant_status.empty", "§cCoolant Supply Depleted");
         provider.add("phoenixcore.summary", "Cooling: %s / %s HU/t");
-        provider.add("phoenixcore.blanket_input", "§7Target Material: §f%s");
-        provider.add("phoenixcore.blanket_output", "§7Breeding Product: §f%s");
-        provider.add("phoenixcore.blanket_desc", "Irradiate target materials to produce specialized isotopes.");
+        provider.add("phoenixcore.cooling_power", "§bCooling Capacity: §f%s HU/t");
+
+        // Fuel Management
         provider.add("phoenixcore.fuel_cycle", "Consumes §f%s§7 units every §6%s§7 seconds");
         provider.add("phoenixcore.depleted_fuel", "§7Depleted Fuel: §f%s");
-        provider.add("phoenixcore.blanket_cycle", "Transmutes §f%s§7 units every §6%s§7 seconds");
         provider.add("phoenixcore.fuel_usage", "Fuel Consumption: §f%s");
         provider.add("phoenixcore.fuel_required", "§7Requires Fuel: §f%s");
         provider.add("phoenixcore.coolant_required", "§3Required Coolant: §f%s");
-        provider.add("phoenixcore.cooling_power", "§bCooling Capacity: §f%s HU/t");
 
+        // Block Specific Tooltips & Jade Integration
         provider.add("block.phoenixcore.fission_cooler.capacity", "§bCooling Capacity: §f%s HU/t");
         provider.add("block.phoenixcore.fission_cooler.required_coolant", "§3Required Coolant: §f%s");
         provider.add("block.phoenixcore.fission_moderator.multiplier", "§6Heat Multiplier: §f%sx");
@@ -92,14 +104,74 @@ public class PhoenixMachineLangHandler {
         provider.add("block.phoenixcore.fission_moderator.boost", "EU Boost: %s");
         provider.add("block.phoenixcore.fission_moderator.fuel_discount", "Fuel Discount: %s");
 
-        provider.add("phoenix.multiblock.pattern.info.multiple_fuel_rods",
-                "Requires Fuel Rods. These generate base heat and determine recipe parallels.");
-        provider.add("phoenix.multiblock.pattern.info.multiple_blankets",
-                "Requires Blanket Rods. These act as targets for transmutation in Breeder cycles.");
-        provider.add("phoenix.multiblock.pattern.info.multiple_moderators",
-                "Moderators adjust heat generation and can provide EU or Parallel bonuses.");
-        provider.add("phoenix.multiblock.pattern.info.multiple_coolers",
-                "Coolers remove heat based on their tier and provided coolant fluid.");
+        provider.add("phoenixcore.current_heat_display", "Core Temperature: %s / %s HU");
+        provider.add("phoenixcore.status.scram", "§c§lSCRAM ACTIVE");
+
+// SCRAM Hatch Tooltips
+        provider.add("block.phoenixcore.fission_scram_hatch.desc", "Stops fuel consumption and heat generation when receiving a Redstone signal.");
+
+        provider.add("phoenixcore.machine.fission_scram_hatch.tooltip",
+                "§cEmergency Reactor Brake§r: Halts the reactor on §fany§r redstone signal.");
+        provider.add("phoenixcore.machine.fission_scram_hatch.tooltip2",
+                "§8No configuration. No mercy. Build your circuit carefully.");
+
+        provider.add("phoenixcore.machine.fission_advanced_scram_hatch.tooltip",
+                "§6Precision SCRAM Control§r: Triggers only above a configured signal strength,");
+        provider.add("phoenixcore.machine.fission_advanced_scram_hatch.tooltip2",
+                "§7and only after a sustained signal. Configurable via UI.");
+
+        provider.add("phoenixcore.machine.fission_stability_sensor.tooltip",
+                "§eThermal Monitor§r: Emits a §fproportional§r redstone signal based on core heat.");
+
+        provider.add("gui.phoenixcore.stability_sensor.title", "Thermal Stability Configuration");
+        provider.add("gui.phoenixcore.stability_sensor.min", "Min Heat Threshold %");
+        provider.add("gui.phoenixcore.stability_sensor.max", "Max Heat Threshold %");
+        provider.add("gui.phoenixcore.stability_sensor.invert", "Invert Signal");
+
+        provider.add("gui.phoenixcore.advanced_stability_sensor.title", "Advanced Thermal Stability Configuration");
+        provider.add("gui.phoenixcore.advanced_stability_sensor.min", "Min Heat Threshold %");
+        provider.add("gui.phoenixcore.advanced_stability_sensor.max", "Max Heat Threshold %");
+        provider.add("gui.phoenixcore.advanced_stability_sensor.strength", "Emit Strength (1–15)");
+        provider.add("gui.phoenixcore.advanced_stability_sensor.invert", "Invert Signal");
+        provider.add("gui.phoenixcore.advanced_stability_sensor.hint1", "Emits fixed strength on back face only.");
+        provider.add("gui.phoenixcore.advanced_stability_sensor.hint2", "Pair with an Advanced SCRAM Hatch.");
+
+        // UI Elements for the Advanced SCRAM Hatch
+        provider.add("gui.phoenixcore.advanced_scram.title", "Advanced SCRAM Configuration");
+        provider.add("gui.phoenixcore.advanced_scram.threshold", "Min Signal Strength (1–15)");
+        provider.add("gui.phoenixcore.advanced_scram.sustain", "Sustain Duration (ticks)");
+        provider.add("gui.phoenixcore.advanced_scram.status_armed", "§c● SCRAMMED — Reactor HALTED");
+        provider.add("gui.phoenixcore.advanced_scram.status_arming", "§eArming: %d / %d ticks");
+        provider.add("gui.phoenixcore.advanced_scram.status_standby", "§a● Standby — Reactor Permitted");
+        provider.add("gui.phoenixcore.advanced_scram.status_triggered", "§cArmed and triggered.");
+        provider.add("gui.phoenixcore.advanced_scram.status_waiting", "§7Waiting for signal...");
+        provider.add("gui.phoenixcore.advanced_scram.hint1", "Signal must meet strength threshold");
+        provider.add("gui.phoenixcore.advanced_scram.hint2", "for the full sustain duration to SCRAM.");
+
+        // SCRAM status for Jade / controller display
+        provider.add("phoenixcore.status.scram_basic", "§c§lSCRAM ACTIVE §8(Basic Hatch)");
+        provider.add("phoenixcore.status.scram_advanced", "§6§lSCRAM ACTIVE §8(Advanced Hatch)");
+        provider.add("phoenixcore.status.scram_arming", "§e§lSCRAM ARMING: §f%d / %d ticks");
+
+
+
+// Stability Sensor UI & Tooltips
+
+
+        // Hatches Descriptions
+
+
+// UI Elements for the Sensor
+
+
+
+        // Multiblock Pattern Info
+        provider.add("phoenix.multiblock.pattern.info.multiple_fuel_rods", "Requires Fuel Rods. These generate base heat and determine recipe parallels.");
+        provider.add("phoenix.multiblock.pattern.info.multiple_blankets", "Requires Blanket Rods. These act as targets for transmutation in Breeder cycles.");
+        provider.add("phoenix.multiblock.pattern.info.multiple_moderators", "Moderators adjust heat generation and can provide EU or Parallel bonuses.");
+        provider.add("phoenix.multiblock.pattern.info.multiple_coolers", "Coolers remove heat based on their tier and provided coolant fluid.");
+
+
 
         // Recipe Typeskk
         provider.add("gtceu.high_performance_breeder_reactor",

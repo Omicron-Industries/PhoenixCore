@@ -42,7 +42,7 @@ Now, back to talking about `Cooler Blocks`.
 They are registered in two parts, an interface named `IFissionCoolerType` and a block class named `FissionCoolerBlock`.
 
 ```java
-package net.phoenix.core.api.block;
+package net.phoenix.core.integration.phoenix_fission.api.block;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
@@ -77,7 +77,7 @@ public interface IFissionCoolerType {
     default String getInputCoolantFluidId() {
         return getRequiredCoolantMaterialId();
     }
-    
+
     int getCoolantUsagePerTick();
 
     default int getCoolantPerTick() {
@@ -141,7 +141,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixFission;
-import net.phoenix.core.api.block.IFissionCoolerType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -188,7 +188,7 @@ public class FissionCoolerBlock extends ActiveBlock {
         tooltip.add(Component.translatable("phoenix.fission.cooling_power",
                 coolerType.getCoolerTemperature()));
     }
-    
+
     public static Component getFluidDisplayName(@NotNull String fluidId) {
         if (fluidId.isEmpty() || "none".equalsIgnoreCase(fluidId)) {
             return Component.literal("None").withStyle(ChatFormatting.GRAY);
@@ -224,11 +224,11 @@ public class FissionCoolerBlock extends ActiveBlock {
         private final int tier;
         @Getter
         private final int coolantUsagePerTick;
-        
+
         @Getter
         @NotNull
         private final String requiredCoolantMaterialId;
-        
+
         @Getter
         @NotNull
         private final String outputCoolantFluidId;
@@ -236,7 +236,7 @@ public class FissionCoolerBlock extends ActiveBlock {
         @Getter
         @NotNull
         private final ResourceLocation texture;
-        
+
         @Getter
         private final int tintColor;
 
@@ -262,7 +262,7 @@ public class FissionCoolerBlock extends ActiveBlock {
         public @NotNull String getSerializedName() {
             return name;
         }
-        
+
         @Override
         public @NotNull String getRequiredCoolantMaterialId() {
             return this.requiredCoolantMaterialId;

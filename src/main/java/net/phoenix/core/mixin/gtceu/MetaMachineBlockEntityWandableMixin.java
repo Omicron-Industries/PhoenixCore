@@ -6,7 +6,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.phoenix.core.common.machine.multiblock.part.special.SourceHatchPartMachine;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source.SourceHatchPartMachine;
 
 import com.hollingsworth.arsnouveau.api.item.IWandable;
 import org.spongepowered.asm.mixin.Mixin;

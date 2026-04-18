@@ -40,7 +40,7 @@ Now, back to talking about blanket rod blocks.
 They are registered in two parts, an interface named `IFissionFuelRodType` and a block class named `FissionFuelRodBlock`.
 
 ```java
-package net.phoenix.core.api.block;
+package net.phoenix.core.integration.phoenix_fission.api.block;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -127,7 +127,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixFission;
-import net.phoenix.core.api.block.IFissionFuelRodType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -140,7 +140,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Getter
 @ParametersAreNonnullByDefault
 public class FissionFuelRodBlock extends ActiveBlock {
-    
+
     private final IFissionFuelRodType fuelRodType;
 
     public FissionFuelRodBlock(Properties props, IFissionFuelRodType type) {
@@ -179,7 +179,7 @@ public class FissionFuelRodBlock extends ActiveBlock {
                         Component.literal(String.format("%.2f", seconds))
                                 .withStyle(ChatFormatting.GOLD))
                 .withStyle(ChatFormatting.GRAY));
-        
+
         int bias = 0;
         try {
             bias = fuelRodType.getNeutronBias();
@@ -194,7 +194,7 @@ public class FissionFuelRodBlock extends ActiveBlock {
                 Component.literal(GTValues.VNF[fuelRodType.getTier()])
                         .withStyle(ChatFormatting.DARK_PURPLE)));
     }
-    
+
     public static Component getRegistryDisplayName(@NotNull String key) {
         ResourceLocation rl = ResourceLocation.tryParse(key);
         if (rl == null) return Component.literal(key).withStyle(ChatFormatting.YELLOW);
@@ -213,7 +213,7 @@ public class FissionFuelRodBlock extends ActiveBlock {
     }
 
     public enum FissionFuelRodTypes implements StringRepresentable, IFissionFuelRodType {
-        
+
         URANIUM("uranium_fuel_rod",
                 500, 1,
                 1200, 1,

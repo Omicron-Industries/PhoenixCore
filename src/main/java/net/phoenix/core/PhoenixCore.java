@@ -35,24 +35,26 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.phoenix.core.api.PhoenixSounds;
 import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
-import net.phoenix.core.api.recipe.lookup.MapSourceIngredient;
+import net.phoenix.core.integration.ars_nouveau.api.recipe.lookup.MapSourceIngredient;
 import net.phoenix.core.client.PhoenixClient;
 import net.phoenix.core.client.keybind.PhoenixKeybinds;
 import net.phoenix.core.client.particle.PhoenixParticles;
-import net.phoenix.core.client.renderer.gui.SourceHatchMenu;
+import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchMenu;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.*;
-import net.phoenix.core.common.data.recipe.custom.SourceIngredient;
+import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.SourceIngredient;
 import net.phoenix.core.common.data.recipeConditions.FluidInHatchCondition;
-import net.phoenix.core.common.data.recipeConditions.SoulCondition;
-import net.phoenix.core.common.event.SourceHatchJarTransferTick;
+import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
+import net.phoenix.core.integration.ars_nouveau.common.event.SourceHatchJarTransferTick;
 import net.phoenix.core.common.machine.*;
 import net.phoenix.core.common.machine.multiblock.Shield;
-import net.phoenix.core.common.registry.PhoenixFissionEntities;
+import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.datagen.PhoenixDatagen;
+import net.phoenix.core.integration.matter_manipulater.common.data.item.ManipulaterItems;
+import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.network.PhoenixNetwork;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -115,8 +117,10 @@ public class PhoenixCore {
         PhoenixFissionEntities.init();
         PhoenixBlocks.init();
         PhoenixItems.init();
+        ManipulaterItems.init();
         PhoenixMaterialFlags.init();
         PhoenixDatagen.init();
+
     }
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES,

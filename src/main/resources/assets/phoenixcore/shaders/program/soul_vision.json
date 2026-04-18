@@ -4,7 +4,7 @@
         "srcrgb": "srcalpha",
         "dstrgb": "1-srcalpha"
     },
-    "vertex": "minecraft:core/position",
+    "vertex": "blit",
     "fragment": "phoenixcore:soul_vision",
     "attributes": [
         "Position"

@@ -5,10 +5,10 @@ import com.gregtechceu.gtceu.api.block.property.GTBlockStateProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.block.IFissionBlanketType;
-import net.phoenix.core.api.block.IFissionCoolerType;
-import net.phoenix.core.api.block.IFissionFuelRodType;
-import net.phoenix.core.api.block.IFissionModeratorType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
 
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;

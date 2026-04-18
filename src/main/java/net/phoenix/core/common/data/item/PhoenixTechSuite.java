@@ -17,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -107,6 +108,9 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                 world.playSound(null, player.blockPosition(),
                         currentTeslaMode ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE,
                         SoundSource.PLAYERS, 1.0F, 2.0F);
+            //    if (currentTeslaMode && player instanceof ServerPlayer sp) {
+          //          TriggerRegistry.fire(sp, "suit_event", "neural_link_established");
+          //      }
             }
         }
 
@@ -406,6 +410,9 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         if (!world.isClientSide) {
             data.putBoolean("IsSonicFlight", true);
+       //     if (player instanceof ServerPlayer sp) {
+         //       TriggerRegistry.fire(sp, "flight_status", "sonic_speed");
+         //   }
             teslaData.getOrCreate(player.getUUID())
                     .drain(java.math.BigInteger.valueOf(cfg.poweredFlightEUt));
         }
@@ -583,6 +590,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                 if (network.stored.compareTo(rebirthCost) >= 0) {
                     network.drain(rebirthCost);
 
+
                     player.setHealth(player.getMaxHealth());
                     player.removeAllEffects();
                     player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 1200, 0));
@@ -600,6 +608,10 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                             1.5f, 0.8f);
                     player.level().playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE,
                             SoundSource.PLAYERS, 0.5f, 1.2f);
+
+                    //      if (player instanceof ServerPlayer sp) {
+                    //           TriggerRegistry.fire(sp, "suit_event", "first_rebirth");
+                    //       }
 
                     player.displayClientMessage(Component.literal("§6§l⚡ PHOENIX REBIRTH ACTIVATED ⚡"), true);
                 } else {

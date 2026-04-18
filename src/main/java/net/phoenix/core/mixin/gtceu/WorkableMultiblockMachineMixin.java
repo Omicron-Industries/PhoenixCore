@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 
 import net.minecraft.server.level.ServerLevel;
-import net.phoenix.core.api.recipe.SoulGrowthHook;
+import net.phoenix.core.integration.ars_nouveau.api.recipe.SoulGrowthHook;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

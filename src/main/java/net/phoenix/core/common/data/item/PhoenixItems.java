@@ -15,6 +15,7 @@ import net.minecraftforge.common.Tags;
 
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import net.phoenix.core.integration.ars_nouveau.common.data.item.SoulLensItem;
 
 import static net.phoenix.core.PhoenixCore.PHOENIX_CREATIVE_TAB;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
@@ -359,6 +360,20 @@ public class PhoenixItems {
             })
             .model((ctx, prov) -> prov.generated(ctx, prov.modLoc("item/tesla_stabilizer/uv_tesla_stabilizer")))
             .register();
+    /*
+
+    public static final ItemEntry<Item> ENCRYPTED_DATA_DRIVE = REGISTRATE
+            .item("encrypted_data_drive", Item::new)
+            .lang("Encrypted Data Drive")
+            .properties(p -> p.stacksTo(1).rarity(Rarity.RARE))
+            // Dynamic Tooltip based on NBT
+            .setData(ProviderType.LANG, (ctx, prov) -> {
+                prov.add(ctx.get(), "Encrypted Data Drive");
+                prov.add(ctx.get().getDescriptionId() + ".tooltip", "§7Contains encrypted archival data.\n§6Right-click §7to upload to the Terminal.");
+            })
+            .register();
+
+     */
 
     public static ItemEntry<TeslaStabilizerItem> UHV_TESLA_STABILIZER = REGISTRATE
             .item("uhv_tesla_stabilizer", TeslaStabilizerItem::new)

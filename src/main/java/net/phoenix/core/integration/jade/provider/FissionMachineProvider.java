@@ -15,9 +15,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.block.IFissionBlanketType;
-import net.phoenix.core.common.machine.multiblock.fission.BreederWorkableElectricMultiblockMachine;
-import net.phoenix.core.common.machine.multiblock.fission.FissionWorkableElectricMultiblockMachine;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
+import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.BreederWorkableElectricMultiblockMachine;
+import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.FissionWorkableElectricMultiblockMachine;
 
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
@@ -33,6 +33,7 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
     private static final String NBT_NET_HEAT = "pf_net_heat";
     private static final String NBT_MELTDOWN_SECONDS = "pf_meltdown_seconds";
     private static final String NBT_HAS_COOLANT = "pf_has_coolant";
+    private static final String NBT_IS_SCRAMMED = "pf_is_scrammed";
     private static final String NBT_IS_BREEDER = "pf_is_breeder";
     private static final String NBT_BREEDING_PRODUCT = "pf_breeding_product";
     private static final String NBT_RUNNING = "pf_running";
@@ -58,21 +59,40 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
             return;
         }
 
+
         CompoundTag data = accessor.getServerData();
-        if (data == null || data.isEmpty()) return;
 
         double heat = data.getDouble(NBT_HEAT);
         double netHeat = data.getDouble(NBT_NET_HEAT);
+        boolean isRunning = data.getBoolean(NBT_RUNNING);
+        boolean isScrammed = data.getBoolean(NBT_IS_SCRAMMED);
 
+        // Status logic
+        if (isScrammed) {
+            tooltip.add(Component.literal("SCRAMMED")
+                    .withStyle(s -> s.withColor(0xFF0000).withBold(true)));
+        } else if (!isRunning && heat > 0) {
+            tooltip.add(Component.literal("Cooling Down")
+                    .withStyle(s -> s.withColor(0x55FFFF).withItalic(true)));
+        }
+
+        // Meltdown Timer
         int meltdownSeconds = data.getInt(NBT_MELTDOWN_SECONDS);
         if (meltdownSeconds > 0) {
             tooltip.add(Component.translatable("jade.phoenixcore.fission_meltdown_timer", meltdownSeconds)
                     .withStyle(s -> s.withColor(0xFFAA00)));
-            tooltip.add(Component.translatable("jade.phoenixcore.heat", (long) heat));
+            // Note: Using a literal here since we are showing raw heat value
+            tooltip.add(Component.literal("Current Heat: " + (long)heat));
         } else {
-            tooltip.add(Component.translatable("jade.phoenixcore.fission_safe")
-                    .withStyle(s -> s.withColor(0x33FF33)));
+            // Only show "Safe" if it's actually not scrammed or cooling
+            if (heat <= 0) {
+                tooltip.add(Component.translatable("jade.phoenixcore.fission_safe")
+                        .withStyle(s -> s.withColor(0x33FF33)));
+            }
         }
+
+        if (data == null || data.isEmpty()) return;
+
 
         if (!data.getBoolean(NBT_HAS_COOLANT)) {
             tooltip.add(Component.translatable("jade.phoenixcore.fission_no_coolant")
@@ -161,6 +181,9 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         tag.putInt(NBT_COOLERS, machine.getActiveCoolers().size());
         tag.putInt(NBT_MODS, machine.getActiveModerators().size());
         tag.putInt(NBT_BLANKETS, machine.getActiveBlankets().size());
+
+        tag.putBoolean(NBT_IS_SCRAMMED, machine.isScramActive()); // Add this line
+        tag.putBoolean(NBT_RUNNING, machine.wasRunningLastTick());
 
         tag.putDouble(NBT_HEAT, machine.getHeat());
         tag.putDouble(NBT_NET_HEAT, machine.getNetHeatPerTick());

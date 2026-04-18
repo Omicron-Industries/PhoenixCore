@@ -6,7 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.common.machine.multiblock.part.special.SourceHatchPartMachine;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source.SourceHatchPartMachine;
 
 import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import snownee.jade.api.BlockAccessor;

@@ -25,10 +25,17 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_KP_7,
             "key.categories.phoenixcore");
 
+    public static final KeyMapping MANIPULATOR_MENU = new KeyMapping(
+            "key.phoenixcore.manipulator_menu",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V, // Defaulting to 'V', common for tool menus
+            "key.categories.phoenixcore");
+
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);
         event.register(TESLA_MODE);
         event.register(TESLA_DISCHARGE);
+        event.register(MANIPULATOR_MENU);
     }
 }

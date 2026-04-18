@@ -40,7 +40,7 @@ Now, back to talking about `Moderator Blocks`.
 They are registered in two parts, an interface named `IFissionModeratorType` and a block class named `FissionModeratorBlock`.
 
 ```java
-package net.phoenix.core.api.block;
+package net.phoenix.core.integration.phoenix_fission.api.block;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -71,13 +71,13 @@ public interface IFissionModeratorType {
     default double getHeatMultiplier() {
         return getTier() * 0.5;
     }
-    
+
     default int getParallelBonus() {
         return getTier();
     }
 
     int getTier();
-    
+
     ResourceLocation getTexture();
 
     Material getMaterial();
@@ -122,7 +122,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.phoenix.core.PhoenixFission;
-import net.phoenix.core.api.block.IFissionModeratorType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -135,7 +135,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @Getter
 @ParametersAreNonnullByDefault
 public class FissionModeratorBlock extends ActiveBlock {
-    
+
     private final IFissionModeratorType moderatorType;
 
     public FissionModeratorBlock(Properties properties, IFissionModeratorType moderatorType) {
@@ -181,7 +181,7 @@ public class FissionModeratorBlock extends ActiveBlock {
         @Getter
         @NotNull
         private final ResourceLocation texture;
-        
+
         @Getter
         private final int tintColor;
 

@@ -10,8 +10,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.phoenix.core.common.data.worldgen.soul.SoulBalance;
-import net.phoenix.core.common.data.worldgen.soul.SoulChunkEntry;
+import net.phoenix.core.integration.ars_nouveau.common.data.worldgen.soul.SoulBalance;
+import net.phoenix.core.integration.ars_nouveau.common.data.worldgen.soul.SoulChunkEntry;
 
 import org.jetbrains.annotations.NotNull;
 

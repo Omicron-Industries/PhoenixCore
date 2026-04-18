@@ -38,8 +38,9 @@
     "phoenixcore:t4_fuel_rod",
     "phoenixcore:t5_fuel_rod",
     "phoenixcore:thorium_blanket",
-    "phoenixcore:u236_blanket",
-    "phoenixcore:lead_blanket",
-    "phoenixcore:heavy_blanket"
+    "phoenixcore:uranium_blanket",
+    "phoenixcore:neptunium_blanket",
+    "phoenixcore:plutonium_blanket",
+    "phoenixcore:americium_blanket"
   ]
 }

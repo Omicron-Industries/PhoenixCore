@@ -9,15 +9,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.PhoenixAPI;
-import net.phoenix.core.api.block.IFissionBlanketType;
-import net.phoenix.core.api.block.IFissionCoolerType;
-import net.phoenix.core.api.block.IFissionFuelRodType;
-import net.phoenix.core.api.block.IFissionModeratorType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
+import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
 import net.phoenix.core.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.common.block.*;
 import net.phoenix.core.common.machine.multiblock.electric.TeslaTowerMachine;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoolerBlock;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionModeratorBlock;
 
 import java.math.BigInteger;
 import java.util.*;

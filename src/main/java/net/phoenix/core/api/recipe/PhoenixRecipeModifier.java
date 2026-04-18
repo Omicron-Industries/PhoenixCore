@@ -5,7 +5,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.ContentModifier;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 
-import net.phoenix.core.api.capability.SourceRecipeCapability;
+import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
 
 import java.util.ArrayList;
 

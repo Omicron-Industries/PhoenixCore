@@ -4,6 +4,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import net.phoenix.core.network.packet.CPacketChangeManipulatorMode;
+import net.phoenix.core.network.packet.CPacketManipulatorAction;
+import net.phoenix.core.network.packet.PacketPhoenixModeSync;
 import net.phoenix.core.network.packet.UpdateWingSettingsPacket;
 
 import java.util.Optional;
@@ -24,8 +27,29 @@ public class PhoenixNetwork {
         CHANNEL.registerMessage(id++,
                 UpdateWingSettingsPacket.class,
                 UpdateWingSettingsPacket::encode,
-                UpdateWingSettingsPacket::new,
+                UpdateWingSettingsPacket::new, // Or UpdateWingSettingsPacket::decode if named that
                 UpdateWingSettingsPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        // ADD THIS:
+        CHANNEL.registerMessage(id++,
+                PacketPhoenixModeSync.class,
+                PacketPhoenixModeSync::encode,
+                PacketPhoenixModeSync::decode,
+                PacketPhoenixModeSync::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++,
+                CPacketChangeManipulatorMode.class,
+                CPacketChangeManipulatorMode::encode,
+                CPacketChangeManipulatorMode::new,
+                CPacketChangeManipulatorMode::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        CHANNEL.registerMessage(id++,
+                CPacketManipulatorAction.class,
+                CPacketManipulatorAction::encode,
+                CPacketManipulatorAction::new,
+                CPacketManipulatorAction::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 }

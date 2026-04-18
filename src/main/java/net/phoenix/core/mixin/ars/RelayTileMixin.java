@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.phoenix.core.api.capability.ISourceProviderCapability;
+import net.phoenix.core.integration.ars_nouveau.api.capability.ISourceProviderCapability;
 import net.phoenix.core.mixin.accessor.RelayTileDisabledAccessor;
 
 import com.hollingsworth.arsnouveau.api.source.AbstractSourceMachine;

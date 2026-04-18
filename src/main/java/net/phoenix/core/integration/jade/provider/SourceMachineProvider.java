@@ -12,9 +12,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.capability.ISourceProviderCapability;
-import net.phoenix.core.api.capability.SourceRecipeCapability;
-import net.phoenix.core.common.machine.multiblock.unique.SourceMultiblockTankMachine;
+import net.phoenix.core.integration.ars_nouveau.api.capability.ISourceProviderCapability;
+import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceMultiblockTankMachine;
 
 import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import snownee.jade.api.BlockAccessor;

@@ -42,4 +42,10 @@ public class SensorHatchPartMachine extends TieredPartMachine {
     public boolean shouldOpenUI(Player player, InteractionHand hand, BlockHitResult hit) {
         return false;
     }
+
+    public void updateSignal() {
+        if (getLevel() != null) {
+            getLevel().updateNeighborsAt(getPos(), getHolder().getSelf().getBlockState().getBlock());
+        }
+    }
 }

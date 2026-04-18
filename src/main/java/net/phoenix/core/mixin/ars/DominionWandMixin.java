@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.phoenix.core.api.capability.ISourceProviderCapability;
+import net.phoenix.core.integration.ars_nouveau.api.capability.ISourceProviderCapability;
 
 import com.hollingsworth.arsnouveau.common.items.DominionWand;
 import com.hollingsworth.arsnouveau.common.items.DominionWand.DominionData;
