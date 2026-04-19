@@ -78,7 +78,7 @@ public class PhoenixCore {
                                     REGISTRATE))
                             .title(REGISTRATE.addLang("itemGroup", PhoenixCore.id("creative_tab"),
                                     "PhoenixCore (CoreMod)"))
-                            .icon(PhoenixMachines.HIGH_YEILD_PHOTON_EMISSION_REGULATER::asStack)
+                            .icon(PhoenixMachines.HIGH_YIELD_PHOTON_EMISSION_REGULATOR::asStack)
                             .build())
             .register();
 
