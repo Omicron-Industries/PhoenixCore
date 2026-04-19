@@ -4,15 +4,18 @@ import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
+
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
+
 import net.minecraft.core.Direction;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class SensorHatchPartMachine extends TieredPartMachine {
 
-    public static final ManagedFieldHolder MANAGED_FIELD_HOLDER =
-            new ManagedFieldHolder(SensorHatchPartMachine.class, TieredPartMachine.MANAGED_FIELD_HOLDER);
+    public static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(SensorHatchPartMachine.class,
+            TieredPartMachine.MANAGED_FIELD_HOLDER);
 
     protected final ConditionalSubscriptionHandler signalUpdateHandler;
 
@@ -21,8 +24,7 @@ public abstract class SensorHatchPartMachine extends TieredPartMachine {
         this.signalUpdateHandler = new ConditionalSubscriptionHandler(
                 this,
                 this::updateSignal,
-                this::isAttachedToFormedController
-        );
+                this::isAttachedToFormedController);
     }
 
     @Override

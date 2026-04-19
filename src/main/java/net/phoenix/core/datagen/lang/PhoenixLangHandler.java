@@ -68,7 +68,6 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.tesla_discharge", "Activate Tesla Discharge");
         provider.add("key.phoenixcore.manipulator_menu", "Matter Manipulator Menu");
 
-
         // Tesla Binder Item
         provider.add("item.phoenixcore.tesla_binder.linked", "§aLinked to: §f%s");
         provider.add("item.phoenixcore.tesla_binder.unlinked", "§cNot Linked");

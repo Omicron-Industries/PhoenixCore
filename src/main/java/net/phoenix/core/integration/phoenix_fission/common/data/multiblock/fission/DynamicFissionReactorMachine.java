@@ -17,9 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
-import net.phoenix.core.configs.PhoenixConfigs;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -56,8 +56,6 @@ public class DynamicFissionReactorMachine extends FissionWorkableElectricMultibl
 
         currentHeatMirror = this.heat;
     }
-
-
 
     public static ModifierFunction recipeModifier(MetaMachine machine, GTRecipe recipe) {
         if (!(machine instanceof FissionWorkableElectricMultiblockMachine m)) {

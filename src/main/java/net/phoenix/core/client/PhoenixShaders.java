@@ -5,13 +5,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.phoenix.core.PhoenixCore;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class PhoenixShaders {
 
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final ResourceLocation SOUL_SHADER = new ResourceLocation(PhoenixCore.MOD_ID, "shaders/post/soul_vision.json");
+    private static final ResourceLocation SOUL_SHADER = new ResourceLocation(PhoenixCore.MOD_ID,
+            "shaders/post/soul_vision.json");
     private static boolean isEffectActive = false;
 
     /**

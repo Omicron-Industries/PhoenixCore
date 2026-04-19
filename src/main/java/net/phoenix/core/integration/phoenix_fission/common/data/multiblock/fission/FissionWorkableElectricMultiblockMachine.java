@@ -24,16 +24,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixAPI;
+import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.*;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionModeratorBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.PhoenixFissionBlocks;
-import net.phoenix.core.configs.PhoenixConfigs;
-
-import lombok.Getter;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part.fission.AdvancedFissionScramHatchPart;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part.fission.FissionScramHatchPart;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part.fission.SensorHatchPartMachine;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -309,9 +309,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         tickAdvancedScramHatches();
         // ─────────────────────────────────────────────────────────────────────
 
-
         markDirty();
-
     }
 
     public boolean isScramActive() {
@@ -346,7 +344,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             }
         }
     }
-
 
     /**
      * Updated to act as a safety gate. If fuel is missing for the current
@@ -1006,7 +1003,8 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
             if (meltdownTimerTicks < 0) {
                 meltdownTimerTicks = minTicks;
-            }         } else if (meltdownTimerTicks > 0) {
+            }
+        } else if (meltdownTimerTicks > 0) {
             // ── SCRAM PAUSE ─────────────────────────────────────────────────
             // While scrammed the countdown is frozen. Removing the scram while
             // heat is still critical resumes the timer right where it left off
@@ -1015,10 +1013,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 meltdownTimerTicks -= 1;
             }
 
-
-
-
-        if (meltdownTimerTicks == 0) {
+            if (meltdownTimerTicks == 0) {
                 doMeltdown();
             }
             return;
@@ -1086,13 +1081,12 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                     var block = blockState.getBlock();
 
                     // Check for your specific targets
-                    boolean shouldVaporize =
-                            blockState.is(PhoenixFissionBlocks.FISSILE_HEAT_SAFE_CASING.get()) ||
-                                    blockState.is(PhoenixFissionBlocks.FISSILE_REACTION_SAFE_CASING.get()) ||
-                                    blockState.is(PhoenixFissionBlocks.FISSILE_SAFE_GEARBOX_CASING.get()) ||
-                                    blockState.is(Blocks.TINTED_GLASS) ||
-                                    block instanceof FissionFuelRodBlock ||
-                                    block instanceof FissionModeratorBlock;
+                    boolean shouldVaporize = blockState.is(PhoenixFissionBlocks.FISSILE_HEAT_SAFE_CASING.get()) ||
+                            blockState.is(PhoenixFissionBlocks.FISSILE_REACTION_SAFE_CASING.get()) ||
+                            blockState.is(PhoenixFissionBlocks.FISSILE_SAFE_GEARBOX_CASING.get()) ||
+                            blockState.is(Blocks.TINTED_GLASS) ||
+                            block instanceof FissionFuelRodBlock ||
+                            block instanceof FissionModeratorBlock;
 
                     if (shouldVaporize) {
                         // Vaporize: remove block, no drops, spawn smoke
@@ -1209,7 +1203,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         }
         return true;
     }
-
 
     protected void applyParallelsToRecipeLogic(int parallels) {
         try {

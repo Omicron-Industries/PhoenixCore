@@ -3,10 +3,11 @@ package net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
+
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import lombok.Getter;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -15,6 +16,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.FissionWorkableElectricMultiblockMachine;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -95,11 +98,8 @@ public class FissionScramHatchPart extends TieredPartMachine {
 
         group.addWidget(new LabelWidget(10, 8, "§l§cFission SCRAM Hatch"));
 
-        group.addWidget(new LabelWidget(10, 24, () ->
-                isScrammed
-                        ? "§c● SCRAMMED — Reactor HALTED"
-                        : "§a● Standby — Reactor Permitted"
-        ));
+        group.addWidget(new LabelWidget(10, 24,
+                () -> isScrammed ? "§c● SCRAMMED — Reactor HALTED" : "§a● Standby — Reactor Permitted"));
 
         group.addWidget(new LabelWidget(10, 40, "§7─────────────────────────────"));
         group.addWidget(new LabelWidget(10, 52, "§eHow it works:"));

@@ -17,7 +17,8 @@
     "gtceu.MetaMachineBlockEntityWandableMixin",
     "gtceu.MixinGTOres",
     "gtceu.WorkableMultiblockMachineMixin",
-    "minecraft.ItemStackTooltipMixin"
+    "minecraft.ItemStackTooltipMixin",
+    "minecraft.RecipeManagerMixin"
   ],
   "client": [
     "accessor.PostChainAccessor",

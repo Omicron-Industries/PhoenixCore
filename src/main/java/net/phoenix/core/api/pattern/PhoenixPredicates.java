@@ -13,15 +13,15 @@ import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketTyp
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
-import net.phoenix.core.api.machine.trait.ITeslaBattery;
-import net.phoenix.core.common.block.*;
-import net.phoenix.core.common.machine.multiblock.electric.TeslaTowerMachine;
-
-import com.tterrag.registrate.util.entry.BlockEntry;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoolerBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionModeratorBlock;
+import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
+import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
+import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine;
+
+import com.tterrag.registrate.util.entry.BlockEntry;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 
 import static com.gregtechceu.gtceu.common.data.GTBlocks.BORDERLESS_LAMPS;
 import static com.gregtechceu.gtceu.common.data.GTBlocks.LAMPS;
-import static net.phoenix.core.common.machine.multiblock.electric.TeslaTowerMachine.TTB_BATTERY_HEADER;
+import static net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine.TTB_BATTERY_HEADER;
 
 public class PhoenixPredicates {
 

@@ -17,8 +17,9 @@ import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.configs.PhoenixConfigs;
+import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
+import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;

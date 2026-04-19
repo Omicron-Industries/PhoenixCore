@@ -30,14 +30,13 @@ public class PhoenixRenderTypes extends RenderType {
             false,
             RenderType.CompositeState.builder()
                     .setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER) // Use the specific lines shader
-                    .setLineState(new RenderStateShard.LineStateShard(java.util.OptionalDouble.of(2.5D))) // 2.5 thickness
+                    .setLineState(new RenderStateShard.LineStateShard(java.util.OptionalDouble.of(2.5D))) // 2.5
+                                                                                                          // thickness
                     .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING) // Ensures it draws over the background
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
                     .setCullState(RenderStateShard.NO_CULL)
                     .createCompositeState(false));
-
-
 
     private static final RenderType BLACK_HOLE_TEST_TRANSLUCENT = RenderType.create(
             "phoenix_black_hole_test_translucent",

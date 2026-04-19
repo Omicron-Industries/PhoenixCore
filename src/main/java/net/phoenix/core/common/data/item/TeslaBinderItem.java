@@ -37,9 +37,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.phoenix.core.client.renderer.TeslaHighlightRenderer;
-import net.phoenix.core.common.machine.singleblock.TeslaWirelessChargerMachine;
-import net.phoenix.core.saveddata.TeslaTeamEnergyData;
+import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaHighlightRenderer;
+import net.phoenix.core.integration.phoenix_tesla_network.common.machine.singleblock.electric.TeslaWirelessChargerMachine;
+import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
 
 import org.jetbrains.annotations.NotNull;

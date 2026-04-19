@@ -1,10 +1,12 @@
 package net.phoenix.core.integration.matter_manipulater.api;
 
 import net.minecraft.network.chat.Component;
+
 import lombok.Getter;
 
 @Getter
 public enum PhoenixManipulatorMode {
+
     LINE("Line", "Places pipes in a direct line", 0xFF00E5FF),          // Cyan
     WALL("Wall", "Creates a 2D plane of pipes", 0xFFFFFF00),          // Yellow
     GRID("Grid", "Fills a 3D volume (Cuboid)", 0xFFFFFFFF),           // White

@@ -4,19 +4,22 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
 import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
-import lombok.Getter;
-import lombok.Setter;
+
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.FissionWorkableElectricMultiblockMachine;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 public class FissionStabilitySensorPart extends SensorHatchPartMachine {
@@ -24,9 +27,18 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
     public static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
             FissionStabilitySensorPart.class, SensorHatchPartMachine.MANAGED_FIELD_HOLDER);
 
-    @Persisted @Getter @Setter private int minPercent = 0;
-    @Persisted @Getter @Setter private int maxPercent = 95;
-    @Persisted @Getter @Setter private boolean inverted = false;
+    @Persisted
+    @Getter
+    @Setter
+    private int minPercent = 0;
+    @Persisted
+    @Getter
+    @Setter
+    private int maxPercent = 95;
+    @Persisted
+    @Getter
+    @Setter
+    private boolean inverted = false;
 
     public FissionStabilitySensorPart(IMachineBlockEntity holder, int tier) {
         super(holder, tier);

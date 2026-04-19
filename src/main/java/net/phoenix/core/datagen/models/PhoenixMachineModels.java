@@ -8,9 +8,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.api.machine.trait.ITeslaBattery;
-import net.phoenix.core.common.block.TeslaBatteryBlock;
 import net.phoenix.core.common.machine.multiblock.part.ShieldRenderProperty;
+import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
+import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
 
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;

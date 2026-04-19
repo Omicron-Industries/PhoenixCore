@@ -292,12 +292,19 @@ tasks.named('build') {
     dependsOn("spotlessApply")
 
     doLast {
-        copy {
-            from "build/libs"
-            into "C:/Users/conno/Desktop/PFT Core/Phoenix-Forge-Technologies/mods"
-            include "${archives_base_name}-${version}*.jar"
-            exclude "*-sources.jar", "*-javadoc.jar"
+        def localModsDir = "C:/Users/conno/Desktop/PFT Core/Phoenix-Forge-Technologies/mods"
+
+        // Only attempt to copy if the directory exists (it won't on GitHub Actions)
+        if (file(localModsDir).exists()) {
+            copy {
+                from "build/libs"
+                into localModsDir
+                include "${archives_base_name}-${version}*.jar"
+                exclude "*-sources.jar", "*-javadoc.jar"
+            }
+            println "SUCCESS: Spotless applied and Jar moved to mods folder!"
+        } else {
+            println "SUCCESS: Build complete. Skipping local copy (directory not found)."
         }
-        println "SUCCESS: Spotless applied and Jar moved to mods folder!"
     }
 }

@@ -1,7 +1,5 @@
 package net.phoenix.core.integration.matter_manipulater.api;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -11,12 +9,16 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.PacketPhoenixModeSync;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PhoenixRadialMenu extends Screen {
+
     private final int radius = 100;
     private final int innerRadius = 35;
 
@@ -47,7 +49,7 @@ public class PhoenixRadialMenu extends Screen {
             if (hovered) {
                 hoveredMode = modes[i];
                 // Draw selection highlight
-                drawArc(graphics, centerX, centerY, innerRadius, radius, (float)angle, (float)stepRad, 0x66FFAA00);
+                drawArc(graphics, centerX, centerY, innerRadius, radius, (float) angle, (float) stepRad, 0x66FFAA00);
             }
 
             // 3. Render Text
@@ -60,7 +62,8 @@ public class PhoenixRadialMenu extends Screen {
         }
 
         // 4. Draw Center "Core"
-        graphics.fill(centerX - innerRadius + 2, centerY - innerRadius + 2, centerX + innerRadius - 2, centerY + innerRadius - 2, 0xFF880000);
+        graphics.fill(centerX - innerRadius + 2, centerY - innerRadius + 2, centerX + innerRadius - 2,
+                centerY + innerRadius - 2, 0xFF880000);
         graphics.drawCenteredString(this.font, "CORE", centerX, centerY - 4, 0xFFFFFFFF);
 
         // 5. Render Tooltips (Drawn last to be on top)
@@ -100,14 +103,15 @@ public class PhoenixRadialMenu extends Screen {
         tesselator.end();
     }
 
-    private void drawArc(GuiGraphics graphics, int cx, int cy, int inner, int outer, float startAngle, float step, int color) {
+    private void drawArc(GuiGraphics graphics, int cx, int cy, int inner, int outer, float startAngle, float step,
+                         int color) {
         RenderSystem.enableBlend();
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buffer = tesselator.getBuilder();
         buffer.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f matrix = graphics.pose().last().pose();
 
-        for (float a = startAngle - step/2; a <= startAngle + step/2; a += 0.05f) {
+        for (float a = startAngle - step / 2; a <= startAngle + step / 2; a += 0.05f) {
             buffer.vertex(matrix, cx + Mth.cos(a) * outer, cy + Mth.sin(a) * outer, 0).color(color).endVertex();
             buffer.vertex(matrix, cx + Mth.cos(a) * inner, cy + Mth.sin(a) * inner, 0).color(color).endVertex();
         }
@@ -133,9 +137,10 @@ public class PhoenixRadialMenu extends Screen {
 
         for (int i = 0; i < modes.length; i++) {
             double angle = -Math.PI / 2 + (i * angleStep);
-            if (isMouseInSector((int)mouseX, (int)mouseY, centerX, centerY, angle, angleStep)) {
+            if (isMouseInSector((int) mouseX, (int) mouseY, centerX, centerY, angle, angleStep)) {
                 PhoenixNetwork.CHANNEL.sendToServer(new PacketPhoenixModeSync(i));
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                Minecraft.getInstance().getSoundManager()
+                        .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 this.onClose();
                 return true;
             }
@@ -144,5 +149,7 @@ public class PhoenixRadialMenu extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

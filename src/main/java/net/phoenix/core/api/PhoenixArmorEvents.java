@@ -15,7 +15,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.common.data.item.PhoenixArmorItem;
-import net.phoenix.core.saveddata.TeslaTeamEnergyData;
+import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 
 @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID)
 public class PhoenixArmorEvents {

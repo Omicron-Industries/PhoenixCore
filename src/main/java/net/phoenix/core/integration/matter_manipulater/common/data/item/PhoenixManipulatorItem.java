@@ -3,9 +3,8 @@ package net.phoenix.core.integration.matter_manipulater.common.data.item;
 import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.common.data.item.GTToolActions;
-import net.minecraft.client.Minecraft;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -20,18 +19,18 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.fml.DistExecutor;
 import net.phoenix.core.integration.matter_manipulater.api.PhoenixManipulatorMode;
 import net.phoenix.core.integration.matter_manipulater.api.PhoenixPlacementEngine;
+
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 public class PhoenixManipulatorItem extends Item implements IInteractionItem {
 
@@ -70,11 +69,10 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
 
     // --- Interaction Logic ---
 
-
-
     // Helper to keep code clean
     private int calculateVolume(BlockPos a, BlockPos b) {
-        return (Math.abs(a.getX() - b.getX()) + 1) * (Math.abs(a.getY() - b.getY()) + 1) * (Math.abs(a.getZ() - b.getZ()) + 1);
+        return (Math.abs(a.getX() - b.getX()) + 1) * (Math.abs(a.getY() - b.getY()) + 1) *
+                (Math.abs(a.getZ() - b.getZ()) + 1);
     }
 
     @Override
@@ -94,7 +92,8 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
             // User is trying to set Point 2
             if (start != null && pos.getY() > start.getY()) {
                 // Point 2 is higher than Point 1: Trigger Hotbar Warning
-                player.displayClientMessage(Component.literal("§c⚠ Error: Point 2 (Shift-Click) cannot be higher than Point 1!"), true);
+                player.displayClientMessage(
+                        Component.literal("§c⚠ Error: Point 2 (Shift-Click) cannot be higher than Point 1!"), true);
                 player.playSound(SoundEvents.NOTE_BLOCK_BASS.get(), 1.0f, 0.5f);
                 return InteractionResult.FAIL; // Prevent setting the invalid point
             }
@@ -111,8 +110,7 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
             int count = PhoenixPlacementEngine.getTargetPositions(start, end, mode).size();
             String color = player.isShiftKeyDown() ? "§e" : "§6";
             player.displayClientMessage(Component.literal(
-                    color + "Point Set. §bTotal Area: §f" + count + " blocks §7(" + mode.getName() + ")"
-            ), true);
+                    color + "Point Set. §bTotal Area: §f" + count + " blocks §7(" + mode.getName() + ")"), true);
         }
 
         return InteractionResult.SUCCESS;
@@ -137,9 +135,9 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
-
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip,
+                                @NotNull TooltipFlag flag) {
         PhoenixManipulatorMode mode = getMode(stack);
         BlockPos start = getStartPos(stack);
         BlockPos end = getEndPos(stack);
@@ -221,14 +219,14 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
 
     @Nullable
     public BlockPos getStartPos(ItemStack stack) {
-        return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("start_pos")
-                ? BlockPos.of(stack.getTag().getLong("start_pos")) : null;
+        return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("start_pos") ?
+                BlockPos.of(stack.getTag().getLong("start_pos")) : null;
     }
 
     @Nullable
     public BlockPos getEndPos(ItemStack stack) {
-        return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("end_pos")
-                ? BlockPos.of(stack.getTag().getLong("end_pos")) : null;
+        return stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("end_pos") ?
+                BlockPos.of(stack.getTag().getLong("end_pos")) : null;
     }
 
     private void executeMatterManipulation(Level level, Player player, ItemStack stack) {

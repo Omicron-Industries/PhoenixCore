@@ -17,12 +17,12 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixAPI;
-import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
 import net.phoenix.core.common.data.bees.BeeRecipeData;
 import net.phoenix.core.common.data.materials.*;
-import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.SourceIngredient;
 import net.phoenix.core.common.data.recipe.records.ApisProgenitorConfig;
 import net.phoenix.core.common.data.recipe.records.FullBeeConfig;
+import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
+import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.SourceIngredient;
 
 import java.util.List;
 import java.util.function.Consumer;

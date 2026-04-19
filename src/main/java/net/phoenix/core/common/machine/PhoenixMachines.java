@@ -61,15 +61,15 @@ import net.phoenix.core.common.machine.multiblock.electric.research.PhoenixHPCAM
 import net.phoenix.core.common.machine.multiblock.part.ShieldRenderProperty;
 import net.phoenix.core.common.machine.multiblock.part.fluid.PlasmaHatchPartMachine;
 import net.phoenix.core.common.machine.multiblock.part.special.ShieldSensorHatchPartMachine;
-import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source.SourceHatchPartMachine;
-import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.AlchemicalImbuerMachine;
-import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.BioAethericEngineMachine;
-import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceReactorMachine;
 import net.phoenix.core.common.machine.multiblock.unique.BlazingCleanroom;
-import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceMultiblockTankMachine;
 import net.phoenix.core.common.registry.PhoenixRegistration;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.datagen.models.PhoenixMachineModels;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source.SourceHatchPartMachine;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.AlchemicalImbuerMachine;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.BioAethericEngineMachine;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceMultiblockTankMachine;
+import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceReactorMachine;
 
 import java.util.Locale;
 import java.util.function.BiConsumer;

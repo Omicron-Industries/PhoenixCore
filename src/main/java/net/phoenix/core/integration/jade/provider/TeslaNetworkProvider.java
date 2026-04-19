@@ -14,9 +14,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.common.machine.multiblock.electric.TeslaTowerMachine;
-import net.phoenix.core.common.machine.multiblock.part.special.TeslaEnergyHatchPartMachine;
-import net.phoenix.core.saveddata.TeslaTeamEnergyData;
+import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine;
+import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.part.TeslaEnergyHatchPartMachine;
+import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
 
 import snownee.jade.api.BlockAccessor;

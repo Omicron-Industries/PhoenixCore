@@ -1,6 +1,7 @@
 package net.phoenix.core.integration.matter_manipulater.api;
 
 import com.gregtechceu.gtceu.api.pipenet.IPipeNode;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;

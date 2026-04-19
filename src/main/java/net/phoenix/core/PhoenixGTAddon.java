@@ -15,7 +15,11 @@ import net.phoenix.core.common.data.PhoenixToolRecipes;
 import net.phoenix.core.common.data.materials.PhoenixElements;
 import net.phoenix.core.common.data.recipe.generated.*;
 import net.phoenix.core.common.machine.multiblock.Shield;
+import net.phoenix.core.integration.ars_nouveau.common.data.recipe.SourceHatchRecipes;
 import net.phoenix.core.integration.kubejs.recipe.ShieldComponent;
+import net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.TeslaHatchRecipes;
+import net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.TeslaMultiAmpHatchRecipes;
+import net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.WirelessChargerRecipes;
 
 import com.mojang.datafixers.util.Pair;
 

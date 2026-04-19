@@ -22,8 +22,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.api.machine.PhoenixPartAbility;
 import net.phoenix.core.api.pattern.PhoenixPredicates;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.PhoenixFissionBlocks;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.PhoenixFissionBlocks;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.BreederWorkableElectricMultiblockMachine;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.DynamicFissionReactorMachine;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.HeatExchangerMachine;
@@ -34,7 +34,6 @@ import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part.
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.gregtechceu.gtceu.api.GTValues.VNF;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
@@ -55,13 +54,16 @@ public class PhoenixFissionMachines {
         REGISTRATE.creativeModeTab(() -> PhoenixCore.PHOENIX_CREATIVE_TAB);
     }
 
-    public static final MachineDefinition[] FISSION_ADVANCED_STABILITY_SENSOR = registerAdvancedStabilitySensors("fission_advanced_stability_sensor", "Advanced Fission Stability Sensor", GTValues.EV, GTValues.UV);
-    public static final MachineDefinition[] FISSION_SCRAM_HATCH = registerScramHatches("fission_scram_hatch", "Fission SCRAM Hatch", GTValues.HV, GTValues.UV);
-    public static final MachineDefinition[] FISSION_ADVANCED_SCRAM_HATCH = registerAdvancedScramHatches("fission_advanced_scram_hatch", "Advanced Fission SCRAM Hatch", GTValues.EV, GTValues.UV);
-    public static final MachineDefinition[] FISSION_STABILITY_SENSOR = registerStabilitySensors("fission_stability_sensor", "Fission Stability Sensor", GTValues.HV, GTValues.UV);
+    public static final MachineDefinition[] FISSION_ADVANCED_STABILITY_SENSOR = registerAdvancedStabilitySensors(
+            "fission_advanced_stability_sensor", "Advanced Fission Stability Sensor", GTValues.EV, GTValues.UV);
+    public static final MachineDefinition[] FISSION_SCRAM_HATCH = registerScramHatches("fission_scram_hatch",
+            "Fission SCRAM Hatch", GTValues.HV, GTValues.UV);
+    public static final MachineDefinition[] FISSION_ADVANCED_SCRAM_HATCH = registerAdvancedScramHatches(
+            "fission_advanced_scram_hatch", "Advanced Fission SCRAM Hatch", GTValues.EV, GTValues.UV);
+    public static final MachineDefinition[] FISSION_STABILITY_SENSOR = registerStabilitySensors(
+            "fission_stability_sensor", "Fission Stability Sensor", GTValues.HV, GTValues.UV);
+
     private static MachineDefinition[] registerScramHatches(String name, String displayName, int minTier, int maxTier) {
-
-
         // Scram is an "Input" (Redstone In), so we use Input overlays
         final String ioOverlay = "overlay_pipe_in_emissive";
         final String emissiveOverlay = OVERLAY_PLASMA_HATCH_TEX;
@@ -75,13 +77,14 @@ public class PhoenixFissionMachines {
                         .colorOverlayTieredHullModel(ioOverlay, null, emissiveOverlay)
                         .tooltips(
                                 Component.translatable("phoenixcore.machine.fission_scram_hatch.tooltip"),
-                                Component.translatable("phoenixcore.machine.fission_scram_hatch.tooltip2")
-                        )
+                                Component.translatable("phoenixcore.machine.fission_scram_hatch.tooltip2"))
 
                         .register(),
                 GTValues.HV);
     }
-    private static MachineDefinition[] registerAdvancedStabilitySensors(String name, String displayName, int minTier, int maxTier) {
+
+    private static MachineDefinition[] registerAdvancedStabilitySensors(String name, String displayName, int minTier,
+                                                                        int maxTier) {
         final String ioOverlay = "overlay_pipe_out_emissive";
         final String emissiveOverlay = OVERLAY_PLASMA_HATCH_TEX;
 
@@ -94,14 +97,14 @@ public class PhoenixFissionMachines {
                         .colorOverlayTieredHullModel(ioOverlay, null, emissiveOverlay)
                         .tooltips(
                                 Component.translatable("phoenixcore.machine.fission_advanced_stability_sensor.tooltip"),
-                                Component.translatable("phoenixcore.machine.fission_advanced_stability_sensor.tooltip2"))
+                                Component
+                                        .translatable("phoenixcore.machine.fission_advanced_stability_sensor.tooltip2"))
                         .register(),
                 minTier);
     }
 
-
-    private static MachineDefinition[] registerStabilitySensors(String name, String displayName, int minTier, int maxTier) {
-
+    private static MachineDefinition[] registerStabilitySensors(String name, String displayName, int minTier,
+                                                                int maxTier) {
         // Sensor is an "Output" (Redstone Out), so we use Output overlays
         final String ioOverlay = "overlay_pipe_out_emissive";
         final String emissiveOverlay = OVERLAY_PLASMA_HATCH_TEX;
@@ -117,8 +120,9 @@ public class PhoenixFissionMachines {
                         .register(),
                 GTValues.HV);
     }
-    private static MachineDefinition[] registerAdvancedScramHatches(String name, String displayName, int minTier, int maxTier) {
 
+    private static MachineDefinition[] registerAdvancedScramHatches(String name, String displayName, int minTier,
+                                                                    int maxTier) {
         // Still an input (reads redstone in), but visually distinct from basic —
         // using the emissive input overlay signals "this one does more"
         final String ioOverlay = "overlay_pipe_in_emissive";
@@ -334,9 +338,6 @@ public class PhoenixFissionMachines {
             .register();
 
     // Fission Parts
-
-
-
 
     public static void init() {}
 }

@@ -59,7 +59,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
             return;
         }
 
-
         CompoundTag data = accessor.getServerData();
 
         double heat = data.getDouble(NBT_HEAT);
@@ -82,7 +81,7 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
             tooltip.add(Component.translatable("jade.phoenixcore.fission_meltdown_timer", meltdownSeconds)
                     .withStyle(s -> s.withColor(0xFFAA00)));
             // Note: Using a literal here since we are showing raw heat value
-            tooltip.add(Component.literal("Current Heat: " + (long)heat));
+            tooltip.add(Component.literal("Current Heat: " + (long) heat));
         } else {
             // Only show "Safe" if it's actually not scrammed or cooling
             if (heat <= 0) {
@@ -92,7 +91,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         }
 
         if (data == null || data.isEmpty()) return;
-
 
         if (!data.getBoolean(NBT_HAS_COOLANT)) {
             tooltip.add(Component.translatable("jade.phoenixcore.fission_no_coolant")

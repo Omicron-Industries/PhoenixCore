@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
-import static net.phoenix.core.common.data.recipe.generated.TeslaHatchRecipes.*;
+import static net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.TeslaHatchRecipes.*;
 
 public class CustomComponetRecipes {
 

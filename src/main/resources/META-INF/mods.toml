@@ -38,3 +38,9 @@ mandatory = true
 versionRange = "[${gtceu_version},)"
 ordering = "AFTER"
 side = "BOTH"
+[[dependencies.phoenixcore]]
+modId = "emi"
+mandatory = false   # Set to false so the mod still runs without EMI
+versionRange = "[1.1.0,)" # Supports EMI 1.1.0 and newer
+ordering = "AFTER"
+side = "BOTH"

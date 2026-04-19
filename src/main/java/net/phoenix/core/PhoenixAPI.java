@@ -3,15 +3,15 @@ package net.phoenix.core;
 import com.gregtechceu.gtceu.api.data.chemical.material.IMaterialRegistryManager;
 
 import net.phoenix.core.integration.phoenix_fission.api.block.*;
-import net.phoenix.core.api.machine.trait.ITeslaBattery;
-import net.phoenix.core.common.block.*;
-
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoolerBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionModeratorBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part.fission.FissionScramHatchPart;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.part.fission.FissionStabilitySensorPart;
+import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
+import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

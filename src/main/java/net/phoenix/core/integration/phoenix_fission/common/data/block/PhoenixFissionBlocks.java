@@ -8,11 +8,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.PhoenixCore;
+import net.phoenix.core.datagen.models.PhoenixFissionMachineModels;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
-import net.phoenix.core.datagen.models.PhoenixFissionMachineModels;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;

@@ -1,7 +1,5 @@
 package net.phoenix.core.network.packet;
 
-
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -12,6 +10,7 @@ import net.phoenix.core.integration.matter_manipulater.common.data.item.PhoenixM
 import java.util.function.Supplier;
 
 public class CPacketChangeManipulatorMode {
+
     private final int modeOrdinal;
 
     public CPacketChangeManipulatorMode(int modeOrdinal) {

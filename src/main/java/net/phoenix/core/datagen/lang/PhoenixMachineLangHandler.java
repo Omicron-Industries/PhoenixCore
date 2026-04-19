@@ -59,7 +59,8 @@ public class PhoenixMachineLangHandler {
         // Breeding & Transmutation
         provider.add("phoenixcore.blanket.input", "Breeding Target");
         provider.add("phoenixcore.blanket.potential_outputs", "Potential Transmutations:");
-        provider.add("phoenixcore.blanket.bias_hint", "§d§oHigher instability yields are favored by a Fast Neutron Spectrum (High Heat/Bias).");
+        provider.add("phoenixcore.blanket.bias_hint",
+                "§d§oHigher instability yields are favored by a Fast Neutron Spectrum (High Heat/Bias).");
         provider.add("phoenixcore.blanket_outputs", "§7Possible Products:");
         provider.add("phoenixcore.blanket_input", "§7Target Material: §f%s");
         provider.add("phoenixcore.blanket_output", "§7Breeding Product: §f%s");
@@ -107,8 +108,9 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.current_heat_display", "Core Temperature: %s / %s HU");
         provider.add("phoenixcore.status.scram", "§c§lSCRAM ACTIVE");
 
-// SCRAM Hatch Tooltips
-        provider.add("block.phoenixcore.fission_scram_hatch.desc", "Stops fuel consumption and heat generation when receiving a Redstone signal.");
+        // SCRAM Hatch Tooltips
+        provider.add("block.phoenixcore.fission_scram_hatch.desc",
+                "Stops fuel consumption and heat generation when receiving a Redstone signal.");
 
         provider.add("phoenixcore.machine.fission_scram_hatch.tooltip",
                 "§cEmergency Reactor Brake§r: Halts the reactor on §fany§r redstone signal.");
@@ -153,25 +155,21 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.status.scram_advanced", "§6§lSCRAM ACTIVE §8(Advanced Hatch)");
         provider.add("phoenixcore.status.scram_arming", "§e§lSCRAM ARMING: §f%d / %d ticks");
 
-
-
-// Stability Sensor UI & Tooltips
-
+        // Stability Sensor UI & Tooltips
 
         // Hatches Descriptions
 
-
-// UI Elements for the Sensor
-
-
+        // UI Elements for the Sensor
 
         // Multiblock Pattern Info
-        provider.add("phoenix.multiblock.pattern.info.multiple_fuel_rods", "Requires Fuel Rods. These generate base heat and determine recipe parallels.");
-        provider.add("phoenix.multiblock.pattern.info.multiple_blankets", "Requires Blanket Rods. These act as targets for transmutation in Breeder cycles.");
-        provider.add("phoenix.multiblock.pattern.info.multiple_moderators", "Moderators adjust heat generation and can provide EU or Parallel bonuses.");
-        provider.add("phoenix.multiblock.pattern.info.multiple_coolers", "Coolers remove heat based on their tier and provided coolant fluid.");
-
-
+        provider.add("phoenix.multiblock.pattern.info.multiple_fuel_rods",
+                "Requires Fuel Rods. These generate base heat and determine recipe parallels.");
+        provider.add("phoenix.multiblock.pattern.info.multiple_blankets",
+                "Requires Blanket Rods. These act as targets for transmutation in Breeder cycles.");
+        provider.add("phoenix.multiblock.pattern.info.multiple_moderators",
+                "Moderators adjust heat generation and can provide EU or Parallel bonuses.");
+        provider.add("phoenix.multiblock.pattern.info.multiple_coolers",
+                "Coolers remove heat based on their tier and provided coolant fluid.");
 
         // Recipe Typeskk
         provider.add("gtceu.high_performance_breeder_reactor",

@@ -21,9 +21,9 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixAPI;
+import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
-import net.phoenix.core.configs.PhoenixConfigs;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -139,7 +139,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         }
     }
 
-
     private void selectPrimaryBlanket() {
         this.primaryBlanket = activeBlankets.stream()
                 .max(Comparator.comparingInt(IFissionBlanketType::getTier))
@@ -204,9 +203,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             outputBatch(outputs);
         }
     }
-
-
-
 
     private String keyToPrettyName(String key) {
         ResourceLocation rl = ResourceLocation.tryParse(key);
@@ -280,7 +276,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
 
     // 1. Use the Parent's helper (ensure it's not returning AIR)
 
-
     @Nullable
     protected ItemStack resolveKeyToItem(String key, int amount) {
         if (amount <= 0) return ItemStack.EMPTY;
@@ -316,14 +311,13 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
                 net.minecraft.world.Containers.dropItemStack(
                         getLevel(),
                         getPos().getX(), getPos().getY(), getPos().getZ(),
-                        is
-                );
+                        is);
             }
         }
     }
 
     // 3. Fix the "roulettePick" and "sampleOutputs"
-// Ensure these call the local tryOutputResource so they benefit from the fix
+    // Ensure these call the local tryOutputResource so they benefit from the fix
     private void outputBatch(Map<String, Integer> outputs) {
         for (var e : outputs.entrySet()) {
             tryOutputResource(e.getKey(), e.getValue());
@@ -338,8 +332,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
 
         return false;
     }
-
-
 
     private boolean tryConsumeFluid(FluidStack fs) {
         if (fs.isEmpty()) return true;
@@ -414,9 +406,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         return out;
     }
 
-
-
-
     private Random makeBlanketRng() {
         long seed = 0x9E3779B97F4A7C15L;
         if (getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
@@ -467,6 +456,4 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         }
         return dist.get(dist.size() - 1).key();
     }
-
-
 }

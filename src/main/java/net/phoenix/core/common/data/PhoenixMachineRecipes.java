@@ -11,15 +11,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.PhoenixBeeMaterials;
 import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
 import net.phoenix.core.common.data.materials.PhoenixOres;
+import net.phoenix.core.common.machine.PhoenixMachines;
+import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
 import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.SourceIngredient;
 import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
-import net.phoenix.core.common.machine.PhoenixMachines;
 
 import java.util.function.Consumer;
 

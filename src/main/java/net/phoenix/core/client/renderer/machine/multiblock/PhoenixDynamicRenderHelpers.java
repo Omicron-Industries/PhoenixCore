@@ -3,6 +3,7 @@ package net.phoenix.core.client.renderer.machine.multiblock;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 
 import net.phoenix.core.client.renderer.machine.*;
+import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
 
 public class PhoenixDynamicRenderHelpers {
 

@@ -4,12 +4,13 @@ import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
+
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
-import lombok.Getter;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -19,6 +20,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission.FissionWorkableElectricMultiblockMachine;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -26,15 +29,15 @@ import org.jetbrains.annotations.NotNull;
  *
  * Two configurable guards the basic hatch lacks:
  *
- *   1. Signal threshold  — only triggers when signal strength >= the configured
- *      minimum. A weak comparator bleed or accidental dust connection won't
- *      fire it. The player must deliberately produce a strong enough signal.
+ * 1. Signal threshold — only triggers when signal strength >= the configured
+ * minimum. A weak comparator bleed or accidental dust connection won't
+ * fire it. The player must deliberately produce a strong enough signal.
  *
- *   2. Sustain timer     — the signal must be held for N ticks continuously
- *      before the SCRAM fires. Momentary pulses (buttons, short-range dust
- *      drop-off, clock edges) are ignored. The player needs a latching or
- *      sustained source — which paradoxically makes this hatch *easier* to
- *      wire correctly once you understand it.
+ * 2. Sustain timer — the signal must be held for N ticks continuously
+ * before the SCRAM fires. Momentary pulses (buttons, short-range dust
+ * drop-off, clock edges) are ignored. The player needs a latching or
+ * sustained source — which paradoxically makes this hatch *easier* to
+ * wire correctly once you understand it.
  *
  * The tradeoff vs the basic hatch: the basic hatch punishes you for any signal
  * at all. This one lets you be precise — at the cost of having to think about
@@ -163,11 +166,8 @@ public class AdvancedFissionScramHatchPart extends TieredPartMachine {
         group.addWidget(new LabelWidget(10, 8, "§l§6Advanced Fission SCRAM Hatch"));
 
         // Live status
-        group.addWidget(new LabelWidget(10, 24, () ->
-                isScrammed
-                        ? "§c● SCRAMMED — Reactor HALTED"
-                        : "§a● Standby — Reactor Permitted"
-        ));
+        group.addWidget(new LabelWidget(10, 24,
+                () -> isScrammed ? "§c● SCRAMMED — Reactor HALTED" : "§a● Standby — Reactor Permitted"));
 
         // Sustain progress
         group.addWidget(new LabelWidget(10, 36, () -> {

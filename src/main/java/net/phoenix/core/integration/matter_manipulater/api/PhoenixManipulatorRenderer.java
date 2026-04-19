@@ -1,7 +1,5 @@
 package net.phoenix.core.integration.matter_manipulater.api;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -9,9 +7,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.phoenix.core.integration.matter_manipulater.api.PhoenixPlacementEngine;
-import net.phoenix.core.integration.matter_manipulater.api.PhoenixManipulatorMode;
 import net.phoenix.core.integration.matter_manipulater.common.data.item.PhoenixManipulatorItem;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import java.util.List;
 
@@ -44,7 +43,9 @@ public class PhoenixManipulatorRenderer {
         // Define colors based on mode
         float r = 0.2f, g = 1.0f, b = 1.0f, a = 0.4f; // Default Cyan
         if (mode == PhoenixManipulatorMode.CONNECT_ONLY) {
-            r = 0.2f; g = 1.0f; b = 0.2f; // Green for repair
+            r = 0.2f;
+            g = 1.0f;
+            b = 0.2f; // Green for repair
         }
 
         // Draw individual ghost blocks
@@ -61,7 +62,8 @@ public class PhoenixManipulatorRenderer {
         poseStack.popPose();
     }
 
-    private static void drawBoundingBox(PoseStack matrix, VertexConsumer buffer, BlockPos start, BlockPos end, float r, float g, float b, float a) {
+    private static void drawBoundingBox(PoseStack matrix, VertexConsumer buffer, BlockPos start, BlockPos end, float r,
+                                        float g, float b, float a) {
         double minX = Math.min(start.getX(), end.getX());
         double minY = Math.min(start.getY(), end.getY());
         double minZ = Math.min(start.getZ(), end.getZ());
@@ -69,6 +71,7 @@ public class PhoenixManipulatorRenderer {
         double maxY = Math.max(start.getY(), end.getY()) + 1.05;
         double maxZ = Math.max(start.getZ(), end.getZ()) + 1.05;
 
-        LevelRenderer.renderLineBox(matrix, buffer, minX - 0.05, minY - 0.05, minZ - 0.05, maxX, maxY, maxZ, r, g, b, a);
+        LevelRenderer.renderLineBox(matrix, buffer, minX - 0.05, minY - 0.05, minZ - 0.05, maxX, maxY, maxZ, r, g, b,
+                a);
     }
 }

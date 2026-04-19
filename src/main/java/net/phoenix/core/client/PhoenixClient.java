@@ -21,12 +21,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.client.particle.PhoenixParticles;
-import net.phoenix.core.client.particle.TeslaSparkParticle;
-import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
-import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchScreen;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
+import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
+import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
+import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
+import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
 
 import org.jetbrains.annotations.NotNull;
 

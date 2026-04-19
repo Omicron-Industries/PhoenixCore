@@ -14,11 +14,13 @@ public class PhoenixKeybinds {
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_KP_9,
             "key.categories.phoenixcore");
+
     public static final KeyMapping TESLA_MODE = new KeyMapping(
             "key.phoenixcore.tesla_mode",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_M,
             "key.categories.phoenixcore");
+
     public static final KeyMapping TESLA_DISCHARGE = new KeyMapping(
             "key.phoenixcore.tesla_discharge",
             InputConstants.Type.KEYSYM,
@@ -28,7 +30,14 @@ public class PhoenixKeybinds {
     public static final KeyMapping MANIPULATOR_MENU = new KeyMapping(
             "key.phoenixcore.manipulator_menu",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_V, // Defaulting to 'V', common for tool menus
+            GLFW.GLFW_KEY_V,
+            "key.categories.phoenixcore");
+
+    // ── Recipe Builder ────────────────────────────────────────────────────────
+    public static final KeyMapping OPEN_RECIPE_BUILDER = new KeyMapping(
+            "key.phoenixcore.recipe_builder",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_KP_8,          // default: numpad 8 — change as needed
             "key.categories.phoenixcore");
 
     @SubscribeEvent
@@ -37,5 +46,6 @@ public class PhoenixKeybinds {
         event.register(TESLA_MODE);
         event.register(TESLA_DISCHARGE);
         event.register(MANIPULATOR_MENU);
+        event.register(OPEN_RECIPE_BUILDER); // ADD THIS
     }
 }

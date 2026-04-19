@@ -6,8 +6,8 @@ import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.data.recipes.FinishedRecipe;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.PhoenixFissionBlocks;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.PhoenixFissionBlocks;
 
 import java.util.function.Consumer;
 
