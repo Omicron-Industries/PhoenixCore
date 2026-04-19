@@ -105,7 +105,7 @@ public class PhoenixMachines {
     public static final String OVERLAY_PLASMA_HATCH_HALF_PX_TEX = "overlay_plasma_hatch_half_px_out";
     public static MultiblockMachineDefinition DANCE = null;
     public static MachineDefinition BLAZING_CLEANING_MAINTENANCE_HATCH = null;
-    public static MachineDefinition HIGH_YEILD_PHOTON_EMISSION_REGULATER = null;
+    public static MachineDefinition HIGH_YIELD_PHOTON_EMISSION_REGULATOR = null;
 
     static {
         REGISTRATE.creativeModeTab(() -> PhoenixCore.PHOENIX_CREATIVE_TAB);
@@ -1107,7 +1107,7 @@ public class PhoenixMachines {
 
     static {
         if (PhoenixConfigs.INSTANCE.features.PHPCAEnabled) {
-            HIGH_YEILD_PHOTON_EMISSION_REGULATER = REGISTRATE
+            HIGH_YIELD_PHOTON_EMISSION_REGULATOR = REGISTRATE
                     .multiblock("high_yield_photon_emission_regulator", PhoenixHPCAMachine::new)
                     .langValue("§dHigh Yield Photon Emission Regulator (HPCA)")
                     .tooltips(Component.translatable("phoenixcore.tooltip.hyper_machine_purpose",
