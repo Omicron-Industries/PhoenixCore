@@ -1,5 +1,6 @@
 package net.phoenix.core.integration.recipe_helper;
 
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -14,9 +15,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.PacketRecipeBuilderGenerate;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMenu> {
 
@@ -32,6 +35,8 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     public FluidSlotPanel fluidOutputPanel;
     AmountEditor amountEditor;
 
+    // Around line 120
+    @Getter
     private final List<ConditionsScreen.ConditionEntry> conditions = new ArrayList<>();
 
     private enum Page {
@@ -112,14 +117,12 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         Minecraft.getInstance().setScreen(new ConditionsScreen(this, conditions));
     }
 
+    // Around line 115
     public void setConditions(List<ConditionsScreen.ConditionEntry> list) {
-        conditions.clear();
-        conditions.addAll(list);
+        this.conditions.clear();
+        this.conditions.addAll(list);
     }
 
-    public List<ConditionsScreen.ConditionEntry> getConditions() {
-        return conditions;
-    }
 
     private void setPage(Page page) {
         this.currentPage = page;
@@ -133,7 +136,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     }
 
     @Override
-    public void render(GuiGraphics g, int mx, int my, float pt) {
+    public void render(@NotNull GuiGraphics g, int mx, int my, float pt) {
         renderBackground(g);
         super.render(g, mx, my, pt);
         renderTooltip(g, mx, my);
@@ -157,7 +160,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     }
 
     @Override
-    protected void renderLabels(GuiGraphics g, int mx, int my) { /* suppressed */ }
+    protected void renderLabels(@NotNull GuiGraphics g, int mx, int my) { /* suppressed */ }
 
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
@@ -237,11 +240,13 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     // Format: event.recipes.gtceu.machine("id").itemInputs("4x mod:item")...
 
     private void onCopyKjs() {
+        assert minecraft != null;
         minecraft.keyboardHandler.setClipboard(buildKjs());
         notify("§aCopied KJS!");
     }
 
     private void onCopyJava() {
+        assert minecraft != null;
         minecraft.keyboardHandler.setClipboard(buildJava());
         notify("§aCopied Java datagen!");
     }
@@ -249,6 +254,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     private void onSendToServer() {
         String java = buildJava();
         PhoenixNetwork.CHANNEL.sendToServer(new PacketRecipeBuilderGenerate(java));
+        assert minecraft != null;
         minecraft.keyboardHandler.setClipboard(java);
         notify("§aSent to server + copied Java!");
     }
@@ -269,6 +275,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     }
 
     private void notify(String msg) {
+        assert minecraft != null;
         if (minecraft.player != null)
             minecraft.player.displayClientMessage(Component.literal(msg), false);
     }
@@ -289,7 +296,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         List<String> iIn = new ArrayList<>();
         for (SlotPanel.SlotEntry e : itemInputPanel.getEntries()) {
             if (e.stack == null || e.stack.isEmpty()) continue;
-            String reg = ForgeRegistries.ITEMS.getKey(e.stack.getItem()).toString();
+            String reg = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(e.stack.getItem())).toString();
             iIn.add("\"" + (e.count > 1 ? e.count + "x " : "") + reg + "\"");
         }
         if (!iIn.isEmpty()) sb.append("    .itemInputs(").append(String.join(", ", iIn)).append(")\n");
@@ -304,7 +311,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         List<String> iOut = new ArrayList<>();
         for (SlotPanel.SlotEntry e : itemOutputPanel.getEntries()) {
             if (e.stack == null || e.stack.isEmpty()) continue;
-            String reg = ForgeRegistries.ITEMS.getKey(e.stack.getItem()).toString();
+            String reg = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(e.stack.getItem())).toString();
             iOut.add("\"" + (e.count > 1 ? e.count + "x " : "") + reg + "\"");
         }
         if (!iOut.isEmpty()) sb.append("    .itemOutputs(").append(String.join(", ", iOut)).append(")\n");
@@ -355,7 +362,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
 
         for (SlotPanel.SlotEntry e : itemInputPanel.getEntries()) {
             if (e.stack == null || e.stack.isEmpty()) continue;
-            String reg = ForgeRegistries.ITEMS.getKey(e.stack.getItem()).toString();
+            String reg = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(e.stack.getItem())).toString();
             if (e.notConsumable)
                 sb.append("        .notConsumable(ForgeRegistries.ITEMS.getValue(new ResourceLocation(\"").append(reg)
                         .append("\")))\n");
@@ -365,7 +372,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         }
         for (SlotPanel.SlotEntry e : itemOutputPanel.getEntries()) {
             if (e.stack == null || e.stack.isEmpty()) continue;
-            String reg = ForgeRegistries.ITEMS.getKey(e.stack.getItem()).toString();
+            String reg = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(e.stack.getItem())).toString();
             sb.append("        .outputItems(new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(\"")
                     .append(reg).append("\")), ").append(e.count).append("))\n");
         }
@@ -438,7 +445,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     }
 
     @Override
-    public <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T w) {
+    public <T extends GuiEventListener & Renderable & NarratableEntry> @NotNull T addRenderableWidget(@NotNull T w) {
         return super.addRenderableWidget(w);
     }
 }
