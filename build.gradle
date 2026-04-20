@@ -58,10 +58,7 @@ repositories {
         name 'FirstDarkDev'
         url "https://maven.firstdarkdev.xyz/snapshots/"
     }
-    maven {
-// latvian.dev Maven (KubeJS and Rhino)
-        url = "https://maven.latvian.dev/releases"
-    }
+
     maven { // Registrate
         url = "https://maven.tterrag.com/"
         content {
@@ -237,8 +234,6 @@ dependencies {
     modImplementation("com.gregtechceu.gtceu:gtceu-${minecraft_version}:${gtceu_version}:slim") { transitive = false }
     modImplementation("com.lowdragmc.ldlib:ldlib-forge-${minecraft_version}:${ldlib_version}") { transitive = false }
     modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
-    modImplementation("dev.latvian.mods:kubejs-forge:${kubejs_version}")
-    modImplementation("dev.latvian.mods:rhino-forge:${rhino_version}")
     modImplementation("dev.toma.configuration:configuration-forge-${minecraft_version}:${configuration_version}")
     modRuntimeOnly("dev.architectury:architectury-forge:${architectury_version}")
     modImplementation("dev.ftb.mods:ftb-library-forge:${ftblibrary_version}")
