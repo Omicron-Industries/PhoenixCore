@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -35,6 +36,9 @@ import org.jetbrains.annotations.NotNull;
 public class PhoenixClient {
 
     private PhoenixClient() {}
+
+    // Inside your Client Setup / Event Bus Subscriber class
+
 
     /**
      * Called from your main Mod class (PhoenixCore) constructor or CommonSetup.
@@ -99,6 +103,8 @@ public class PhoenixClient {
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+
+
             MenuScreens.register(PhoenixCore.SOURCE_HATCH_MENU.get(), SourceHatchScreen::new);
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);

@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "phoenixcore:block/casings/multiblock/machine_casing_invariant_naquadah_alloy"
-  }
-}

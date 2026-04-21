@@ -1,8 +1,5 @@
 package net.phoenix.core;
 
-// ─── This is a DIFF of PhoenixCore.java — only lines that change are shown. ───
-// ─── Search for "// ADD" comments to find every insertion point. ───
-
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialEvent;
@@ -24,6 +21,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -209,6 +208,14 @@ public class PhoenixCore {
         PhoenixTeslaMachines.init();
     }
 
+    @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientModBusEvents {
+
+        @SubscribeEvent
+        public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
+            event.registerAboveAll("spray_can_info", net.phoenix.core.client.render.SprayCanHudOverlay.HUD_SPRAY_CAN);
+        }
+    }
     public static ResourceLocation id(String path) {
         return new ResourceLocation(MOD_ID, path);
     }

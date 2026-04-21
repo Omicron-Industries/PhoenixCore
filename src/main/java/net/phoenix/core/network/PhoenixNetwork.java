@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import net.phoenix.core.network.packet.SelectColorPacket;
 import net.phoenix.core.network.packet.CPacketChangeManipulatorMode;
 import net.phoenix.core.network.packet.CPacketManipulatorAction;
 import net.phoenix.core.network.packet.PacketPhoenixModeSync;
@@ -25,6 +26,14 @@ public class PhoenixNetwork {
     private static int id = 0;
 
     public static void init() {
+
+        CHANNEL.registerMessage(id++,
+                SelectColorPacket.class,
+                SelectColorPacket::encode,
+                SelectColorPacket::decode, // or SelectColorPacket::new if that's your constructor
+                SelectColorPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
         CHANNEL.registerMessage(id++,
                 UpdateWingSettingsPacket.class,
                 UpdateWingSettingsPacket::encode,

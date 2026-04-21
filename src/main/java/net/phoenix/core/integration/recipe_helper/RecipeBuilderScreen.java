@@ -196,21 +196,26 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (amountEditor.visible) return amountEditor.mouseClicked(mx, my, btn);
-        if (currentPage == Page.ITEMS) {
-            if (itemInputPanel.mouseClicked(mx, my, btn)) return true;
-            if (itemOutputPanel.mouseClicked(mx, my, btn)) return true;
-        }
-        if (currentPage == Page.FLUIDS) {
-            if (fluidInputPanel.mouseClicked(mx, my, btn)) return true;
-            if (fluidOutputPanel.mouseClicked(mx, my, btn)) return true;
+        // Only intercept panel clicks when above the inventory divider
+        if (my < topPos + RecipeBuilderMenu.INV_Y - 8) {
+            if (currentPage == Page.ITEMS) {
+                if (itemInputPanel.mouseClicked(mx, my, btn)) return true;
+                if (itemOutputPanel.mouseClicked(mx, my, btn)) return true;
+            }
+            if (currentPage == Page.FLUIDS) {
+                if (fluidInputPanel.mouseClicked(mx, my, btn)) return true;
+                if (fluidOutputPanel.mouseClicked(mx, my, btn)) return true;
+            }
         }
         return super.mouseClicked(mx, my, btn);
     }
 
     @Override
     public boolean mouseReleased(double mx, double my, int btn) {
-        if (itemInputPanel.mouseReleased(mx, my, btn)) return true;
-        if (itemOutputPanel.mouseReleased(mx, my, btn)) return true;
+        if (my < topPos + RecipeBuilderMenu.INV_Y - 8) {
+            if (itemInputPanel.mouseReleased(mx, my, btn)) return true;
+            if (itemOutputPanel.mouseReleased(mx, my, btn)) return true;
+        }
         return super.mouseReleased(mx, my, btn);
     }
 

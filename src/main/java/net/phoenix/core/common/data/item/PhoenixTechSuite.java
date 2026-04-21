@@ -98,7 +98,8 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         boolean containerOpen = !world.isClientSide && player.containerMenu != player.inventoryMenu;
 
         boolean currentTeslaMode = data.getBoolean("teslaMode");
-        if (PhoenixKeybinds.TESLA_MODE.isDown()) {
+        boolean teslaKeyDown = world.isClientSide && PhoenixKeybinds.TESLA_MODE.isDown();
+        if (teslaKeyDown) {
             long lastToggle = data.getLong("lastToggleTime");
             if (world.getGameTime() - lastToggle > 10) {
                 currentTeslaMode = !currentTeslaMode;
@@ -150,7 +151,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         } else if (type == ArmorItem.Type.LEGGINGS) {
             handleLeggingsLogic(item, player, data);
         } else if (type == ArmorItem.Type.BOOTS) {
-            handleBootsLogic(item, player, data, serverLevel);
+            handleBootsLogic(item, player, data, serverLevel, world.isClientSide);
         }
     }
 
@@ -247,7 +248,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         data.putInt("nightVisionTimer", nightVisionTimer);
     }
 
-    private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel) {
+    private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel, boolean isClientSide) {
         boolean jumping = SyncedKeyMappings.VANILLA_JUMP.isKeyDown(player);
         boolean sneaking = SyncedKeyMappings.VANILLA_SNEAK.isKeyDown(player);
         boolean boostedJump = data.getBoolean("boostedJump");
@@ -257,11 +258,10 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         if (serverLevel != null) {
             int dischargeCooldown = data.getInt("dischargeCooldown");
 
-            if (PhoenixKeybinds.TESLA_DISCHARGE.isDown() && dischargeCooldown == 0) {
+            if (isClientSide && PhoenixKeybinds.TESLA_DISCHARGE.isDown() && dischargeCooldown == 0) {
                 doTeslaDischarge(serverLevel, player, item);
                 data.putInt("dischargeCooldown", 100);
             }
-
             if (dischargeCooldown > 0) data.putInt("dischargeCooldown", dischargeCooldown - 1);
         }
 

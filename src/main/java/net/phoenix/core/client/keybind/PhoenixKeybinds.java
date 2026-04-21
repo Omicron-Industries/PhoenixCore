@@ -40,6 +40,14 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_KP_8,          // default: numpad 8 — change as needed
             "key.categories.phoenixcore");
 
+    public static final KeyMapping SPRAY_CAN_MENU = new KeyMapping(
+            "key.phoenixcore.spray_can_menu",
+            InputConstants.Type.KEYSYM, // InputConstants.UNKNOWN.getValue(),
+            GLFW.GLFW_KEY_R, // Default to 'R' or whatever you prefer
+            "key.categories.phoenixcore");
+
+
+
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);
@@ -47,5 +55,6 @@ public class PhoenixKeybinds {
         event.register(TESLA_DISCHARGE);
         event.register(MANIPULATOR_MENU);
         event.register(OPEN_RECIPE_BUILDER); // ADD THIS
+        event.register(SPRAY_CAN_MENU);
     }
 }

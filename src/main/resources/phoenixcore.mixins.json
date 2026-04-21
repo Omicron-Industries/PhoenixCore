@@ -5,6 +5,8 @@
   "minVersion": "0.8",
   "refmap": "mixins.phoenixcore.refmap.json",
   "mixins": [
+    "accessor.ColorSprayBehaviourAccessor",
+    "gtceu.ColorSprayBehaviourMixin",
     "accessor.AbilitiesAccessor",
     "accessor.GTOresAccessor",
     "accessor.RelayTileDisabledAccessor",

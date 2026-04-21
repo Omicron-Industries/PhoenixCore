@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "phoenixcore:item/thorium_fuel_pellet"
-  }
-}

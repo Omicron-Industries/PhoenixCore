@@ -16,6 +16,7 @@ import net.phoenix.core.integration.ars_nouveau.common.data.item.SoulLensItem;
 
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import net.phoenix.core.common.item.ChameleonSprayCanItem;
 
 import static net.phoenix.core.PhoenixCore.PHOENIX_CREATIVE_TAB;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
@@ -25,6 +26,9 @@ public class PhoenixItems {
     static {
         REGISTRATE.creativeModeTab(() -> PHOENIX_CREATIVE_TAB);
     }
+
+
+
 
     public static ItemEntry<ComponentItem> POWER_UNIT_LUV = REGISTRATE.item("luv_power_unit", ComponentItem::create)
             .lang("LuV Power Unit")
@@ -44,6 +48,13 @@ public class PhoenixItems {
             .properties(p -> p.stacksTo(1))
             .onRegister(c -> c.attachComponents(c))
             .model((ctx, prov) -> prov.handheld(ctx, prov.modLoc("item/tools/tesla_binder")))
+            .register();
+
+    public static final ItemEntry<ChameleonSprayCanItem> CHAMELEON_SPRAY_CAN = REGISTRATE
+            .item("chameleon_spray_can", ChameleonSprayCanItem::new)
+            .lang("Chameleon Spray Can")
+            .properties(p -> p.stacksTo(1))
+            .model((ctx, prov) -> prov.handheld(ctx, prov.modLoc("item/tools/chameleon_spray_can")))
             .register();
     public static ItemEntry<SoulLensItem> SOUL_LENS = REGISTRATE
             .item("soul_lens", SoulLensItem::new)

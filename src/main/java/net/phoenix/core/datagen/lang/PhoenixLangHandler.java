@@ -68,6 +68,16 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.tesla_discharge", "Activate Tesla Discharge");
         provider.add("key.phoenixcore.manipulator_menu", "Matter Manipulator Menu");
 
+        // Chameleon Spray Can
+        provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
+        provider.add("gui.phoenixcore.color_select.title", "Select Color");
+        provider.add("behaviour.paintspray.chameleon.status.color", "§7Mode: §f%s");
+        provider.add("behaviour.paintspray.chameleon.status.solvent", "§7Mode: §dSolvent");
+        provider.add("behaviour.paintspray.chameleon.tooltip.current_color", "Current Color: %s");
+        provider.add("behaviour.paintspray.chameleon.tooltip.solvent", "Current: Solvent");
+        provider.add("behaviour.paintspray.chameleon.tooltip.info", "Scroll or use the Keybind to change color.");
+        provider.add("behaviour.paintspray.solvent.short", "Solvent");
+
         // Tesla Binder Item
         provider.add("item.phoenixcore.tesla_binder.linked", "§aLinked to: §f%s");
         provider.add("item.phoenixcore.tesla_binder.unlinked", "§cNot Linked");

@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "bottom": "phoenixcore:block/casings/batteries/tesla_uiv/bottom",
-    "side": "phoenixcore:block/casings/batteries/tesla_uiv/side",
-    "top": "phoenixcore:block/casings/batteries/tesla_uiv/top"
-  }
-}

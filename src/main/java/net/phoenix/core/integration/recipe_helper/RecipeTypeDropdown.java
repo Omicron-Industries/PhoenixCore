@@ -134,10 +134,11 @@ public class RecipeTypeDropdown extends AbstractWidget {
      */
     public static class RecipePickerOverlay extends Screen {
 
-        private static final int PANEL_W = 260;
-        private static final int PANEL_H = 220;
-        private static final int ROW_H = 12;
-        private static final int HEADER_H = 24; // search box area
+        private static final int PANEL_W  = 260;
+        private static final int PANEL_H  = 220;
+        private static final int ROW_H    = 14;  // taller rows — less smushed
+        private static final int HEADER_H = 28;  // title (14) + search (12) + 2px gap
+        private static final int LIST_PAD = 2;   // vertical padding inside list area
         private static final int SCROLL_W = 6;
 
         private final Screen parent;
@@ -195,9 +196,9 @@ public class RecipeTypeDropdown extends AbstractWidget {
                     searchQuery + (System.currentTimeMillis() % 1000 < 500 ? "§7|" : "");
             g.drawString(font, displaySearch, px + 7, searchY + 2, 0xDDCCFF, false);
 
-            // List area
-            int listY = py + HEADER_H;
-            int listH = PANEL_H - HEADER_H - 4;
+            // List area — extra bottom room for the ESC hint
+            int listY = py + HEADER_H + LIST_PAD;
+            int listH = PANEL_H - HEADER_H - LIST_PAD - 14;
             int listX = px + 2;
             int listW = PANEL_W - SCROLL_W - 4;
 
@@ -216,7 +217,7 @@ public class RecipeTypeDropdown extends AbstractWidget {
                 else if (hov) g.fill(listX, ry, listX + listW, ry + ROW_H, 0xFF1A0A28);
 
                 int textCol = sel ? 0xCC88FF : (hov ? 0xDDBBFF : 0x998899);
-                g.drawString(font, type, listX + 3, ry + 2, textCol, false);
+                g.drawString(font, type, listX + 3, ry + 3, textCol, false);
             }
 
             g.disableScissor();
@@ -244,8 +245,8 @@ public class RecipeTypeDropdown extends AbstractWidget {
         public boolean mouseClicked(double mx, double my, int btn) {
             int px = (this.width - PANEL_W) / 2;
             int py = (this.height - PANEL_H) / 2;
-            int listY = py + HEADER_H;
-            int listH = PANEL_H - HEADER_H - 4;
+            int listY = py + HEADER_H + LIST_PAD;
+            int listH = PANEL_H - HEADER_H - LIST_PAD - 14;
             int listX = px + 2;
             int listW = PANEL_W - SCROLL_W - 4;
 
@@ -310,7 +311,7 @@ public class RecipeTypeDropdown extends AbstractWidget {
         }
 
         private int visibleRows() {
-            return (PANEL_H - HEADER_H - 4) / ROW_H;
+            return (PANEL_H - HEADER_H - LIST_PAD - 14) / ROW_H;
         }
 
         private void close() {

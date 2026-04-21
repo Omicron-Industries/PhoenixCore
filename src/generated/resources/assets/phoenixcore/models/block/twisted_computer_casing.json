@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "phoenixcore:block/twisted_computer_casing"
-  }
-}

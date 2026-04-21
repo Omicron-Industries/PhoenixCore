@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "phoenixcore:item/space_grade_steel_drilling_kit"
-  }
-}
