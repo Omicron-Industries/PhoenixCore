@@ -1,0 +1,11 @@
+{
+  "microverse": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "phoenixcore:microverse"
+      }
+    ],
+    "subtitle": "phoenixcore.subtitle.microverse"
+  }
+}

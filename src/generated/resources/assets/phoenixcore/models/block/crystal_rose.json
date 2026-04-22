@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "phoenixcore:item/crystal_rose"
+  }
+}

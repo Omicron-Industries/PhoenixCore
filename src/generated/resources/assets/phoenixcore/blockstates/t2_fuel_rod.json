@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/t2_fuel_rod"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/t2_fuel_rod_active"
+    }
+  }
+}

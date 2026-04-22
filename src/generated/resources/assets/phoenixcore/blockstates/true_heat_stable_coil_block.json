@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/true_heat_stable_coil_block"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/true_heat_stable_coil_block_active"
+    }
+  }
+}

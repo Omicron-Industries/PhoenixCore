@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "phoenixcore:item/tesla_stabilizer/mv_tesla_stabilizer"
+  }
+}

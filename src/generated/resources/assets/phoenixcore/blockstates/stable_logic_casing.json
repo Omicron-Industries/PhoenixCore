@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "phoenixcore:block/stable_logic_casing"
+    }
+  }
+}

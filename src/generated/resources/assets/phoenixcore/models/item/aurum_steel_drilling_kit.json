@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "phoenixcore:item/aurum_steel_drilling_kit"
+  }
+}

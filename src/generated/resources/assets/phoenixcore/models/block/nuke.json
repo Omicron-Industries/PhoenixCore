@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "phoenixcore:block/nuke_bottom",
+    "side": "phoenixcore:block/nuke_side",
+    "top": "phoenixcore:block/nuke_top"
+  }
+}

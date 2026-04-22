@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/plutonium_blanket"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/plutonium_blanket_active"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/americium_blanket"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/americium_blanket_active"
+    }
+  }
+}

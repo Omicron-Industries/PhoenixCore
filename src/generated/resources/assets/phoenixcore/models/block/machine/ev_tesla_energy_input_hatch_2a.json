@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:block/block",
+  "loader": "gtceu:machine",
+  "machine": "phoenixcore:ev_tesla_energy_input_hatch_2a",
+  "replaceable_textures": [
+    "bottom",
+    "top",
+    "side"
+  ],
+  "variants": {
+    "is_formed=false": {
+      "model": {
+        "parent": "phoenixcore:block/machine/part/tesla_hatches/tesla_input_2a",
+        "textures": {
+          "bottom": "gtceu:block/casings/voltage/ev/bottom",
+          "side": "gtceu:block/casings/voltage/ev/side",
+          "top": "gtceu:block/casings/voltage/ev/top"
+        }
+      }
+    },
+    "is_formed=true": {
+      "model": {
+        "parent": "phoenixcore:block/machine/part/tesla_hatches/tesla_input_2a",
+        "textures": {
+          "bottom": "gtceu:block/casings/voltage/ev/bottom",
+          "side": "gtceu:block/casings/voltage/ev/side",
+          "top": "gtceu:block/casings/voltage/ev/top"
+        }
+      }
+    }
+  }
+}

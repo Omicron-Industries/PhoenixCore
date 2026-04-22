@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:block/block",
+  "loader": "gtceu:machine",
+  "machine": "phoenixcore:uiv_tesla_laser_input_hatch_256a_256a",
+  "replaceable_textures": [
+    "bottom",
+    "top",
+    "side"
+  ],
+  "variants": {
+    "is_formed=false": {
+      "model": {
+        "parent": "phoenixcore:block/machine/part/tesla_hatches/tesla_input_laser_256a",
+        "textures": {
+          "bottom": "gtceu:block/casings/voltage/uiv/bottom",
+          "side": "gtceu:block/casings/voltage/uiv/side",
+          "top": "gtceu:block/casings/voltage/uiv/top"
+        }
+      }
+    },
+    "is_formed=true": {
+      "model": {
+        "parent": "phoenixcore:block/machine/part/tesla_hatches/tesla_input_laser_256a",
+        "textures": {
+          "bottom": "gtceu:block/casings/voltage/uiv/bottom",
+          "side": "gtceu:block/casings/voltage/uiv/side",
+          "top": "gtceu:block/casings/voltage/uiv/top"
+        }
+      }
+    }
+  }
+}
