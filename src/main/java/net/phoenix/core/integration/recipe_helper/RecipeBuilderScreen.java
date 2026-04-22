@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.PacketRecipeBuilderGenerate;
+import net.phoenix.core.integration.recipe_helper.ConditionsScreen; // Added import
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     public FluidSlotPanel fluidOutputPanel;
     AmountEditor amountEditor;
 
-    // Around line 120
     @Getter
     private final List<ConditionsScreen.ConditionEntry> conditions = new ArrayList<>();
 
@@ -118,7 +118,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         Minecraft.getInstance().setScreen(new ConditionsScreen(this, conditions));
     }
 
-    // Around line 115
     public void setConditions(List<ConditionsScreen.ConditionEntry> list) {
         this.conditions.clear();
         this.conditions.addAll(list);
