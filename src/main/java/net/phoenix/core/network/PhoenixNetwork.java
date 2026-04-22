@@ -4,11 +4,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
-import net.phoenix.core.network.packet.SelectColorPacket;
 import net.phoenix.core.network.packet.CPacketChangeManipulatorMode;
 import net.phoenix.core.network.packet.CPacketManipulatorAction;
 import net.phoenix.core.network.packet.PacketPhoenixModeSync;
 import net.phoenix.core.network.packet.PacketRecipeBuilderGenerate;
+import net.phoenix.core.network.packet.SelectColorPacket;
 import net.phoenix.core.network.packet.UpdateWingSettingsPacket;
 
 import java.util.Optional;
@@ -26,7 +26,6 @@ public class PhoenixNetwork {
     private static int id = 0;
 
     public static void init() {
-
         CHANNEL.registerMessage(id++,
                 SelectColorPacket.class,
                 SelectColorPacket::encode,

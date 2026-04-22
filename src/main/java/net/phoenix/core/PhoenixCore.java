@@ -216,6 +216,7 @@ public class PhoenixCore {
             event.registerAboveAll("spray_can_info", net.phoenix.core.client.render.SprayCanHudOverlay.HUD_SPRAY_CAN);
         }
     }
+
     public static ResourceLocation id(String path) {
         return new ResourceLocation(MOD_ID, path);
     }

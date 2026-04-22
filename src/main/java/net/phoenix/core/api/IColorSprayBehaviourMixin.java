@@ -1,8 +1,10 @@
 package net.phoenix.core.api;
 
-import appeng.api.implementations.blockentities.IColorableBlockEntity;
 import net.minecraft.world.entity.player.Player;
 
+import appeng.api.implementations.blockentities.IColorableBlockEntity;
+
 public interface IColorSprayBehaviourMixin {
+
     void bridge$recolorAE2(IColorableBlockEntity colorable, Player player);
 }

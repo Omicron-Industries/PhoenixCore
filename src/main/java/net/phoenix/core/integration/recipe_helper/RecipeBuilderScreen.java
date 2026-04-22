@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.recipe_helper;
 
-import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -15,6 +14,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.PacketRecipeBuilderGenerate;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -122,7 +123,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         this.conditions.clear();
         this.conditions.addAll(list);
     }
-
 
     private void setPage(Page page) {
         this.currentPage = page;

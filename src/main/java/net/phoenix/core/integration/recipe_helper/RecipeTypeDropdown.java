@@ -134,9 +134,9 @@ public class RecipeTypeDropdown extends AbstractWidget {
      */
     public static class RecipePickerOverlay extends Screen {
 
-        private static final int PANEL_W  = 260;
-        private static final int PANEL_H  = 220;
-        private static final int ROW_H    = 14;  // taller rows — less smushed
+        private static final int PANEL_W = 260;
+        private static final int PANEL_H = 220;
+        private static final int ROW_H = 14;  // taller rows — less smushed
         private static final int HEADER_H = 28;  // title (14) + search (12) + 2px gap
         private static final int LIST_PAD = 2;   // vertical padding inside list area
         private static final int SCROLL_W = 6;

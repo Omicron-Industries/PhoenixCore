@@ -47,7 +47,6 @@ public class ClientTickHandler {
             }
         }
 
-
         // ── Recipe Builder Logic ──────────────────────────────────────────
         while (PhoenixKeybinds.OPEN_RECIPE_BUILDER.consumeClick()) {
             if (mc.screen == null) {
@@ -60,13 +59,13 @@ public class ClientTickHandler {
             }
         }
     }
+
     @SubscribeEvent
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
         Minecraft mc = Minecraft.getInstance();
 
         // 1. Only run if the player exists and NO GUI is open
         if (mc.player == null || mc.screen != null) return;
-
 
         if (mc.options.keyShift.isDown()) {
             // 2. Check if holding the Chameleon Spray Can
@@ -98,7 +97,6 @@ public class ClientTickHandler {
             }
         }
     }
-
 
     @SubscribeEvent
     public static void onRightClick(InputEvent.InteractionKeyMappingTriggered event) {

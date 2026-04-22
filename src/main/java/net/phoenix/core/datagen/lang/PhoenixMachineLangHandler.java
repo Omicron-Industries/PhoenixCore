@@ -306,8 +306,7 @@ public class PhoenixMachineLangHandler {
         String largeSteamSifterDesc = "§bSifts through the chaff to get to the good stuff. \n" +
                 "§7Good Vibrations.";
 
-     ;
-
+        ;
 
         // Machine tooltips
         PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_large_steam_sifter",

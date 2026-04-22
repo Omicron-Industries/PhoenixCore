@@ -2,7 +2,6 @@ package net.phoenix.core.client.render;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
@@ -10,6 +9,7 @@ import net.phoenix.core.common.item.ChameleonSprayCanBehaviour;
 import net.phoenix.core.common.item.ChameleonSprayCanItem;
 
 public class SprayCanHudOverlay {
+
     public static final IGuiOverlay HUD_SPRAY_CAN = (gui, guiGraphics, partialTick, width, height) -> {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;

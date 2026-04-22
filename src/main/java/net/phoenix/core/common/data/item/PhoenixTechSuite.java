@@ -248,7 +248,8 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         data.putInt("nightVisionTimer", nightVisionTimer);
     }
 
-    private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel, boolean isClientSide) {
+    private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel,
+                                  boolean isClientSide) {
         boolean jumping = SyncedKeyMappings.VANILLA_JUMP.isKeyDown(player);
         boolean sneaking = SyncedKeyMappings.VANILLA_SNEAK.isKeyDown(player);
         boolean boostedJump = data.getBoolean("boostedJump");

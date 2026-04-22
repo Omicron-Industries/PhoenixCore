@@ -1,7 +1,5 @@
 package net.phoenix.core.common.item;
 
-import appeng.api.implementations.blockentities.IColorableBlockEntity;
-import com.google.common.collect.ImmutableMap;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.blockentity.IPaintable;
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
@@ -11,6 +9,7 @@ import com.gregtechceu.gtceu.common.data.GTSoundEntries;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.utils.BreadthFirstBlockSearch;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,11 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -40,6 +37,8 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.TriPredicate;
 
+import appeng.api.implementations.blockentities.IColorableBlockEntity;
+import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -129,8 +128,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         GTSoundEntries.SPRAY_CAN_TOOL.play(level, null, player.position(), 1.0f, 1.0f);
         return InteractionResult.SUCCESS;
     }
-
-
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
@@ -240,7 +237,8 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         return recolorBlockState(level, pos, color) || tryPaintSpecialBlock(level, pos, block, color);
     }
 
-    private boolean tryPaintSpecialBlock(Level world, BlockPos pos, net.minecraft.world.level.block.Block block, DyeColor color) {
+    private boolean tryPaintSpecialBlock(Level world, BlockPos pos, net.minecraft.world.level.block.Block block,
+                                         DyeColor color) {
         if (block.defaultBlockState().is(Tags.Blocks.GLASS)) {
             if (recolorBlockNoState(GLASS_MAP, color, world, pos, Blocks.GLASS)) {
                 return true;
@@ -287,8 +285,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             paintable.setPaintingColor(IPaintable.UNPAINTED_COLOR);
         } else if (paintable.getPaintingColor() != color.getMapColor().col) {
             paintable.setPaintingColor(color.getMapColor().col);
-        } else {
-        }
+        } else {}
     }
 
     private static boolean recolorBlockNoState(Map<DyeColor, Block> map, @Nullable DyeColor color,
@@ -374,16 +371,13 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         return false;
     }
 
-
     @Override
     public boolean onEntitySwing(@NotNull ItemStack stack, @NotNull LivingEntity entity) {
         return false; // Allows the swing to happen normally
     }
 
-
     @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
-
         return false;
     }
 

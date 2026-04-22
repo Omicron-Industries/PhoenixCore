@@ -46,8 +46,6 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_R, // Default to 'R' or whatever you prefer
             "key.categories.phoenixcore");
 
-
-
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);

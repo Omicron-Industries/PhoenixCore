@@ -1,11 +1,13 @@
 package net.phoenix.core.mixin.gtceu;
 
-import appeng.api.implementations.blockentities.IColorableBlockEntity;
-import appeng.api.util.AEColor;
 import com.gregtechceu.gtceu.common.item.ColorSprayBehaviour;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.phoenix.core.api.IColorSprayBehaviourMixin;
+
+import appeng.api.implementations.blockentities.IColorableBlockEntity;
+import appeng.api.util.AEColor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

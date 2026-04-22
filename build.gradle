@@ -187,9 +187,14 @@ legacyForge {
 
 
 jar {
-    manifest.attributes([
-            "MixinConfigs": "phoenixcore.mixins.json"
-    ])
+    manifest {
+        attributes([
+                // Use a comma-separated list for multiple configs
+                "MixinConfigs": "phoenix_chromatic_codes.mixins.json,phoenix_chromatic_codes_ftb.mixins.json",
+                "Implementation-Vendor" : mod_author,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
 }
 
 mixin {

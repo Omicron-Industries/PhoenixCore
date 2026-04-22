@@ -1,6 +1,5 @@
 package net.phoenix.core.client.gui.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -15,6 +14,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.SelectColorPacket;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class ColorRadialMenuScreen extends Screen {
 
@@ -45,7 +46,6 @@ public class ColorRadialMenuScreen extends Screen {
 
         boolean hoveringSolvent = distToCenter < INNER_RADIUS;
 
-
         int solventColor = hoveringSolvent ? 0xFFFF55 : 0xFFFFFF;
         Component solventText = Component.translatable("behaviour.paintspray.solvent.short");
         guiGraphics.drawCenteredString(this.font, solventText, centerX, centerY - 4, solventColor);
@@ -53,8 +53,8 @@ public class ColorRadialMenuScreen extends Screen {
         for (int i = 0; i < numSegments; i++) {
             float startAngleDeg = i * segmentAngle;
             float endAngleDeg = (i + 1) * segmentAngle;
-            boolean hoveringThis = !hoveringSolvent && distToCenter <= RADIUS && distToCenter > INNER_RADIUS
-                    && mouseAngle >= startAngleDeg && mouseAngle < endAngleDeg;
+            boolean hoveringThis = !hoveringSolvent && distToCenter <= RADIUS && distToCenter > INNER_RADIUS &&
+                    mouseAngle >= startAngleDeg && mouseAngle < endAngleDeg;
 
             float midAngleRad = (float) Math.toRadians(startAngleDeg - 90);
             float itemAngleRad = (float) Math.toRadians(((startAngleDeg + endAngleDeg) / 2.0f) - 90);
@@ -63,7 +63,6 @@ public class ColorRadialMenuScreen extends Screen {
             int y1 = centerY + (int) (Mth.sin(midAngleRad) * INNER_RADIUS);
             int x2 = centerX + (int) (Mth.cos(midAngleRad) * RADIUS);
             int y2 = centerY + (int) (Mth.sin(midAngleRad) * RADIUS);
-
 
             guiGraphics.fill(x1, y1, x1 + 1, y1 + 1, 0xAAFFFFFF);
 
@@ -80,11 +79,10 @@ public class ColorRadialMenuScreen extends Screen {
             guiGraphics.renderFakeItem(dyeStack, itemX, itemY);
 
             if (hoveringThis) {
-                guiGraphics.renderTooltip(this.font, Component.translatable("color.minecraft." + colors[i].getSerializedName()), mouseX, mouseY);
+                guiGraphics.renderTooltip(this.font,
+                        Component.translatable("color.minecraft." + colors[i].getSerializedName()), mouseX, mouseY);
             }
         }
-
-
     }
 
     @Override
