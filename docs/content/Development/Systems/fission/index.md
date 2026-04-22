@@ -1,72 +1,60 @@
+# Fission System Architecture
+
+The Fission system is a modular multiblock framework that calculates energy output and heat management based on the physical blocks present within the multiblock structure.
+
 ---
-title: Fission System Index
+
+## Core Machine: `FissionWorkableElectricMultiblockMachine`
+This is the base class for all fission reactors. It handles the "Component Resolution" phase when the structure is formed.
+
+### Component Resolution
+When the multiblock is formed, the machine scans its internal blocks and categorizes them into lists:
+- `activeCoolers`: List of `IFissionCoolerType`
+- `activeModerators`: List of `IFissionModeratorType`
+- `activeFuelRods`: List of `IFissionFuelRodType`
+- `activeBlankets`: List of `IFissionBlanketType` (Breeder only)
+
+The machine then identifies a "Primary" component for each category (the type with the highest count) to determine the base operating parameters (e.g., what fluid it consumes).
+
 ---
 
-# So, you seek knowledge on the internals of fission? I shall oblige.
+## The Simulation Loop: `reactorTick()`
+Unlike standard GTCEu machines that rely solely on recipes, Fission reactors run a custom tick loop.
 
-## The Basics
+### 1. Prerequisite Check
+- Validates the presence of at least one Fuel Rod and one Cooler.
+- Checks `IEnergyContainer` for available input fluids (coolant) and input items (fuel).
 
-## Gameplay loop
-    
-- Build reactor multiblock
-        - Build in coolers, moderators, and fuel rods. Breeder rods if in the breeder reactor.
-    - Provide coolant
-    - Provide fuel
-    - Starts up runtime if these are met, 
-        - consumes fuel by amount/speed of use defined in block
-        - outputs depleted fuel also defined in block
-        - consumes coolant by amount/speed of use defined in block
-        - outputs hot coolant also defined in block
-    - Gives eu based on heat produced per tick
-    - Heat is defined by moderators and fuel rods
-    - Max heat is a config value, if exceeded starts meltdown timer
-    - If multi is broken while in meltdown, or timer hits 0, boom!
-    - Breeder reactors use breeder rods for breeding, check out the corresponding page for further explanation
-  
+### 2. Heat Calculation
+- **Base Heat**: Sum of `baseHeatProduction` from all active Fuel Rods.
+- **Moderator Multiplier**: The base heat is multiplied by the `heatMultiplier` of active moderators.
+- **Cooling Power**: Sum of `coolingCapacity` from all active Coolers.
+- **Net Heat**: `(Generated Heat - Cooling Power)`.
 
-## The importance of the component blocks
+### 3. Energy Generation
+- Output EU/t is calculated based on the total heat produced, further amplified by the `EUBoost` values of moderators.
+- Efficiency scales with the "Neutron Bias" of the fuel rods used.
 
-- Coolers
-- Blanket Rods
-- Fuel Rods
-- Moderators
+### 4. Consumption and Output
+- Fuel and Coolant are consumed from input hatches.
+- **Depleted Fuel** and **Hot Coolant** are pushed to output hatches.
+- Note: The reactor is designed to continue running even if output hatches are full (simulating a "waste-heavy" environment), though this is a configurable behavior.
 
-## The reactor machine class types
+---
 
-- FissionWorkableElectricMultiblockMachine
-- DynamicFissionReactorMachine
-- BreederWorkableElectricMultiblockMachine
+## Safety and Meltdowns
+The machine tracks `currentHeat` against a `maxSafeHeat` threshold defined in `PhoenixConfigs.FissionConfigs`.
 
-## Kubejs dev path
+- **Meltdown Logic**: If `currentHeat > maxSafeHeat`, a meltdown timer begins.
+- **Meltdown Sequence**: 
+    - The timer is visible via Jade/HUD.
+    - If the timer reaches zero, `performExplosion()` is called.
+    - Explosion power scales with the tier of fuel rods and moderators present.
+    - Breaking the controller or structure while the timer is active triggers an immediate explosion.
 
-## Java dev path
+---
 
-## Fission configs
-
-## Meltdown configs
-
-## Explosion configs
-
-## Nuke
-
-## Important wiki pages
-
-## Summary
-
-- Pretty much, it's just: Fuels/Coolants are checked as a prereq for reactorTick. 
-- If you don't have coolers/fuel rods in the multi, or you don't have the fuel/coolant they need reactor won't run.
-- If there is output space for hot coolants/depleted fuels, you shall have them. However, reactor will run without outputs.
-- Same applies to breeder reactors, maybe up for change?
-- Moderators are the fine knob on heat, allowing you to control the use. There will probably be more of these than fuel rods. These are not nessecary to run any reactor.
-- Fuel rods control the fuel used and the rate/amount they are used. They also apply an additive heat production.
-- Coolers define the coolant used, also rate/amount ofc. They apply an additive coolant power.
-- Blanket rods define the neutron target, and the pool of output materials. They only work in the breeder multi class, but said class will run without them.
-- There are a lot of config values, so that hopefully helps with some of the design choices people might disagree with me on.
-- Ofc, we have jade provider, that shows heat, eu, amount of moderators/fuel rods/coolers, total cooling power available, and parallels. 
-- Machine ui is pretty similar.
-- Rewards players who want to reprocess the hot coolants/depleted fuels. The way this is all designed allows a lot of modularity. 
-- How powerful a reactor is, is defined by the actual multiblock size (placement of the reactor components) as well as the stats of the blocks themselves.
-- Everything is possible to do through kjs. 
-- Any future lines will be more reprocessing of the materials obtained. I wonder how players will handle the optional depleted fuels and the hot coolants.
-- Also nuke: nuke is fun, nuke is boom, we should have nuke.
-- Also yeah, the explosion size (if outside of ftbchunks/the config for real explosions is on) is dependent on the tier of fuel rods and the moderators.
+## Breeder Logic: `BreederWorkableElectricMultiblockMachine`
+Extends the base fission logic with a "Neutron Spectrum" simulation.
+- **Breeding Cycle**: Consumes `Blanket Rods` and produces isotopes.
+- **Distribution**: Uses a `WeightedKey` distribution system to decide which isotopes are produced based on the "Spectrum Bias" (influenced by the type of fuel and moderators used).
