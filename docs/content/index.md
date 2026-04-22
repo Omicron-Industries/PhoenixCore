@@ -24,7 +24,7 @@ Whether you're looking for new ore processing chains or high-tier machinery, sta
 PhoenixCore adds a few custom multiblocks, check them out in the gameplay **Multiblocks and Machines** section.
 
 Our greatest acheiment so far is the `Tesla Wireless Energy Network`, consisting of the Tesla Tower, Tesla Downlink, Tesla Uplink, Tesla Laser Hatches, and the Tesla Binder Item.
-Further explained in [Gameplay of Tesla](Gameplay/Systems/tesla/index.md) or [Development of Tesla](Development/Systems/tesla/index.md).
+Further explained in [Gameplay of Tesla](Gameplay/Systems/tesla/index.md) or [Development of Tesla](Development/tesla/index.md).
 
 ## Want to Help?
 If you'd like to contribute to these docs or report a bug, please visit our [GitHub Repository](https://github.com/Phoenixvine32908/PhoenixCore).
