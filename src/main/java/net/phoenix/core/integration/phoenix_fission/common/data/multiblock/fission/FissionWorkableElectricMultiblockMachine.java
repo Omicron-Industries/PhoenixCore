@@ -1021,11 +1021,13 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
         double safe = cfg().maxSafeHeat;
 
+
+
         if (heat <= safe) {
-            if (cfg().meltdown.clearTimerWhenSafe) {
-                meltdownTimerTicks = -1;
-                meltdownTimerMax = 0;
-            }
+            // Force the reset here to ensure "hasty fixes" actually work
+            // if the reactor is genuinely cooled down.
+            meltdownTimerTicks = -1;
+            meltdownTimerMax = 0;
             return;
         }
 
