@@ -1,4 +1,6 @@
 nav:
   - index.md
+  - contributing.md
+  - style_guide.md
   - Systems
   - ...
