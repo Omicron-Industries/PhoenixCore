@@ -2,3 +2,10 @@ nav:
   - tesla
   - source
   - fission
+  - multiblocks.md
+  - gtm_api_extensions.md
+  - ae2_integration.md
+  - jade_integration.md
+  - mixins.md
+  - recipe_helper.md
+  - recipe_builder_gui.md
