@@ -1,7 +1,16 @@
 package net.phoenix.core.integration.emi;
 
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.stack.FluidEmiStack;
+import dev.emi.emi.api.stack.ItemEmiStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.*;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 
 import dev.emi.emi.api.EmiDragDropHandler;
@@ -13,79 +22,129 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 
 /**
- * EMI plugin for PhoenixCore.
- * Registers the drag-drop handler so items and fluids can be dragged
- * from EMI directly into the Recipe Builder screen's slots.
- * You MUST declare this class in your mods.toml (or emi.json if your
- * EMI version uses that) under the [[emi.plugins]] section:
- * # In mods.toml, add inside [[dependencies.phoenixcore]]:
- * [[emi.plugins]]
- * plugin = "net.phoenix.core.client.gui.emi.PhoenixEmiPlugin"
+ * EMI plugin for PhoenixCore fission system.
  *
- * OR, if EMI uses the @EmiEntrypoint annotation style:
- *
- * The @EmiEntrypoint annotation on this class handles registration automatically.
+ * Changes from original:
+ *  - Removed blank EmiInfoRecipe registrations for moderators (they showed empty cards).
+ *  - Moderators now registered as workstations for BOTH FISSION_FUEL and FISSION_BREEDING
+ *    (moderator count affects breeder output parallels too).
+ *  - Fuel rods now also registered as FISSION_BREEDING workstations (they drive
+ *    breeding parallels and neutron bias).
  */
 @EmiEntrypoint
-
 public class PhoenixEmiPlugin implements EmiPlugin {
 
+    // ── Category definitions ───────────────────────────────────────────────────
+    public static final EmiStack COOLER_ICON = EmiStack.of(PhoenixFissionBlocks.COOLER_BASIC.asStack());
+
+    public static final EmiRecipeCategory FISSION_FUEL = new EmiRecipeCategory(
+        new ResourceLocation("phoenixcore", "fission_fuel"),
+        EmiStack.of(ChemicalHelper.get(TagPrefix.ingot, GTMaterials.Uranium235)));
+
+    public static final EmiRecipeCategory FISSION_COOLANT = new EmiRecipeCategory(
+        new ResourceLocation("phoenixcore", "fission_coolant"),
+        EmiStack.of(Items.WATER_BUCKET));
+
+    public static final EmiRecipeCategory FISSION_BREEDING = new EmiRecipeCategory(
+        new ResourceLocation("phoenixcore", "fission_breeding"),
+        EmiStack.of(Items.CAULDRON));
+
+    // ── Registration ──────────────────────────────────────────────────────────
     @Override
     public void register(EmiRegistry registry) {
-        registry.addExclusionArea(RecipeBuilderScreen.class, (screen, consumer) -> {
-            // This pushes the EMI sidebar to the right of your 338px width
-            consumer.accept(new Bounds(
-                    screen.getGuiLeft(),
-                    screen.getGuiTop(),
-                    screen.getXSize(), // imageWidth (338)
-                    screen.getYSize()  // imageHeight (238)
-            ));
-        });
+        registry.addCategory(FISSION_FUEL);
+        registry.addCategory(FISSION_COOLANT);
+        registry.addCategory(FISSION_BREEDING);
 
+        // ── Calculators (one per category they belong to) ───────────────────
+        registry.addRecipe(new FissionCalculatorEmiRecipe());
+        registry.addRecipe(new BreederCalculatorEmiRecipe());
+
+        // ── Fuel rods ────────────────────────────────────────────────────────
+        for (FissionFuelRodBlock.FissionFuelRodTypes type : FissionFuelRodBlock.FissionFuelRodTypes.values()) {
+            registry.addRecipe(new FuelRodEmiRecipe(type));
+            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
+            if (!stack.isEmpty()) {
+                // Fuel rods are workstations for fuel AND breeding (they affect breeder parallels)
+                registry.addWorkstation(FISSION_FUEL,     stack);
+                registry.addWorkstation(FISSION_BREEDING, stack);
+            }
+        }
+
+        // ── Coolants ─────────────────────────────────────────────────────────
+        for (FissionCoolerBlock.FissionCoolerTypes type : FissionCoolerBlock.FissionCoolerTypes.values()) {
+            registry.addRecipe(new CoolantEmiRecipe(type));
+            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
+            if (!stack.isEmpty()) {
+                registry.addWorkstation(FISSION_COOLANT, stack);
+            }
+        }
+
+        // ── Breeding blankets ─────────────────────────────────────────────────
+        for (FissionBlanketBlock.BreederBlanketTypes type : FissionBlanketBlock.BreederBlanketTypes.values()) {
+            registry.addRecipe(new BreedingEmiRecipe(type));
+            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
+            if (!stack.isEmpty()) {
+                registry.addWorkstation(FISSION_BREEDING, stack);
+            }
+        }
+
+        // ── Moderators ────────────────────────────────────────────────────────
+        // Moderators affect BOTH fuel heat/EU (FISSION_FUEL) and breeder parallels (FISSION_BREEDING).
+        // The old code only added them to FISSION_FUEL and registered empty info pages; both issues fixed.
+        for (FissionModeratorBlock.FissionModeratorTypes type : FissionModeratorBlock.FissionModeratorTypes.values()) {
+            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
+            if (!stack.isEmpty()) {
+                registry.addWorkstation(FISSION_FUEL,     stack);
+                registry.addWorkstation(FISSION_BREEDING, stack);
+            }
+        }
+
+        // ── Machine workstations ──────────────────────────────────────────────
+        // High-Performance Breeder: all three categories
+        registry.addWorkstation(FISSION_FUEL,     EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
+        registry.addWorkstation(FISSION_COOLANT,  EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
+        registry.addWorkstation(FISSION_BREEDING, EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
+
+        // Pressurized Fission: fuel + coolant only (no breeding)
+        registry.addWorkstation(FISSION_FUEL,    EmiStack.of(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR.asStack()));
+        registry.addWorkstation(FISSION_COOLANT, EmiStack.of(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR.asStack()));
+
+        // ── Recipe Builder exclusion + drag-drop ─────────────────────────────
+        registry.addExclusionArea(RecipeBuilderScreen.class, (screen, consumer) ->
+            consumer.accept(new Bounds(
+                screen.getGuiLeft(), screen.getGuiTop(),
+                screen.getXSize(), screen.getYSize()
+            ))
+        );
         registry.addDragDropHandler(RecipeBuilderScreen.class, new RecipeBuilderDragDrop());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    private static class RecipeBuilderDragDrop implements EmiDragDropHandler<RecipeBuilderScreen> {
+    // ── Drag-drop handler ─────────────────────────────────────────────────────
 
+    private static class RecipeBuilderDragDrop implements EmiDragDropHandler<RecipeBuilderScreen> {
         @Override
         public boolean dropStack(RecipeBuilderScreen screen, EmiIngredient ingredient, int x, int y) {
             if (ingredient.isEmpty()) return false;
             EmiStack first = ingredient.getEmiStacks().get(0);
 
-            // ── Item stack ────────────────────────────────────────────────────
-            if (first instanceof dev.emi.emi.api.stack.ItemEmiStack itemEmi) {
+            if (first instanceof ItemEmiStack itemEmi) {
                 ItemStack mc = itemEmi.getItemStack();
-
-                // Try item-input panel first, then output
                 if (screen.itemInputPanel.isMouseOver(x, y))
                     return screen.itemInputPanel.acceptStack(mc, x, y);
                 if (screen.itemOutputPanel.isMouseOver(x, y))
                     return screen.itemOutputPanel.acceptStack(mc, x, y);
-                // Default: inputs
                 return screen.itemInputPanel.acceptStack(mc, x, y);
             }
 
-            // ── Fluid stack ───────────────────────────────────────────────────
-            // ── Fluid stack ───────────────────────────────────────────────────
-            if (first instanceof dev.emi.emi.api.stack.FluidEmiStack fluidEmi) {
-                // 1. Get the ID directly from the EmiStack (this returns a ResourceLocation)
+            if (first instanceof FluidEmiStack fluidEmi) {
                 ResourceLocation res = fluidEmi.getId();
-
-                // 2. Format it for your Recipe Builder expression
-                // We convert it to a GT-style or Phoenix-style string
                 String id = (res != null) ? res.toString() : "minecraft:empty";
-
-                // 3. Get the amount (long to int cast)
                 int amount = (int) fluidEmi.getAmount();
-
-                // Determine which panel should accept it based on mouse position
                 if (screen.fluidInputPanel.isMouseOver(x, y))
                     return screen.fluidInputPanel.acceptFluid(id, amount, x, y);
                 if (screen.fluidOutputPanel.isMouseOver(x, y))
                     return screen.fluidOutputPanel.acceptFluid(id, amount, x, y);
-
-                // Fallback default
                 return screen.fluidInputPanel.acceptFluid(id, amount, x, y);
             }
 

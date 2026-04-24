@@ -45,8 +45,8 @@ public class SoulCondition extends RecipeCondition<SoulCondition> {
 
     @Override
     public Component getTooltips() {
-        String header = isReverse ? "§dRequires Soul Resonance Below:" : "§dRequires Soul Resonance:";
-        return Component.literal(header + "\n§l" + minSoul);
+        String header = isReverse ? "§dRequires Soul Below: " : "§dRequires Soul: ";
+        return Component.literal(header + minSoul);
     }
 
     @Override

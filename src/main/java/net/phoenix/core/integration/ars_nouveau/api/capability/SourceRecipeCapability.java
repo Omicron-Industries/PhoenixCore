@@ -46,15 +46,25 @@ public class SourceRecipeCapability extends RecipeCapability<SourceIngredient> {
     @Override
     public void addXEIInfo(WidgetGroup group, int xOffset, GTRecipe recipe, List<Content> contents,
                            boolean perTick, boolean isInput, MutableInt yOffset) {
+
+        // 1. Handle the vertical buffer for conditions
+        // If the condition text is now a single line, 12-14 is usually enough.
+        if (!recipe.conditions.isEmpty()) {
+            yOffset.add(12);
+        }
+
         for (var content : contents) {
             var ingredient = SourceRecipeCapability.CAP.of(content.getContent());
-            if (isInput) {
-                group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10),
-                        "Source needed: " + ingredient.getSource()));
-            } else {
-                group.addWidget(new LabelWidget(3 - xOffset, yOffset.addAndGet(10),
-                        "Source produced: " + ingredient.getSource()));
-            }
+
+            // 2. Fix the Horizontal Shift
+            // Instead of a hardcoded 5, use (3 - xOffset).
+            // GTCEu uses negative xOffsets in some EMI views to center text;
+            // 3 - xOffset usually aligns it to the left margin of the "extra info" area.
+            int xPos = 3 - xOffset;
+
+            // 3. Add the widget
+            group.addWidget(new LabelWidget(xPos, yOffset.addAndGet(10),
+                    (isInput ? "Source Used: " : "Source Gen: ") + ingredient.getSource()));
         }
     }
 }
