@@ -1,7 +1,7 @@
 {
   "parent": "phoenixcore:block/cube_2_layer_all_tinted",
   "textures": {
-    "bot_all": "phoenixcore:block/fission/fuel_rod/t1_fuel_rod",
+    "bot_all": "phoenixcore:block/fission/fuel_rod_base",
     "top_all": "phoenixcore:block/fission/masks/fuel_rod_mask"
   }
 }

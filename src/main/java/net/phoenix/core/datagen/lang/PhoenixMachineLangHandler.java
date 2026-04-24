@@ -52,7 +52,6 @@ public class PhoenixMachineLangHandler {
         provider.add("tooltip.phoenix.empty_component.0", "This is an empty component, provides no stats.");
         provider.add("tooltip.phoenix.empty_component.1", "Useful for filling out a Fission Reactor.");
         provider.add("phoenixcore.not_formed", "Structure not formed!");
-        provider.add("phoenixcore.eu_generation", "Output %s");
         provider.add("phoenixcore.status.safe_idle", "Status: §aIDLE");
         provider.add("phoenixcore.status.safe_working", "Status: §6ACTIVE");
         provider.add("phoenixcore.status.danger_timer", "§cCRITICAL: Meltdown in %s seconds!");
@@ -67,24 +66,8 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore:critical_steam", "Supercritical Steam");
         provider.add("phoenixcore:hot_sodium_potassium", "Hot Sodium-Potassium");
 
-        // Breeding & Transmutation
-        provider.add("phoenixcore.blanket.input", "Breeding Target");
-        provider.add("phoenixcore.blanket.bias_hint",
-                "§d§oHigher instability yields are favored by a Fast Neutron Spectrum (High Heat/Bias).");
-        provider.add("phoenixcore.blanket_outputs", "§7Possible Products:");
-        provider.add("phoenixcore.blanket_input", "§7Target Material: §f%s");
-        provider.add("phoenixcore.blanket_output", "§7Breeding Product: §f%s");
-        provider.add("phoenixcore.blanket_desc", "Irradiate target materials to produce specialized isotopes.");
-        provider.add("phoenixcore.blanket_cycle", "Transmutes §f%s§7 units every §6%s§7 seconds");
         provider.add("phoenixcore.tooltip.amount", "Yield Amount"); // Added for the Blanket tooltip fix
 
-        // Fission Reactor System
-        provider.add("phoenixcore.not_formed", "Structure not formed!");
-        provider.add("phoenixcore.status.safe_idle", "Status: §aIDLE");
-        provider.add("phoenixcore.status.safe_working", "Status: §6ACTIVE");
-        provider.add("phoenixcore.status.danger_timer", "§cCRITICAL: Meltdown in %s seconds!");
-        provider.add("phoenixcore.status.no_coolant", "§eWARNING: Coolant Supply Exhausted");
-        provider.add("phoenixcore.nuke_radius", "Blast area: %s");
 
         // Breeding & Transmutation
         provider.add("phoenixcore.blanket.potential_outputs", "Potential Transmutations:");
@@ -184,11 +167,6 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.status.scram_advanced", "§6§lSCRAM ACTIVE §8(Advanced Hatch)");
         provider.add("phoenixcore.status.scram_arming", "§e§lSCRAM ARMING: §f%d / %d ticks");
 
-        // Stability Sensor UI & Tooltips
-
-        // Hatches Descriptions
-
-        // UI Elements for the Sensor
 
         // Multiblock Pattern Info
         provider.add("phoenix.multiblock.pattern.info.multiple_fuel_rods",
