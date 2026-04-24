@@ -8,6 +8,8 @@ import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.Configurable;
 import dev.toma.configuration.config.format.ConfigFormats;
 
+import java.util.Map;
+
 @Config(id = PhoenixCore.MOD_ID)
 public class PhoenixConfigs {
 
@@ -36,6 +38,9 @@ public class PhoenixConfigs {
 
     @Configurable
     public static WingFlightConfigs wingFlight = new WingFlightConfigs();
+
+    @Configurable
+    public FissionBlockStatsConfigs fissionStats = new FissionBlockStatsConfigs();
 
     // --- COLOR CONFIG ---
 
@@ -467,6 +472,113 @@ public class PhoenixConfigs {
         @Configurable
         @Configurable.Comment("If true, falling back under safe heat clears the timer.")
         public boolean clearTimerWhenSafe = true;
+    }
+
+    public static class FissionBlockStatsConfigs {
+
+        @Configurable
+        @Configurable.Comment("If true, falling back under safe heat clears the timer.")
+        public boolean clearTimerWhenSafe = true;
+
+        @Configurable
+        @Configurable.Comment("Configuration for Fission Coolers")
+        public CoolerConfigs coolers = new CoolerConfigs();
+
+        @Configurable
+        @Configurable.Comment("Configuration for Fission Moderators")
+        public ModeratorConfigs moderators = new ModeratorConfigs();
+
+        @Configurable
+        @Configurable.Comment("Configuration for Fission Fuel Rods")
+        public FuelRodConfigs fuelRods = new FuelRodConfigs();
+
+        @Configurable
+        @Configurable.Comment("Configuration for Breeder Blankets")
+        public BlanketConfigs blankets = new BlanketConfigs();
+
+        public static class CoolerConfigs {
+            @Configurable
+            @Configurable.Comment("Cooling amount (Heat/t) for each cooler type.")
+            public Map<String, Integer> coolingAmount = Map.of(
+                    "cooler_basic", 40,
+                    "cooler_ev", 160,
+                    "cooler_iv", 640,
+                    "cooler_luv", 2560
+            );
+
+            @Configurable
+            @Configurable.Comment("Coolant usage (mB/t) for each cooler type.")
+            public Map<String, Integer> coolantUsage = Map.of(
+                    "cooler_basic", 100,
+                    "cooler_ev", 200,
+                    "cooler_iv", 400,
+                    "cooler_luv", 800
+            );
+        }
+
+        public static class ModeratorConfigs {
+            @Configurable
+            @Configurable.Comment("EU/t boost multiplier for moderators.")
+            public Map<String, Integer> euBoost = Map.of(
+                    "graphite_moderator", 2,
+                    "beryllium_moderator", 5,
+                    "heavy_water_moderator", 12,
+                    "niobium_sic_moderator", 30
+            );
+
+            @Configurable
+            @Configurable.Comment("Heat production discount (subtracted from fuel heat).")
+            public Map<String, Integer> fuelDiscount = Map.of(
+                    "graphite_moderator", 1,
+                    "beryllium_moderator", 2,
+                    "heavy_water_moderator", 5,
+                    "niobium_sic_moderator", 10
+            );
+        }
+
+        public static class FuelRodConfigs {
+            @Configurable
+            @Configurable.Comment("Base heat production for fuel rods.")
+            public Map<String, Integer> baseHeat = Map.of(
+                    "t1_fuel_rod", 5,
+                    "t2_fuel_rod", 20,
+                    "t3_fuel_rod", 80,
+                    "t4_fuel_rod", 320,
+                    "t5_fuel_rod", 1280
+            );
+
+            @Configurable
+            @Configurable.Comment("Neutron bias (affects breeding results).")
+            public Map<String, Integer> neutronBias = Map.of(
+                    "t1_fuel_rod", 0,
+                    "t2_fuel_rod", 1,
+                    "t3_fuel_rod", 2,
+                    "t4_fuel_rod", 5,
+                    "t5_fuel_rod", 10
+            );
+
+            @Configurable
+            @Configurable.Comment("Duration in ticks for a full cycle.")
+            public Map<String, Integer> cycleDuration = Map.of(
+                    "t1_fuel_rod", 2000,
+                    "t2_fuel_rod", 4000,
+                    "t3_fuel_rod", 8000,
+                    "t4_fuel_rod", 16000,
+                    "t5_fuel_rod", 32000
+            );
+        }
+
+        public static class BlanketConfigs {
+            @Configurable
+            @Configurable.Comment("Duration in ticks for breeder blanket conversion.")
+            public Map<String, Integer> duration = Map.of(
+                    "thorium_blanket", 1200,
+                    "uranium_blanket", 2400,
+                    "neptunium_blanket", 4800,
+                    "plutonium_blanket", 9600,
+                    "americium_blanket", 19200
+            );
+        }
     }
 
     public static class ExplosionConfigs {

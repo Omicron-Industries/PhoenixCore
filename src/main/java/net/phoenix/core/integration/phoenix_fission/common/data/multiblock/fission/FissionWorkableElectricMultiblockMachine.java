@@ -1,5 +1,6 @@
 package net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fission;
 
+import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
@@ -12,6 +13,7 @@ import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -1273,39 +1275,75 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         }
 
         final var cfg = cfg();
-
         final boolean overheating = heat > cfg.maxSafeHeat;
-        textList.add(Component.literal(String.format("Heat: %.1f / %.1f", heat, cfg.maxSafeHeat))
+
+        // 1. Heat: Uses the key you defined: "Core Temperature: %s / %s HU"
+        textList.add(Component.translatable("phoenixcore.current_heat_display",
+                        String.format("%.1f", heat), String.format("%.1f", cfg.maxSafeHeat))
                 .withStyle(s -> s.withColor(overheating ? 0xFF3333 : 0x33FF33)));
 
-        textList.add(Component.literal("EU/t: " + lastGeneratedEUt));
-        textList.add(Component.literal("Parallels: " + lastParallels));
+        // 2. EU Output: Custom helper for the GT Voltage tiers
+        textList.add(getVoltageFormattedOutput(lastGeneratedEUt));
 
-        textList.add(Component.literal("Cooling Capacity: " + lastProvidedCooling + " HU/t")
+        // 3. Parallels: Uses "Parallel Processing: %sx"
+        textList.add(Component.translatable("phoenixcore.parallels", lastParallels));
+
+        // 4. Cooling: Uses "Cooling Capacity: %s HU/t"
+        textList.add(Component.translatable("phoenixcore.cooling_power", lastProvidedCooling)
                 .withStyle(s -> s.withColor(0x55FFFF)));
 
-        final String rodName = (primaryFuelRodType != null) ? primaryFuelRodType.getName() : "None";
-        final String modName = (primaryModeratorType != null) ? primaryModeratorType.getName() : "None";
-        final String coolerName = (primaryCoolerType != null) ? primaryCoolerType.getName() : "None";
+        // 5. Primary Components (Fixing the "None" and "Raw Name" issue)
+        textList.add(Component.literal("Fuel Rods: " + activeFuelRods.size() + " (Primary: ")
+                .append(getComponentTranslation(primaryFuelRodType))
+                .append(")"));
 
-        textList.add(Component.literal("Fuel Rods: " + activeFuelRods.size() + " (Primary: " + rodName + ")"));
-        textList.add(Component.literal("Moderators: " + activeModerators.size() + " (Primary: " + modName + ")"));
-        textList.add(Component.literal("Coolers: " + activeCoolers.size() + " (Primary: " + coolerName + ")"));
-        textList.add(Component.literal("Stability: " + activeStabilityHatches.size()));
-        textList.add(Component.literal("Sensors: " + activeSensorHatches.size()));
+        textList.add(Component.literal("Moderators: " + activeModerators.size() + " (Primary: ")
+                .append(getComponentTranslation(primaryModeratorType))
+                .append(")"));
 
-        int euBoost = getModeratorEUBoostClamped();
-        int fuelDiscount = getModeratorFuelDiscountClamped();
-        textList.add(Component.literal("EU Boost: " + euBoost + "%"));
-        textList.add(Component.literal("Fuel Discount: " + fuelDiscount + "%"));
+        textList.add(Component.literal("Coolers: " + activeCoolers.size() + " (Primary: ")
+                .append(getComponentTranslation(primaryCoolerType))
+                .append(")"));
 
-        textList.add(Component.literal("Coolant: " + (lastHasCoolant ? "OK" : "MISSING"))
-                .withStyle(s -> s.withColor(lastHasCoolant ? 0x33FF33 : 0xFF3333)));
+        // 6. Stats: Using the keys from your block tooltips
+        textList.add(Component.translatable("block.phoenixcore.fission_moderator.boost", getModeratorEUBoostClamped() + "%"));
+        textList.add(Component.translatable("block.phoenixcore.fission_moderator.fuel_discount", getModeratorFuelDiscountClamped() + "%"));
+
+        // 7. Status
+        textList.add(Component.translatable(lastHasCoolant ? "phoenixcore.coolant_status.ok" : "phoenixcore.coolant_status.empty"));
 
         if (meltdownTimerTicks > 0) {
-            textList.add(Component.literal("MELTDOWN IN: " + getMeltdownSecondsRemaining() + "s")
-                    .withStyle(s -> s.withColor(0xFFAA00)));
+            textList.add(Component.translatable("phoenixcore.status.danger_timer", getMeltdownSecondsRemaining()));
         }
+    }
+
+    /**
+     * Helper to translate the Enum types into the names you defined in your Lang Handler
+     */
+    private Component getComponentTranslation(@Nullable Object type) {
+        if (type == null) return Component.literal("None").withStyle(ChatFormatting.DARK_GRAY);
+
+        String name = "";
+        if (type instanceof IFissionModeratorType mod) name = mod.getName();
+        if (type instanceof IFissionFuelRodType rod) name = rod.getName();
+        if (type instanceof IFissionCoolerType cool) name = cool.getName();
+
+        return Component.translatable("phoenixcore." + name);
+    }
+
+    /**
+     * Formats EU into GregTech tiers (ULV, LV, MV...) with color
+     */
+    private Component getVoltageFormattedOutput(long euOut) {
+        int tier = 0;
+        for (int i = 0; i < GTValues.V.length; i++) {
+            if (euOut >= GTValues.V[i]) tier = i;
+            else break;
+        }
+        return Component.translatable("phoenixcore.eu_generation", euOut)
+                .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(GTValues.VNF[tier]))
+                .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
 
     protected void resolvePersistedComponents() {

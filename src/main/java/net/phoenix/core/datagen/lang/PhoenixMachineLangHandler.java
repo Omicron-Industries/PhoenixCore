@@ -49,6 +49,36 @@ public class PhoenixMachineLangHandler {
         provider.add("recipe.capability.source.name", "Source");
 
         // Fission Reactor System
+        provider.add("tooltip.phoenix.empty_component.0", "This is an empty component, provides no stats.");
+        provider.add("tooltip.phoenix.empty_component.1", "Useful for filling out a Fission Reactor.");
+        provider.add("phoenixcore.not_formed", "Structure not formed!");
+        provider.add("phoenixcore.eu_generation", "Output %s");
+        provider.add("phoenixcore.status.safe_idle", "Status: §aIDLE");
+        provider.add("phoenixcore.status.safe_working", "Status: §6ACTIVE");
+        provider.add("phoenixcore.status.danger_timer", "§cCRITICAL: Meltdown in %s seconds!");
+        provider.add("phoenixcore.status.no_coolant", "§eWARNING: Coolant Supply Exhausted");
+        provider.add("phoenixcore.nuke_radius", "Blast area: %s");
+
+
+
+        // Material Mappings (Fixes the raw "phoenixcore:u242_fuel_pellet" etc tooltips)
+        provider.add("phoenixcore:u242_fuel_pellet", "U-242 Fuel Pellet");
+        provider.add("phoenixcore:thorium_fuel_pellet", "Thorium Fuel Pellet");
+        provider.add("phoenixcore:critical_steam", "Supercritical Steam");
+        provider.add("phoenixcore:hot_sodium_potassium", "Hot Sodium-Potassium");
+
+        // Breeding & Transmutation
+        provider.add("phoenixcore.blanket.input", "Breeding Target");
+        provider.add("phoenixcore.blanket.bias_hint",
+                "§d§oHigher instability yields are favored by a Fast Neutron Spectrum (High Heat/Bias).");
+        provider.add("phoenixcore.blanket_outputs", "§7Possible Products:");
+        provider.add("phoenixcore.blanket_input", "§7Target Material: §f%s");
+        provider.add("phoenixcore.blanket_output", "§7Breeding Product: §f%s");
+        provider.add("phoenixcore.blanket_desc", "Irradiate target materials to produce specialized isotopes.");
+        provider.add("phoenixcore.blanket_cycle", "Transmutes §f%s§7 units every §6%s§7 seconds");
+        provider.add("phoenixcore.tooltip.amount", "Yield Amount"); // Added for the Blanket tooltip fix
+
+        // Fission Reactor System
         provider.add("phoenixcore.not_formed", "Structure not formed!");
         provider.add("phoenixcore.status.safe_idle", "Status: §aIDLE");
         provider.add("phoenixcore.status.safe_working", "Status: §6ACTIVE");
@@ -57,7 +87,6 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.nuke_radius", "Blast area: %s");
 
         // Breeding & Transmutation
-        provider.add("phoenixcore.blanket.input", "Breeding Target");
         provider.add("phoenixcore.blanket.potential_outputs", "Potential Transmutations:");
         provider.add("phoenixcore.blanket.bias_hint",
                 "§d§oHigher instability yields are favored by a Fast Neutron Spectrum (High Heat/Bias).");
@@ -287,26 +316,30 @@ public class PhoenixMachineLangHandler {
         provider.add("gtultimate.custom.tooltip_dimensional_anchor",
                 "§9§oOpens stable rifts to other dimensions, determined by its placement.\\n§7These gateways allow for accelerated resource extraction unique to each realm.\\n§7Requires distinct recipes for Overworld, Nether, and End configurations.");
 
-        String anchorDesc = "§9§oOpens stable rifts to other dimensions, determined by its placement.\n" +
-                "§7These gateways allow for accelerated resource extraction unique to each realm.\n" +
-                "§7Requires distinct recipes for Overworld, Nether, and End configurations.";
+        String anchorDesc = """
+                §9§oOpens stable rifts to other dimensions, determined by its placement.
+                §7These gateways allow for accelerated resource extraction unique to each realm.
+                §7Requires distinct recipes for Overworld, Nether, and End configurations.""";
         String fabricatorDesc = "§d§oUtilizes raw aetherial energy to create complex constructs.\n§5Transmutes pure magical essence into tangible matter.";
-        String alchemicalImbuerDesc = "§7The hub of your §zSource network§7, acting as a link for natural §zsoul§7.\n" +
-                "§7Handles the §rextraction§7 of §zsource§r from §rcarbon§7 based sources as well as imbuing §zsource§r into §runique materials.\n" +
-                "§7Source §rproduction and consumption§7 is decided by the current base §zsoul, §rflora§7, and §rharmonization§7 in your area.";
-        String sourceReactorDesc = "§7A §zSource§7 based reactor capable of converting §fmundane materials§7 for use in further §zSource§7 related processes.\n" +
-                "Reactor ability is handled by the current §zsoul§7 of your area. \n" +
-                "§zSource gem §7blocks can also be used near the reactor to provide further boost. \n" +
-                "Reactor will §cNOT RUN§7 below a §zsoul§7 cap of 1.";
-        String bioEngineDesc = "§7An §zEngine§7 capable of converting §zSource§7 into power.\n" +
-                "§7It's power flows throughout it's chassis §zdenoting it's strength.\n" +
-                "§fEU provided §7is dependent on the base §zsoul§7 and §aflora §7power in your area.\n" +
-                "§7Caps out at a §r5x boost.";
+        String alchemicalImbuerDesc = """
+                §7The hub of your §zSource network§7, acting as a link for natural §zsoul§7.
+                §7Handles the §rextraction§7 of §zsource§r from §rcarbon§7 based sources as well as imbuing §zsource§r into §runique materials.
+                §7Source §rproduction and consumption§7 is decided by the current base §zsoul, §rflora§7, and §rharmonization§7 in your area.""";
+        String sourceReactorDesc = """
+                §7A §zSource§7 based reactor capable of converting §fmundane materials§7 for use in further §zSource§7 related processes.
+                Reactor ability is handled by the current §zsoul§7 of your area.\s
+                §zSource gem §7blocks can also be used near the reactor to provide further boost.\s
+                Reactor will §cNOT RUN§7 below a §zsoul§7 cap of 1.""";
+        String bioEngineDesc = """
+                §7An §zEngine§7 capable of converting §zSource§7 into power.
+                §7It's power flows throughout it's chassis §zdenoting it's strength.
+                §fEU provided §7is dependent on the base §zsoul§7 and §aflora §7power in your area.
+                §7Caps out at a §r5x boost.""";
 
         String largeSteamSifterDesc = "§bSifts through the chaff to get to the good stuff. \n" +
                 "§7Good Vibrations.";
 
-        ;
+
 
         // Machine tooltips
         PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_large_steam_sifter",

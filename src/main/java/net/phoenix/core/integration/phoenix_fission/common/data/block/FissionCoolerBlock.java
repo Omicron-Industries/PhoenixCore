@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.GTUtil;
-
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,15 +16,13 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixCore;
+import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
-
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.List;
 
 @Getter
 @ParametersAreNonnullByDefault
@@ -41,128 +39,95 @@ public class FissionCoolerBlock extends ActiveBlock {
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level,
                                 List<Component> tooltip, TooltipFlag flag) {
         if (!GTUtil.isShiftDown()) {
-            tooltip.add(Component.literal("Hold §fShift§7 for details")
+            tooltip.add(Component.translatable("block.phoenixcore.fission_moderator.shift")
                     .withStyle(ChatFormatting.GRAY));
             return;
         }
 
+        tooltip.add(Component.translatable("block.phoenixcore.fission_cooler.info_header")
+                .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
+
         String inId = coolerType.getInputCoolantFluidId();
-        Component inName = getFluidDisplayName(inId);
-        tooltip.add(Component.translatable("phoenixcore.coolant_required", inName));
+        tooltip.add(Component.translatable("phoenixcore.coolant_required", getFluidDisplayName(inId))
+                .withStyle(ChatFormatting.WHITE));
 
         String outId = coolerType.getOutputCoolantFluidId();
         if (!outId.equalsIgnoreCase(inId)) {
-            Component outName = getFluidDisplayName(outId);
-            tooltip.add(Component.translatable("phoenixcore.coolant_output", outName));
+            tooltip.add(Component.translatable("phoenixcore.coolant_output", getFluidDisplayName(outId))
+                    .withStyle(ChatFormatting.GRAY));
         }
 
-        tooltip.add(Component.literal("§7Coolant Usage: §f" +
-                coolerType.getCoolantUsagePerTick() + " mB/t"));
+        tooltip.add(Component.translatable("phoenixcore.coolant_usage_value", coolerType.getCoolantUsagePerTick())
+                .withStyle(ChatFormatting.LIGHT_PURPLE));
 
         tooltip.add(Component.translatable("phoenixcore.cooling_power",
-                coolerType.getCoolerTemperature()));
+                        Component.literal(String.valueOf(coolerType.getCoolerTemperature()))
+                                .withStyle(ChatFormatting.BLUE))
+                .append(Component.literal(" HU/t").withStyle(ChatFormatting.GRAY)));
     }
 
-    /** Registry-only fluid display name (no Material/GTMaterials). */
     public static Component getFluidDisplayName(@NotNull String fluidId) {
         if (fluidId.isEmpty() || "none".equalsIgnoreCase(fluidId)) {
             return Component.literal("None").withStyle(ChatFormatting.GRAY);
         }
 
         ResourceLocation rl = ResourceLocation.tryParse(fluidId);
-        if (rl == null) return Component.literal(fluidId).withStyle(ChatFormatting.YELLOW);
+        // Fix: Use translatable fallback so lang names work even if registry lookup is weird
+        if (rl == null) return Component.translatable(fluidId).withStyle(ChatFormatting.YELLOW);
 
         Fluid f = ForgeRegistries.FLUIDS.getValue(rl);
         if (f != null && f != Fluids.EMPTY) {
             return Component.translatable(f.getFluidType().getDescriptionId());
         }
 
-        return Component.literal(fluidId).withStyle(ChatFormatting.YELLOW);
+        return Component.translatable(fluidId).withStyle(ChatFormatting.YELLOW);
     }
 
     public enum FissionCoolerTypes implements StringRepresentable, IFissionCoolerType {
+        COOLER_BASIC("cooler_basic", 10000, 1, 100, "minecraft:water", "phoenixcore:critical_steam", 0xFF3D80FF),
+        COOLER_EV("cooler_ev", 20000, 2, 10, "gtceu:sodium_potassium", "phoenixcore:hot_sodium_potassium", 0xFFFFB03D),
+        COOLER_IV("cooler_iv", 30000, 3, 30, "gtceu:sodium_potassium", "phoenixcore:hot_sodium_potassium", 0xFFFF4D3D),
+        COOLER_LUV("cooler_luv", 40000, 4, 35, "gtceu:liquid_helium", "gtceu:helium", 0xFFD23DFF);
 
-        COOLER_BASIC("basic_cooler", 10000, 1, 100, "minecraft:water", "phoenixcore:critical_steam",
-                PhoenixCore.id("block/fission/active_cooler"), 0xFF3D80FF),
-        COOLER_EV("ev_cooler", 20000, 2, 10, "gtceu:sodium_potassium", "phoenixcore:hot_sodium_potassium",
-                PhoenixCore.id("block/fission/active_cooler"), 0xFFFFB03D),
-        COOLER_IV("iv_cooler", 30000, 3, 30, "gtceu:sodium_potassium", "phoenixcore:hot_sodium_potassium",
-                PhoenixCore.id("block/fission/active_cooler"), 0xFFFF4D3D),
-        COOLER_LUV("luv_cooler", 40000, 4, 35, "gtceu:liquid_helium", "gtceu:helium",
-                PhoenixCore.id("block/fission/active_cooler"), 0xFFD23DFF);
+        @Getter @NotNull private final String name;
+        private final int defaultTemp;
+        @Getter private final int tier;
+        private final int defaultUsage;
+        @Getter @NotNull private final String requiredCoolantMaterialId;
+        @Getter @NotNull private final String outputCoolantFluidId;
+        @Getter private final int tintColor;
 
-        @Getter
-        @NotNull
-        private final String name;
-        @Getter
-        private final int coolerTemperature;
-        @Getter
-        private final int tier;
-        @Getter
-        private final int coolantUsagePerTick;
-
-        /** INPUT fluid registry id */
-        @Getter
-        @NotNull
-        private final String requiredCoolantMaterialId;
-
-        /** OUTPUT fluid registry id (hot return) */
-        @Getter
-        @NotNull
-        private final String outputCoolantFluidId;
-
-        @Getter
-        @NotNull
-        private final ResourceLocation texture;
-
-        /** Per-type tint (ARGB) */
-        @Getter
-        private final int tintColor;
-
-        FissionCoolerTypes(String name, int temp, int tier, int usage,
-                           String inputCoolantFluidId, String outputCoolantFluidId,
-                           ResourceLocation texture, int tintColor) {
+        FissionCoolerTypes(String name, int temp, int tier, int usage, String inputCoolantFluidId, String outputCoolantFluidId, int tintColor) {
             this.name = name;
-            this.coolerTemperature = temp;
+            this.defaultTemp = temp;
             this.tier = tier;
-            this.coolantUsagePerTick = usage;
+            this.defaultUsage = usage;
             this.requiredCoolantMaterialId = inputCoolantFluidId;
             this.outputCoolantFluidId = outputCoolantFluidId;
-            this.texture = texture;
             this.tintColor = tintColor;
         }
 
         @Override
+        public int getCoolerTemperature() {
+            return PhoenixConfigs.INSTANCE.fissionStats.coolers.coolingAmount
+                    .getOrDefault(this.name, this.defaultTemp);
+        }
+
+        @Override
         public int getCoolantUsagePerTick() {
-            return this.coolantUsagePerTick;
+            return PhoenixConfigs.INSTANCE.fissionStats.coolers.coolantUsage
+                    .getOrDefault(this.name, this.defaultUsage);
         }
 
         @Override
-        public @NotNull String getSerializedName() {
-            return name;
-        }
-
-        /**
-         * Legacy name: now treated as INPUT coolant fluid id.
-         */
-        @Override
-        public @NotNull String getRequiredCoolantMaterialId() {
-            return this.requiredCoolantMaterialId;
+        public @NotNull ResourceLocation getTexture() {
+            return PhoenixCore.id("block/fission/cooler_base");
         }
 
         @Override
-        public @NotNull String getOutputCoolantFluidId() {
-            return this.outputCoolantFluidId;
-        }
+        public @NotNull String getSerializedName() { return name; }
 
         @Override
-        public int getTintColor() {
-            return tintColor;
-        }
-
-        @Override
-        public Material getMaterial() {
-            return GTMaterials.NULL;
-        }
+        public Material getMaterial() { return GTMaterials.NULL; }
     }
 }

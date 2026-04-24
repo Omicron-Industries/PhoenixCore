@@ -1,9 +1,11 @@
 package net.phoenix.core.integration.jade.provider;
 
+import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -105,8 +107,8 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         int parallels = data.getInt(NBT_PARALLELS);
         long eut = data.getLong(NBT_EUT);
 
-        tooltip.add(Component.literal("Parallels: " + parallels));
-        tooltip.add(Component.literal("EU/t: " + eut));
+        tooltip.add(Component.translatable("phoenixcore.parallels", parallels));
+        tooltip.add(getVoltageFormattedOutput(eut));
 
         int rods = data.getInt(NBT_RODS);
         int coolers = data.getInt(NBT_COOLERS);
@@ -277,6 +279,18 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         return Component.literal(key);
     }
 
+    private Component getVoltageFormattedOutput(long euOut) {
+        int tier = 0;
+        for (int i = 0; i < GTValues.V.length; i++) {
+            if (euOut >= GTValues.V[i]) tier = i;
+            else break;
+        }
+        // "Output: 128 EU/t (MV)"
+        return Component.translatable("phoenixcore.eu_generation", euOut)
+                .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(GTValues.VNF[tier]))
+                .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
+    }
     @Override
     public ResourceLocation getUid() {
         return UID;
