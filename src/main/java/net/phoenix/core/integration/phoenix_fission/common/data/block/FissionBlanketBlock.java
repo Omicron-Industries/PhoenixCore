@@ -129,30 +129,21 @@ public class FissionBlanketBlock extends ActiveBlock {
                         new BlanketOutput("gtceu:cadmium_dust", 20, 0)),
                 0xFFA83232);
 
-        @Getter
-        @NotNull
-        private final String name;
-        @Getter
-        private final int tier;
+        @Getter @NotNull private final String name;
+        @Getter private final int tier;
         private final int defaultDuration;
-        @Getter
-        private final int amountPerCycle;
-        @Getter
-        @NotNull
-        private final String inputKey;
-        @Getter
-        @NotNull
-        private final List<BlanketOutput> outputs;
-        @Getter
-        private final int tintColor;
+        private final int defaultAmount; // Changed from @Getter final to private
+        @NotNull private final String defaultInputKey; // Changed from @Getter final to private
+        @Getter @NotNull private final List<BlanketOutput> outputs;
+        @Getter private final int tintColor;
 
         BreederBlanketTypes(String name, int tier, int duration, int amount, String in, List<BlanketOutput> outs,
                             int tintColor) {
             this.name = name;
             this.tier = tier;
             this.defaultDuration = duration;
-            this.amountPerCycle = amount;
-            this.inputKey = in;
+            this.defaultAmount = amount;
+            this.defaultInputKey = in;
             this.outputs = outs;
             this.tintColor = tintColor;
         }
@@ -162,6 +153,20 @@ public class FissionBlanketBlock extends ActiveBlock {
             return PhoenixConfigs.INSTANCE.fissionStats.blankets.duration
                     .getOrDefault(this.name, this.defaultDuration);
         }
+
+        @Override
+        public int getAmountPerCycle() {
+            return PhoenixConfigs.INSTANCE.fissionStats.blankets.amountPerCycle
+                    .getOrDefault(this.name, this.defaultAmount);
+        }
+
+        @Override
+        public @NotNull String getInputKey() {
+            return PhoenixConfigs.INSTANCE.fissionStats.blankets.inputKeys
+                    .getOrDefault(this.name, this.defaultInputKey);
+        }
+
+
 
         @Override
         public @NotNull ResourceLocation getTexture() {

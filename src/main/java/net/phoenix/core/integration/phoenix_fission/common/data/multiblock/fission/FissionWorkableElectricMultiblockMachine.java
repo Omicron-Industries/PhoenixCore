@@ -1007,10 +1007,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 meltdownTimerTicks = minTicks;
             }
         } else if (meltdownTimerTicks > 0) {
-            // ── SCRAM PAUSE ─────────────────────────────────────────────────
-            // While scrammed the countdown is frozen. Removing the scram while
-            // heat is still critical resumes the timer right where it left off
-            // — hasty fixes are punished.
+            // While scrammed the countdown is frozen.
             if (!isScramActive()) {
                 meltdownTimerTicks -= 1;
             }
@@ -1024,13 +1021,17 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         double safe = cfg().maxSafeHeat;
 
         if (heat <= safe) {
-            // Force the reset here to ensure "hasty fixes" actually work
-            // if the reactor is genuinely cooled down.
-            meltdownTimerTicks = -1;
-            meltdownTimerMax = 0;
+            // --- UPDATED LOGIC ---
+            // Only reset the timer if the config allows it.
+            // If false, the timer remains 'stored' at its last value.
+            if (cfg().meltdown.clearTimerWhenSafe) {
+                meltdownTimerTicks = -1;
+                meltdownTimerMax = 0;
+            }
             return;
         }
 
+        // Calculation for dynamic grace period based on heat severity
         double excess = heat - safe;
         double sev = Math.max(0.0001, cfg().meltdown.excessHeatSeverity);
 
@@ -1066,7 +1067,8 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
             // 1. Capture the structural blocks BEFORE unforming
             List<BlockPos> structureBlocks = new ArrayList<>();
-            if (state != null && this.isFormed()) {
+            // FIX: Added null checks for state and getCache() to prevent NullPointerException
+            if (state != null && this.isFormed() && state.getCache() != null) {
                 structureBlocks.addAll(state.getCache());
             }
 
@@ -1336,14 +1338,26 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
      * Formats EU into GregTech tiers (ULV, LV, MV...) with color
      */
     private Component getVoltageFormattedOutput(long euOut) {
+        // Default to ULV (Tier 0)
         int tier = 0;
+
+        // Iterate through the voltage array to find the highest tier
+        // that the current output meets or exceeds.
+        // GTValues.V contains the base voltages: [8, 32, 128, 512, 2048, 8192, ...]
         for (int i = 0; i < GTValues.V.length; i++) {
-            if (euOut >= GTValues.V[i]) tier = i;
-            else break;
+            if (euOut >= GTValues.V[i]) {
+                tier = i;
+            } else {
+                // Once we find a tier voltage higher than our output, we stop.
+                break;
+            }
         }
+
+        // Formatting: "Output: 8192 EU/t (IV)"
+        // This will now stay "IV" until euOut reaches 32768 (LuV)
         return Component.translatable("phoenixcore.eu_generation", euOut)
                 .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(GTValues.VNF[tier]))
+                .append(Component.literal(GTValues.VNF[tier])) // VNF contains the colored strings like "IV"
                 .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
 

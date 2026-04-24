@@ -280,15 +280,26 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
     }
 
     private Component getVoltageFormattedOutput(long euOut) {
+        // Default to ULV (Tier 0)
         int tier = 0;
+
+        // Iterate through the voltage array to find the highest tier
+        // that the current output meets or exceeds.
+        // GTValues.V contains the base voltages: [8, 32, 128, 512, 2048, 8192, ...]
         for (int i = 0; i < GTValues.V.length; i++) {
-            if (euOut >= GTValues.V[i]) tier = i;
-            else break;
+            if (euOut >= GTValues.V[i]) {
+                tier = i;
+            } else {
+                // Once we find a tier voltage higher than our output, we stop.
+                break;
+            }
         }
-        // "Output: 128 EU/t (MV)"
+
+        // Formatting: "Output: 8192 EU/t (IV)"
+        // This will now stay "IV" until euOut reaches 32768 (LuV)
         return Component.translatable("phoenixcore.eu_generation", euOut)
                 .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(GTValues.VNF[tier]))
+                .append(Component.literal(GTValues.VNF[tier])) // VNF contains the colored strings like "IV"
                 .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
 

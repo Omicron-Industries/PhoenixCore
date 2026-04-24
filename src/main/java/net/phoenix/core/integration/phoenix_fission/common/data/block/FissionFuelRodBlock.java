@@ -85,7 +85,7 @@ public class FissionFuelRodBlock extends ActiveBlock {
                         .withStyle(ChatFormatting.DARK_PURPLE)));
     }
 
-    public static Component getRegistryDisplayName(@NotNull String key) {
+    public static Component getRegistryDisplayName(String key) {
         ResourceLocation rl = ResourceLocation.tryParse(key);
         if (rl == null) return Component.literal(key).withStyle(ChatFormatting.YELLOW);
 
@@ -115,24 +115,14 @@ public class FissionFuelRodBlock extends ActiveBlock {
         T5_FUEL_ROD("t5_fuel_rod", 3000, 5, 8000, 1, "phoenixcore:u242_fuel_pellet",
                 "phoenixcore:spent_uranium_242_nugget", 0xFFFF5757, 30);
 
-        @Getter
-        @NotNull
-        private final String name;
+        @Getter @NotNull private final String name;
         private final int defaultHeat;
-        @Getter
-        private final int tier;
+        @Getter private final int tier;
         private final int defaultDuration;
-        @Getter
-        private final int amountPerCycle;
-        @Getter
-        @NotNull
-        private final String fuelKey;
-        @Getter
-        @NotNull
-        private final String outputKey;
-        private final int defaultBias;
-        @Getter
-        private final int tintColor;
+        private final int defaultAmount; // New internal default
+        @NotNull private final String defaultFuelKey; // New internal default
+        @NotNull private final String defaultOutputKey; // New internal default
+        @Getter private final int tintColor;
 
         FissionFuelRodTypes(String name, int heat, int tier, int duration, int amount, String fuelKey, String outputKey,
                             int tintColor, int neutronBias) {
@@ -140,16 +130,24 @@ public class FissionFuelRodBlock extends ActiveBlock {
             this.defaultHeat = heat;
             this.tier = tier;
             this.defaultDuration = duration;
-            this.amountPerCycle = amount;
-            this.fuelKey = fuelKey;
-            this.outputKey = outputKey;
+            this.defaultAmount = amount;
+            this.defaultFuelKey = fuelKey;
+            this.defaultOutputKey = outputKey;
             this.tintColor = tintColor;
-            this.defaultBias = neutronBias;
         }
 
         @Override
-        public int getBaseHeatProduction() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.baseHeat.getOrDefault(this.name, this.defaultHeat);
+        public int getAmountPerCycle() {
+            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.amtPerCycle
+                    .getOrDefault(this.name, this.defaultAmount);
+        }
+
+
+
+        @Override
+        public @NotNull String getOutputKey() {
+            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.outputKeys
+                    .getOrDefault(this.name, this.defaultOutputKey);
         }
 
         @Override
@@ -157,10 +155,17 @@ public class FissionFuelRodBlock extends ActiveBlock {
             return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDuration.getOrDefault(this.name,
                     this.defaultDuration);
         }
+        @Override
+        public int getBaseHeatProduction() {
+            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.baseHeat.getOrDefault(this.name, this.defaultHeat);
+        }
+
+
 
         @Override
-        public int getNeutronBias() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.neutronBias.getOrDefault(this.name, this.defaultBias);
+        public @NotNull String getFuelKey() {
+            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelKeys
+                    .getOrDefault(this.name, this.defaultFuelKey);
         }
 
         @Override
