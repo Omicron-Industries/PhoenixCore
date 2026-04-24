@@ -46,7 +46,6 @@ public class SourceRecipeCapability extends RecipeCapability<SourceIngredient> {
     @Override
     public void addXEIInfo(WidgetGroup group, int xOffset, GTRecipe recipe, List<Content> contents,
                            boolean perTick, boolean isInput, MutableInt yOffset) {
-
         // 1. Handle the vertical buffer for conditions
         // If the condition text is now a single line, 12-14 is usually enough.
         if (!recipe.conditions.isEmpty()) {

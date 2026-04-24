@@ -1,19 +1,22 @@
 package net.phoenix.core.integration.emi;
 
-import dev.emi.emi.api.recipe.EmiRecipe;
-import dev.emi.emi.api.recipe.EmiRecipeCategory;
-import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
-import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoolerBlock;
 
-import javax.annotation.Nullable;
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.widget.WidgetHolder;
+
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class CoolantEmiRecipe implements EmiRecipe {
+
     private final FissionCoolerBlock.FissionCoolerTypes type;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -26,17 +29,35 @@ public class CoolantEmiRecipe implements EmiRecipe {
                 .setAmount(type.getCoolantUsagePerTick()));
     }
 
-    @Override public EmiRecipeCategory getCategory() { return PhoenixEmiPlugin.FISSION_COOLANT; }
+    @Override
+    public EmiRecipeCategory getCategory() {
+        return PhoenixEmiPlugin.FISSION_COOLANT;
+    }
 
     @Override
     public @Nullable ResourceLocation getId() {
         return new ResourceLocation("phoenixcore", "fission_coolant/" + type.getName());
     }
 
-    @Override public List<EmiIngredient> getInputs() { return inputs; }
-    @Override public List<EmiStack> getOutputs() { return outputs; }
-    @Override public int getDisplayWidth() { return 144; }
-    @Override public int getDisplayHeight() { return 52; }
+    @Override
+    public List<EmiIngredient> getInputs() {
+        return inputs;
+    }
+
+    @Override
+    public List<EmiStack> getOutputs() {
+        return outputs;
+    }
+
+    @Override
+    public int getDisplayWidth() {
+        return 144;
+    }
+
+    @Override
+    public int getDisplayHeight() {
+        return 52;
+    }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
@@ -47,7 +68,8 @@ public class CoolantEmiRecipe implements EmiRecipe {
 
         // ── Row 1: cooling power ─────────────────────────────────────────────
         widgets.addText(
-                Component.literal("−" + formatHeat(type.getCoolerTemperature()) + " HU/t").withStyle(ChatFormatting.AQUA),
+                Component.literal("−" + formatHeat(type.getCoolerTemperature()) + " HU/t")
+                        .withStyle(ChatFormatting.AQUA),
                 8, 4, 0xFFFFFF, false);
 
         // ── Row 2: fluid throughput (left) and "continuous" label (right) ────

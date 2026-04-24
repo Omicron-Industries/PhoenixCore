@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.PacketRecipeBuilderGenerate;
-import net.phoenix.core.integration.recipe_helper.ConditionsScreen; // Added import
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

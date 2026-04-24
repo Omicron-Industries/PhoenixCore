@@ -2,7 +2,7 @@ package net.phoenix.core.integration.phoenix_fission.common.data.block;
 
 import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import lombok.Getter;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -14,11 +14,14 @@ import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType.BlanketOutput;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @Getter
 @ParametersAreNonnullByDefault
@@ -98,26 +101,53 @@ public class FissionBlanketBlock extends ActiveBlock {
     }
 
     public enum BreederBlanketTypes implements StringRepresentable, IFissionBlanketType {
+
         THORIUM_BLANKET("thorium_blanket", 1, 3500, 4, "phoenixcore:thorium_fuel_pellet",
-                List.of(new BlanketOutput("gtceu:uranium_233_dust", 60, 2), new BlanketOutput("gtceu:uranium_235_dust", 15, 1), new BlanketOutput("gtceu:neptunium_dust", 5, 3), new BlanketOutput("gtceu:lead_dust", 20, 0)), 0xFFD2FF57),
+                List.of(new BlanketOutput("gtceu:uranium_233_dust", 60, 2),
+                        new BlanketOutput("gtceu:uranium_235_dust", 15, 1),
+                        new BlanketOutput("gtceu:neptunium_dust", 5, 3), new BlanketOutput("gtceu:lead_dust", 20, 0)),
+                0xFFD2FF57),
         URANIUM_BLANKET("uranium_blanket", 2, 4500, 4, "gtceu:uranium_dust",
-                List.of(new BlanketOutput("gtceu:plutonium_dust", 50, 2), new BlanketOutput("gtceu:neptunium_dust", 20, 1), new BlanketOutput("gtceu:plutonium_241_dust", 10, 3), new BlanketOutput("gtceu:cadmium_dust", 20, 0)), 0xFF57D2FF),
+                List.of(new BlanketOutput("gtceu:plutonium_dust", 50, 2),
+                        new BlanketOutput("gtceu:neptunium_dust", 20, 1),
+                        new BlanketOutput("gtceu:plutonium_241_dust", 10, 3),
+                        new BlanketOutput("gtceu:cadmium_dust", 20, 0)),
+                0xFF57D2FF),
         NEPTUNIUM_BLANKET("neptunium_blanket", 3, 5000, 2, "gtceu:neptunium_dust",
-                List.of(new BlanketOutput("gtceu:plutonium_241_dust", 40, 2), new BlanketOutput("gtceu:americium_dust", 30, 3), new BlanketOutput("gtceu:curium_dust", 10, 4), new BlanketOutput("gtceu:silver_dust", 20, 0)), 0xFF32A852),
+                List.of(new BlanketOutput("gtceu:plutonium_241_dust", 40, 2),
+                        new BlanketOutput("gtceu:americium_dust", 30, 3), new BlanketOutput("gtceu:curium_dust", 10, 4),
+                        new BlanketOutput("gtceu:silver_dust", 20, 0)),
+                0xFF32A852),
         PLUTONIUM_BLANKET("plutonium_blanket", 4, 6000, 2, "gtceu:plutonium_dust",
-                List.of(new BlanketOutput("gtceu:curium_dust", 50, 3), new BlanketOutput("gtceu:berkelium_dust", 10, 5), new BlanketOutput("gtceu:americium_dust", 20, 2), new BlanketOutput("gtceu:caesium_dust", 20, 0)), 0xFFFFD27D),
+                List.of(new BlanketOutput("gtceu:curium_dust", 50, 3), new BlanketOutput("gtceu:berkelium_dust", 10, 5),
+                        new BlanketOutput("gtceu:americium_dust", 20, 2),
+                        new BlanketOutput("gtceu:caesium_dust", 20, 0)),
+                0xFFFFD27D),
         AMERICIUM_BLANKET("americium_blanket", 5, 8000, 1, "gtceu:americium_dust",
-                List.of(new BlanketOutput("gtceu:curium_dust", 60, 3), new BlanketOutput("californium_dust", 5, 6), new BlanketOutput("gtceu:berkelium_dust", 15, 4), new BlanketOutput("gtceu:cadmium_dust", 20, 0)), 0xFFA83232);
+                List.of(new BlanketOutput("gtceu:curium_dust", 60, 3), new BlanketOutput("californium_dust", 5, 6),
+                        new BlanketOutput("gtceu:berkelium_dust", 15, 4),
+                        new BlanketOutput("gtceu:cadmium_dust", 20, 0)),
+                0xFFA83232);
 
-        @Getter @NotNull private final String name;
-        @Getter private final int tier;
+        @Getter
+        @NotNull
+        private final String name;
+        @Getter
+        private final int tier;
         private final int defaultDuration;
-        @Getter private final int amountPerCycle;
-        @Getter @NotNull private final String inputKey;
-        @Getter @NotNull private final List<BlanketOutput> outputs;
-        @Getter private final int tintColor;
+        @Getter
+        private final int amountPerCycle;
+        @Getter
+        @NotNull
+        private final String inputKey;
+        @Getter
+        @NotNull
+        private final List<BlanketOutput> outputs;
+        @Getter
+        private final int tintColor;
 
-        BreederBlanketTypes(String name, int tier, int duration, int amount, String in, List<BlanketOutput> outs, int tintColor) {
+        BreederBlanketTypes(String name, int tier, int duration, int amount, String in, List<BlanketOutput> outs,
+                            int tintColor) {
             this.name = name;
             this.tier = tier;
             this.defaultDuration = duration;
@@ -139,6 +169,8 @@ public class FissionBlanketBlock extends ActiveBlock {
         }
 
         @Override
-        public @NotNull String getSerializedName() { return name; }
+        public @NotNull String getSerializedName() {
+            return name;
+        }
     }
 }

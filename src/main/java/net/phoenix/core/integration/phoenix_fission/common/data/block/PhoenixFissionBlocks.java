@@ -1,8 +1,7 @@
 package net.phoenix.core.integration.phoenix_fission.common.data.block;
 
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -14,6 +13,9 @@ import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketTyp
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
+
+import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import org.jetbrains.annotations.NotNull;
 
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
@@ -24,35 +26,56 @@ public class PhoenixFissionBlocks {
     public static void init() {}
 
     // --- Coolers ---
-    public static final BlockEntry<FissionCoolerBlock> COOLER_BASIC = createCoolerBlock(FissionCoolerBlock.FissionCoolerTypes.COOLER_BASIC);
-    public static final BlockEntry<FissionCoolerBlock> COOLER_EV = createCoolerBlock(FissionCoolerBlock.FissionCoolerTypes.COOLER_EV);
-    public static final BlockEntry<FissionCoolerBlock> COOLER_IV = createCoolerBlock(FissionCoolerBlock.FissionCoolerTypes.COOLER_IV);
-    public static final BlockEntry<FissionCoolerBlock> COOLER_LUV = createCoolerBlock(FissionCoolerBlock.FissionCoolerTypes.COOLER_LUV);
+    public static final BlockEntry<FissionCoolerBlock> COOLER_BASIC = createCoolerBlock(
+            FissionCoolerBlock.FissionCoolerTypes.COOLER_BASIC);
+    public static final BlockEntry<FissionCoolerBlock> COOLER_EV = createCoolerBlock(
+            FissionCoolerBlock.FissionCoolerTypes.COOLER_EV);
+    public static final BlockEntry<FissionCoolerBlock> COOLER_IV = createCoolerBlock(
+            FissionCoolerBlock.FissionCoolerTypes.COOLER_IV);
+    public static final BlockEntry<FissionCoolerBlock> COOLER_LUV = createCoolerBlock(
+            FissionCoolerBlock.FissionCoolerTypes.COOLER_LUV);
 
     // --- Moderators ---
-    public static final BlockEntry<FissionModeratorBlock> MODERATOR_GRAPHITE = createModeratorBlock(FissionModeratorBlock.FissionModeratorTypes.GRAPHITE);
-    public static final BlockEntry<FissionModeratorBlock> MODERATOR_BERYLLIUM = createModeratorBlock(FissionModeratorBlock.FissionModeratorTypes.BERYLLIUM);
-    public static final BlockEntry<FissionModeratorBlock> MODERATOR_HEAVY_WATER = createModeratorBlock(FissionModeratorBlock.FissionModeratorTypes.HEAVY_WATER);
-    public static final BlockEntry<FissionModeratorBlock> MODERATOR_NIOBIUM_SIC = createModeratorBlock(FissionModeratorBlock.FissionModeratorTypes.NIOBIUM_SIC);
+    public static final BlockEntry<FissionModeratorBlock> MODERATOR_GRAPHITE = createModeratorBlock(
+            FissionModeratorBlock.FissionModeratorTypes.GRAPHITE);
+    public static final BlockEntry<FissionModeratorBlock> MODERATOR_BERYLLIUM = createModeratorBlock(
+            FissionModeratorBlock.FissionModeratorTypes.BERYLLIUM);
+    public static final BlockEntry<FissionModeratorBlock> MODERATOR_HEAVY_WATER = createModeratorBlock(
+            FissionModeratorBlock.FissionModeratorTypes.HEAVY_WATER);
+    public static final BlockEntry<FissionModeratorBlock> MODERATOR_NIOBIUM_SIC = createModeratorBlock(
+            FissionModeratorBlock.FissionModeratorTypes.NIOBIUM_SIC);
 
     // --- Fuel Rods ---
-    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T1 = createFuelRodBlock(FissionFuelRodBlock.FissionFuelRodTypes.T1_FUEL_ROD);
-    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T2 = createFuelRodBlock(FissionFuelRodBlock.FissionFuelRodTypes.T2_FUEL_ROD);
-    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T3 = createFuelRodBlock(FissionFuelRodBlock.FissionFuelRodTypes.T3_FUEL_ROD);
-    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T4 = createFuelRodBlock(FissionFuelRodBlock.FissionFuelRodTypes.T4_FUEL_ROD);
-    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T5 = createFuelRodBlock(FissionFuelRodBlock.FissionFuelRodTypes.T5_FUEL_ROD);
+    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T1 = createFuelRodBlock(
+            FissionFuelRodBlock.FissionFuelRodTypes.T1_FUEL_ROD);
+    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T2 = createFuelRodBlock(
+            FissionFuelRodBlock.FissionFuelRodTypes.T2_FUEL_ROD);
+    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T3 = createFuelRodBlock(
+            FissionFuelRodBlock.FissionFuelRodTypes.T3_FUEL_ROD);
+    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T4 = createFuelRodBlock(
+            FissionFuelRodBlock.FissionFuelRodTypes.T4_FUEL_ROD);
+    public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T5 = createFuelRodBlock(
+            FissionFuelRodBlock.FissionFuelRodTypes.T5_FUEL_ROD);
 
     // --- Breeder Blankets ---
-    public static final BlockEntry<FissionBlanketBlock> THORIUM_BLANKET = createBlanketBlock(FissionBlanketBlock.BreederBlanketTypes.THORIUM_BLANKET);
-    public static final BlockEntry<FissionBlanketBlock> URANIUM_BLANKET = createBlanketBlock(FissionBlanketBlock.BreederBlanketTypes.URANIUM_BLANKET);
-    public static final BlockEntry<FissionBlanketBlock> NEPTUNIUM_BLANKET = createBlanketBlock(FissionBlanketBlock.BreederBlanketTypes.NEPTUNIUM_BLANKET);
-    public static final BlockEntry<FissionBlanketBlock> PLUTONIUM_BLANKET = createBlanketBlock(FissionBlanketBlock.BreederBlanketTypes.PLUTONIUM_BLANKET);
-    public static final BlockEntry<FissionBlanketBlock> AMERICIUM_BLANKET = createBlanketBlock(FissionBlanketBlock.BreederBlanketTypes.AMERICIUM_BLANKET);
+    public static final BlockEntry<FissionBlanketBlock> THORIUM_BLANKET = createBlanketBlock(
+            FissionBlanketBlock.BreederBlanketTypes.THORIUM_BLANKET);
+    public static final BlockEntry<FissionBlanketBlock> URANIUM_BLANKET = createBlanketBlock(
+            FissionBlanketBlock.BreederBlanketTypes.URANIUM_BLANKET);
+    public static final BlockEntry<FissionBlanketBlock> NEPTUNIUM_BLANKET = createBlanketBlock(
+            FissionBlanketBlock.BreederBlanketTypes.NEPTUNIUM_BLANKET);
+    public static final BlockEntry<FissionBlanketBlock> PLUTONIUM_BLANKET = createBlanketBlock(
+            FissionBlanketBlock.BreederBlanketTypes.PLUTONIUM_BLANKET);
+    public static final BlockEntry<FissionBlanketBlock> AMERICIUM_BLANKET = createBlanketBlock(
+            FissionBlanketBlock.BreederBlanketTypes.AMERICIUM_BLANKET);
 
     // --- Casings ---
-    public static BlockEntry<Block> FISSILE_HEAT_SAFE_CASING = registerSimpleBlock("§bFissile Heat Safe Casing", "fissile_heat_safe_casing", "fissile_heat_safe_casing", BlockItem::new);
-    public static BlockEntry<Block> FISSILE_REACTION_SAFE_CASING = registerSimpleBlock("§bFissile Reaction Safe Casing", "fissile_reaction_safe_casing", "fissile_reaction_safe_casing", BlockItem::new);
-    public static BlockEntry<Block> FISSILE_SAFE_GEARBOX_CASING = registerSimpleBlock("§bFissile Safe Gearbox", "fissile_safe_gearbox_casing", "fissile_safe_gearbox", BlockItem::new);
+    public static BlockEntry<Block> FISSILE_HEAT_SAFE_CASING = registerSimpleBlock("§bFissile Heat Safe Casing",
+            "fissile_heat_safe_casing", "fissile_heat_safe_casing", BlockItem::new);
+    public static BlockEntry<Block> FISSILE_REACTION_SAFE_CASING = registerSimpleBlock("§bFissile Reaction Safe Casing",
+            "fissile_reaction_safe_casing", "fissile_reaction_safe_casing", BlockItem::new);
+    public static BlockEntry<Block> FISSILE_SAFE_GEARBOX_CASING = registerSimpleBlock("§bFissile Safe Gearbox",
+            "fissile_safe_gearbox_casing", "fissile_safe_gearbox", BlockItem::new);
 
     public static final BlockEntry<NukeBlock> NUKE_BLOCK = REGISTRATE
             .block("nuke", NukeBlock::new)

@@ -1,11 +1,5 @@
 package net.phoenix.core.integration.emi;
 
-import dev.emi.emi.api.EmiApi;
-import dev.emi.emi.api.recipe.EmiRecipe;
-import dev.emi.emi.api.recipe.EmiRecipeCategory;
-import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
-import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -13,9 +7,17 @@ import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoo
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionModeratorBlock;
 
+import dev.emi.emi.api.EmiApi;
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.widget.WidgetHolder;
+
 import java.util.List;
 
 public class FissionCalculatorEmiRecipe implements EmiRecipe {
+
     // Statics ensure the calculator state persists when clicking buttons
     private static int fuelIndex = 2;
     private static int fuelCount = 1;
@@ -26,19 +28,29 @@ public class FissionCalculatorEmiRecipe implements EmiRecipe {
     private static int burnTimeMinutes = 0;
 
     @Override
-    public EmiRecipeCategory getCategory() { return PhoenixEmiPlugin.FISSION_FUEL; }
+    public EmiRecipeCategory getCategory() {
+        return PhoenixEmiPlugin.FISSION_FUEL;
+    }
 
     @Override
-    public ResourceLocation getId() { return new ResourceLocation("phoenixcore", "fission_calculator"); }
+    public ResourceLocation getId() {
+        return new ResourceLocation("phoenixcore", "fission_calculator");
+    }
 
     @Override
-    public List<EmiIngredient> getInputs() { return List.of(); }
+    public List<EmiIngredient> getInputs() {
+        return List.of();
+    }
 
     @Override
-    public List<EmiStack> getOutputs() { return List.of(); }
+    public List<EmiStack> getOutputs() {
+        return List.of();
+    }
 
     @Override
-    public int getDisplayWidth() { return 170; }
+    public int getDisplayWidth() {
+        return 170;
+    }
 
     @Override
     public int getDisplayHeight() {
@@ -75,45 +87,60 @@ public class FissionCalculatorEmiRecipe implements EmiRecipe {
 
         // Row 1: Fuel
         drawCleanRow(widgets, startY, "Fuel", fuel.getName(), fuelCount, col1_Icons, col2_Buttons, col3_Values,
-                () -> { fuelIndex = (fuelIndex + 1) % FissionFuelRodBlock.FissionFuelRodTypes.values().length; },
+                () -> {
+                    fuelIndex = (fuelIndex + 1) % FissionFuelRodBlock.FissionFuelRodTypes.values().length;
+                },
                 (val) -> fuelCount = Math.max(1, val));
 
         // Row 2: Moderator
-        drawCleanRow(widgets, startY + rowHeight, "Mod", moderator.getName(), moderatorCount, col1_Icons, col2_Buttons, col3_Values,
-                () -> { moderatorIndex = (moderatorIndex + 1) % FissionModeratorBlock.FissionModeratorTypes.values().length; },
+        drawCleanRow(widgets, startY + rowHeight, "Mod", moderator.getName(), moderatorCount, col1_Icons, col2_Buttons,
+                col3_Values,
+                () -> {
+                    moderatorIndex = (moderatorIndex + 1) % FissionModeratorBlock.FissionModeratorTypes.values().length;
+                },
                 (val) -> moderatorCount = Math.max(0, val));
 
         // Row 3: Cooler
-        drawCleanRow(widgets, startY + (rowHeight * 2), "Cool", cooler.getName(), coolerCount, col1_Icons, col2_Buttons, col3_Values,
-                () -> { coolerIndex = (coolerIndex + 1) % FissionCoolerBlock.FissionCoolerTypes.values().length; },
+        drawCleanRow(widgets, startY + (rowHeight * 2), "Cool", cooler.getName(), coolerCount, col1_Icons, col2_Buttons,
+                col3_Values,
+                () -> {
+                    coolerIndex = (coolerIndex + 1) % FissionCoolerBlock.FissionCoolerTypes.values().length;
+                },
                 (val) -> coolerCount = Math.max(0, val));
 
         // Row 4: Time (No icon, so we offset text)
         int timeY = startY + (rowHeight * 3) + 2;
-        widgets.addText(Component.literal("TIME").withStyle(ChatFormatting.DARK_GRAY), col1_Icons, timeY + 6, 0xFFFFFF, false);
+        widgets.addText(Component.literal("TIME").withStyle(ChatFormatting.DARK_GRAY), col1_Icons, timeY + 6, 0xFFFFFF,
+                false);
         addStepButtons(widgets, col2_Buttons, timeY, (val) -> burnTimeMinutes = Math.max(0, burnTimeMinutes + val));
         widgets.addText(Component.literal(burnTimeMinutes + "m"), col3_Values, timeY + 6, 0xFFFFFF, false);
 
         // --- RESULTS COLUMN ---
         widgets.addText(Component.literal("HEAT").withStyle(ChatFormatting.GOLD), col4_Labels, startY, 0xFFFFFF, false);
-        widgets.addText(Component.literal("-" + totalHeatGain).withStyle(ChatFormatting.RED), col4_Labels, startY + 10, 0xFFFFFF, false);
+        widgets.addText(Component.literal("-" + totalHeatGain).withStyle(ChatFormatting.RED), col4_Labels, startY + 10,
+                0xFFFFFF, false);
 
-        widgets.addText(Component.literal("COOLING").withStyle(ChatFormatting.AQUA), col4_Labels, startY + 30, 0xFFFFFF, false);
-        widgets.addText(Component.literal("+" + totalCooling).withStyle(ChatFormatting.BLUE), col4_Labels, startY + 40, 0xFFFFFF, false);
+        widgets.addText(Component.literal("COOLING").withStyle(ChatFormatting.AQUA), col4_Labels, startY + 30, 0xFFFFFF,
+                false);
+        widgets.addText(Component.literal("+" + totalCooling).withStyle(ChatFormatting.BLUE), col4_Labels, startY + 40,
+                0xFFFFFF, false);
 
         // Status Box
         String statusText = netBalance >= 0 ? "STABLE" : "DANGER";
         ChatFormatting statusColor = netBalance >= 0 ? ChatFormatting.GREEN : ChatFormatting.RED;
-        widgets.addText(Component.literal(statusText).withStyle(statusColor).withStyle(ChatFormatting.BOLD), col4_Labels, startY + 65, 0xFFFFFF, false);
+        widgets.addText(Component.literal(statusText).withStyle(statusColor).withStyle(ChatFormatting.BOLD),
+                col4_Labels, startY + 65, 0xFFFFFF, false);
 
         // Multiplier Subtext
-        widgets.addText(Component.literal(String.format("%.1fx Heat", burnMult)).withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.GRAY), col4_Labels, startY + 85, 0xFFFFFF, false);
+        widgets.addText(Component.literal(String.format("%.1fx Heat", burnMult)).withStyle(ChatFormatting.ITALIC)
+                .withStyle(ChatFormatting.GRAY), col4_Labels, startY + 85, 0xFFFFFF, false);
 
         // Footer spacer for EMI
         widgets.addSlot(EmiStack.EMPTY, 150, 110).drawBack(false);
     }
 
-    private void drawCleanRow(WidgetHolder widgets, int y, String label, String name, int count, int xI, int xB, int xV, Runnable cycler, java.util.function.Consumer<Integer> setter) {
+    private void drawCleanRow(WidgetHolder widgets, int y, String label, String name, int count, int xI, int xB, int xV,
+                              Runnable cycler, java.util.function.Consumer<Integer> setter) {
         // Icon and Cycler Button Overlay
         widgets.addSlot(FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + name), xI, y).drawBack(true);
         widgets.addButton(xI, y, 18, 18, 0, 0, () -> true, (x, y1, b) -> {

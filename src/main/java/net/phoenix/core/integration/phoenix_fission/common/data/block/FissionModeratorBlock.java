@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import lombok.Getter;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,11 +15,14 @@ import net.minecraft.world.level.BlockGetter;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @Getter
 @ParametersAreNonnullByDefault
@@ -52,16 +55,21 @@ public class FissionModeratorBlock extends ActiveBlock {
     }
 
     public enum FissionModeratorTypes implements StringRepresentable, IFissionModeratorType {
+
         GRAPHITE("graphite_moderator", 2, 1, 1, 0xFFB07CFF),
         BERYLLIUM("beryllium_moderator", 5, 2, 2, 0xFFE7FF7D),
         HEAVY_WATER("heavy_water_moderator", 12, 5, 3, 0xFF7DFFB0),
         NIOBIUM_SIC("niobium_sic_moderator", 30, 10, 4, 0xFFFF7D7D);
 
-        @Getter @NotNull private final String name;
+        @Getter
+        @NotNull
+        private final String name;
         private final int defaultEUBoost;
         private final int defaultFuelDiscount;
-        @Getter private final int tier;
-        @Getter private final int tintColor;
+        @Getter
+        private final int tier;
+        @Getter
+        private final int tintColor;
 
         FissionModeratorTypes(String name, int EUBoost, int fuelDiscount, int tier, int tintColor) {
             this.name = name;

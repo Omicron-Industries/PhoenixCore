@@ -8,18 +8,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class TooltipBlockItem extends BlockItem {
+
     private final String baseTooltipKey;
     private final ChatFormatting[] styles;
 
     public TooltipBlockItem(Block block, Properties properties, String baseTooltipKey, ChatFormatting... styles) {
         super(block, properties);
         this.baseTooltipKey = baseTooltipKey;
-        this.styles = styles.length > 0 ? styles : new ChatFormatting[]{ChatFormatting.GRAY, ChatFormatting.ITALIC};
+        this.styles = styles.length > 0 ? styles : new ChatFormatting[] { ChatFormatting.GRAY, ChatFormatting.ITALIC };
     }
 
     @Override

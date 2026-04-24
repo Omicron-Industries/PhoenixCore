@@ -58,8 +58,6 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.status.no_coolant", "§eWARNING: Coolant Supply Exhausted");
         provider.add("phoenixcore.nuke_radius", "Blast area: %s");
 
-
-
         // Material Mappings (Fixes the raw "phoenixcore:u242_fuel_pellet" etc tooltips)
         provider.add("phoenixcore:u242_fuel_pellet", "U-242 Fuel Pellet");
         provider.add("phoenixcore:thorium_fuel_pellet", "Thorium Fuel Pellet");
@@ -67,7 +65,6 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore:hot_sodium_potassium", "Hot Sodium-Potassium");
 
         provider.add("phoenixcore.tooltip.amount", "Yield Amount"); // Added for the Blanket tooltip fix
-
 
         // Breeding & Transmutation
         provider.add("phoenixcore.blanket.potential_outputs", "Potential Transmutations:");
@@ -166,7 +163,6 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.status.scram_basic", "§c§lSCRAM ACTIVE §8(Basic Hatch)");
         provider.add("phoenixcore.status.scram_advanced", "§6§lSCRAM ACTIVE §8(Advanced Hatch)");
         provider.add("phoenixcore.status.scram_arming", "§e§lSCRAM ARMING: §f%d / %d ticks");
-
 
         // Multiblock Pattern Info
         provider.add("phoenix.multiblock.pattern.info.multiple_fuel_rods",
@@ -316,8 +312,6 @@ public class PhoenixMachineLangHandler {
 
         String largeSteamSifterDesc = "§bSifts through the chaff to get to the good stuff. \n" +
                 "§7Good Vibrations.";
-
-
 
         // Machine tooltips
         PhoenixLangHandler.multilineLang(provider, "gtultimate.custom.tooltip_large_steam_sifter",

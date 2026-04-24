@@ -1,21 +1,22 @@
 package net.phoenix.core.integration.emi;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
 
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoolerBlock;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class BreedingEmiRecipe implements EmiRecipe {
+
     private final FissionBlanketBlock.BreederBlanketTypes type;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -31,7 +32,9 @@ public class BreedingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public EmiRecipeCategory getCategory() { return PhoenixEmiPlugin.FISSION_BREEDING; }
+    public EmiRecipeCategory getCategory() {
+        return PhoenixEmiPlugin.FISSION_BREEDING;
+    }
 
     @Override
     public @Nullable ResourceLocation getId() {
@@ -39,16 +42,24 @@ public class BreedingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public List<EmiIngredient> getInputs() { return inputs; }
+    public List<EmiIngredient> getInputs() {
+        return inputs;
+    }
 
     @Override
-    public List<EmiStack> getOutputs() { return outputs; }
+    public List<EmiStack> getOutputs() {
+        return outputs;
+    }
 
     @Override
-    public int getDisplayWidth() { return 144; }
+    public int getDisplayWidth() {
+        return 144;
+    }
 
     @Override
-    public int getDisplayHeight() { return 60; } // Extra height for multiple outputs
+    public int getDisplayHeight() {
+        return 60;
+    } // Extra height for multiple outputs
 
     @Override
     public void addWidgets(WidgetHolder widgets) {

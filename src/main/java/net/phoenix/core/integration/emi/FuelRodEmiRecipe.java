@@ -1,10 +1,5 @@
 package net.phoenix.core.integration.emi;
 
-import dev.emi.emi.api.recipe.EmiRecipe;
-import dev.emi.emi.api.recipe.EmiRecipeCategory;
-import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
-import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,10 +11,18 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
 
-import javax.annotation.Nullable;
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.widget.WidgetHolder;
+
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class FuelRodEmiRecipe implements EmiRecipe {
+
     private final FissionFuelRodBlock.FissionFuelRodTypes type;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -47,17 +50,35 @@ public class FuelRodEmiRecipe implements EmiRecipe {
         return EmiStack.EMPTY;
     }
 
-    @Override public EmiRecipeCategory getCategory() { return PhoenixEmiPlugin.FISSION_FUEL; }
+    @Override
+    public EmiRecipeCategory getCategory() {
+        return PhoenixEmiPlugin.FISSION_FUEL;
+    }
 
     @Override
     public @Nullable ResourceLocation getId() {
         return new ResourceLocation("phoenixcore", "fission_fuel/" + type.getName());
     }
 
-    @Override public List<EmiIngredient> getInputs() { return inputs; }
-    @Override public List<EmiStack> getOutputs() { return outputs; }
-    @Override public int getDisplayWidth() { return 144; }
-    @Override public int getDisplayHeight() { return 52; }
+    @Override
+    public List<EmiIngredient> getInputs() {
+        return inputs;
+    }
+
+    @Override
+    public List<EmiStack> getOutputs() {
+        return outputs;
+    }
+
+    @Override
+    public int getDisplayWidth() {
+        return 144;
+    }
+
+    @Override
+    public int getDisplayHeight() {
+        return 52;
+    }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
@@ -68,9 +89,7 @@ public class FuelRodEmiRecipe implements EmiRecipe {
 
         // ── Stat row: HU/t (left) and duration (right) ──────────────────────
         int durSec = type.getDurationTicks() / 20;
-        String durStr = durSec >= 60
-                ? (durSec / 60) + "m " + (durSec % 60) + "s"
-                : durSec + "s";
+        String durStr = durSec >= 60 ? (durSec / 60) + "m " + (durSec % 60) + "s" : durSec + "s";
 
         widgets.addText(
                 Component.literal(type.getBaseHeatProduction() + " HU/t").withStyle(ChatFormatting.RED),
@@ -83,9 +102,8 @@ public class FuelRodEmiRecipe implements EmiRecipe {
         // ── Neutron bias, shown in the arrow area so it doesn't crowd the slots ─
         int bias = type.getNeutronBias();
         if (bias > 0) {
-            ChatFormatting biasColor = bias >= 12 ? ChatFormatting.RED
-                    : bias >= 5  ? ChatFormatting.GOLD
-                    : ChatFormatting.YELLOW;
+            ChatFormatting biasColor = bias >= 12 ? ChatFormatting.RED :
+                    bias >= 5 ? ChatFormatting.GOLD : ChatFormatting.YELLOW;
             widgets.addText(
                     Component.literal("bias +" + bias).withStyle(biasColor),
                     52, 4, 0xFFFFFF, false);

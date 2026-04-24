@@ -291,6 +291,7 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
                 .append(Component.literal(GTValues.VNF[tier]))
                 .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
+
     @Override
     public ResourceLocation getUid() {
         return UID;

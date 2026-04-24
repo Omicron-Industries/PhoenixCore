@@ -1023,8 +1023,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
         double safe = cfg().maxSafeHeat;
 
-
-
         if (heat <= safe) {
             // Force the reset here to ensure "hasty fixes" actually work
             // if the reactor is genuinely cooled down.
@@ -1279,7 +1277,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
         // 1. Heat: Uses the key you defined: "Core Temperature: %s / %s HU"
         textList.add(Component.translatable("phoenixcore.current_heat_display",
-                        String.format("%.1f", heat), String.format("%.1f", cfg.maxSafeHeat))
+                String.format("%.1f", heat), String.format("%.1f", cfg.maxSafeHeat))
                 .withStyle(s -> s.withColor(overheating ? 0xFF3333 : 0x33FF33)));
 
         // 2. EU Output: Custom helper for the GT Voltage tiers
@@ -1306,11 +1304,14 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 .append(")"));
 
         // 6. Stats: Using the keys from your block tooltips
-        textList.add(Component.translatable("block.phoenixcore.fission_moderator.boost", getModeratorEUBoostClamped() + "%"));
-        textList.add(Component.translatable("block.phoenixcore.fission_moderator.fuel_discount", getModeratorFuelDiscountClamped() + "%"));
+        textList.add(Component.translatable("block.phoenixcore.fission_moderator.boost",
+                getModeratorEUBoostClamped() + "%"));
+        textList.add(Component.translatable("block.phoenixcore.fission_moderator.fuel_discount",
+                getModeratorFuelDiscountClamped() + "%"));
 
         // 7. Status
-        textList.add(Component.translatable(lastHasCoolant ? "phoenixcore.coolant_status.ok" : "phoenixcore.coolant_status.empty"));
+        textList.add(Component
+                .translatable(lastHasCoolant ? "phoenixcore.coolant_status.ok" : "phoenixcore.coolant_status.empty"));
 
         if (meltdownTimerTicks > 0) {
             textList.add(Component.translatable("phoenixcore.status.danger_timer", getMeltdownSecondsRemaining()));

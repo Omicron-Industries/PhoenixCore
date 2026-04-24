@@ -1,9 +1,7 @@
 package net.phoenix.core.datagen.models;
 
 import com.gregtechceu.gtceu.api.block.property.GTBlockStateProperties;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.phoenix.core.PhoenixCore;
@@ -11,6 +9,10 @@ import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketTyp
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
+
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 
 public class PhoenixFissionMachineModels {
 
@@ -52,7 +54,8 @@ public class PhoenixFissionMachineModels {
         return PhoenixCore.id("block/fission/masks/moderator_mask");
     }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createActiveCoolerModel(IFissionCoolerType type) {
+    public static <
+            T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createActiveCoolerModel(IFissionCoolerType type) {
         return (ctx, prov) -> {
             String name = ctx.getName();
             Block block = ctx.getEntry();
@@ -75,7 +78,8 @@ public class PhoenixFissionMachineModels {
         };
     }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createBlanketRodModel(IFissionBlanketType type) {
+    public static <
+            T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createBlanketRodModel(IFissionBlanketType type) {
         return (ctx, prov) -> {
             String name = ctx.getName();
             Block block = ctx.getEntry();
@@ -98,7 +102,8 @@ public class PhoenixFissionMachineModels {
         };
     }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createFuelRodModel(IFissionFuelRodType type) {
+    public static <
+            T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createFuelRodModel(IFissionFuelRodType type) {
         return (ctx, prov) -> {
             String name = ctx.getName();
             Block block = ctx.getEntry();
@@ -121,7 +126,8 @@ public class PhoenixFissionMachineModels {
         };
     }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createFissionModeratorModel(IFissionModeratorType type) {
+    public static <
+            T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createFissionModeratorModel(IFissionModeratorType type) {
         return (ctx, prov) -> {
             String name = ctx.getName();
             Block block = ctx.getEntry();

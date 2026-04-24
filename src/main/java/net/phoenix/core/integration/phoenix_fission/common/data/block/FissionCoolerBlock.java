@@ -4,7 +4,7 @@ import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import lombok.Getter;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,11 +18,14 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
+
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @Getter
 @ParametersAreNonnullByDefault
@@ -61,8 +64,8 @@ public class FissionCoolerBlock extends ActiveBlock {
                 .withStyle(ChatFormatting.LIGHT_PURPLE));
 
         tooltip.add(Component.translatable("phoenixcore.cooling_power",
-                        Component.literal(String.valueOf(coolerType.getCoolerTemperature()))
-                                .withStyle(ChatFormatting.BLUE))
+                Component.literal(String.valueOf(coolerType.getCoolerTemperature()))
+                        .withStyle(ChatFormatting.BLUE))
                 .append(Component.literal(" HU/t").withStyle(ChatFormatting.GRAY)));
     }
 
@@ -84,20 +87,30 @@ public class FissionCoolerBlock extends ActiveBlock {
     }
 
     public enum FissionCoolerTypes implements StringRepresentable, IFissionCoolerType {
+
         COOLER_BASIC("cooler_basic", 10000, 1, 100, "minecraft:water", "phoenixcore:critical_steam", 0xFF3D80FF),
         COOLER_EV("cooler_ev", 20000, 2, 10, "gtceu:sodium_potassium", "phoenixcore:hot_sodium_potassium", 0xFFFFB03D),
         COOLER_IV("cooler_iv", 30000, 3, 30, "gtceu:sodium_potassium", "phoenixcore:hot_sodium_potassium", 0xFFFF4D3D),
         COOLER_LUV("cooler_luv", 40000, 4, 35, "gtceu:liquid_helium", "gtceu:helium", 0xFFD23DFF);
 
-        @Getter @NotNull private final String name;
+        @Getter
+        @NotNull
+        private final String name;
         private final int defaultTemp;
-        @Getter private final int tier;
+        @Getter
+        private final int tier;
         private final int defaultUsage;
-        @Getter @NotNull private final String requiredCoolantMaterialId;
-        @Getter @NotNull private final String outputCoolantFluidId;
-        @Getter private final int tintColor;
+        @Getter
+        @NotNull
+        private final String requiredCoolantMaterialId;
+        @Getter
+        @NotNull
+        private final String outputCoolantFluidId;
+        @Getter
+        private final int tintColor;
 
-        FissionCoolerTypes(String name, int temp, int tier, int usage, String inputCoolantFluidId, String outputCoolantFluidId, int tintColor) {
+        FissionCoolerTypes(String name, int temp, int tier, int usage, String inputCoolantFluidId,
+                           String outputCoolantFluidId, int tintColor) {
             this.name = name;
             this.defaultTemp = temp;
             this.tier = tier;
@@ -125,9 +138,13 @@ public class FissionCoolerBlock extends ActiveBlock {
         }
 
         @Override
-        public @NotNull String getSerializedName() { return name; }
+        public @NotNull String getSerializedName() {
+            return name;
+        }
 
         @Override
-        public Material getMaterial() { return GTMaterials.NULL; }
+        public Material getMaterial() {
+            return GTMaterials.NULL;
+        }
     }
 }
