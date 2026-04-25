@@ -1,29 +1,32 @@
 package net.phoenix.core.integration.emi;
 
-import dev.emi.emi.api.recipe.EmiRecipe;
-import dev.emi.emi.api.recipe.EmiRecipeCategory;
-import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
-import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
+
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.widget.WidgetHolder;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class BreedingEmiRecipe implements EmiRecipe {
+
     private final FissionBlanketBlock.BreederBlanketTypes type;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
 
     // Layout constants
-    private static final int SLOT_SIZE  = 18;
-    private static final int SLOT_GAP   = 2;
-    private static final int MAX_COLS   = 4;
+    private static final int SLOT_SIZE = 18;
+    private static final int SLOT_GAP = 2;
+    private static final int MAX_COLS = 4;
 
     public BreedingEmiRecipe(FissionBlanketBlock.BreederBlanketTypes type) {
         this.type = type;
@@ -33,35 +36,48 @@ public class BreedingEmiRecipe implements EmiRecipe {
                 .toList();
     }
 
-    @Override public EmiRecipeCategory getCategory() { return PhoenixEmiPlugin.FISSION_BREEDING; }
+    @Override
+    public EmiRecipeCategory getCategory() {
+        return PhoenixEmiPlugin.FISSION_BREEDING;
+    }
 
     @Override
     public @Nullable ResourceLocation getId() {
         return new ResourceLocation("phoenixcore", "fission_breeding/" + type.getName());
     }
 
-    @Override public List<EmiIngredient> getInputs() { return inputs; }
-    @Override public List<EmiStack> getOutputs() { return outputs; }
-    @Override public int getDisplayWidth() { return 144; }
+    @Override
+    public List<EmiIngredient> getInputs() {
+        return inputs;
+    }
+
+    @Override
+    public List<EmiStack> getOutputs() {
+        return outputs;
+    }
+
+    @Override
+    public int getDisplayWidth() {
+        return 144;
+    }
 
     @Override
     public int getDisplayHeight() {
         // Header (14) + input row (20) + arrow (14) + output grid (dynamic) + footer (16) + padding
         int outputCount = outputs.size();
-        int outputRows  = (int) Math.ceil(outputCount / (double) MAX_COLS);
+        int outputRows = (int) Math.ceil(outputCount / (double) MAX_COLS);
         return 14 + 20 + 14 + (outputRows * (SLOT_SIZE + SLOT_GAP)) + 18;
     }
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
-        @NotNull List<IFissionBlanketType.BlanketOutput> outData = type.getOutputs();
+        @NotNull
+        List<IFissionBlanketType.BlanketOutput> outData = type.getOutputs();
         int outputCount = outData.size();
 
         // ── Header: blanket name + duration ─────────────────────────────────
         int durSec = type.getDurationTicks() / 20;
-        String durStr = durSec >= 60
-                ? (durSec / 60) + "m " + (durSec % 60) + "s"
-                : durSec + "s";
+        String durStr = durSec >= 60 ? (durSec / 60) + "m " + (durSec % 60) + "s" : durSec + "s";
 
         widgets.addText(
                 Component.literal("Cycle: " + durStr).withStyle(ChatFormatting.GOLD),
@@ -93,10 +109,8 @@ public class BreedingEmiRecipe implements EmiRecipe {
             IFissionBlanketType.BlanketOutput data = outData.get(i);
 
             // Instability colour: 0-1=green, 2-3=amber, 4-5=red, 6+=dark red
-            ChatFormatting instColor = data.instability() >= 6 ? ChatFormatting.DARK_RED
-                    : data.instability() >= 4 ? ChatFormatting.RED
-                    : data.instability() >= 2 ? ChatFormatting.GOLD
-                    : ChatFormatting.GREEN;
+            ChatFormatting instColor = data.instability() >= 6 ? ChatFormatting.DARK_RED : data.instability() >= 4 ?
+                    ChatFormatting.RED : data.instability() >= 2 ? ChatFormatting.GOLD : ChatFormatting.GREEN;
 
             // Weight as a rough percentage for the tooltip
             int totalWeight = outData.stream().mapToInt(o -> o.weight()).sum();

@@ -12,6 +12,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
+import appeng.api.parts.IPartItem;
+import appeng.blockentity.networking.CableBusBlockEntity;
+import appeng.core.definitions.AEBlocks;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,27 +26,41 @@ public class PhoenixPlacementEngine {
         if (!(level instanceof ServerLevel serverLevel)) return;
 
         List<BlockPos> targets = getTargetPositions(p1, p2, mode);
-        ItemStack pipeStack = player.getOffhandItem();
+        ItemStack offhandStack = player.getOffhandItem();
         int actionCount = 0;
 
+        // PASS 1: PLACEMENT
         for (BlockPos pos : targets) {
             if (mode == PhoenixManipulatorMode.DISCONNECT) {
-                if (level.getBlockEntity(pos) instanceof IPipeNode<?, ?> node) {
-                    node.getPipeBlock().getWorldPipeNet(serverLevel).removeNode(pos);
-                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-                    actionCount++;
-                }
+                handleRemoval(serverLevel, pos);
+                actionCount++;
             } else {
-                if (level.getBlockState(pos).isAir() || level.getBlockState(pos).canBeReplaced()) {
-                    if (!(pipeStack.getItem() instanceof PipeBlockItem pipeItem)) continue;
-                    if (!PhoenixInventoryService.consumePipe(player, pipeStack)) break;
+                boolean isAir = level.getBlockState(pos).isAir() || level.getBlockState(pos).canBeReplaced();
+                boolean isCableBus = level.getBlockEntity(pos) instanceof CableBusBlockEntity;
 
-                    level.setBlock(pos, pipeItem.getBlock().defaultBlockState(), 3);
-                    actionCount++;
+                if (isAir) {
+                    if (offhandStack.getItem() instanceof PipeBlockItem pipeItem) {
+                        // Let setBlock trigger GT's own node registration naturally —
+                        // do NOT call addNode manually, the first version proves this is reliable
+                        if (!PhoenixInventoryService.consumePipe(player, offhandStack)) break;
+                        level.setBlock(pos, pipeItem.getBlock().defaultBlockState(), 3);
+                        actionCount++;
+                    } else if (offhandStack.getItem() instanceof IPartItem<?>) {
+                        if (placeAE2Cable(level, pos, offhandStack, player)) {
+                            actionCount++;
+                        }
+                    }
+                } else if (isCableBus && offhandStack.getItem() instanceof IPartItem<?>) {
+                    // Cable bus already exists, try to add the part to it
+                    if (placeAE2Cable(level, pos, offhandStack, player)) {
+                        actionCount++;
+                    }
                 }
             }
         }
 
+        // PASS 2: CONNECTIONS
+        // Only needed for GT pipes — AE2 handles its own connections via notifyNeighbors
         if (mode != PhoenixManipulatorMode.DISCONNECT) {
             for (BlockPos pos : targets) {
                 if (level.getBlockEntity(pos) instanceof IPipeNode<?, ?> node) {
@@ -50,7 +68,6 @@ public class PhoenixPlacementEngine {
 
                     for (Direction side : Direction.values()) {
                         BlockPos neighborPos = pos.relative(side);
-
                         if (level.getBlockEntity(neighborPos) instanceof IPipeNode<?, ?> neighbor) {
                             node.setConnection(side, true, true);
                             neighbor.setConnection(side.getOpposite(), true, true);
@@ -63,10 +80,46 @@ public class PhoenixPlacementEngine {
                         node.scheduleRenderUpdate();
                     }
                 }
+
+                // AE2 neighbor notify — safe to call even if nothing changed
+                if (level.getBlockEntity(pos) instanceof CableBusBlockEntity bus) {
+                    bus.notifyNeighbors();
+                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
+                }
             }
         }
 
-        player.displayClientMessage(Component.literal("§6Phoenix: " + actionCount + " operations complete."), true);
+        player.displayClientMessage(
+                Component.literal("§6Phoenix: " + actionCount + " operations complete."), true);
+    }
+
+    private static boolean placeAE2Cable(Level level, BlockPos pos, ItemStack stack, Player player) {
+        if (!(stack.getItem() instanceof IPartItem<?> partItem)) return false;
+
+        if (level.getBlockState(pos).isAir() || level.getBlockState(pos).canBeReplaced()) {
+            level.setBlock(pos, AEBlocks.CABLE_BUS.block().defaultBlockState(), 3);
+        }
+
+        if (level.getBlockEntity(pos) instanceof CableBusBlockEntity bus) {
+            var container = bus.getCableBus();
+            if (container.canAddPart(stack, null)) {
+                if (!PhoenixInventoryService.consumePipe(player, stack)) return false;
+                container.addPart(partItem, null, player);
+                bus.saveChanges();
+                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void handleRemoval(ServerLevel level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof IPipeNode<?, ?> node) {
+            node.getPipeBlock().getWorldPipeNet(level).removeNode(pos);
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        } else if (level.getBlockState(pos).getBlock() == AEBlocks.CABLE_BUS.block()) {
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        }
     }
 
     public static List<BlockPos> getTargetPositions(BlockPos p1, BlockPos p2, PhoenixManipulatorMode mode) {

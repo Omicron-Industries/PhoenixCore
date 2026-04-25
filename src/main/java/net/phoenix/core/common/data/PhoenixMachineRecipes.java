@@ -304,8 +304,8 @@ public class PhoenixMachineRecipes {
                 .duration(160)
                 .EUt(GTValues.VA[GTValues.HV] / 3)
                 .outputItems(ingot, SOURCE_IMBUED_TITANIUM, 1)
-             //   .addData("soul_growth_perm", 0.01f)
-            //    .addData("soul_growth_temp", 0.5f)
+                // .addData("soul_growth_perm", 0.01f)
+                // .addData("soul_growth_temp", 0.5f)
                 .addCondition(new SoulCondition(false, 0.5f))
                 .save(provider);
         PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("source_gem")

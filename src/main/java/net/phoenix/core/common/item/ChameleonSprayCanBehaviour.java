@@ -20,6 +20,10 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -32,12 +36,15 @@ import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.StainedGlassPaneBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.TriPredicate;
+import net.phoenix.chromatic_codes.api.ChromaticEffectsRegistry;
 
 import appeng.api.implementations.blockentities.IColorableBlockEntity;
+import appeng.api.util.AEColor;
 import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -131,12 +138,20 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        DyeColor currentColor = getColor(stack);
-        if (currentColor != null) {
-            tooltip.add(Component.translatable("behaviour.paintspray.chameleon.tooltip.current_color",
-                    Component.translatable("color.minecraft." + currentColor.getSerializedName())));
+        String chromCode = getChromaticCode(stack);
+
+        if (chromCode != null) {
+            // Use your mod's parser to show the effect name in the tooltip!
+            Component effectName = ChromaticEffectsRegistry.parseCustomEffects("&" + chromCode + "Effect " + chromCode);
+            tooltip.add(Component.translatable("behaviour.paintspray.chameleon.tooltip.current_color", effectName));
         } else {
-            tooltip.add(Component.translatable("behaviour.paintspray.chameleon.tooltip.solvent"));
+            DyeColor currentColor = getColor(stack);
+            if (currentColor != null) {
+                tooltip.add(Component.translatable("behaviour.paintspray.chameleon.tooltip.current_color",
+                        Component.translatable("color.minecraft." + currentColor.getSerializedName())));
+            } else {
+                tooltip.add(Component.translatable("behaviour.paintspray.chameleon.tooltip.solvent"));
+            }
         }
         tooltip.add(Component.translatable("behaviour.paintspray.chameleon.tooltip.info"));
     }
@@ -175,23 +190,113 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         }
     }
 
+    private boolean handleSignRecolor(SignBlockEntity sign, @Nullable DyeColor color, UseOnContext context) {
+        Level level = context.getLevel();
+        Player player = context.getPlayer();
+        if (player == null) return false;
+
+        boolean isFront = sign.isFacingFrontText(player);
+        var signText = sign.getText(isFront);
+        if (sign.isWaxed()) return false;
+
+        ItemStack stack = context.getItemInHand();
+        String chromCode = getChromaticCode(stack);
+        boolean changed = false;
+
+        // CHROMATIC MODE
+        if (chromCode != null) {
+            // Prepend §<code> to each line if it's not already there
+            for (int i = 0; i < 4; i++) {
+                final int line = i;
+                String currentText = signText.getMessage(line, false).getString();
+
+                // Clean out old formatting codes so they don't stack up
+                String cleaned = currentText.replaceAll("§.", "");
+                String newText = "§" + chromCode + cleaned;
+
+                if (!currentText.equals(newText)) {
+                    sign.updateText(t -> t.setMessage(line, Component.literal(newText)), isFront);
+                    changed = true;
+                }
+            }
+        }
+
+        // STANDARD DYE MODE
+        // Inside handleSignRecolor, under the STANDARD DYE MODE block
+        else {
+            if (color == null) {
+                // Advanced cleaning: Strip ALL § codes (chromatic or vanilla)
+                sign.updateText(text -> {
+                    for (int i = 0; i < 4; i++) {
+                        String current = text.getMessage(i, false).getString();
+                        String cleaned = current.replaceAll("§.", "");
+                        if (!current.equals(cleaned)) {
+                            text = text.setMessage(i, Component.literal(cleaned));
+                        }
+                    }
+                    // Reset to black and remove glow
+                    return text.setColor(DyeColor.BLACK).setHasGlowingText(false);
+                }, isFront);
+                changed = true;
+            } else {
+                // Standard dye logic
+                DyeColor targetColor = color;
+                if (signText.getColor() != targetColor) {
+                    sign.updateText(text -> text.setColor(targetColor), isFront);
+                    changed = true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void stripAllFormatting(SignBlockEntity sign, boolean isFront) {
+        sign.updateText(text -> {
+            for (int i = 0; i < 4; i++) {
+                String raw = text.getMessage(i, false).getString();
+                // This regex removes the section symbol and the following character
+                // (e.g., §x, §1, §b)
+                String cleaned = raw.replaceAll("§.", "");
+                text = text.setMessage(i, Component.literal(cleaned));
+            }
+            return text;
+        }, isFront);
+    }
+
     private boolean handleSpecialBlockEntities(BlockEntity first, DyeColor color, int limit, UseOnContext context) {
         var player = context.getPlayer();
         if (player == null) return false;
 
-        // Direct AE2 Support: No Mixin needed for your own custom item class
-        if (GTCEu.Mods.isAE2Loaded() && first instanceof IColorableBlockEntity colorable) {
-            // Convert Minecraft DyeColor to AEColor
-            appeng.api.util.AEColor ae2Color = color == null ?
-                    appeng.api.util.AEColor.TRANSPARENT :
-                    appeng.api.util.AEColor.values()[color.ordinal()];
+        if (first instanceof SignBlockEntity sign) {
+            return handleSignRecolor(sign, color, context);
+        }
 
-            if (colorable.getColor() != ae2Color) {
-                colorable.recolourBlock(null, ae2Color, player);
+        // Direct AE2 Support: No Mixin needed for your own custom item class
+        if (GTCEu.Mods.isAE2Loaded() && first instanceof IColorableBlockEntity) {
+            var collected = BreadthFirstBlockSearch.conditionalSearch(
+                    IColorableBlockEntity.class,
+                    (IColorableBlockEntity) first,
+                    first.getLevel(),
+                    be -> ((BlockEntity) be).getBlockPos(),
+                    (parent, child, dir) -> {
+                        if (parent == null) return true;
+                        return parent.getColor() == child.getColor();
+                    },
+                    limit,
+                    limit * 6);
+
+            AEColor ae2Color = color == null ?
+                    AEColor.TRANSPARENT :
+                    AEColor.values()[color.ordinal()];
+
+            for (IColorableBlockEntity colorable : collected) {
+                if (colorable.getColor() != ae2Color) {
+                    colorable.recolourBlock(null, ae2Color, player);
+                }
             }
             return true;
         }
-
         // GregTech Pipe/Paintable logic
         else if (first instanceof IPipeNode pipe) {
             var collected = BreadthFirstBlockSearch.conditionalSearch(IPipeNode.class, pipe,
@@ -226,6 +331,21 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         for (var c : paintables) {
             paintPaintable(c, color);
         }
+    }
+
+    public static void setChromaticCode(ItemStack stack, char code) {
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString("chromatic_code", String.valueOf(code));
+        tag.putInt("color", -2); // -2 flags that we are using a chromatic code instead of a dye
+    }
+
+    @Nullable
+    public static String getChromaticCode(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag != null && tag.contains("chromatic_code") && tag.getInt("color") == -2) {
+            return tag.getString("chromatic_code");
+        }
+        return null;
     }
 
     private boolean tryPaintBlock(Level level, BlockPos pos, DyeColor color) {
@@ -384,8 +504,56 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack stack,
                                                            @NotNull Player player,
-                                                           @NotNull LivingEntity interactionTarget,
+                                                           @NotNull LivingEntity target,
                                                            @NotNull InteractionHand hand) {
+        // Only allow base colors for entities (Skip if it's a chromatic code)
+        if (getChromaticCode(stack) != null) return InteractionResult.PASS;
+
+        Level level = target.level();
+        DyeColor color = getColor(stack);
+        // Solvent resets sheep to White and dogs to Red (vanilla default)
+        DyeColor targetColor = (color == null) ? DyeColor.WHITE : color;
+
+        boolean changed = false;
+
+        if (target instanceof Sheep sheep) {
+            if (sheep.isAlive() && !sheep.isBaby() && sheep.getColor() != targetColor) {
+                if (!level.isClientSide) sheep.setColor(targetColor);
+                changed = true;
+            }
+        } else if (target instanceof Wolf wolf && wolf.isTame()) {
+            DyeColor wolfTarget = (color == null) ? DyeColor.RED : color;
+            if (wolf.getCollarColor() != wolfTarget) {
+                if (!level.isClientSide) wolf.setCollarColor(wolfTarget);
+                changed = true;
+            }
+        } else if (target instanceof Cat cat && cat.isTame()) {
+            DyeColor catTarget = (color == null) ? DyeColor.RED : color; // Cats also default to red
+            if (cat.getCollarColor() != catTarget) {
+                if (!level.isClientSide) cat.setCollarColor(catTarget);
+                changed = true;
+            }
+        } else if (target instanceof Shulker shulker) {
+            if (!level.isClientSide) {
+                // DyeColor uses 0-15.
+                // Optional.empty() or a specific "special" value is usually used for the default.
+                // In 1.20.1+, setVariant takes an Optional<DyeColor>.
+
+                java.util.Optional<DyeColor> targetVariant = java.util.Optional.ofNullable(color);
+
+                // Only update if it's actually different to save network bandwidth
+                if (!shulker.getVariant().equals(targetVariant)) {
+                    shulker.setVariant(targetVariant);
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed) {
+            GTSoundEntries.SPRAY_CAN_TOOL.play(level, null, player.position(), 1.0f, 1.0f);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         return InteractionResult.PASS;
     }
 }

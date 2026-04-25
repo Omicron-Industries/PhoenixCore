@@ -1,5 +1,6 @@
 {
   "parent": "block/block",
+  "ambientocclusion": false,
   "textures": {
     "bot_all": "#bot_all",
     "top_all": "#top_all",
@@ -7,29 +8,29 @@
   },
   "elements": [
     {
-      "name": "casing",
+      "name": "frame",
       "from": [0, 0, 0],
       "to": [16, 16, 16],
       "faces": {
-        "north": { "texture": "#bot_all", "cullface": "north" },
-        "south": { "texture": "#bot_all", "cullface": "south" },
-        "east":  { "texture": "#bot_all", "cullface": "east" },
-        "west":  { "texture": "#bot_all", "cullface": "west" },
-        "up":    { "texture": "#bot_all", "cullface": "up" },
-        "down":  { "texture": "#bot_all", "cullface": "down" }
+        "north": { "texture": "#top_all", "cullface": "north" },
+        "south": { "texture": "#top_all", "cullface": "south" },
+        "east":  { "texture": "#top_all", "cullface": "east" },
+        "west":  { "texture": "#top_all", "cullface": "west" },
+        "up":    { "texture": "#top_all", "cullface": "up" },
+        "down":  { "texture": "#top_all", "cullface": "down" }
       }
     },
     {
-      "name": "tinted_overlay",
-      "from": [-0.01, -0.01, -0.01],
-      "to": [16.01, 16.01, 16.01],
+      "name": "tinted_base",
+      "from": [-0.001, -0.001, -0.001],
+      "to": [16.001, 16.001, 16.001],
       "faces": {
-        "north": { "texture": "#top_all", "tintindex": 0, "cullface": "north" },
-        "south": { "texture": "#top_all", "tintindex": 0, "cullface": "south" },
-        "east":  { "texture": "#top_all", "tintindex": 0, "cullface": "east" },
-        "west":  { "texture": "#top_all", "tintindex": 0, "cullface": "west" },
-        "up":    { "texture": "#top_all", "tintindex": 0, "cullface": "up" },
-        "down":  { "texture": "#top_all", "tintindex": 0, "cullface": "down" }
+        "north": { "texture": "#bot_all", "tintindex": 0, "cullface": "north" },
+        "south": { "texture": "#bot_all", "tintindex": 0, "cullface": "south" },
+        "east":  { "texture": "#bot_all", "tintindex": 0, "cullface": "east" },
+        "west":  { "texture": "#bot_all", "tintindex": 0, "cullface": "west" },
+        "up":    { "texture": "#bot_all", "tintindex": 0, "cullface": "up" },
+        "down":  { "texture": "#bot_all", "tintindex": 0, "cullface": "down" }
       }
     }
   ]

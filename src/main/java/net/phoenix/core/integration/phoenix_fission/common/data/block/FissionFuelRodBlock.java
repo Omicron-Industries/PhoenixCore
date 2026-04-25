@@ -115,14 +115,20 @@ public class FissionFuelRodBlock extends ActiveBlock {
         T5_FUEL_ROD("t5_fuel_rod", 3000, 5, 8000, 1, "phoenixcore:u242_fuel_pellet",
                 "phoenixcore:spent_uranium_242_nugget", 0xFFFF5757, 30);
 
-        @Getter @NotNull private final String name;
+        @Getter
+        @NotNull
+        private final String name;
         private final int defaultHeat;
-        @Getter private final int tier;
+        @Getter
+        private final int tier;
         private final int defaultDuration;
         private final int defaultAmount; // New internal default
-        @NotNull private final String defaultFuelKey; // New internal default
-        @NotNull private final String defaultOutputKey; // New internal default
-        @Getter private final int tintColor;
+        @NotNull
+        private final String defaultFuelKey; // New internal default
+        @NotNull
+        private final String defaultOutputKey; // New internal default
+        @Getter
+        private final int tintColor;
 
         FissionFuelRodTypes(String name, int heat, int tier, int duration, int amount, String fuelKey, String outputKey,
                             int tintColor, int neutronBias) {
@@ -142,8 +148,6 @@ public class FissionFuelRodBlock extends ActiveBlock {
                     .getOrDefault(this.name, this.defaultAmount);
         }
 
-
-
         @Override
         public @NotNull String getOutputKey() {
             return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.outputKeys
@@ -155,12 +159,11 @@ public class FissionFuelRodBlock extends ActiveBlock {
             return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDuration.getOrDefault(this.name,
                     this.defaultDuration);
         }
+
         @Override
         public int getBaseHeatProduction() {
             return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.baseHeat.getOrDefault(this.name, this.defaultHeat);
         }
-
-
 
         @Override
         public @NotNull String getFuelKey() {

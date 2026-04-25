@@ -223,6 +223,7 @@ dependencies {
     modImplementation("curse.maven:ex-pattern-provider-892005:7248944")
     modImplementation("curse.maven:glodium-957920:5226922")
     modImplementation("curse.maven:guideme-1173950:7127447")
+    modImplementation("curse.maven:phoenixs-chromatic-colors-1483210:7980147")
 
 
     modRuntimeOnly("curse.maven:jade-324717:5390389")

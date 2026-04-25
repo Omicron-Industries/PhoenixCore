@@ -16,6 +16,7 @@ import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.SelectColorPacket;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import org.jetbrains.annotations.NotNull;
 
 public class ColorRadialMenuScreen extends Screen {
 
@@ -30,7 +31,7 @@ public class ColorRadialMenuScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(guiGraphics);
 
         int centerX = this.width / 2;
@@ -46,10 +47,12 @@ public class ColorRadialMenuScreen extends Screen {
 
         boolean hoveringSolvent = distToCenter < INNER_RADIUS;
 
+        // Draw Solvent center
         int solventColor = hoveringSolvent ? 0xFFFF55 : 0xFFFFFF;
         Component solventText = Component.translatable("behaviour.paintspray.solvent.short");
         guiGraphics.drawCenteredString(this.font, solventText, centerX, centerY - 4, solventColor);
 
+        // Render Radial Segments
         for (int i = 0; i < numSegments; i++) {
             float startAngleDeg = i * segmentAngle;
             float endAngleDeg = (i + 1) * segmentAngle;
@@ -59,11 +62,11 @@ public class ColorRadialMenuScreen extends Screen {
             float midAngleRad = (float) Math.toRadians(startAngleDeg - 90);
             float itemAngleRad = (float) Math.toRadians(((startAngleDeg + endAngleDeg) / 2.0f) - 90);
 
+            // Draw separation lines
             int x1 = centerX + (int) (Mth.cos(midAngleRad) * INNER_RADIUS);
             int y1 = centerY + (int) (Mth.sin(midAngleRad) * INNER_RADIUS);
             int x2 = centerX + (int) (Mth.cos(midAngleRad) * RADIUS);
             int y2 = centerY + (int) (Mth.sin(midAngleRad) * RADIUS);
-
             guiGraphics.fill(x1, y1, x1 + 1, y1 + 1, 0xAAFFFFFF);
 
             int itemX = centerX + (int) (Mth.cos(itemAngleRad) * ITEM_RADIUS) - 8;
@@ -73,16 +76,29 @@ public class ColorRadialMenuScreen extends Screen {
                 RenderSystem.setShaderColor(1, 1, 1, 0.2f);
                 guiGraphics.fill(itemX - 4, itemY - 4, itemX + 20, itemY + 20, 0x44FFFFFF);
                 RenderSystem.setShaderColor(1, 1, 1, 1);
+
+                // Tooltip rendered last to be on top
+                guiGraphics.renderTooltip(this.font,
+                        Component.translatable("color.minecraft." + colors[i].getSerializedName()), mouseX, mouseY);
             }
 
             ItemStack dyeStack = new ItemStack(getDyeItem(colors[i]));
             guiGraphics.renderFakeItem(dyeStack, itemX, itemY);
-
-            if (hoveringThis) {
-                guiGraphics.renderTooltip(this.font,
-                        Component.translatable("color.minecraft." + colors[i].getSerializedName()), mouseX, mouseY);
-            }
         }
+
+        // --- CHROMATIC BUTTON ---
+        int btnW = 110;
+        int btnH = 20;
+        int buttonX = centerX - (btnW / 2);
+        int buttonY = centerY + RADIUS + 15;
+        boolean hoveringCustom = mouseX >= buttonX && mouseX <= buttonX + btnW && mouseY >= buttonY &&
+                mouseY <= buttonY + btnH;
+
+        // Terminal-style background and green outline
+        guiGraphics.fill(buttonX, buttonY, buttonX + btnW, buttonY + btnH, hoveringCustom ? 0xAA333333 : 0xAA000000);
+        guiGraphics.renderOutline(buttonX, buttonY, btnW, btnH, 0xFF00FF00);
+
+        guiGraphics.drawCenteredString(this.font, "§bChromatic Effects", centerX, buttonY + 6, 0xFFFFFF);
     }
 
     @Override
@@ -90,6 +106,21 @@ public class ColorRadialMenuScreen extends Screen {
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
+        // 1. Check Chromatic Button
+        int btnW = 110;
+        int btnH = 20;
+        int buttonX = centerX - (btnW / 2);
+        int buttonY = centerY + RADIUS + 15;
+
+        if (mouseX >= buttonX && mouseX <= buttonX + btnW && mouseY >= buttonY && mouseY <= buttonY + btnH) {
+            if (this.minecraft != null) {
+                this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                this.minecraft.setScreen(new ChromaticEffectSelectScreen(this.hand));
+            }
+            return true;
+        }
+
+        // 2. Check Radial Distance
         double distToCenter = Math.sqrt(Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2));
 
         if (distToCenter < INNER_RADIUS) {

@@ -113,6 +113,9 @@ public class PhoenixMachineLangHandler {
         provider.add("block.phoenixcore.fission_moderator.info_header", "Fission Moderator");
         provider.add("block.phoenixcore.fission_moderator.boost", "EU Boost: %s");
         provider.add("block.phoenixcore.fission_moderator.fuel_discount", "Fuel Discount: %s");
+        provider.add("block.phoenixcore.fission_cooler.info_header", "Fission Cooler");
+        provider.add("block.phoenixcore.fission_fuel_rod.info_header", "Fission Fuel Rod");
+        provider.add("block.phoenixcore.fission_blanket.info_header", "Breeder Blanket");
 
         provider.add("phoenixcore.current_heat_display", "Core Temperature: %s / %s HU");
         provider.add("phoenixcore.status.scram", "§c§lSCRAM ACTIVE");

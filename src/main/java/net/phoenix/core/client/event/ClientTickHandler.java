@@ -10,6 +10,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.phoenix.core.PhoenixCore;
@@ -114,5 +115,14 @@ public class ClientTickHandler {
 
         event.setCanceled(true); // prevent GregTech from eating it
         mc.setScreen(new ColorRadialMenuScreen(InteractionHand.MAIN_HAND));
+    }
+
+    @SubscribeEvent
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        ItemStack stack = event.getItemStack();
+        if (stack.getItem() instanceof ChameleonSprayCanItem) {
+            // Manually trigger the behavior logic here
+            // Then event.setCanceled(true) to stop the Wolf from sitting!
+        }
     }
 }
