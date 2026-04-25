@@ -6,10 +6,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.phoenix.core.integration.matter_manipulater.common.data.item.PhoenixManipulatorItem;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,10 +14,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PhoenixManipulatorRenderer {
 
-    @SubscribeEvent
     public static void renderSelection(RenderLevelStageEvent event) {
         // Render after transparency to ensure it's visible over blocks
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
