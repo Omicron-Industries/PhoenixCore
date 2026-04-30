@@ -2,6 +2,7 @@ package net.phoenix.core.client;
 
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderManager;
 
+import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -36,11 +37,6 @@ public class PhoenixClient {
 
     private PhoenixClient() {}
 
-    // Inside your Client Setup / Event Bus Subscriber class
-
-    /**
-     * Called from your main Mod class (PhoenixCore) constructor or CommonSetup.
-     */
     public static void init(IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
         // GTCEu Dynamic Renders
@@ -52,18 +48,17 @@ public class PhoenixClient {
         DynamicRenderManager.register(PhoenixCore.id("honey_chamber"), HoneyChamberDynamicRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("tesla_tower"), TeslaTowerRenderer.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
+
+        // Removed the call to PonderScriptInstaller
+        // PonderScriptInstaller.installBundledKubeJsFiles();
     }
 
-    // --- 2. PARTICLE FACTORY REGISTRATION ---
+    // --- PARTICLE FACTORY REGISTRATION ---
     @SubscribeEvent
     public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
-        // Reference the common registry object
         event.registerSpriteSet(PhoenixParticles.TESLA_SPARK.get(), TeslaSparkProvider::new);
     }
 
-    /**
-     * The bridge between the Particle Engine and your TeslaSparkParticle class.
-     */
     public static class TeslaSparkProvider implements ParticleProvider<SimpleParticleType> {
 
         private final SpriteSet sprites;
@@ -77,17 +72,14 @@ public class PhoenixClient {
                                        double x, double y, double z,
                                        double xSpeed, double ySpeed, double zSpeed) {
             TeslaSparkParticle particle = new TeslaSparkParticle(level, x, y, z);
-
-            // Safety check: only pick if sprites exist
             if (this.sprites != null) {
                 particle.pickSprite(this.sprites);
             }
-
             return particle;
         }
     }
 
-    // --- 3. MODEL & SETUP LOGIC ---
+    // --- MODEL & SETUP LOGIC ---
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(EyeOfHarmonyRender.SPACE_SHELL_MODEL_RL);
@@ -101,10 +93,10 @@ public class PhoenixClient {
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-
             MenuScreens.register(PhoenixCore.SOURCE_HATCH_MENU.get(), SourceHatchScreen::new);
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
+            PonderIndex.addPlugin(new PhoenixPonderPlugin());
         });
     }
 }

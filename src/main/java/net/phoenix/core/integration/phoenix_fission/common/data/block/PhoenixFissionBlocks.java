@@ -91,17 +91,15 @@ public class PhoenixFissionBlocks {
             .build()
             .register();
 
-    // --- Helper Registration Methods with Tinting Support ---
-
     private static BlockEntry<FissionModeratorBlock> createModeratorBlock(IFissionModeratorType type) {
         var moderator = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionModeratorBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false))
                 .blockstate(PhoenixFissionMachineModels.createFissionModeratorModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> type.getTintColor()) // Apply tint to block
+                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> type.getTintColor()) // Apply tint to item
+                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .build().register();
         PhoenixAPI.FISSION_MODERATORS.put(type, moderator);
         return moderator;
@@ -120,12 +118,12 @@ public class PhoenixFissionBlocks {
     private static BlockEntry<FissionFuelRodBlock> createFuelRodBlock(IFissionFuelRodType type) {
         var rod = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionFuelRodBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false))
                 .blockstate(PhoenixFissionMachineModels.createFuelRodModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> type.getTintColor()) //
+                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> type.getTintColor()) //
+                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .build().register();
         PhoenixAPI.FISSION_FUEL_RODS.put(type, rod);
         return rod;
@@ -134,12 +132,12 @@ public class PhoenixFissionBlocks {
     private static BlockEntry<FissionBlanketBlock> createBlanketBlock(IFissionBlanketType type) {
         var blanket = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionBlanketBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false)) // Added noOcclusion()
                 .blockstate(PhoenixFissionMachineModels.createBlanketRodModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> type.getTintColor()) //
+                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> type.getTintColor()) //
+                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .build().register();
         PhoenixAPI.FISSION_BLANKETS.put(type, blanket);
         return blanket;
@@ -148,12 +146,12 @@ public class PhoenixFissionBlocks {
     private static BlockEntry<FissionCoolerBlock> createCoolerBlock(IFissionCoolerType type) {
         var cooler = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionCoolerBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false))
                 .blockstate(PhoenixFissionMachineModels.createActiveCoolerModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> type.getTintColor()) //
+                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> type.getTintColor()) //
+                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .build().register();
         PhoenixAPI.FISSION_COOLERS.put(type, cooler);
         return cooler;

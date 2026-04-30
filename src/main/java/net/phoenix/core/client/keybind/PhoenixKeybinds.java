@@ -33,17 +33,23 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_V,
             "key.categories.phoenixcore");
 
-    // ── Recipe Builder ────────────────────────────────────────────────────────
     public static final KeyMapping OPEN_RECIPE_BUILDER = new KeyMapping(
             "key.phoenixcore.recipe_builder",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_KP_8,          // default: numpad 8 — change as needed
+            GLFW.GLFW_KEY_KP_8,
             "key.categories.phoenixcore");
 
     public static final KeyMapping SPRAY_CAN_MENU = new KeyMapping(
             "key.phoenixcore.spray_can_menu",
-            InputConstants.Type.KEYSYM, // InputConstants.UNKNOWN.getValue(),
-            GLFW.GLFW_KEY_R, // Default to 'R' or whatever you prefer
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R,
+            "key.categories.phoenixcore");
+
+    /** Hold W (or rebind) while hovering a multiblock controller item to open its Ponder. */
+    public static final KeyMapping OPEN_PONDER = new KeyMapping(
+            "key.phoenixcore.open_ponder",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_W,
             "key.categories.phoenixcore");
 
     @SubscribeEvent
@@ -52,7 +58,8 @@ public class PhoenixKeybinds {
         event.register(TESLA_MODE);
         event.register(TESLA_DISCHARGE);
         event.register(MANIPULATOR_MENU);
-        event.register(OPEN_RECIPE_BUILDER); // ADD THIS
+        event.register(OPEN_RECIPE_BUILDER);
         event.register(SPRAY_CAN_MENU);
+        event.register(OPEN_PONDER);
     }
 }

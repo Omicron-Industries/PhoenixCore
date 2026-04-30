@@ -56,10 +56,18 @@ public class FissionModeratorBlock extends ActiveBlock {
 
     public enum FissionModeratorTypes implements StringRepresentable, IFissionModeratorType {
 
-        GRAPHITE("graphite_moderator", 2, 1, 1, 0xFFB07CFF),
-        BERYLLIUM("beryllium_moderator", 5, 2, 2, 0xFFE7FF7D),
-        HEAVY_WATER("heavy_water_moderator", 12, 5, 3, 0xFF7DFFB0),
-        NIOBIUM_SIC("niobium_sic_moderator", 30, 10, 4, 0xFFFF7D7D);
+        GRAPHITE("graphite_moderator", PhoenixConfigs.INSTANCE.fissionStats.moderators.euBoostGraphiteModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.fuelDiscountGraphiteModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.tierGraphiteModerator, 0xFFB07CFF),
+        BERYLLIUM("beryllium_moderator", PhoenixConfigs.INSTANCE.fissionStats.moderators.euBoostBerylliumModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.fuelDiscountBerylliumModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.tierBerylliumModerator, 0xFFE7FF7D),
+        HEAVY_WATER("heavy_water_moderator", PhoenixConfigs.INSTANCE.fissionStats.moderators.euBoostHeavyWaterModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.fuelDiscountHeavyWaterModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.tierHeavyWaterModerator, 0xFF7DFFB0),
+        NIOBIUM_SIC("niobium_sic_moderator", PhoenixConfigs.INSTANCE.fissionStats.moderators.euBoostNiobiumSicModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.fuelDiscountNiobiumSicModerator,
+                PhoenixConfigs.INSTANCE.fissionStats.moderators.tierNiobiumSicModerator, 0xFFFF7D7D);
 
         @Getter
         @NotNull
@@ -81,16 +89,12 @@ public class FissionModeratorBlock extends ActiveBlock {
 
         @Override
         public int getEUBoost() {
-            var cfg = PhoenixConfigs.INSTANCE; // Access the root config
-            return cfg.fissionStats.moderators.euBoost // Use fissionStats instead of fissionBlockStats
-                    .getOrDefault(this.name, this.defaultEUBoost);
+            return defaultEUBoost;
         }
 
         @Override
         public int getFuelDiscount() {
-            var cfg = PhoenixConfigs.INSTANCE;
-            return cfg.fissionStats.moderators.fuelDiscount
-                    .getOrDefault(this.name, this.defaultFuelDiscount);
+            return defaultFuelDiscount;
         }
 
         @Override

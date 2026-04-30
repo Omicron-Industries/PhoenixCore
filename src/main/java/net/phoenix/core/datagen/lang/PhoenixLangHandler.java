@@ -37,6 +37,46 @@ public class PhoenixLangHandler {
         provider.add("shield.phoenixcore.type.decayed", "Decayed");
         provider.add("shield.phoenixcore.current_shield", "Shield Status: %s");
 
+        // Ponder system
+        provider.add("phoenixcore.ponder.hint", "View structure guide");
+
+        // EBF
+        provider.add("phoenixcore.ponder.ebf.title", "Electric Blast Furnace");
+        provider.add("phoenixcore.ponder.ebf.step1_overview",
+                "The Electric Blast Furnace smelts metals at extreme temperatures using heating coils.");
+        provider.add("phoenixcore.ponder.ebf.step2_controller",
+                "This is the controller block. Place it on the front-bottom of the structure.");
+        provider.add("phoenixcore.ponder.ebf.step3_coils",
+                "The two middle layers must be filled entirely with heating coil blocks.");
+        provider.add("phoenixcore.ponder.ebf.step4_cupronickel",
+                "Cupronickel coils provide the minimum temperature — enough for basic alloys.");
+        provider.add("phoenixcore.ponder.ebf.step5_kanthal",
+                "Kanthal coils raise the temperature cap, unlocking higher-tier recipes.");
+        provider.add("phoenixcore.ponder.ebf.step6_hatches",
+                "Place at least one Input Bus, Output Bus, Energy Hatch, and Muffler Hatch on the outer casing.");
+
+        // Vacuum Freezer
+        provider.add("phoenixcore.ponder.freezer.title", "Vacuum Freezer");
+        provider.add("phoenixcore.ponder.freezer.step1_overview",
+                "The Vacuum Freezer cools materials to extremely low temperatures.");
+        provider.add("phoenixcore.ponder.freezer.step2_hatches",
+                "Place your hatches on the outer casing — any face except the controller.");
+
+        // Large Chemical Reactor
+        provider.add("phoenixcore.ponder.lcr.title", "Large Chemical Reactor");
+        provider.add("phoenixcore.ponder.lcr.step1_overview",
+                "The Large Chemical Reactor processes chemical recipes with higher efficiency than its single-block counterpart.");
+        provider.add("phoenixcore.ponder.lcr.step2_pipe", "The centre of the middle layer must be a PTFE pipe casing.");
+        provider.add("phoenixcore.ponder.lcr.step3_coil",
+                "Exactly one heating coil must be placed somewhere in the cross layer.");
+        provider.add("phoenixcore.ponder.lcr.step4_variant_0", "Coil position variant 1 of 5.");
+        provider.add("phoenixcore.ponder.lcr.step4_variant_1", "Coil position variant 2 of 5.");
+        provider.add("phoenixcore.ponder.lcr.step4_variant_2", "Coil position variant 3 of 5.");
+        provider.add("phoenixcore.ponder.lcr.step4_variant_3", "Coil position variant 4 of 5.");
+        provider.add("phoenixcore.ponder.lcr.step4_variant_4", "Coil position variant 5 of 5.");
+        provider.add("phoenixcore.ponder.lcr.step5_hatches",
+                "Hatches go on the outer casing faces. You need energy, item, and fluid IO.");
+
         // Lore & General Tooltips
         provider.add("tooltip.phoenixcore.crystal_rose.generic", "A crystalline flower of immense power.");
         provider.add("tooltip.phoenixcore.crystal_rose.made_from", "Forged from %s.");
@@ -67,7 +107,7 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.tesla_mode", "Enable Tesla Mode");
         provider.add("key.phoenixcore.tesla_discharge", "Activate Tesla Discharge");
         provider.add("key.phoenixcore.manipulator_menu", "Matter Manipulator Menu");
-
+        provider.add("key.phoenixcore.open_ponder", "View Structure Guide");
         // Chameleon Spray Can
         provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
         provider.add("gui.phoenixcore.color_select.title", "Select Color");

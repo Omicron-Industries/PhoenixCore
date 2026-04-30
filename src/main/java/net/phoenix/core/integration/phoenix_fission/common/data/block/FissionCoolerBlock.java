@@ -16,7 +16,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
 
 import lombok.Getter;
@@ -122,14 +121,12 @@ public class FissionCoolerBlock extends ActiveBlock {
 
         @Override
         public int getCoolerTemperature() {
-            return PhoenixConfigs.INSTANCE.fissionStats.coolers.coolingAmount
-                    .getOrDefault(this.name, this.defaultTemp);
+            return defaultTemp;
         }
 
         @Override
         public int getCoolantUsagePerTick() {
-            return PhoenixConfigs.INSTANCE.fissionStats.coolers.coolantUsage
-                    .getOrDefault(this.name, this.defaultUsage);
+            return defaultUsage;
         }
 
         @Override

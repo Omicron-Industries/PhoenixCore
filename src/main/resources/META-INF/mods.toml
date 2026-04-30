@@ -44,3 +44,9 @@ mandatory = false   # Set to false so the mod still runs without EMI
 versionRange = "[1.1.0,)" # Supports EMI 1.1.0 and newer
 ordering = "AFTER"
 side = "BOTH"
+[[dependencies.phoenixcore]]
+modId = "kubejs"
+mandatory = true
+versionRange = "[2001,)"
+ordering = "AFTER"
+side = "CLIENT"

@@ -22,16 +22,6 @@ import dev.emi.emi.api.stack.FluidEmiStack;
 import dev.emi.emi.api.stack.ItemEmiStack;
 import dev.emi.emi.api.widget.Bounds;
 
-/**
- * EMI plugin for PhoenixCore fission system.
- *
- * Changes from original:
- * - Removed blank EmiInfoRecipe registrations for moderators (they showed empty cards).
- * - Moderators now registered as workstations for BOTH FISSION_FUEL and FISSION_BREEDING
- * (moderator count affects breeder output parallels too).
- * - Fuel rods now also registered as FISSION_BREEDING workstations (they drive
- * breeding parallels and neutron bias).
- */
 @EmiEntrypoint
 public class PhoenixEmiPlugin implements EmiPlugin {
 
@@ -57,16 +47,12 @@ public class PhoenixEmiPlugin implements EmiPlugin {
         registry.addCategory(FISSION_COOLANT);
         registry.addCategory(FISSION_BREEDING);
 
-        // ── Calculators (one per category they belong to) ───────────────────
-        registry.addRecipe(new FissionCalculatorEmiRecipe());
-        registry.addRecipe(new BreederCalculatorEmiRecipe());
-
-        // ── Fuel rods ────────────────────────────────────────────────────────
+        // ── Fuel rod info cards ───────────────────────────────────────────────
         for (FissionFuelRodBlock.FissionFuelRodTypes type : FissionFuelRodBlock.FissionFuelRodTypes.values()) {
             registry.addRecipe(new FuelRodEmiRecipe(type));
+            registry.addRecipe(new FissionFuelInfoEmiRecipe(type));
             EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
             if (!stack.isEmpty()) {
-                // Fuel rods are workstations for fuel AND breeding (they affect breeder parallels)
                 registry.addWorkstation(FISSION_FUEL, stack);
                 registry.addWorkstation(FISSION_BREEDING, stack);
             }
@@ -81,9 +67,10 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             }
         }
 
-        // ── Breeding blankets ─────────────────────────────────────────────────
+        // ── Breeding blanket info cards ────────────────────────────────────────
         for (FissionBlanketBlock.BreederBlanketTypes type : FissionBlanketBlock.BreederBlanketTypes.values()) {
             registry.addRecipe(new BreedingEmiRecipe(type));
+            registry.addRecipe(new BreederBlanketInfoEmiRecipe(type));
             EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
             if (!stack.isEmpty()) {
                 registry.addWorkstation(FISSION_BREEDING, stack);
@@ -91,8 +78,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
         }
 
         // ── Moderators ────────────────────────────────────────────────────────
-        // Moderators affect BOTH fuel heat/EU (FISSION_FUEL) and breeder parallels (FISSION_BREEDING).
-        // The old code only added them to FISSION_FUEL and registered empty info pages; both issues fixed.
         for (FissionModeratorBlock.FissionModeratorTypes type : FissionModeratorBlock.FissionModeratorTypes.values()) {
             EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
             if (!stack.isEmpty()) {
@@ -102,7 +87,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
         }
 
         // ── Machine workstations ──────────────────────────────────────────────
-        // High-Performance Breeder: all three categories
         registry.addWorkstation(FISSION_FUEL,
                 EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
         registry.addWorkstation(FISSION_COOLANT,
@@ -110,7 +94,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
         registry.addWorkstation(FISSION_BREEDING,
                 EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
 
-        // Pressurized Fission: fuel + coolant only (no breeding)
         registry.addWorkstation(FISSION_FUEL,
                 EmiStack.of(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR.asStack()));
         registry.addWorkstation(FISSION_COOLANT,

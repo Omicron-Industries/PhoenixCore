@@ -16,12 +16,15 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
+import net.createmod.ponder.foundation.PonderIndex;
+import net.createmod.ponder.foundation.PonderTag;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
@@ -59,6 +62,8 @@ import net.phoenix.core.integration.matter_manipulater.common.data.item.Manipula
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
+import net.phoenix.core.integration.ponder.PhoenixPonderLang;
+import net.phoenix.core.integration.ponder.PonderStoriesManager;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
@@ -66,6 +71,8 @@ import net.phoenix.core.network.PhoenixNetwork;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
@@ -77,6 +84,12 @@ public class PhoenixCore {
     public static final Logger LOGGER = LogManager.getLogger();
     public static GTRegistrate PHOENIX_REGISTRATE = GTRegistrate.create(MOD_ID);
 
+    // Ponder Integration Fields and Constants
+    public static final String PONDER_MOD_ID = "ponderjs"; // Original MOD_ID for PonderJS internal logic
+    public static final Set<String> PONDER_NAMESPACES = new HashSet<>();
+    public static final PonderStoriesManager PONDER_STORIES_MANAGER = new PonderStoriesManager();
+    private static boolean ponderInitialized;
+
     public static RegistryEntry<CreativeModeTab> PHOENIX_CREATIVE_TAB = REGISTRATE
             .defaultCreativeTab(PhoenixCore.MOD_ID,
                     builder -> builder
@@ -87,6 +100,7 @@ public class PhoenixCore {
                             .icon(PhoenixMachines.HIGH_YIELD_PHOTON_EMISSION_REGULATOR::asStack)
                             .build())
             .register();
+    public static final List<PonderTag> PENDING_TAGS = new ArrayList<>();
 
     public PhoenixCore() {
         PhoenixCore.init();
@@ -221,7 +235,44 @@ public class PhoenixCore {
         return new ResourceLocation(MOD_ID, path);
     }
 
+    @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+    public static class ClientForgeEvents {
+
+        @SubscribeEvent
+        public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
+            LOGGER.info("PhoenixCore: Registering client commands...");
+        }
+    }
+
     public static Fluid plasma(Material material) {
         return material.getFluid(FluidStorageKeys.PLASMA, 1).getFluid();
+    }
+
+    // Ponder Integration Methods
+    public static Optional<PonderTag> getPonderTagByName(ResourceLocation res) {
+        return PonderIndex.getTagAccess().getListedTags().stream()
+                .filter(tag -> tag.getId().equals(res))
+                .findFirst();
+    }
+
+    public static Optional<PonderTag> getPonderTagByName(String tag) {
+        return getPonderTagByName(appendPonderJSNamespaceToId(tag));
+    }
+
+    protected static ResourceLocation appendPonderNamespaceToId(String namespace, String id) {
+        if (!id.contains(":")) id = namespace + ":" + id;
+        return new ResourceLocation(id);
+    }
+
+    public static ResourceLocation appendPonderJSNamespaceToId(String id) {
+        return appendPonderNamespaceToId(PONDER_MOD_ID, id);
+    }
+
+    public static void reloadPonderIntegration() {
+        new PhoenixPonderLang().generate("en_us");
+    }
+
+    public static boolean isPonderIntegrationInitialized() {
+        return ponderInitialized;
     }
 }

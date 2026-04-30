@@ -104,16 +104,36 @@ public class FissionFuelRodBlock extends ActiveBlock {
 
     public enum FissionFuelRodTypes implements StringRepresentable, IFissionFuelRodType {
 
-        T1_FUEL_ROD("t1_fuel_rod", 50, 1, 2500, 1, "phoenixcore:basic_fuel_rod",
-                "phoenixcore:low_level_radioactive_waste", 0xFF62FF57, 0),
-        T2_FUEL_ROD("t2_fuel_rod", 150, 2, 3000, 1, "phoenixcore:basic_fuel_rod",
-                "phoenixcore:low_level_radioactive_waste", 0xFF8AFF57, 1),
-        T3_FUEL_ROD("t3_fuel_rod", 500, 3, 3500, 1, "phoenixcore:u235_fuel_pellet",
-                "phoenixcore:spent_uranium_235_nugget", 0xFF57FFD2, 5),
-        T4_FUEL_ROD("t4_fuel_rod", 1200, 4, 4500, 1, "phoenixcore:plutonium_241_fuel_pellet",
-                "phoenixcore:depleted_plutonium_241_nugget", 0xFF57A8FF, 12),
-        T5_FUEL_ROD("t5_fuel_rod", 3000, 5, 8000, 1, "phoenixcore:u242_fuel_pellet",
-                "phoenixcore:spent_uranium_242_nugget", 0xFFFF5757, 30);
+        T1_FUEL_ROD("t1_fuel_rod", PhoenixConfigs.INSTANCE.fissionStats.fuelRods.heatProductionT1, 1,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDurationT1,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleAmountT1,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelUsedT1,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.depletedGivenT1, 0xFF62FF57,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.neutronBiasT1),
+        T2_FUEL_ROD("t2_fuel_rod", PhoenixConfigs.INSTANCE.fissionStats.fuelRods.heatProductionT2, 2,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDurationT2,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleAmountT2,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelUsedT2,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.depletedGivenT2, 0xFF8AFF57,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.neutronBiasT2),
+        T3_FUEL_ROD("t3_fuel_rod", PhoenixConfigs.INSTANCE.fissionStats.fuelRods.heatProductionT3, 3,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDurationT3,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleAmountT3,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelUsedT3,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.depletedGivenT3, 0xFF57FFD2,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.neutronBiasT3),
+        T4_FUEL_ROD("t4_fuel_rod", PhoenixConfigs.INSTANCE.fissionStats.fuelRods.heatProductionT4, 4,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDurationT4,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleAmountT4,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelUsedT4,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.depletedGivenT4, 0xFF57A8FF,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.neutronBiasT4),
+        T5_FUEL_ROD("t5_fuel_rod", PhoenixConfigs.INSTANCE.fissionStats.fuelRods.heatProductionT5, 5,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDurationT5,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleAmountT5,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelUsedT5,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.depletedGivenT5, 0xFFFF5757,
+                PhoenixConfigs.INSTANCE.fissionStats.fuelRods.neutronBiasT5);
 
         @Getter
         @NotNull
@@ -144,31 +164,27 @@ public class FissionFuelRodBlock extends ActiveBlock {
 
         @Override
         public int getAmountPerCycle() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.amtPerCycle
-                    .getOrDefault(this.name, this.defaultAmount);
+            return defaultAmount;
         }
 
         @Override
         public @NotNull String getOutputKey() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.outputKeys
-                    .getOrDefault(this.name, this.defaultOutputKey);
+            return defaultOutputKey;
         }
 
         @Override
         public int getDurationTicks() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.cycleDuration.getOrDefault(this.name,
-                    this.defaultDuration);
+            return defaultDuration;
         }
 
         @Override
         public int getBaseHeatProduction() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.baseHeat.getOrDefault(this.name, this.defaultHeat);
+            return defaultHeat;
         }
 
         @Override
         public @NotNull String getFuelKey() {
-            return PhoenixConfigs.INSTANCE.fissionStats.fuelRods.fuelKeys
-                    .getOrDefault(this.name, this.defaultFuelKey);
+            return defaultFuelKey;
         }
 
         @Override

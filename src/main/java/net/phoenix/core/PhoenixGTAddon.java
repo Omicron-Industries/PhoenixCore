@@ -2,7 +2,9 @@ package net.phoenix.core;
 
 import com.gregtechceu.gtceu.api.addon.GTAddon;
 import com.gregtechceu.gtceu.api.addon.IGTAddon;
+import com.gregtechceu.gtceu.api.addon.events.KJSRecipeKeyEvent;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
+import com.gregtechceu.gtceu.integration.kjs.recipe.components.ContentJS;
 
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.phoenix.core.api.capability.PhoenixRecipeCapabilities;
@@ -12,10 +14,14 @@ import net.phoenix.core.common.data.PhoenixMachineRecipes;
 import net.phoenix.core.common.data.PhoenixToolRecipes;
 import net.phoenix.core.common.data.materials.PhoenixElements;
 import net.phoenix.core.common.data.recipe.generated.*;
+import net.phoenix.core.common.machine.multiblock.Shield;
 import net.phoenix.core.integration.ars_nouveau.common.data.recipe.SourceHatchRecipes;
+import net.phoenix.core.integration.kubejs.recipe.ShieldComponent;
 import net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.TeslaHatchRecipes;
 import net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.TeslaMultiAmpHatchRecipes;
 import net.phoenix.core.integration.phoenix_tesla_network.common.data.recipe.WirelessChargerRecipes;
+
+import com.mojang.datafixers.util.Pair;
 
 import java.util.function.Consumer;
 
@@ -59,6 +65,17 @@ public class PhoenixGTAddon implements IGTAddon {
     public void registerElements() {
         IGTAddon.super.registerElements();
         PhoenixElements.init();
+    }
+
+    public static final ShieldComponent SHIELD_COMPONENT = new ShieldComponent();
+    public static final ContentJS<Shield.ShieldTypes> SHIELD_IN = new ContentJS<>(SHIELD_COMPONENT,
+            PhoenixRecipeCapabilities.SHIELDTYPES, true);
+    public static final ContentJS<Shield.ShieldTypes> SHIELD_OUT = new ContentJS<>(SHIELD_COMPONENT,
+            PhoenixRecipeCapabilities.SHIELDTYPES, false);
+
+    @Override
+    public void registerRecipeKeys(KJSRecipeKeyEvent event) {
+        event.registerKey(PhoenixRecipeCapabilities.SHIELDTYPES, Pair.of(SHIELD_IN, SHIELD_OUT));
     }
 
     @Override

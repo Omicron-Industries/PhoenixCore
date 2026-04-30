@@ -11,7 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.phoenix.core.PhoenixCore;
-import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType.BlanketOutput;
 
@@ -157,20 +156,17 @@ public class FissionBlanketBlock extends ActiveBlock {
 
         @Override
         public int getDurationTicks() {
-            return PhoenixConfigs.INSTANCE.fissionStats.blankets.duration
-                    .getOrDefault(this.name, this.defaultDuration);
+            return defaultDuration;
         }
 
         @Override
         public int getAmountPerCycle() {
-            return PhoenixConfigs.INSTANCE.fissionStats.blankets.amountPerCycle
-                    .getOrDefault(this.name, this.defaultAmount);
+            return defaultAmount;
         }
 
         @Override
         public @NotNull String getInputKey() {
-            return PhoenixConfigs.INSTANCE.fissionStats.blankets.inputKeys
-                    .getOrDefault(this.name, this.defaultInputKey);
+            return defaultInputKey;
         }
 
         @Override

@@ -8,6 +8,7 @@ import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.Configurable;
 import dev.toma.configuration.config.format.ConfigFormats;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Config(id = PhoenixCore.MOD_ID)
@@ -494,127 +495,177 @@ public class PhoenixConfigs {
 
         public static class CoolerConfigs {
 
-            @Configurable
-            @Configurable.Comment("Cooling amount (Heat/t) for each cooler type.")
-            public Map<String, Integer> coolingAmount = Map.of(
-                    "cooler_basic", 10000,
-                    "cooler_ev", 20000,
-                    "cooler_iv", 30000,
-                    "cooler_luv", 40000);
-
-            @Configurable
-            @Configurable.Comment("Coolant usage (mB/t) for each cooler type.")
-            public Map<String, Integer> coolantUsage = Map.of(
-                    "cooler_basic", 100,
-                    "cooler_ev", 10,
-                    "cooler_iv", 30,
-                    "cooler_luv", 35);
         }
 
         public static class ModeratorConfigs {
 
             @Configurable
-            @Configurable.Comment("EU/t boost multiplier for moderators.")
-            public Map<String, Integer> euBoost = Map.of(
-                    "graphite_moderator", 1,
-                    "beryllium_moderator", 5,
-                    "heavy_water_moderator", 12,
-                    "niobium_sic_moderator", 30);
-
+            @Configurable.Comment("EU/t boost multiplier for the graphite moderator.")
+            public int euBoostGraphiteModerator = 2;
             @Configurable
-            @Configurable.Comment("Heat production discount (subtracted from fuel heat).")
-            public Map<String, Integer> fuelDiscount = Map.of(
-                    "graphite_moderator", 3,
-                    "beryllium_moderator", 2,
-                    "heavy_water_moderator", 5,
-                    "niobium_sic_moderator", 10);
+            @Configurable.Comment("Fuel Discount for the graphite moderator.")
+            public int fuelDiscountGraphiteModerator = 1;
+            @Configurable
+            @Configurable.Comment("Tier for the graphite moderator.")
+            public int tierGraphiteModerator = 1;
+            @Configurable
+            @Configurable.Comment("EU/t boost multiplier for the beryllium moderator.")
+            public int euBoostBerylliumModerator = 5;
+            @Configurable
+            @Configurable.Comment("Fuel Discount for the beryllium moderator.")
+            public int fuelDiscountBerylliumModerator = 2;
+            @Configurable
+            @Configurable.Comment("Tier for the beryllium moderator.")
+            public int tierBerylliumModerator = 2;
+            @Configurable
+            @Configurable.Comment("EU/t boost multiplier for the heavy water moderator.")
+            public int euBoostHeavyWaterModerator = 12;
+            @Configurable
+            @Configurable.Comment("Fuel Discount for the heavy water moderator.")
+            public int fuelDiscountHeavyWaterModerator = 5;
+            @Configurable
+            @Configurable.Comment("Tier for the heay water moderator.")
+            public int tierHeavyWaterModerator = 3;
+            @Configurable
+            @Configurable.Comment("EU/t boost multiplier for the niobium sic moderator.")
+            public int euBoostNiobiumSicModerator = 30;
+            @Configurable
+            @Configurable.Comment("Fuel Discount for the niobium sic moderator.")
+            public int fuelDiscountNiobiumSicModerator = 10;
+            @Configurable
+            @Configurable.Comment("Tier for the niobium sic moderator.")
+            public int tierNiobiumSicModerator = 4;
         }
 
         public static class FuelRodConfigs {
 
             @Configurable
-            @Configurable.Comment("Base heat production for fuel rods.")
-            public Map<String, Integer> baseHeat = Map.of(
-                    "t1_fuel_rod", 50,
-                    "t2_fuel_rod", 150,
-                    "t3_fuel_rod", 500,
-                    "t4_fuel_rod", 1200,
-                    "t5_fuel_rod", 3000);
+            @Configurable.Comment("Base heat production for the T1 fuel rod.")
+            public int heatProductionT1 = 50;
+            @Configurable
+            @Configurable.Comment("Base heat production for the T2 fuel rod.")
+            public int heatProductionT2 = 150;
+            @Configurable
+            @Configurable.Comment("Base heat production for the T3 fuel rod.")
+            public int heatProductionT3 = 500;
+            @Configurable
+            @Configurable.Comment("Base heat production for the T4 fuel rod.")
+            public int heatProductionT4 = 1200;
+            @Configurable
+            @Configurable.Comment("Base heat production for the Tt fuel rod.")
+            public int heatProductionT5 = 3000;
 
             @Configurable
-            @Configurable.Comment("Neutron bias (affects breeding results).")
-            public Map<String, Integer> neutronBias = Map.of(
-                    "t1_fuel_rod", 0,
-                    "t2_fuel_rod", 1,
-                    "t3_fuel_rod", 5,
-                    "t4_fuel_rod", 12,
-                    "t5_fuel_rod", 30);
+            @Configurable.Comment("NeutronBias for the T1 fuel rod.")
+            public int neutronBiasT1 = 0;
+            @Configurable
+            @Configurable.Comment("NeutronBias for the T2 fuel rod.")
+            public int neutronBiasT2 = 1;
+            @Configurable
+            @Configurable.Comment("NeutronBias for the T3 fuel rod.")
+            public int neutronBiasT3 = 5;
+            @Configurable
+            @Configurable.Comment("NeutronBias for the T4 fuel rod.")
+            public int neutronBiasT4 = 12;
+            @Configurable
+            @Configurable.Comment("NeutronBias for the T5 fuel rod.")
+            public int neutronBiasT5 = 30;
 
             @Configurable
-            @Configurable.Comment("Duration in ticks for a full cycle.")
-            public Map<String, Integer> cycleDuration = Map.of(
-                    "t1_fuel_rod", 2500,
-                    "t2_fuel_rod", 3000,
-                    "t3_fuel_rod", 3500,
-                    "t4_fuel_rod", 4500,
-                    "t5_fuel_rod", 8000);
+            @Configurable.Comment("Fuel cycle duration in ticks for the T1 fuel rod.")
+            public int cycleDurationT1 = 2500;
+            @Configurable
+            @Configurable.Comment("Fuel cycle duration in ticks for the T2 fuel rod.")
+            public int cycleDurationT2 = 3000;
+            @Configurable
+            @Configurable.Comment("Fuel cycle duration in ticks for the T3 fuel rod.")
+            public int cycleDurationT3 = 3500;
+            @Configurable
+            @Configurable.Comment("Fuel cycle duration in ticks for the T4 fuel rod.")
+            public int cycleDurationT4 = 4000;
+            @Configurable
+            @Configurable.Comment("Fuel cycle duration in ticks for the T5 fuel rod.")
+            public int cycleDurationT5 = 8000;
 
             @Configurable
-            @Configurable.Comment("The item/fluid ID required as fuel for each rod.")
-            public Map<String, String> fuelKeys = Map.of(
-                    "t1_fuel_rod", "phoenixcore:basic_fuel_rod",
-                    "t2_fuel_rod", "phoenixcore:basic_fuel_rod",
-                    "t3_fuel_rod", "phoenixcore:u235_fuel_pellet",
-                    "t4_fuel_rod", "phoenixcore:plutonium_241_fuel_pellet",
-                    "t5_fuel_rod", "phoenixcore:u242_fuel_pellet");
+            @Configurable.Comment("Fuel amount used per cycle for the T1 fuel rod.")
+            public int cycleAmountT1 = 1;
+            @Configurable
+            @Configurable.Comment("Fuel amount used per cycle for the T2 fuel rod.")
+            public int cycleAmountT2 = 1;
+            @Configurable
+            @Configurable.Comment("Fuel amount used per cycle for the T3 fuel rod.")
+            public int cycleAmountT3 = 1;
+            @Configurable
+            @Configurable.Comment("Fuel amount used per cycle for the T4 fuel rod.")
+            public int cycleAmountT4 = 1;
+            @Configurable
+            @Configurable.Comment("Fuel amount used per cycle for the T5 fuel rod.")
+            public int cycleAmountT5 = 1;
 
             @Configurable
-            @Configurable.Comment("The item/fluid ID produced when fuel is depleted.")
-            public Map<String, String> outputKeys = Map.of(
-                    "t1_fuel_rod", "phoenixcore:low_level_radioactive_waste",
-                    "t2_fuel_rod", "phoenixcore:low_level_radioactive_waste",
-                    "t3_fuel_rod", "phoenixcore:spent_uranium_235_nugget",
-                    "t4_fuel_rod", "phoenixcore:depleted_plutonium_241_nugget",
-                    "t5_fuel_rod", "phoenixcore:spent_uranium_242_nugget");
+            @Configurable.Comment("Fuel used for the T1 fuel rod. (Registry name string)")
+            public String fuelUsedT1 = "phoenixcore:basic_fuel_rod";
+            @Configurable
+            @Configurable.Comment("Fuel used for the T2 fuel rod. (Registry name string)")
+            public String fuelUsedT2 = "phoenixcore:basic_fuel_rod";
+            @Configurable
+            @Configurable.Comment("Fuel used for the T3 fuel rod. (Registry name string)")
+            public String fuelUsedT3 = "phoenixcore:u235_fuel_pellet";
+            @Configurable
+            @Configurable.Comment("Fuel used for the T4 fuel rod. (Registry name string)")
+            public String fuelUsedT4 = "phoenixcore:plutonium_241_fuel_pellet";
+            @Configurable
+            @Configurable.Comment("Fuel used for the T5 fuel rod. (Registry name string)")
+            public String fuelUsedT5 = "phoenixcore:u242_fuel_pellet";
 
             @Configurable
-            @Configurable.Comment("Amount of fuel consumed per cycle.")
-            public Map<String, Integer> amtPerCycle = Map.of(
-                    "t1_fuel_rod", 1,
-                    "t2_fuel_rod", 1,
-                    "t3_fuel_rod", 1,
-                    "t4_fuel_rod", 1,
-                    "t5_fuel_rod", 1);
+            @Configurable.Comment("Depleted Fuel produced for the T1 fuel rod. (Registry name string)")
+            public String depletedGivenT1 = "phoenixcore:low_level_radioactive_waste";
+            @Configurable
+            @Configurable.Comment("Depleted Fuel produced for the T2 fuel rod. (Registry name string)")
+            public String depletedGivenT2 = "phoenixcore:low_level_radioactive_waste";
+            @Configurable
+            @Configurable.Comment("Depleted Fuel produced for the T3 fuel rod. (Registry name string)")
+            public String depletedGivenT3 = "phoenixcore:spent_uranium_235_nugget";
+            @Configurable
+            @Configurable.Comment("Depleted Fuel produced for the T4 fuel rod. (Registry name string)")
+            public String depletedGivenT4 = "phoenixcore:depleted_plutonium_241_nugget";
+            @Configurable
+            @Configurable.Comment("Depleted Fuel produced for the T5 fuel rod. (Registry name string)")
+            public String depletedGivenT5 = "phoenixcore:spent_uranium_242_nugget";
         }
 
         public static class BlanketConfigs {
 
-            @Configurable
-            @Configurable.Comment("Duration in ticks for breeder blanket conversion.")
-            public Map<String, Integer> duration = Map.of(
-                    "thorium_blanket", 1200,
-                    "uranium_blanket", 2400,
-                    "neptunium_blanket", 4800,
-                    "plutonium_blanket", 9600,
-                    "americium_blanket", 19200);
+            @Configurable.Comment("Blanket cycle in ticks for the Thorium blanket.")
+            public int blanketCycleTicksThoriumBlanket = 1200;
+            @Configurable.Comment("Blanket cycle in ticks for the Uranium blanket.")
+            public int blanketCycleTicksUraniumBlanket = 2400;
+            @Configurable.Comment("Blanket cycle in ticks for the Neptunium blanket.")
+            public int blanketCycleTicksNeptuniumBlanket = 4800;
+            @Configurable.Comment("Blanket cycle in ticks for the Plutonium blanket.")
+            public int blanketCycleTicksPlutoniumBlanket = 9600;
+            @Configurable.Comment("Blanket cycle in ticks for the Americium blanket.")
+            public int blanketCycleTicksAmericiumBlanket = 19200;
 
             @Configurable
             @Configurable.Comment("Amount of items processed per cycle for each blanket.")
-            public Map<String, Integer> amountPerCycle = Map.of(
+            public Map<String, Integer> amountPerCycle = new HashMap<>(Map.of(
                     "thorium_blanket", 4,
                     "uranium_blanket", 4,
                     "neptunium_blanket", 2,
                     "plutonium_blanket", 2,
-                    "americium_blanket", 1);
+                    "americium_blanket", 1));
 
             @Configurable
             @Configurable.Comment("Input item registry ID for each blanket.")
-            public Map<String, String> inputKeys = Map.of(
+            public Map<String, String> inputKeys = new HashMap<>(Map.of(
                     "thorium_blanket", "phoenixcore:thorium_fuel_pellet",
                     "uranium_blanket", "gtceu:uranium_dust",
                     "neptunium_blanket", "gtceu:neptunium_dust",
                     "plutonium_blanket", "gtceu:plutonium_dust",
-                    "americium_blanket", "gtceu:americium_dust");
+                    "americium_blanket", "gtceu:lead_dust"));
         }
     }
 

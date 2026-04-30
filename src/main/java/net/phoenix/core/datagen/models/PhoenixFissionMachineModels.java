@@ -16,18 +16,15 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 
 public class PhoenixFissionMachineModels {
 
-    // These are the Grayscale parts that WILL be colored (tintindex 0)
     private static final ResourceLocation COOLER_BASE = PhoenixCore.id("block/fission/cooler_base");
     private static final ResourceLocation BLANKET_BASE = PhoenixCore.id("block/fission/blanket_base");
     private static final ResourceLocation FUEL_ROD_BASE = PhoenixCore.id("block/fission/fuel_rod_base");
     private static final ResourceLocation MODERATOR_BASE = PhoenixCore.id("block/fission/moderator_base");
 
     private static ResourceLocation tinted2LayerParent() {
-        // Ensure this parent model uses the -0.01 / 16.01 trick for the tinted layer
         return PhoenixCore.id("block/cube_2_layer_all_tinted");
     }
 
-    // These are the Metal Frames that will NOT be colored
     private static ResourceLocation coolerMask() {
         return PhoenixCore.id("block/fission/masks/cooler_mask");
     }
@@ -60,12 +57,12 @@ public class PhoenixFissionMachineModels {
             T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createActiveCoolerModel(IFissionCoolerType type) {
         return (ctx, prov) -> {
             var inactive = prov.models().withExistingParent(ctx.getName(), tinted2LayerParent())
-                    .texture("bot_all", COOLER_BASE) // TINTED CENTER
-                    .texture("top_all", coolerMask()); // FIXED FRAME
+                    .texture("bot_all", coolerMask())
+                    .texture("top_all", COOLER_BASE);
 
             var active = prov.models().withExistingParent(ctx.getName() + "_active", tinted2LayerParent())
-                    .texture("bot_all", COOLER_BASE)
-                    .texture("top_all", coolerMaskOn());
+                    .texture("bot_all", coolerMaskOn())
+                    .texture("top_all", COOLER_BASE);
 
             prov.getVariantBuilder(ctx.getEntry())
                     .partialState().with(GTBlockStateProperties.ACTIVE, false).modelForState().modelFile(inactive)
@@ -79,12 +76,12 @@ public class PhoenixFissionMachineModels {
             T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createBlanketRodModel(IFissionBlanketType type) {
         return (ctx, prov) -> {
             var inactive = prov.models().withExistingParent(ctx.getName(), tinted2LayerParent())
-                    .texture("bot_all", BLANKET_BASE)
-                    .texture("top_all", blanketMask());
+                    .texture("bot_all", blanketMask())
+                    .texture("top_all", BLANKET_BASE);
 
             var active = prov.models().withExistingParent(ctx.getName() + "_active", tinted2LayerParent())
-                    .texture("bot_all", BLANKET_BASE)
-                    .texture("top_all", blanketMaskOn());
+                    .texture("bot_all", blanketMaskOn())
+                    .texture("top_all", BLANKET_BASE);
 
             prov.getVariantBuilder(ctx.getEntry())
                     .partialState().with(GTBlockStateProperties.ACTIVE, false).modelForState().modelFile(inactive)
@@ -98,12 +95,12 @@ public class PhoenixFissionMachineModels {
             T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createFuelRodModel(IFissionFuelRodType type) {
         return (ctx, prov) -> {
             var inactive = prov.models().withExistingParent(ctx.getName(), tinted2LayerParent())
-                    .texture("bot_all", FUEL_ROD_BASE)
-                    .texture("top_all", rodMask());
+                    .texture("bot_all", rodMask())
+                    .texture("top_all", FUEL_ROD_BASE);
 
             var active = prov.models().withExistingParent(ctx.getName() + "_active", tinted2LayerParent())
-                    .texture("bot_all", FUEL_ROD_BASE)
-                    .texture("top_all", rodMaskOn());
+                    .texture("bot_all", rodMaskOn())
+                    .texture("top_all", FUEL_ROD_BASE);
 
             prov.getVariantBuilder(ctx.getEntry())
                     .partialState().with(GTBlockStateProperties.ACTIVE, false).modelForState().modelFile(inactive)
@@ -117,8 +114,8 @@ public class PhoenixFissionMachineModels {
             T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> createFissionModeratorModel(IFissionModeratorType type) {
         return (ctx, prov) -> {
             var model = prov.models().withExistingParent(ctx.getName(), tinted2LayerParent())
-                    .texture("bot_all", MODERATOR_BASE)
-                    .texture("top_all", modMask());
+                    .texture("bot_all", modMask())
+                    .texture("top_all", MODERATOR_BASE);
             prov.simpleBlock(ctx.getEntry(), model);
         };
     }
