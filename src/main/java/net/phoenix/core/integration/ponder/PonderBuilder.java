@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.ponder;
 
-import lombok.Getter;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.createmod.ponder.api.scene.PonderStoryBoard;
 import net.createmod.ponder.api.scene.SceneBuilder;
@@ -9,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.integration.ponder.api.ExtendedPonderStoryBoard;
 import net.phoenix.core.integration.ponder.api.ExtendedSceneBuilder;
@@ -21,18 +21,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter
-public class PonderBuilder {
-
-    // In PonderBuilder.java
-    private final PonderSceneRegistrationHelper<ResourceLocation> helper;
-
-    public PonderBuilder(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        this.helper = helper;
-    }
+/**
+ * Wrapper around {@link PonderSceneRegistrationHelper} that provides an
+ * isolated, per-item scene registration API using the {@code phoenixcore} namespace.
+ */
+public record PonderBuilder(PonderSceneRegistrationHelper<ResourceLocation> helper) {
 
     /**
-     * Returns a fresh ForItemsBuilder scoped exclusively to the given items.
+     * Returns a fresh {@link ForItemsBuilder} scoped exclusively to the given items.
      * The returned builder is ISOLATED — its item set is fixed at construction time
      * and never shared with other calls, preventing cross-machine scene contamination.
      */
@@ -60,27 +56,41 @@ public class PonderBuilder {
             this.items = items;
         }
 
+        /**
+         * Convenience overload — uses the default {@code phoenixcore:blank_48} structure.
+         *
+         * @param name  bare scene path (e.g. {@code "gregtech_multiblocks/electric_blast_furnace"})
+         *              — the {@code phoenixcore} namespace is prepended automatically.
+         * @param title human-readable title registered via {@code registerSharedText}.
+         * @param scene storyboard lambda.
+         */
         public ForItemsBuilder scene(String name, String title, ExtendedPonderStoryBoard scene) {
             return scene(name, title, "phoenixcore:blank_48", scene);
         }
 
         /**
-         * @param name          scene id path (e.g. "gregtech_multiblocks/electric_blast_furnace")
-         *                      — the phoenixcore namespace is prepended automatically.
-         * @param title         human-readable title registered via registerSharedText.
-         * @param structureName full namespaced schematic id string
-         *                      (e.g. "phoenixcore:gregtech_multiblocks/blank_48").
-         *                      Passed directly as a ResourceLocation — NOT run through
-         *                      appendPonderJSNamespaceToId.
+         * Registers a Ponder scene for every item in this builder's item set.
+         *
+         * @param name          bare scene path (e.g. {@code "gregtech_multiblocks/electric_blast_furnace"})
+         *                      — resolved to {@code phoenixcore:<name>} via {@link PhoenixCore#ponderIdOf}.
+         * @param title         human-readable title registered via {@code registerSharedText}.
+         * @param structureName full namespaced schematic id string (e.g. {@code "phoenixcore:blank_48"}).
+         *                      Passed directly as a {@link ResourceLocation}.
          * @param scene         storyboard lambda.
          */
         public ForItemsBuilder scene(String name, String title, String structureName, ExtendedPonderStoryBoard scene) {
-            ResourceLocation id = PhoenixCore.appendPonderJSNamespaceToId(name);
+            // Resolves to "phoenixcore:<name>" (or passes through if already namespaced).
+            ResourceLocation id = PhoenixCore.ponderIdOf(name);
             ResourceLocation structureId = new ResourceLocation(structureName);
             PonderStoryBoardWrapper wrapper = new PonderStoryBoardWrapper(scene);
 
+            // Register the namespace so PhoenixPonderLang.createFromLocalization()
+            // produces lang entries for it. Without this PONDER_NAMESPACES stays empty
+            // and the lang file is always blank for auto-generated scenes.
+            PhoenixCore.PONDER_NAMESPACES.add(id.getNamespace());
+
             for (var item : items) {
-                ResourceLocation itemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item);
+                ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
                 if (itemId == null) continue;
 
                 helper.addStoryBoard(itemId, structureId,
@@ -92,10 +102,14 @@ public class PonderBuilder {
             return this;
         }
 
+        /** No-op — registration happens eagerly inside {@link #scene}. */
         public void register() {}
     }
 
+    /** No-op — registration happens eagerly inside {@link ForItemsBuilder#scene}. */
     public void register() {}
+
+    // -------------------------------------------------------------------------
 
     public static class PonderStoryBoardWrapper implements PonderStoryBoard {
 

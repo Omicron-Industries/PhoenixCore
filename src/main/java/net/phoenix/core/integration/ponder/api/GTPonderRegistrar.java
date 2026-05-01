@@ -79,13 +79,26 @@ public class GTPonderRegistrar {
 
                     // 4. FINAL VISIBILITY CHECK
                     // If no blocks are visible, ensure the structure section is shown
-                    if (!Boolean.FALSE.equals(sceneOptions.get("showSection"))) {
+                    sceneOptions.put("_wrapperOwnsFinish", true);
+
+                    // Execute the user callback (e.g. renderMultiblock).
+                    callback.accept(new GTPonderContext(extendedScene, util, sceneOptions));
+
+                    // Only show the catch-all section reveal if the caller explicitly
+                    // opts in. renderMultiblock manages its own section reveals through
+                    // showLayerScan, so the default must be false to avoid a double-reveal
+                    // flash after markAsFinished.
+                    if (Boolean.TRUE.equals(sceneOptions.get("showSection"))) {
                         extendedScene.world().showSection(util.select().layersFrom(0), Direction.UP);
                     }
+
+                    // Single, unconditional finish — renderMultiblock checks
+                    // "_wrapperOwnsFinish" and skips its own call.
 
                     if (!Boolean.FALSE.equals(sceneOptions.get("markAsFinished"))) {
                         extendedScene.markAsFinished();
                     }
+                    extendedScene.markAsFinished();
                 });
     }
 

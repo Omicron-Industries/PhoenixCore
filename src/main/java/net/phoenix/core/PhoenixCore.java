@@ -18,6 +18,7 @@ import com.lowdragmc.lowdraglib.Platform;
 
 import net.createmod.ponder.foundation.PonderIndex;
 import net.createmod.ponder.foundation.PonderTag;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
@@ -67,6 +68,7 @@ import net.phoenix.core.integration.ponder.PonderStoriesManager;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
+import net.minecraftforge.event.TickEvent;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import org.apache.logging.log4j.LogManager;
@@ -85,7 +87,7 @@ public class PhoenixCore {
     public static GTRegistrate PHOENIX_REGISTRATE = GTRegistrate.create(MOD_ID);
 
     // Ponder Integration Fields and Constants
-    public static final String PONDER_MOD_ID = "ponderjs"; // Original MOD_ID for PonderJS internal logic
+    public static final String PONDER_MOD_ID = "phoenixcore"; // Original MOD_ID for phoenixcore internal logic
     public static final Set<String> PONDER_NAMESPACES = new HashSet<>();
     public static final PonderStoriesManager PONDER_STORIES_MANAGER = new PonderStoriesManager();
     private static boolean ponderInitialized;
@@ -237,10 +239,24 @@ public class PhoenixCore {
 
     @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
     public static class ClientForgeEvents {
+        private static boolean ponderReloaded = false;
 
         @SubscribeEvent
         public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
             LOGGER.info("PhoenixCore: Registering client commands...");
+        }
+
+        @SubscribeEvent
+        public static void onClientTick(TickEvent.ClientTickEvent event) {
+            if (event.phase == TickEvent.Phase.END && !ponderReloaded) {
+                // Check if the client world is loaded, indicating models are likely baked
+                if (Minecraft.getInstance().level != null) {
+                    PhoenixCore.reloadPonderIntegration();
+                    PhoenixCore.ponderInitialized = true;
+                    ponderReloaded = true;
+                    PhoenixCore.LOGGER.info("PhoenixCore: Ponder integration reloaded during client tick.");
+                }
+            }
         }
     }
 
@@ -248,23 +264,15 @@ public class PhoenixCore {
         return material.getFluid(FluidStorageKeys.PLASMA, 1).getFluid();
     }
 
-    // Ponder Integration Methods
-    public static Optional<PonderTag> getPonderTagByName(ResourceLocation res) {
-        return PonderIndex.getTagAccess().getListedTags().stream()
-                .filter(tag -> tag.getId().equals(res))
-                .findFirst();
-    }
 
-    public static Optional<PonderTag> getPonderTagByName(String tag) {
-        return getPonderTagByName(appendPonderJSNamespaceToId(tag));
-    }
+
 
     protected static ResourceLocation appendPonderNamespaceToId(String namespace, String id) {
         if (!id.contains(":")) id = namespace + ":" + id;
         return new ResourceLocation(id);
     }
 
-    public static ResourceLocation appendPonderJSNamespaceToId(String id) {
+    public static ResourceLocation appendphoenixcoreNamespaceToId(String id) {
         return appendPonderNamespaceToId(PONDER_MOD_ID, id);
     }
 
@@ -274,5 +282,27 @@ public class PhoenixCore {
 
     public static boolean isPonderIntegrationInitialized() {
         return ponderInitialized;
+    }
+
+    public static ResourceLocation ponderIdOf(String id) {
+        if (id.contains(":")) return new ResourceLocation(id);
+        return new ResourceLocation(MOD_ID, id);   // "phoenixcore:<id>"
+    }
+
+    /**
+     * Looks up a registered {@link PonderTag} by its full {@link ResourceLocation}.
+     */
+    public static Optional<PonderTag> getPonderTagByName(ResourceLocation res) {
+        return PonderIndex.getTagAccess().getListedTags().stream()
+                .filter(tag -> tag.getId().equals(res))
+                .findFirst();
+    }
+
+    /**
+     * Looks up a registered {@link PonderTag} by a bare path or
+     * {@code namespace:path} string (resolved via {@link #ponderIdOf}).
+     */
+    public static Optional<PonderTag> getPonderTagByName(String tag) {
+        return getPonderTagByName(ponderIdOf(tag));
     }
 }

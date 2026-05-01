@@ -25,16 +25,16 @@ public class PonderTagBuilder {
             throw new IllegalArgumentException("Tag " + id + " already exists");
         });
 
-        ResourceLocation idWithNamespace = PhoenixCore.appendPonderJSNamespaceToId(id);
+        // Replaced appendPonderJSNamespaceToId with ponderIdOf — resolves to
+        // "phoenixcore:<id>" (or passes through if already fully qualified).
+        ResourceLocation idWithNamespace = PhoenixCore.ponderIdOf(id);
         PonderTag ponderTag = new PonderTag(
-                idWithNamespace,           // ResourceLocation id
-                null,                      // @Nullable ResourceLocation textureIconLocation
-                new ItemStack(displayItem.getItem()), // ItemStack itemIcon
-                new ItemStack(displayItem.getItem())  // ItemStack mainItem
+                idWithNamespace,
+                null,
+                new ItemStack(displayItem.getItem()),
+                new ItemStack(displayItem.getItem())
         );
 
-        // Tags are registered via the registration event helper, not listTag().
-        // Store the tag for use during the registration event.
         PhoenixCore.PENDING_TAGS.add(ponderTag);
 
         if (ingredient != null) {
@@ -50,7 +50,6 @@ public class PonderTagBuilder {
     public void removeTag(PonderTag... tags) {
         for (PonderTag tag : tags) {
             Set<ResourceLocation> items = PonderIndex.getTagAccess().getItems(tag);
-            // getListedTags() returns a List — remove is supported
             PonderIndex.getTagAccess().getListedTags().remove(tag);
             remove(tag, items);
         }

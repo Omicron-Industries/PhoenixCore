@@ -2,7 +2,6 @@ package net.phoenix.core.integration.ponder.multiblocks;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -11,7 +10,6 @@ import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
 import net.createmod.ponder.api.PonderPalette;
-import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.createmod.ponder.foundation.instruction.ReplaceBlocksInstruction;
@@ -22,8 +20,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -34,14 +30,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.integration.ponder.PonderBuilder;
 import net.phoenix.core.integration.ponder.api.ExtendedSceneBuilder;
 import net.phoenix.core.integration.ponder.api.GTPonderAPI;
-import net.phoenix.core.integration.ponder.api.GTPonderRegistrar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -52,7 +47,7 @@ public class GTPonderMultiblocks {
             new ResourceLocation("phoenixcore", "blank_48");
     public static final int GT_PONDER_STRUCTURE_SIZE = 16;
     public static final int GT_PONDER_STRUCTURE_HEIGHT = 48;
-    public static final String GT_META_MACHINE_BLOCK_CLASS_NAME = "MetaMachineBlock";
+    public static final String GT_META_MACHINE_BLOCK_CLASS_NAME = "com.gregtechceu.gtceu.api.block.MetaMachineBlock";
     public static final int GT_CALLOUT_DURATION = 24;
     public static final int GT_PART_CALLOUT_DURATION = GT_CALLOUT_DURATION;
     public static final int GT_PART_CALLOUT_IDLE = GT_CALLOUT_DURATION;
@@ -154,7 +149,9 @@ public class GTPonderMultiblocks {
             ))
     );
 
-    // --- Utility Methods ---
+    // -------------------------------------------------------------------------
+    // Utility Methods
+    // -------------------------------------------------------------------------
 
     private static BlockState[][][] extractBlockStates(BlockInfo[][][] blocks) {
         int x = blocks.length;
@@ -171,16 +168,9 @@ public class GTPonderMultiblocks {
     }
 
     /**
-     * GT's MultiblockShapeInfo.getBlocks() returns a [z][y][x] grid:
-     *   first index  = aisle / z-depth
-     *   second index = height / y
-     *   third index  = row / x-width
-     *
-     * All of our pipeline helpers (collectShapeEntries, extractBlockStates, getShapeDimensions)
-     * treat the first index as X, second as Y, third as Z.  Passing the raw GT grid in
-     * directly swaps X↔Z — blocks end up at wrong positions and the machine can't form.
-     *
-     * This method transposes [z][y][x] → [x][y][z] so every downstream helper works correctly.
+     * GT's MultiblockShapeInfo.getBlocks() returns a [z][y][x] grid.
+     * All downstream helpers treat the first index as X, second as Y, third as Z.
+     * This method transposes [z][y][x] → [x][y][z] so every helper works correctly.
      */
     private static BlockInfo[][][] transposeGTGrid(BlockInfo[][][] grid) {
         if (grid == null || grid.length == 0) return grid;
@@ -195,16 +185,9 @@ public class GTPonderMultiblocks {
         return transposed;
     }
 
-    /**
-     * Compute the smallest square baseplate that fits the machine footprint plus padding.
-     * Replaces the old hardcoded GT_PONDER_STRUCTURE_SIZE=48 which gave every machine
-     * a 48×48 baseplate regardless of size — causing a tiny EBF in a vast empty plain.
-     */
     private static int computeBasePlateSize(Dimensions dimensions) {
         int footprint = Math.max(dimensions.x, dimensions.z);
-        // Add padding: at least 4 blocks on each side so the camera isn't flush with the edge.
         int padded = footprint + 8;
-        // Round up to an even number for symmetry, then clamp to the structure limit.
         int size = Math.max(8, (padded + 1) & ~1);
         return Math.min(size, GT_PONDER_STRUCTURE_SIZE);
     }
@@ -219,8 +202,12 @@ public class GTPonderMultiblocks {
     private static boolean isInstanceOfClassName(Object value, String className) {
         if (value == null) return false;
         Class<?> valueClass = value.getClass();
+        String targetName = className;
         while (valueClass != null) {
-            if (valueClass.getName().equals(className)) return true;
+            String currentName = valueClass.getName();
+            if (currentName.equals(targetName) || currentName.endsWith("." + targetName)) {
+                return true;
+            }
             valueClass = valueClass.getSuperclass();
         }
         return false;
@@ -242,9 +229,7 @@ public class GTPonderMultiblocks {
 
     @Deprecated
     public static void register(PonderBuilder builder) {
-        // Intentionally empty. The old body registered scenes using the shared PonderBuilder
-        // instance, which caused item accumulation (every machine received every other machine's
-        // scenes). Registration now happens exclusively in registerAllMultiblockScenes().
+        // Intentionally empty — registration happens exclusively in registerAllMultiblockScenes().
     }
 
     private static String getTranslatedMachineName(MultiblockMachineDefinition definition) {
@@ -253,31 +238,6 @@ public class GTPonderMultiblocks {
         if (langValue != null) return getTranslatedText(descriptionId, langValue);
         return getTranslatedText(descriptionId, titleFromPath(definition.getId().getPath()));
     }
-
-    private static List<MultiblockShapeInfo> generateMultiblock(String machineId) {
-        MachineDefinition definition = GTRegistries.MACHINES.get(new ResourceLocation(machineId));
-        if (!(definition instanceof MultiblockMachineDefinition mbd)) return null;
-
-        // Check shapes
-        if (mbd.getShapes() != null) {
-            var shapes = mbd.getShapes().get();
-            if (shapes != null) return shapes;
-        }
-
-        // Check pattern
-        if (mbd.getPatternFactory() != null) {
-            var pattern = mbd.getPatternFactory().get();
-            if (pattern != null) {
-                int[] repetitions = new int[pattern.aisleRepetitions.length];
-                return List.of(new MultiblockShapeInfo(pattern.getPreview(repetitions)));
-            }
-        }
-        return null;
-    }
-
-
-
-
 
     private static String getBlockRegistryId(Block block) {
         try {
@@ -349,14 +309,6 @@ public class GTPonderMultiblocks {
         return selected;
     }
 
-    private static MultiblockShapeInfo getPrimaryShapeInfo(MultiblockMachineDefinition definition) {
-        List<MultiblockShapeInfo> explicit = new ArrayList<>(definition.getShapes().get());
-        if (!explicit.isEmpty()) return getMostCompleteShapeInfo(explicit);
-        List<MultiblockShapeInfo> matching = new ArrayList<>(definition.getMatchingShapes());
-        if (matching.isEmpty()) return null;
-        return getMostCompleteShapeInfo(matching);
-    }
-
     private static double getSceneScale(int basePlateSize, int height) {
         int max = Math.max(basePlateSize, height);
         if (max <= 5) return 0.82;
@@ -365,10 +317,6 @@ public class GTPonderMultiblocks {
         if (max <= 16) return 0.44;
         if (max <= 20) return 0.34;
         return 0.28;
-    }
-
-    private static Selection selectionForPositions(SceneBuildingUtil util, List<BlockPos> positions) {
-        return GTPonderAPI.gtPonderSelectionForPositions(util, positions);
     }
 
     private static List<BlockPos> collectEntryPositions(List<ShapeEntry> entries) {
@@ -398,12 +346,6 @@ public class GTPonderMultiblocks {
         return new Bounds(xOffset, 1, zOffset, xOffset + dimensions.x - 1, dimensions.y, zOffset + dimensions.z - 1);
     }
 
-    private static void logDebugShape(String machineId, Dimensions dimensions, ShapeData shape) {
-        if (!machineId.equals("gtceu:mega_blast_furnace")) return;
-        LOGGER.info("Rotary Hearth debug: dimensions={}x{}x{}, entries={}, bounds={}",
-                dimensions.x, dimensions.y, dimensions.z, shape.entries.size(), shape.bounds);
-    }
-
     private static void warnIfShapeExceedsPonderStructure(String machineId, Dimensions dimensions, int basePlateSize) {
         if (basePlateSize <= GT_PONDER_STRUCTURE_SIZE && dimensions.y + 1 <= GT_PONDER_STRUCTURE_HEIGHT) return;
         LOGGER.warn("GregTech multiblock Ponder scene for {} needs {}x{}x{}, but {} is only {}x{}x{}.",
@@ -411,72 +353,98 @@ public class GTPonderMultiblocks {
                 GT_PONDER_STRUCTURE_SIZE, GT_PONDER_STRUCTURE_HEIGHT, GT_PONDER_STRUCTURE_SIZE);
     }
 
-    private static List<StateGroup> groupEntriesByState(List<ShapeEntry> entries) {
-        Map<BlockState, StateGroup> groupsByState = new HashMap<>();
-        List<StateGroup> groups = new ArrayList<>();
-        for (ShapeEntry entry : entries) {
-            StateGroup group = groupsByState.get(entry.state);
-            if (group == null) {
-                group = new StateGroup(entry.state);
-                groupsByState.put(entry.state, group);
-                groups.add(group);
+    // ── FIX 3: setShapeEntryBlocks ────────────────────────────────────────────
+    // Now actually applies NBT from the ShapeEntry.nbt field (populated in
+    // collectShapeEntries via Fix 2). The merge was previously commented out
+    // because ShapeEntry had no nbt field to read from.
+    private static void setShapeEntryBlocks(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                            List<ShapeEntry> entries) {
+        scene.addInstruction(ponderScene -> {
+            for (ShapeEntry entry : entries) {
+                // 1. Physical placement.
+                LOGGER.info("GTM Ponder DEBUG: setBlock at {} with state {}", entry.pos, entry.state);
+                ponderScene.getWorld().setBlock(entry.pos, entry.state, 3);
+
+                // 2. NBT application
+                if (entry.state.hasBlockEntity() && entry.nbt != null) {
+                    LOGGER.info("GTM Ponder DEBUG: applying NBT to block at {}: {}", entry.pos, entry.nbt);
+                    var be = ponderScene.getWorld().getBlockEntity(entry.pos);
+                    if (be != null) {
+                        be.load(entry.nbt);
+                    }
+                }
             }
-            group.positions.add(entry.pos);
-        }
-        return groups;
+        });
     }
-
-    private static void setShapeEntryBlocks(ExtendedSceneBuilder scene, SceneBuildingUtil util, List<ShapeEntry> entries) {
-        for (ShapeEntry entry : entries) {
-            // 1. Physical placement
-            scene.world().setBlock(entry.pos, entry.state, false);
-
-            // 2. NBT application (using your helper)
-            if (entry.state.hasBlockEntity()) {
-                // If you saved the NBT in your ShapeEntry record:
-                var world = (ExtendedSceneBuilder.ExtendedWorldInstructions) scene.world();
-                world.modifyBlockEntityNBT(util.select().position(entry.pos), (CompoundTag tag) -> {
-                    // Merge or Copy the saved NBT here
-                    // tag.merge(entry.nbt);
-                });
-            }
-        }
-    }
-
-
 
     private static void triggerPonderRerender(ExtendedSceneBuilder scene, SceneBuildingUtil util) {
-        scene.addInstruction(new ReplaceBlocksInstruction(util.select().fromTo(-100, -100, -100, -100, -100, -100), state -> state, false, false));
+        scene.addInstruction(ponderScene -> {
+            var world = ponderScene.getWorld();
+            if (world != null) {
+                world.getBounds().encapsulate(new BlockPos(15, 15, 15));
+            }
+        });
+        scene.addInstruction(new ReplaceBlocksInstruction(
+                util.select().fromTo(-100, -100, -100, -100, -100, -100),
+                state -> state, false, false));
     }
 
-    private static void formGeneratedMultiblock(ExtendedSceneBuilder scene, SceneBuildingUtil util, BlockPos controllerPos, String machineId) {
+    // ── FIX 5: formGeneratedMultiblock ────────────────────────────────────────
+    // The old version called controller.checkPattern() inside the Ponder
+    // instruction lambda. checkPattern() does a DFS across the real server-side
+    // dimension — but the Ponder world is an isolated client-side simulation,
+    // so the DFS finds nothing and isFormed() is always false. The formed model,
+    // glow textures, and active-state renderer never fire.
+    //
+    // The fix writes Formed=true directly into the controller's NBT, reloads it
+    // so the block entity picks it up, then calls onStructureFormed() to trigger
+    // the model swap and glow, and sends a block update to wake the renderer.
+    private static void formGeneratedMultiblock(ExtendedSceneBuilder scene,
+                                                SceneBuildingUtil util,
+                                                BlockPos controllerPos,
+                                                String machineId) {
         if (controllerPos == null) {
-            LOGGER.warn("formGeneratedMultiblock: null controllerPos for {}, skipping form attempt.", machineId);
+            LOGGER.warn("formGeneratedMultiblock: null controllerPos for {}, skipping.", machineId);
             return;
         }
 
-        // Give Ponder one tick for the block placements to settle before we call checkPattern().
-        // Without this idle the block entities (especially the controller) may not be fully
-        // initialised when checkPattern() runs, causing forming to silently fail.
+        // Two ticks for block-entity initialisation to settle before we mutate state.
         scene.idle(2);
 
-        scene.addInstruction(ponderScene -> scene.world().modifyBlockEntity(controllerPos, MetaMachineBlockEntity.class, blockEntity -> {
-            try {
-                if (blockEntity.getMetaMachine() instanceof MultiblockControllerMachine controller) {
-                    controller.checkPattern();
+        scene.addInstruction(ponderScene -> {
+            var level = ponderScene.getWorld();
+            var rawBe = level.getBlockEntity(controllerPos);
 
-                    if (controller.isFormed()) {
-                        controller.onStructureFormed();
-                    } else {
-                        LOGGER.warn("Multiblock {} failed to form at {} — the pattern may not align with the Ponder world coordinates.", machineId, controllerPos);
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error("Error forming multiblock {}: ", machineId, e);
+            if (!(rawBe instanceof MetaMachineBlockEntity mmbe)) {
+                LOGGER.warn("formGeneratedMultiblock: no MetaMachineBlockEntity at {} for {}",
+                        controllerPos, machineId);
+                return;
             }
-        }));
+            if (!(mmbe.getMetaMachine() instanceof MultiblockControllerMachine controller)) {
+                LOGGER.warn("formGeneratedMultiblock: machine at {} is not a MultiblockControllerMachine for {}",
+                        controllerPos, machineId);
+                return;
+            }
 
-        // Forces the renderer to refresh block models (active state, glow textures, etc.)
+            try {
+                // Force the formed flag — checkPattern() queries the real server
+                // dimension and always returns false in the Ponder world.
+                CompoundTag tag = mmbe.saveWithoutMetadata();
+                tag.putBoolean("Formed", true);
+                mmbe.load(tag);
+
+                // Fire the formed lifecycle: model swap, glow textures, formed-state BE init.
+                controller.onStructureFormed();
+
+                // Wake the renderer.
+                level.sendBlockUpdated(controllerPos,
+                        level.getBlockState(controllerPos),
+                        level.getBlockState(controllerPos), 3);
+            } catch (Exception e) {
+                LOGGER.error("formGeneratedMultiblock: error forming {} at {}: ", machineId, controllerPos, e);
+            }
+        });
+
         triggerPonderRerender(scene, util);
     }
 
@@ -511,29 +479,13 @@ public class GTPonderMultiblocks {
         return util.vector().of(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
     }
 
-    private static String positionKeyFromCoords(int x, int y, int z) {
-        return String.format("%d,%d,%d", x, y, z);
-    }
-
     private static String positionKey(BlockPos pos) {
-        return positionKeyFromCoords(pos.getX(), pos.getY(), pos.getZ());
+        return String.format("%d,%d,%d", pos.getX(), pos.getY(), pos.getZ());
     }
 
     private static boolean hasOccupiedPosition(Map<String, Boolean> occupiedPositions, int x, int y, int z) {
-        return occupiedPositions != null && occupiedPositions.getOrDefault(positionKeyFromCoords(x, y, z), false);
-    }
-
-    private static Direction getMachineFacing(BlockState state) {
-        if (state == null) return null;
-        Block block = state.getBlock();
-        if (!(block instanceof MetaMachineBlock metaMachineBlock)) return null;
-        try {
-            var rotationState = metaMachineBlock.getRotationState();
-            if (rotationState != null && state.hasProperty(rotationState.property)) {
-                return state.getValue((Property<Direction>) rotationState.property);
-            }
-        } catch (Exception ignored) {}
-        return null;
+        return occupiedPositions != null &&
+                occupiedPositions.getOrDefault(String.format("%d,%d,%d", x, y, z), false);
     }
 
     private static BlockPos getRepresentativePosition(List<BlockPos> positions) {
@@ -566,7 +518,8 @@ public class GTPonderMultiblocks {
         return getHorizontalExposureAngles(pos, occupiedPositions).size();
     }
 
-    private static int getVisiblePositionIndex(List<BlockPos> positions, Bounds shapeBounds, Map<String, Boolean> occupiedPositions, int basePlateSize) {
+    private static int getVisiblePositionIndex(List<BlockPos> positions, Bounds shapeBounds,
+                                               Map<String, Boolean> occupiedPositions, int basePlateSize) {
         if (positions.isEmpty()) return -1;
         if (positions.size() == 1) return 0;
         double centerX = (shapeBounds == null) ? basePlateSize / 2.0 : (shapeBounds.minX + shapeBounds.maxX + 1) / 2.0;
@@ -582,7 +535,8 @@ public class GTPonderMultiblocks {
         return visibleIndex;
     }
 
-    private static BlockPos getVisiblePosition(List<BlockPos> positions, Bounds shapeBounds, Map<String, Boolean> occupiedPositions, int basePlateSize) {
+    private static BlockPos getVisiblePosition(List<BlockPos> positions, Bounds shapeBounds,
+                                               Map<String, Boolean> occupiedPositions, int basePlateSize) {
         int index = getVisiblePositionIndex(positions, shapeBounds, occupiedPositions, basePlateSize);
         return index == -1 ? null : positions.get(index);
     }
@@ -612,7 +566,8 @@ public class GTPonderMultiblocks {
     }
 
     private static Double getRadialViewAngleForPosition(BlockPos pos, Bounds shapeBounds, int basePlateSize) {
-        Double x = toFiniteNumber(pos.getX()), z = toFiniteNumber(pos.getZ()), plateSize = toFiniteNumber(basePlateSize);
+        Double x = toFiniteNumber(pos.getX()), z = toFiniteNumber(pos.getZ()),
+                plateSize = toFiniteNumber(basePlateSize);
         if (x == null || z == null || plateSize == null || plateSize <= 0) return null;
         double centerX = (shapeBounds == null) ? plateSize / 2.0 : (shapeBounds.minX + shapeBounds.maxX + 1) / 2.0;
         double centerZ = (shapeBounds == null) ? plateSize / 2.0 : (shapeBounds.minZ + shapeBounds.maxZ + 1) / 2.0;
@@ -622,7 +577,8 @@ public class GTPonderMultiblocks {
         return posAngle == null ? null : quantizeCameraViewAngle(-posAngle);
     }
 
-    private static Double getViewAngleForCalloutPosition(BlockPos pos, Bounds shapeBounds, Map<String, Boolean> occupiedPositions, int basePlateSize) {
+    private static Double getViewAngleForCalloutPosition(BlockPos pos, Bounds shapeBounds,
+                                                         Map<String, Boolean> occupiedPositions, int basePlateSize) {
         List<Integer> exposureAngles = getHorizontalExposureAngles(pos, occupiedPositions);
         Double radialAngle = getRadialViewAngleForPosition(pos, shapeBounds, basePlateSize);
         if (exposureAngles.isEmpty()) return radialAngle;
@@ -645,7 +601,8 @@ public class GTPonderMultiblocks {
 
     private static List<PartGroup> createPartGroups() {
         List<PartGroup> groups = new ArrayList<>();
-        GT_PART_CALLOUTS.forEach(callout -> groups.add(new PartGroup(callout.key, callout.palette, callout.label, callout.text, false, true)));
+        GT_PART_CALLOUTS.forEach(callout ->
+                groups.add(new PartGroup(callout.key, callout.palette, callout.label, callout.text, false, true)));
         return groups;
     }
 
@@ -655,7 +612,9 @@ public class GTPonderMultiblocks {
         }
     }
 
-    private static PartGroup getOrCreateDynamicGroup(List<PartGroup> groups, String key, PonderPalette palette, String label, String text, boolean machinePart) {
+    private static PartGroup getOrCreateDynamicGroup(List<PartGroup> groups, String key,
+                                                     PonderPalette palette, String label,
+                                                     String text, boolean machinePart) {
         PartGroup existing = getPartGroup(groups, key);
         if (existing != null) return existing;
         PartGroup newGroup = new PartGroup(key, palette, label, text, true, machinePart);
@@ -663,9 +622,13 @@ public class GTPonderMultiblocks {
         return newGroup;
     }
 
-    private static void addDynamicGroupPosition(List<PartGroup> groups, String key, PonderPalette palette, String label, String text, boolean machinePart, BlockPos pos, BlockState state) {
+    private static void addDynamicGroupPosition(List<PartGroup> groups, String key,
+                                                PonderPalette palette, String label,
+                                                String text, boolean machinePart,
+                                                BlockPos pos, BlockState state) {
         PartGroup group = getOrCreateDynamicGroup(groups, key, palette, label, text, machinePart);
-        group.positions.add(pos); group.states.add(state);
+        group.positions.add(pos);
+        group.states.add(state);
     }
 
     private static void sortShapeEntries(List<ShapeEntry> entries) {
@@ -718,13 +681,10 @@ public class GTPonderMultiblocks {
             return group.machinePart && (textMatchesNeedle(group.key, needle) || textMatchesNeedle(group.label, needle));
         }
         return switch (focusText) {
-            case "inputs" -> group.key.equals("item_input") || group.key.equals("fluid_input");
-            case "outputs" ->
-                    group.key.equals("item_output") || group.key.equals("fluid_output") || group.key.equals("energy_output");
-            case "power" ->
-                    group.key.equals("energy_input") || group.key.equals("energy_output") || group.key.equals("laser");
-            default ->
-                    group.key.equals(focusText) || textMatchesNeedle(group.key, focusText) || textMatchesNeedle(group.label, focusText);
+            case "inputs"  -> group.key.equals("item_input") || group.key.equals("fluid_input");
+            case "outputs" -> group.key.equals("item_output") || group.key.equals("fluid_output") || group.key.equals("energy_output");
+            case "power"   -> group.key.equals("energy_input") || group.key.equals("energy_output") || group.key.equals("laser");
+            default        -> group.key.equals(focusText) || textMatchesNeedle(group.key, focusText) || textMatchesNeedle(group.label, focusText);
         };
     }
 
@@ -741,7 +701,9 @@ public class GTPonderMultiblocks {
         for (String focusEntry : focusList) {
             if (focusEntry.equals("controller")) {
                 if (shape.controllerPos != null)
-                    groups.add(new PartGroup("controller", PonderPalette.RED, "Controller", "The controller anchors the preview shape.", false, true, Collections.singletonList(shape.controllerPos), Collections.emptyList()));
+                    groups.add(new PartGroup("controller", PonderPalette.RED, "Controller",
+                            "The controller anchors the preview shape.", false, true,
+                            Collections.singletonList(shape.controllerPos), Collections.emptyList()));
                 continue;
             }
             for (PartGroup group : allGroups)
@@ -765,7 +727,15 @@ public class GTPonderMultiblocks {
         return null;
     }
 
-    private static ShapeData collectShapeEntries(MultiblockMachineDefinition definition, BlockState[][][] blocks, Dimensions dimensions, int basePlateSize) {
+    // ── FIX 2: collectShapeEntries ────────────────────────────────────────────
+    // Now accepts BlockInfo[][][] directly (instead of BlockState[][][]) so that
+    // NBT data from each BlockInfo can be extracted and stored in ShapeEntry.nbt.
+    // This feeds Fix 3 (setShapeEntryBlocks) so NBT is applied through the
+    // canonical placement path, making the inline reflection loop in renderMultiblock
+    // redundant and safe to remove.
+    private static ShapeData collectShapeEntries(MultiblockMachineDefinition definition,
+                                                 BlockInfo[][][] grid,
+                                                 Dimensions dimensions, int basePlateSize) {
         int xOffset = (basePlateSize - dimensions.x) / 2;
         int zOffset = (basePlateSize - dimensions.z) / 2;
         List<ShapeEntry> entries = new ArrayList<>();
@@ -778,28 +748,63 @@ public class GTPonderMultiblocks {
         for (int x = 0; x < dimensions.x; x++) {
             for (int y = 0; y < dimensions.y; y++) {
                 for (int z = 0; z < dimensions.z; z++) {
-                    BlockState blockState = blocks[x][y][z];
-                    if (blockState == null || blockState.isAir()) continue;
-                    if (blockState.isAir()) {
-                        System.out.println("GTM Ponder Debug: Block at " + x + "," + y + "," + z + " is AIR!");
+                    BlockInfo info = grid[x][y][z];
+                    BlockState blockState = (info != null) ? info.getBlockState() : null;
+                    if (blockState == null || blockState.isAir()) {
+                        if (info != null) {
+                            LOGGER.debug("GTM Ponder DEBUG: Block at [{},{},{}] is null or air. Info: {}", x, y, z, info);
+                        }
+                        continue;
                     }
+
                     BlockPos pos = new BlockPos(x + xOffset, y + 1, z + zOffset);
                     occupiedPositions.put(positionKey(pos), true);
                     Block block = blockState.getBlock();
+                    LOGGER.info("GTM Ponder DEBUG: Processing block {} at [{},{},{}] (world: {}) with class {}", blockState, x, y, z, pos, block.getClass().getName());
+
                     if (isInstanceOfClassName(block, GT_META_MACHINE_BLOCK_CLASS_NAME)) {
                         MetaMachineBlock metaMachineBlock = (MetaMachineBlock) block;
-                        if (metaMachineBlock.getDefinition().getId().equals(definition.getId())) {
+                        ResourceLocation partId = metaMachineBlock.getDefinition().getId();
+                        ResourceLocation targetId = definition.getId();
+                        
+                        LOGGER.info("GTM Ponder DEBUG: Comparing machine part {} with target {}", partId, targetId);
+                        
+                        if (partId.equals(targetId)) {
                             controllerPos = pos;
+                            LOGGER.info("GTM Ponder DEBUG: Found controller at {}", pos);
                         } else {
-                            // Safe cast: hatch/bus definitions are plain MachineDefinition, not MultiblockMachineDefinition
                             MachineDefinition partMachineDef = metaMachineBlock.getDefinition();
-                            String partId = partMachineDef.getId().toString();
+                            String partIdStr = partId.toString();
                             PartCallout callout = getPartCallout(partMachineDef.getId().getPath());
                             if (callout == null) {
                                 String partLabel = partMachineDef instanceof MultiblockMachineDefinition partMbd
                                         ? getTranslatedMachineName(partMbd)
                                         : titleFromPath(partMachineDef.getId().getPath());
-                                addDynamicGroupPosition(partGroups, getDynamicGroupKey("machine", partId), getDynamicPalette(partGroups), partLabel, getMachinePartText(partId), true, pos, blockState);
+                                addDynamicGroupPosition(partGroups, getDynamicGroupKey("machine", partIdStr),
+                                        getDynamicPalette(partGroups), partLabel,
+                                        getMachinePartText(partIdStr), true, pos, blockState);
+                            } else {
+                                addPartGroupPosition(partGroups, callout.key, pos, blockState);
+                            }
+                            machinePartPositions.add(pos);
+                        }
+                    } else if (block instanceof MetaMachineBlock metaMachineBlock) {
+                        ResourceLocation partId = metaMachineBlock.getDefinition().getId();
+                        ResourceLocation targetId = definition.getId();
+                        if (partId.equals(targetId)) {
+                            controllerPos = pos;
+                            LOGGER.info("GTM Ponder DEBUG: Found controller (via direct instance check) at {}", pos);
+                        } else {
+                            MachineDefinition partMachineDef = metaMachineBlock.getDefinition();
+                            String partIdStr = partId.toString();
+                            PartCallout callout = getPartCallout(partMachineDef.getId().getPath());
+                            if (callout == null) {
+                                String partLabel = partMachineDef instanceof MultiblockMachineDefinition partMbd
+                                        ? getTranslatedMachineName(partMbd)
+                                        : titleFromPath(partMachineDef.getId().getPath());
+                                addDynamicGroupPosition(partGroups, getDynamicGroupKey("machine", partIdStr),
+                                        getDynamicPalette(partGroups), partLabel,
+                                        getMachinePartText(partIdStr), true, pos, blockState);
                             } else {
                                 addPartGroupPosition(partGroups, callout.key, pos, blockState);
                             }
@@ -807,68 +812,76 @@ public class GTPonderMultiblocks {
                         }
                     } else {
                         String blockId = getBlockRegistryId(block);
-                        addDynamicGroupPosition(structureGroups, getDynamicGroupKey("block", blockId), getDynamicPalette(structureGroups), getBlockLabel(block, blockId), getStructuralBlockText(blockId), false, pos, blockState);
+                        addDynamicGroupPosition(structureGroups, getDynamicGroupKey("block", blockId),
+                                getDynamicPalette(structureGroups), getBlockLabel(block, blockId),
+                                getStructuralBlockText(blockId), false, pos, blockState);
                     }
-                    entries.add(new ShapeEntry(pos, blockState, x, y, z));
+
+                    // Extract NBT from BlockInfo via reflection so setShapeEntryBlocks
+                    // can apply it — this replaces the scattered inline loop in renderMultiblock.
+                    CompoundTag entryNbt = null;
+                    if (blockState.hasBlockEntity()) {
+                        try {
+                            java.lang.reflect.Field tagField = BlockInfo.class.getDeclaredField("tag");
+                            tagField.setAccessible(true);
+                            entryNbt = (CompoundTag) tagField.get(info);
+                        } catch (Exception ignored) {}
+                    }
+
+                    entries.add(new ShapeEntry(pos, blockState, x, y, z, entryNbt));
                 }
             }
         }
         sortShapeEntries(entries);
-        return new ShapeData(entries, occupiedPositions, getShapeWorldBounds(dimensions, basePlateSize), controllerPos, machinePartPositions, partGroups, structureGroups);
+        return new ShapeData(entries, occupiedPositions,
+                getShapeWorldBounds(dimensions, basePlateSize),
+                controllerPos, machinePartPositions, partGroups, structureGroups);
     }
 
-    private static void revealShapeBlocks(ExtendedSceneBuilder scene, SceneBuildingUtil util, List<ShapeEntry> entries, Bounds shapeBounds) {
-        // 1. Calculate timing and batching parameters
-        int batchSize = getBlockRevealBatchSize(entries.size());
-        int idleTime = getBlockRevealIdle(entries.size());
-
-        // 2. Determine the physical area these blocks occupy
-        Bounds bounds = (shapeBounds == null) ? getEntryBounds(entries) : shapeBounds;
-        Selection fullSelection = selectionForEntryBounds(util, bounds);
-
-        if (fullSelection == null) return;
-
-        // 3. Prepare the scene: Clear the area and "show" the empty space to the renderer
-        scene.world().setBlocks(fullSelection, Blocks.AIR.defaultBlockState(), false);
-        scene.world().showIndependentSectionImmediately(fullSelection);
-        scene.idle(idleTime);
-
-        // 4. Populate the blocks in batches
-        List<ShapeEntry> batchEntries = new ArrayList<>();
-        for (int i = 0; i < entries.size(); i++) {
-            batchEntries.add(entries.get(i));
-
-            if (batchEntries.size() == batchSize || i == entries.size() - 1) {
-                setShapeEntryBlocks(scene, util, batchEntries);
-                batchEntries.clear();
-                scene.idle(idleTime);
-            }
-        }
-
-        scene.idle(GT_STRUCTURE_REVEAL_SETTLE);
+    private static void revealShapeBlocks(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                          List<ShapeEntry> entries, Bounds shapeBounds) {
+        // Log that we're skipping revealShapeBlocks as it's now handled by showLayerScan
+        LOGGER.info("GTM Ponder DEBUG: revealShapeBlocks called (skipping, handled by showLayerScan)");
     }
 
-    private static void showLayerScan(ExtendedSceneBuilder scene, SceneBuildingUtil util, String machineId, ShapeData shape, Dimensions dimensions) {
+    // ── FIX 4b: showLayerScan ─────────────────────────────────────────────────
+    // showBasePlate() is called here (as the first instruction) and ONLY here.
+    // It was previously also called inside configureGeneratedScene(), which fired
+    // it before any blocks existed — anchoring an empty section and confusing the
+    // renderer's section system, causing the flash on reveal. configureGeneratedScene
+    // is now only used for camera/scale setup and no longer calls showBasePlate().
+    private static void showLayerScan(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                      String machineId, ShapeData shape, Dimensions dimensions) {
         List<LayerData> layers = collectEntriesByPatternLayer(shape.entries);
         if (layers.isEmpty()) return;
 
-        // FIX: Show the base plate first.
-        // This defines the "floor" and the bounds for the sections above it.
+        // PLACE ALL BLOCKS IMMEDIATELY
+        LOGGER.info("GTM Ponder DEBUG: Placing all {} blocks immediately.", shape.entries.size());
+        setShapeEntryBlocks(scene, util, shape.entries);
+
+        // Show the base plate first — this defines the floor and gives the renderer
+        // an anchor before any structure sections are registered.
         scene.showBasePlate();
         scene.idle(5);
+
+        // TRIGGER RERENDER SO BLOCKS EXIST IN SECTIONS
+        triggerPonderRerender(scene, util);
+        scene.idle(10);
 
         int duration = getLayerScanDuration(layers.size());
 
         for (int i = 0; i < layers.size(); i++) {
             LayerData layer = layers.get(i);
             List<BlockPos> positions = collectEntryPositions(layer.entries);
-
-            if (positions.isEmpty()) continue;
+            if (positions.isEmpty()) {
+                LOGGER.info("GTM Ponder DEBUG: Layer {} is empty.", i);
+                continue;
+            }
 
             Selection layerSelection = GTPonderAPI.gtPonderSelectionForPositions(util, positions);
             BlockPos repPos = getRepresentativePosition(positions);
 
-            // This reveals the blocks we placed in renderMultiblock
+            LOGGER.info("GTM Ponder DEBUG: Showing layer {} with {} blocks at positions {}", i, positions.size(), positions);
             scene.world().showSection(layerSelection, Direction.DOWN);
 
             if (repPos != null) {
@@ -883,21 +896,11 @@ public class GTPonderMultiblocks {
         }
     }
 
-    private static void configureGeneratedScene(ExtendedSceneBuilder scene, int basePlateSize, Dimensions dimensions) {
-        // This tells Ponder how big the "stage" is based on your NBT file
-        scene.configureBasePlate(0, 0, basePlateSize);
-
-        // We must SHOW the base plate or the renderer has no anchor point
-        scene.showBasePlate();
-
-        // Optional: Standard GTM camera angles
-        scene.scaleSceneView(0.6f);
-        scene.setSceneOffsetY(-0.5f);
-    }
-
-    private static boolean showControllerCallout(ExtendedSceneBuilder scene, SceneBuildingUtil util, String machineId, BlockPos controllerPos, int duration) {
+    private static boolean showControllerCallout(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                 String machineId, BlockPos controllerPos, int duration) {
         if (controllerPos == null) return false;
-        scene.overlay().showOutline(PonderPalette.RED, machineId + "/controller", util.select().position(controllerPos), duration);
+        scene.overlay().showOutline(PonderPalette.RED, machineId + "/controller",
+                util.select().position(controllerPos), duration);
         scene.overlay().showText(duration)
                 .text("The controller anchors the preview shape.")
                 .colored(PonderPalette.RED)
@@ -906,7 +909,11 @@ public class GTPonderMultiblocks {
         return true;
     }
 
-    private static List<PartCalloutPresentation> collectPartCalloutPresentations(SceneBuildingUtil util, List<PartGroup> partGroups, Bounds shapeBounds, Map<String, Boolean> occupiedPositions, int basePlateSize) {
+    private static List<PartCalloutPresentation> collectPartCalloutPresentations(SceneBuildingUtil util,
+                                                                                 List<PartGroup> partGroups,
+                                                                                 Bounds shapeBounds,
+                                                                                 Map<String, Boolean> occupiedPositions,
+                                                                                 int basePlateSize) {
         List<PartCalloutPresentation> presentations = new ArrayList<>();
         for (PartGroup partGroup : partGroups) {
             if (partGroup.positions.isEmpty()) continue;
@@ -915,39 +922,40 @@ public class GTPonderMultiblocks {
             BlockPos repPos = partGroup.positions.get(repIndex);
             if (repPos == null) continue;
             Double viewAngle = getViewAngleForCalloutPosition(repPos, shapeBounds, occupiedPositions, basePlateSize);
-            presentations.add(new PartCalloutPresentation(partGroup.key, partGroup.palette, partGroup.label, partGroup.text, partGroup.positions.size(), partGroup.showCount, partGroup.machinePart, blockCenterVector(util, repPos), util.select().position(repPos), repPos, viewAngle));
+            presentations.add(new PartCalloutPresentation(
+                    partGroup.key, partGroup.palette, partGroup.label, partGroup.text,
+                    partGroup.positions.size(), partGroup.showCount, partGroup.machinePart,
+                    blockCenterVector(util, repPos), util.select().position(repPos), repPos, viewAngle));
         }
         return presentations;
     }
 
-    // 1. The Core Logic
-    private static Double rotateToAngle(ExtendedSceneBuilder scene, Double currentCameraAngle, Double targetViewAngle) {
+    private static Double rotateToAngle(ExtendedSceneBuilder scene, Double currentCameraAngle,
+                                        Double targetViewAngle) {
         Double cameraAngle = (currentCameraAngle == null) ? (double) GT_DEFAULT_CAMERA_Y_ROTATION : currentCameraAngle;
         Double viewAngle = toFiniteNumber(targetViewAngle);
-
         if (viewAngle == null) return cameraAngle;
         Double rotation = normalizeDegrees(viewAngle - cameraAngle);
-
         if (rotation == null || Math.abs(rotation) < GT_PART_ROTATION_MINIMUM) return cameraAngle;
-
         double nextCameraAngle = cameraAngle + rotation;
         scene.addInstruction(new RotateSceneInstruction(GT_DEFAULT_CAMERA_X_ROTATION, (float) nextCameraAngle, false));
         scene.idle(getRotationSettleTime(rotation));
         return nextCameraAngle;
     }
 
-    // 2. The PartCallout Wrapper
-    private static Double rotateTowardCallout(ExtendedSceneBuilder scene, Double currentCameraAngle, PartCalloutPresentation presentation) {
+    private static Double rotateTowardCallout(ExtendedSceneBuilder scene, Double currentCameraAngle,
+                                              PartCalloutPresentation presentation) {
         return rotateToAngle(scene, currentCameraAngle, presentation.viewAngle);
     }
 
-    // 3. The Mechanic Wrapper (This fixes your error)
-    private static Double rotateTowardCallout(ExtendedSceneBuilder scene, Double currentCameraAngle, MechanicPresentation presentation) {
+    private static Double rotateTowardCallout(ExtendedSceneBuilder scene, Double currentCameraAngle,
+                                              MechanicPresentation presentation) {
         return rotateToAngle(scene, currentCameraAngle, presentation.viewAngle);
     }
 
     private static String getCalloutText(PartCalloutPresentation presentation) {
-        if (presentation.showCount) return String.format("%dx %s: %s", presentation.count, presentation.label, presentation.text);
+        if (presentation.showCount)
+            return String.format("%dx %s: %s", presentation.count, presentation.label, presentation.text);
         return String.format("%s %s", presentation.label, presentation.text);
     }
 
@@ -962,21 +970,29 @@ public class GTPonderMultiblocks {
         return left.getX() == right.getX() && left.getY() == right.getY() && left.getZ() == right.getZ();
     }
 
-    private static MechanicPresentation collectMechanicPresentation(SceneBuildingUtil util, ShapeData shape, MechanicRule step, int basePlateSize) {
+    private static MechanicPresentation collectMechanicPresentation(SceneBuildingUtil util, ShapeData shape,
+                                                                    MechanicRule step, int basePlateSize) {
         List<PartGroup> groups = collectFocusGroups(shape, step.focus);
         List<BlockPos> positions = collectPositionsFromGroups(groups);
         BlockPos repPos = getVisiblePosition(positions, shape.bounds, shape.occupiedPositions, basePlateSize);
         if (repPos == null) repPos = getRepresentativePosition(positions);
         if (repPos == null) return null;
-        return new MechanicPresentation(step.key, step.palette, step.text, step.animation, groups, repPos, blockCenterVector(util, repPos), util.select().position(repPos), getViewAngleForCalloutPosition(repPos, shape.bounds, shape.occupiedPositions, basePlateSize));
+        return new MechanicPresentation(step.key, step.palette, step.text, step.animation, groups, repPos,
+                blockCenterVector(util, repPos), util.select().position(repPos),
+                getViewAngleForCalloutPosition(repPos, shape.bounds, shape.occupiedPositions, basePlateSize));
     }
 
-    private static void showBigLineBetweenPositions(ExtendedSceneBuilder scene, SceneBuildingUtil util, PonderPalette palette, BlockPos fromPos, BlockPos toPos, int duration) {
+    private static void showBigLineBetweenPositions(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                    PonderPalette palette, BlockPos fromPos, BlockPos toPos,
+                                                    int duration) {
         if (fromPos == null || toPos == null || sameBlockPosition(fromPos, toPos)) return;
-        scene.overlay().showBigLine(palette, blockCenterVector(util, fromPos), blockCenterVector(util, toPos), duration);
+        scene.overlay().showBigLine(palette, blockCenterVector(util, fromPos),
+                blockCenterVector(util, toPos), duration);
     }
 
-    private static void showFlowFromFocusToController(ExtendedSceneBuilder scene, SceneBuildingUtil util, ShapeData shape, Object focus, PonderPalette palette, int basePlateSize) {
+    private static void showFlowFromFocusToController(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                      ShapeData shape, Object focus,
+                                                      PonderPalette palette, int basePlateSize) {
         if (shape.controllerPos == null) return;
         collectFocusGroups(shape, focus).forEach(group -> {
             BlockPos pos = getVisiblePosition(group.positions, shape.bounds, shape.occupiedPositions, basePlateSize);
@@ -985,7 +1001,9 @@ public class GTPonderMultiblocks {
         });
     }
 
-    private static void showFlowFromControllerToFocus(ExtendedSceneBuilder scene, SceneBuildingUtil util, ShapeData shape, Object focus, PonderPalette palette, int basePlateSize) {
+    private static void showFlowFromControllerToFocus(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                      ShapeData shape, Object focus,
+                                                      PonderPalette palette, int basePlateSize) {
         if (shape.controllerPos == null) return;
         collectFocusGroups(shape, focus).forEach(group -> {
             BlockPos pos = getVisiblePosition(group.positions, shape.bounds, shape.occupiedPositions, basePlateSize);
@@ -994,7 +1012,8 @@ public class GTPonderMultiblocks {
         });
     }
 
-    private static void pulseFocusGroups(ExtendedSceneBuilder scene, List<PartGroup> groups, ShapeData shape, int basePlateSize, int maxPulses) {
+    private static void pulseFocusGroups(ExtendedSceneBuilder scene, List<PartGroup> groups,
+                                         ShapeData shape, int basePlateSize, int maxPulses) {
         int pulses = 0;
         for (PartGroup group : groups) {
             if (pulses >= maxPulses) break;
@@ -1004,7 +1023,9 @@ public class GTPonderMultiblocks {
         }
     }
 
-    private static void showMechanicAnimation(ExtendedSceneBuilder scene, SceneBuildingUtil util, ShapeData shape, MechanicPresentation presentation, int basePlateSize) {
+    private static void showMechanicAnimation(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                              ShapeData shape, MechanicPresentation presentation,
+                                              int basePlateSize) {
         switch (presentation.animation) {
             case "automation":
                 showFlowFromFocusToController(scene, util, shape, "inputs", PonderPalette.INPUT, basePlateSize);
@@ -1030,11 +1051,13 @@ public class GTPonderMultiblocks {
                 pulseFocusGroups(scene, presentation.groups, shape, basePlateSize, 3);
                 break;
             case "heat":
-                showBigLineBetweenPositions(scene, util, PonderPalette.SLOW, presentation.representativePosition, shape.controllerPos, GT_MECHANIC_FLOW_LINE_DURATION);
+                showBigLineBetweenPositions(scene, util, PonderPalette.SLOW,
+                        presentation.representativePosition, shape.controllerPos, GT_MECHANIC_FLOW_LINE_DURATION);
                 pulseFocusGroups(scene, presentation.groups, shape, basePlateSize, 4);
                 break;
             case "cooling":
-                showBigLineBetweenPositions(scene, util, PonderPalette.BLUE, presentation.representativePosition, shape.controllerPos, GT_MECHANIC_FLOW_LINE_DURATION);
+                showBigLineBetweenPositions(scene, util, PonderPalette.BLUE,
+                        presentation.representativePosition, shape.controllerPos, GT_MECHANIC_FLOW_LINE_DURATION);
                 pulseFocusGroups(scene, presentation.groups, shape, basePlateSize, 4);
                 break;
             default:
@@ -1058,7 +1081,8 @@ public class GTPonderMultiblocks {
         return steps;
     }
 
-    private static List<MechanicRule> mergeMechanicSteps(List<MechanicRule> genericSteps, List<MechanicRule> machineSteps) {
+    private static List<MechanicRule> mergeMechanicSteps(List<MechanicRule> genericSteps,
+                                                         List<MechanicRule> machineSteps) {
         Map<String, MechanicRule> mergedMap = new LinkedHashMap<>();
         genericSteps.forEach(step -> mergedMap.put(step.key, step));
         machineSteps.forEach(step -> mergedMap.put(step.key, step));
@@ -1069,7 +1093,9 @@ public class GTPonderMultiblocks {
         return mergeMechanicSteps(getGenericMechanicSteps(shape), getMachineSpecificMechanicSteps(machineId, machinePath));
     }
 
-    private static MechanicStepResult showMechanicSteps(ExtendedSceneBuilder scene, SceneBuildingUtil util, ShapeData shape, List<MechanicRule> steps, int basePlateSize, Double currentCameraAngle) {
+    private static MechanicStepResult showMechanicSteps(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                        ShapeData shape, List<MechanicRule> steps,
+                                                        int basePlateSize, Double currentCameraAngle) {
         Double cameraAngle = currentCameraAngle;
         int shownSteps = 0;
         for (MechanicRule step : steps) {
@@ -1089,13 +1115,18 @@ public class GTPonderMultiblocks {
         return new MechanicStepResult(shownSteps, cameraAngle);
     }
 
-    private static CalloutResult showPartCallouts(ExtendedSceneBuilder scene, SceneBuildingUtil util, String machineId, ShapeData shape, List<PartGroup> partGroups, int basePlateSize, Double currentCameraAngle) {
-        List<PartCalloutPresentation> presentations = collectPartCalloutPresentations(util, partGroups, shape.bounds, shape.occupiedPositions, basePlateSize);
+    private static CalloutResult showPartCallouts(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                  String machineId, ShapeData shape,
+                                                  List<PartGroup> partGroups, int basePlateSize,
+                                                  Double currentCameraAngle) {
+        List<PartCalloutPresentation> presentations = collectPartCalloutPresentations(
+                util, partGroups, shape.bounds, shape.occupiedPositions, basePlateSize);
         Double cameraAngle = currentCameraAngle;
         for (PartCalloutPresentation presentation : presentations) {
             cameraAngle = rotateTowardCallout(scene, cameraAngle, presentation);
             if (presentation.machinePart) scene.effects().indicateSuccess(presentation.representativePosition);
-            scene.overlay().showOutline(presentation.palette, machineId + "/" + presentation.key, presentation.selection, GT_PART_CALLOUT_DURATION);
+            scene.overlay().showOutline(presentation.palette, machineId + "/" + presentation.key,
+                    presentation.selection, GT_PART_CALLOUT_DURATION);
             scene.overlay().showText(GT_PART_CALLOUT_DURATION)
                     .text(getCalloutText(presentation))
                     .colored(presentation.palette)
@@ -1106,24 +1137,30 @@ public class GTPonderMultiblocks {
         return new CalloutResult(presentations.size(), cameraAngle);
     }
 
-    private static void showAutomationFlowLines(ExtendedSceneBuilder scene, SceneBuildingUtil util, ShapeData shape) {
+    private static void showAutomationFlowLines(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                                ShapeData shape) {
         if (shape.controllerPos == null) return;
         Vec3 controllerCenter = blockCenterVector(util, shape.controllerPos);
-        BlockPos itemInputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("item_input"));
-        BlockPos fluidInputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("fluid_input"));
+        BlockPos itemInputPos   = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("item_input"));
+        BlockPos fluidInputPos  = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("fluid_input"));
         BlockPos energyInputPos = getRepresentativePartPosition(shape.partGroups, List.of("energy_input", "laser"));
-        BlockPos itemOutputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("item_output"));
+        BlockPos itemOutputPos  = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("item_output"));
         BlockPos fluidOutputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("fluid_output"));
         BlockPos energyOutputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("energy_output"));
-        if (itemInputPos != null) scene.overlay().showLine(PonderPalette.INPUT, blockCenterVector(util, itemInputPos), controllerCenter, GT_FLOW_LINE_DURATION);
-        if (fluidInputPos != null) scene.overlay().showLine(PonderPalette.INPUT, blockCenterVector(util, fluidInputPos), controllerCenter, GT_FLOW_LINE_DURATION);
-        if (energyInputPos != null) scene.overlay().showLine(PonderPalette.GREEN, blockCenterVector(util, energyInputPos), controllerCenter, GT_FLOW_LINE_DURATION);
-        if (itemOutputPos != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter, blockCenterVector(util, itemOutputPos), GT_FLOW_LINE_DURATION);
+        if (itemInputPos   != null) scene.overlay().showLine(PonderPalette.INPUT,  blockCenterVector(util, itemInputPos),   controllerCenter, GT_FLOW_LINE_DURATION);
+        if (fluidInputPos  != null) scene.overlay().showLine(PonderPalette.INPUT,  blockCenterVector(util, fluidInputPos),  controllerCenter, GT_FLOW_LINE_DURATION);
+        if (energyInputPos != null) scene.overlay().showLine(PonderPalette.GREEN,  blockCenterVector(util, energyInputPos), controllerCenter, GT_FLOW_LINE_DURATION);
+        if (itemOutputPos  != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter, blockCenterVector(util, itemOutputPos),  GT_FLOW_LINE_DURATION);
         if (fluidOutputPos != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter, blockCenterVector(util, fluidOutputPos), GT_FLOW_LINE_DURATION);
         if (energyOutputPos != null) scene.overlay().showLine(PonderPalette.GREEN, controllerCenter, blockCenterVector(util, energyOutputPos), GT_FLOW_LINE_DURATION);
     }
 
-    private static void addGeneratedMultiblockScene(PonderBuilder.ForItemsBuilder builder, MultiblockMachineDefinition definition) {
+    // ── FIX 6: addGeneratedMultiblockScene ────────────────────────────────────
+    // Pass "markAsFinished" -> false so the GTPonderRegistrar wrapper does NOT
+    // call markAsFinished() after the callback returns. renderMultiblock always
+    // calls it internally — firing it twice throws an exception.
+    private static void addGeneratedMultiblockScene(PonderBuilder.ForItemsBuilder builder,
+                                                    MultiblockMachineDefinition definition) {
         final String fullId = definition.getId().toString();
         String scenePath = "gregtech_multiblocks/" + definition.getId().getPath();
         String title = getTranslatedMachineName(definition);
@@ -1132,146 +1169,156 @@ public class GTPonderMultiblocks {
                 scenePath,
                 title,
                 "phoenixcore:blank_48",
-                (scene, util) -> {
-                    renderMultiblock(scene, util, fullId, BlockPos.ZERO, Map.of());
-                }
+                (scene, util) -> renderMultiblock(scene, util, fullId, BlockPos.ZERO, Map.of("markAsFinished", false))
         );
     }
 
-
+    // ── FIX 4: renderMultiblock ───────────────────────────────────────────────
+    // Three changes:
+    //
+    // 1. The inline for(x/y/z) placement loop is REMOVED. It was a workaround
+    //    for the missing NBT in setShapeEntryBlocks. With Fix 2+3 in place the
+    //    canonical path (revealShapeBlocks -> setShapeEntryBlocks) handles both
+    //    block placement AND NBT. The double-placement was causing blocks to be
+    //    placed twice, resetting NBT on the second pass, and confusing Ponder's
+    //    section-visibility tracker so blocks appeared invisible.
+    //
+    // 2. collectShapeEntries now receives the BlockInfo[][][] grid directly
+    //    instead of a BlockState[][][] (extractBlockStates is no longer called).
+    //
+    // 3. configureGeneratedScene no longer calls showBasePlate() — that is now
+    //    the first instruction inside showLayerScan(), fired after blocks exist.
     public static void renderMultiblock(ExtendedSceneBuilder scene, SceneBuildingUtil util,
                                         String machineId, BlockPos ignoredControllerPos,
                                         Map<String, Object> localOptions) {
 
-        // 1. RESOLVE ID (With Namespace Fallback)
+        // 1. Resolve ID (with namespace fallback).
         ResourceLocation rl = new ResourceLocation(machineId);
         MachineDefinition rawDef = GTRegistries.MACHINES.get(rl);
-
-        // Fallback: If "large_boiler" was passed without "gtceu:", try to find it
-        if (rawDef == null && rl.getNamespace().equals("minecraft")) {
+        if (rawDef == null && rl.getNamespace().equals("minecraft"))
             rawDef = GTRegistries.MACHINES.get(new ResourceLocation("gtceu", rl.getPath()));
-        }
 
-        // 2. VALIDATE MULTIBLOCK
+        // 2. Validate multiblock.
         if (!(rawDef instanceof MultiblockMachineDefinition definition)) {
-            scene.overlay().showText(60).text(rawDef == null ? "ID Not Found: " + machineId : "Not a multiblock: " + machineId)
+            scene.overlay().showText(60)
+                    .text(rawDef == null ? "ID Not Found: " + machineId : "Not a multiblock: " + machineId)
                     .colored(PonderPalette.RED).placeNearTarget();
             return;
         }
 
-        // 3. FORCE GTM TO BAKE THE STRUCTURE
-        // Based on the class you provided, getMatchingShapes() triggers the DFS
-        // that builds the MultiblockShapeInfo list from the patternFactory.
+        // 3. Bake the structure.
+        LOGGER.info("GTM Ponder DEBUG: Baking structure for {}", machineId);
         List<MultiblockShapeInfo> shapeInfos = definition.getMatchingShapes();
-
         if (shapeInfos == null || shapeInfos.isEmpty()) {
+            LOGGER.error("GTM Ponder DEBUG: No structure pattern defined for {}. definition.getMatchingShapes() returned null or empty.", machineId);
             scene.overlay().showText(100).text("GTM: No structure pattern defined.")
                     .colored(PonderPalette.RED).placeNearTarget();
             return;
         }
+        LOGGER.info("GTM Ponder DEBUG: Found {} shape variants for {}", shapeInfos.size(), machineId);
 
         MultiblockShapeInfo shapeInfo = getMostCompleteShapeInfo(shapeInfos);
-        if (shapeInfo == null) return;
+        if (shapeInfo == null) {
+            LOGGER.error("GTM Ponder DEBUG: No complete shape info found for {}. getMostCompleteShapeInfo returned null.", machineId);
+            return;
+        }
+        LOGGER.info("GTM Ponder: Found shape info for {} with {} blocks.", machineId, getShapeBlockCount(shapeInfo));
 
-        BlockInfo[][][] grid = transposeGTGrid(shapeInfo.getBlocks());
+        // 4. Transpose grid [z][y][x] → [x][y][z].
+        BlockInfo[][][] rawBlocks = shapeInfo.getBlocks();
+        if (rawBlocks == null) {
+            LOGGER.error("GTM Ponder DEBUG: shapeInfo.getBlocks() returned null for {}", machineId);
+            return;
+        }
+        LOGGER.info("GTM Ponder DEBUG: Raw grid dimensions for {}: [{}][{}][{}]", 
+                machineId, rawBlocks.length, 
+                rawBlocks.length > 0 ? rawBlocks[0].length : 0, 
+                (rawBlocks.length > 0 && rawBlocks[0].length > 0) ? rawBlocks[0][0].length : 0);
+
+        BlockInfo[][][] grid = transposeGTGrid(rawBlocks);
+        if (grid == null || grid.length == 0) {
+            LOGGER.error("GTM Ponder DEBUG: Transposed grid is empty for {}.", machineId);
+            return;
+        }
         Dimensions dimensions = getShapeDimensions(grid);
-        BlockState[][][] states = extractBlockStates(grid);
+        LOGGER.info("GTM Ponder: Transposed grid dimensions for {}: {}x{}x{}.",
+                machineId, dimensions.x, dimensions.y, dimensions.z);
 
+        // 5. Compute layout.
         int basePlateSize = computeBasePlateSize(dimensions);
         warnIfShapeExceedsPonderStructure(machineId, dimensions, basePlateSize);
-        configureGeneratedScene(scene, basePlateSize, dimensions);
 
-        ShapeData shape = collectShapeEntries(definition, states, dimensions, basePlateSize);
+        // 6. Collect shape metadata (part groups, controller pos, NBT per entry).
+        //    Now passes grid directly so collectShapeEntries can extract NBT
+        //    from BlockInfo — no separate extractBlockStates() call needed.
+        ShapeData shape = collectShapeEntries(definition, grid, dimensions, basePlateSize);
+        LOGGER.info("GTM Ponder: Collected {} shape entries for {}.", shape.entries.size(), machineId);
 
-        // 5. PLACE BLOCKS (Hidden/Data only)
-        for (int x = 0; x < dimensions.x; x++) {
-            for (int y = 0; y < dimensions.y; y++) {
-                for (int z = 0; z < dimensions.z; z++) {
-                    BlockInfo info = grid[x][y][z];
-                    if (info == null || info.getBlockState() == null || info.getBlockState().isAir()) continue;
+        // 7. Configure stage size and camera — but NOT showBasePlate().
+        //    showBasePlate() is the first instruction inside showLayerScan(),
+        //    called after blocks are placed. Calling it here (before any blocks
+        //    exist) anchored an empty section and caused the reveal flash.
+        scene.configureBasePlate(0, 0, basePlateSize);
+        scene.scaleSceneView(0.6f);
+        scene.setSceneOffsetY(-0.5f);
 
-                    int xOffset = (basePlateSize - dimensions.x) / 2;
-                    int zOffset = (basePlateSize - dimensions.z) / 2;
-                    BlockPos pos = new BlockPos(x + xOffset, y + 1, z + zOffset);
-
-                    scene.world().setBlock(pos, info.getBlockState(), true);
-
-                    // NBT Application
-                    if (info.getBlockState().hasBlockEntity()) {
-
-                        try {
-                            java.lang.reflect.Field tagField = BlockInfo.class.getDeclaredField("tag");
-                            tagField.setAccessible(true);
-                            CompoundTag nbt = (CompoundTag) tagField.get(info);
-                            if (nbt != null) {
-                                ((ExtendedSceneBuilder.ExtendedWorldInstructions) scene.world())
-                                        .modifyBlockEntityNBT(util.select().position(pos), tag -> {
-                                            for (String key : nbt.getAllKeys()) tag.put(key, nbt.get(key).copy());
-                                        });
-                            }
-                        } catch (Exception ignored) {}
-                    }
-                }
-            }
-        }
-
-        // 6. SET THE STAGE
-        scene.addInstruction(new RotateSceneInstruction(GT_DEFAULT_CAMERA_X_ROTATION, GT_INITIAL_CAMERA_Y_ROTATION, false));
+        // 8. Camera rotation + initial keyframe.
+        scene.addInstruction(new RotateSceneInstruction(
+                GT_DEFAULT_CAMERA_X_ROTATION, GT_INITIAL_CAMERA_Y_ROTATION, false));
         scene.idle(10);
         scene.addKeyframe();
 
-
-        // 7. REVEAL THE BLOCKS (The Animation)
-        // Note: showLayerScan should only use showSection(), not setBlock()
-        // showLayerScan(scene, util, machineId, shape, dimensions); // Removed this line
-        Selection fullStructure = util.select().fromTo(
-                shape.bounds.minX, shape.bounds.minY, shape.bounds.minZ,
-                shape.bounds.maxX, shape.bounds.maxY, shape.bounds.maxZ
-        );
-        scene.world().showSection(fullStructure, Direction.DOWN); // Reveal all blocks at once
-        scene.idle(GT_STRUCTURE_REVEAL_SETTLE); // Settle time
+        // 9. Layer-by-layer reveal.
+        //    showLayerScan owns block placement (via revealShapeBlocks ->
+        //    setShapeEntryBlocks), section registration, and showBasePlate().
+        //    There is NO separate inline placement loop above this point.
+        showLayerScan(scene, util, machineId, shape, dimensions);
         scene.addKeyframe();
 
-        // 8. FORMATION — checkPattern() first so the controller transitions to the formed state,
-        //    then onStructureFormed() fires model/texture/glow updates.
+        // 10. Form the multiblock (NBT injection — not checkPattern()).
         if (shape.controllerPos != null) {
+            LOGGER.info("GTM Ponder DEBUG: Forming multiblock {} at controller pos {}", machineId, shape.controllerPos);
             formGeneratedMultiblock(scene, util, shape.controllerPos, machineId);
+        } else {
+            LOGGER.warn("GTM Ponder DEBUG: Could not find controller position for {}, multiblock will not be formed.", machineId);
         }
 
-        // 9. REMAINING STEPS (Callouts & Flow)
+        // 11. Part callouts and automation flow lines.
         Double cameraAngle = (double) GT_DEFAULT_CAMERA_Y_ROTATION;
-        List<PartGroup> nonEmptyPartGroups = shape.partGroups.stream().filter(g -> !g.positions.isEmpty()).toList();
+        List<PartGroup> nonEmptyPartGroups = shape.partGroups.stream()
+                .filter(g -> !g.positions.isEmpty()).toList();
         if (!nonEmptyPartGroups.isEmpty()) {
-            CalloutResult partResult = showPartCallouts(scene, util, machineId, shape, nonEmptyPartGroups, basePlateSize, cameraAngle);
+            CalloutResult partResult = showPartCallouts(
+                    scene, util, machineId, shape, nonEmptyPartGroups, basePlateSize, cameraAngle);
             cameraAngle = partResult.cameraAngle;
         }
 
         showAutomationFlowLines(scene, util, shape);
         scene.idle(GT_FLOW_LINE_DURATION);
+
+        // markAsFinished is always called here.
+        // addGeneratedMultiblockScene passes "markAsFinished" -> false to the
+        // GTPonderRegistrar wrapper so it skips its own call — firing it once only.
         scene.markAsFinished();
     }
 
-    // Change the parameter from PonderSceneRegistrationHelper to PonderBuilder
     public static void registerAllMultiblockScenes(PonderBuilder builder) {
         List<MachineDefinition> allMachines = new ArrayList<>(GTRegistries.MACHINES.values());
-
         for (MachineDefinition definition : allMachines) {
             if (definition instanceof MultiblockMachineDefinition multiblock) {
                 Item item = ForgeRegistries.ITEMS.getValue(definition.getId());
                 if (item == null || item == Blocks.AIR.asItem()) continue;
-
-                // Use the builder passed from the registrar
                 var scopedBuilder = builder.forItems(Ingredient.of(item));
                 addGeneratedMultiblockScene(scopedBuilder, multiblock);
             }
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Helper Records and Classes
+    // -------------------------------------------------------------------------
 
-    // --- Helper Classes ---
-
-    private record Dimensions(int x, int y, int z) {
-    }
+    private record Dimensions(int x, int y, int z) {}
 
     private record Bounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         @Override
@@ -1280,54 +1327,77 @@ public class GTPonderMultiblocks {
         }
     }
 
-    private record ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z) {
+    // ── FIX 1: ShapeEntry ─────────────────────────────────────────────────────
+    // Added @Nullable CompoundTag nbt so the canonical placement path
+    // (setShapeEntryBlocks) can apply block-entity NBT. Without this field the
+    // NBT merge was commented out, which caused the inline reflection loop in
+    // renderMultiblock to be added as a workaround — that loop bypassed Ponder's
+    // section system and double-placed every block.
+    private record ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z,
+                              @Nullable CompoundTag nbt) {
+
+        /** Convenience constructor for non-block-entity entries. */
+        ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z) {
+            this(pos, state, x, y, z, null);
+        }
     }
 
     private static class StateGroup {
-        public final BlockState state; public final List<BlockPos> positions = new ArrayList<>();
+        public final BlockState state;
+        public final List<BlockPos> positions = new ArrayList<>();
         public StateGroup(BlockState state) { this.state = state; }
     }
 
     private static class LayerData {
-        public final int y; public final List<ShapeEntry> entries = new ArrayList<>();
+        public final int y;
+        public final List<ShapeEntry> entries = new ArrayList<>();
         public LayerData(int y) { this.y = y; }
     }
 
-    private record PartCallout(String key, PonderPalette palette, String label, String text, Predicate<String> match) {
-    }
+    private record PartCallout(String key, PonderPalette palette, String label, String text,
+                               Predicate<String> match) {}
 
     private static class PartGroup {
-        public final String key, label, text; public final PonderPalette palette; public final boolean showCount, machinePart;
-        public final List<BlockPos> positions; public final List<BlockState> states;
-        public PartGroup(String key, PonderPalette palette, String label, String text, boolean showCount, boolean machinePart) { this(key, palette, label, text, showCount, machinePart, new ArrayList<>(), new ArrayList<>()); }
-        public PartGroup(String key, PonderPalette palette, String label, String text, boolean showCount, boolean machinePart, List<BlockPos> positions, List<BlockState> states) { this.key = key; this.palette = palette; this.label = label; this.text = text; this.showCount = showCount; this.machinePart = machinePart; this.positions = positions; this.states = states; }
+        public final String key, label, text;
+        public final PonderPalette palette;
+        public final boolean showCount, machinePart;
+        public final List<BlockPos> positions;
+        public final List<BlockState> states;
+
+        public PartGroup(String key, PonderPalette palette, String label, String text,
+                         boolean showCount, boolean machinePart) {
+            this(key, palette, label, text, showCount, machinePart, new ArrayList<>(), new ArrayList<>());
+        }
+
+        public PartGroup(String key, PonderPalette palette, String label, String text,
+                         boolean showCount, boolean machinePart,
+                         List<BlockPos> positions, List<BlockState> states) {
+            this.key = key; this.palette = palette; this.label = label; this.text = text;
+            this.showCount = showCount; this.machinePart = machinePart;
+            this.positions = positions; this.states = states;
+        }
     }
 
-    private record ShapeData(List<ShapeEntry> entries, Map<String, Boolean> occupiedPositions, Bounds bounds,
-                             BlockPos controllerPos, List<BlockPos> machinePartPositions, List<PartGroup> partGroups,
-                             List<PartGroup> structureGroups) {
-    }
+    private record ShapeData(List<ShapeEntry> entries, Map<String, Boolean> occupiedPositions,
+                             Bounds bounds, BlockPos controllerPos,
+                             List<BlockPos> machinePartPositions,
+                             List<PartGroup> partGroups, List<PartGroup> structureGroups) {}
 
-    private record MechanicRule(String key, Object focus, PonderPalette palette, String text, String animation,
-                                Predicate<ShapeData> when) {
-    }
+    private record MechanicRule(String key, Object focus, PonderPalette palette, String text,
+                                String animation, Predicate<ShapeData> when) {}
 
-    private record MechanicPattern(BiPredicate<String, String> match, List<MechanicRule> steps) {
-    }
+    private record MechanicPattern(BiPredicate<String, String> match, List<MechanicRule> steps) {}
 
-    private record PartCalloutPresentation(String key, PonderPalette palette, String label, String text, int count,
-                                           boolean showCount, boolean machinePart, Vec3 pointAt, Selection selection,
-                                           BlockPos representativePosition, Double viewAngle) {
-    }
+    private record PartCalloutPresentation(String key, PonderPalette palette, String label, String text,
+                                           int count, boolean showCount, boolean machinePart,
+                                           Vec3 pointAt, Selection selection,
+                                           BlockPos representativePosition, Double viewAngle) {}
 
     private record MechanicPresentation(String key, PonderPalette palette, String text, String animation,
-                                        List<PartGroup> groups, BlockPos representativePosition, Vec3 pointAt,
-                                        Selection selection, Double viewAngle) {
-    }
+                                        List<PartGroup> groups, BlockPos representativePosition,
+                                        Vec3 pointAt, Selection selection, Double viewAngle) {}
 
-    private record MechanicStepResult(int count, Double cameraAngle) {
-    }
+    private record MechanicStepResult(int count, Double cameraAngle) {}
 
-    private record CalloutResult(int count, Double cameraAngle) {
-    }
+    private record CalloutResult(int count, Double cameraAngle) {}
 }

@@ -12,13 +12,13 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Compatibility shim — delegates everything to PhoenixCore.
- * Prefer using PhoenixCore directly. This class may be removed in the future.
+ * Compatibility shim — delegates everything to {@link PhoenixCore}.
+ * Prefer using {@link PhoenixCore} directly.
  */
 public class PonderIntegrationHelper {
 
-    public static final String MOD_ID = PhoenixCore.PONDER_MOD_ID;
-    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+    // Removed: PONDER_MOD_ID reference (PhoenixCore.PONDER_MOD_ID no longer exists).
+    public static final Logger LOGGER = LogManager.getLogger(PhoenixCore.MOD_ID);
     public static final Set<String> NAMESPACES = PhoenixCore.PONDER_NAMESPACES;
     public static final PonderStoriesManager STORIES_MANAGER = PhoenixCore.PONDER_STORIES_MANAGER;
 
@@ -30,8 +30,15 @@ public class PonderIntegrationHelper {
         return PhoenixCore.getPonderTagByName(tag);
     }
 
-    public static ResourceLocation appendPonderJSNamespaceToId(String id) {
-        return PhoenixCore.appendPonderJSNamespaceToId(id);
+    /**
+     * Resolves a bare path or {@code namespace:path} string to a
+     * {@code phoenixcore}-namespaced {@link ResourceLocation}.
+     *
+     * <p>Renamed from {@code appendPonderJSNamespaceToId} — PonderJS is no longer
+     * a dependency and the old name was misleading.
+     */
+    public static ResourceLocation ponderIdOf(String id) {
+        return PhoenixCore.ponderIdOf(id);
     }
 
     public static void reload() {
