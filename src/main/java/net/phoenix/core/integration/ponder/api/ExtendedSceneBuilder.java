@@ -54,11 +54,11 @@ public class ExtendedSceneBuilder implements SceneBuilder {
 
         // Check if our Mixin successfully attached the interface
         if (delegate instanceof SceneBuilderInternalAccess internal) {
-            this.ponderScene = internal.ponderjs$getPonderScene();
+            this.ponderScene = internal.phoenixcore$getPonderScene();
             this.extendedWorld = new ExtendedWorldInstructions(delegate.world());
             this.extendedSpecial = new ExtendedSpecialInstructions(delegate.special());
-            internal.ponderjs$setWorldInstructions(extendedWorld);
-            internal.ponderjs$setSpecialInstructions(extendedSpecial);
+            internal.phoenixcore$setWorldInstructions(extendedWorld);
+            internal.phoenixcore$setSpecialInstructions(extendedSpecial);
         } else {
             // Fallback for when Mixins/Classloaders act up
             this.ponderScene = delegate.getScene();

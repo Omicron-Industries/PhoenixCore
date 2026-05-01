@@ -2,9 +2,13 @@ package net.phoenix.core.integration.ponder.multiblocks;
 
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.PonderPalette;
+import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Blocks;
 import net.phoenix.core.integration.ponder.PonderBuilder;
 import net.phoenix.core.integration.ponder.api.GTPonderContext;
 import net.phoenix.core.integration.ponder.api.GTPonderRegistrar;
@@ -15,9 +19,9 @@ import java.util.Map;
 
 public class GTPonderProcesses {
 
-    // Use phoenixcore namespace — same blank_64.nbt under assets/phoenixcore/ponder/
+
     public static final ResourceLocation PROCESS_PONDER_STRUCTURE_ID = new ResourceLocation("phoenixcore",
-            "gregtech_multiblocks/blank_64");
+            "blank_48");
 
     public static final int PROCESS_BASE_PLATE_SIZE = 9;
     public static final int PROCESS_TEXT_DURATION = 68;
@@ -32,6 +36,34 @@ public class GTPonderProcesses {
     public static void register(PonderBuilder builder) {
         registerGlueEarlyRoutesScene(builder);
         registerGlueResinRoutesScene(builder);
+    }
+
+    public static void registerManualTest(PonderBuilder builder) {
+        // We use the underlying 'event' if possible, or just the builder
+        builder.forItems(Ingredient.of(Items.GOLD_BLOCK))
+                .scene("test_raw_api", "Raw API Test", "phoenixcore:blank_48", (scene, util) -> {
+
+                    // --- 1. THE SETUP (MUST BE IN THIS ORDER) ---
+                    // This defines the 9x9 grid inside the 48x48 area
+                    scene.configureBasePlate(0, 0, 9);
+
+                    // This anchors the camera and tells Ponder to DRAW the grid
+                    scene.showBasePlate();
+
+                    // Wait for the renderer to catch up
+                    scene.idle(10);
+
+                    // --- 2. THE PLACEMENT ---
+                    // Use 4, 1, 4 to be in the center of the 9x9 grid
+                    BlockPos center = new BlockPos(4, 1, 4);
+                    scene.world().setBlock(center, Blocks.GOLD_BLOCK.defaultBlockState(), false);
+
+                    // --- 3. THE REVEAL ---
+                    scene.world().showSection(util.select().position(center), Direction.DOWN);
+
+                    scene.idle(20);
+                    scene.overlay().showText(60).text("Baseplate should be visible now!").placeNearTarget();
+                });
     }
 
     private static void registerScene(PonderBuilder builder, String target,
@@ -74,12 +106,12 @@ public class GTPonderProcesses {
             ctx.itemCue("tfc:powder/flux", barrelPos,
                     Map.of("rightClick", true, "pointing", Pointing.LEFT, "xOffset", 0.25));
             ctx.text("In a barrel, 500 mB water plus flux or lime becomes limewater.", barrelPos,
-                    Map.of("palette", PonderPalette.INPUT, "duration", 64));
+                    Map.of("palette", PonderPalette.INPUT, "duration", 48));
             ctx.idle(72);
 
             ctx.itemCue("minecraft:bone_meal", barrelPos, Map.of("rightClick", true, "pointing", Pointing.RIGHT));
             ctx.text("Seal bone meal in limewater to get solid TFC glue.", barrelPos,
-                    Map.of("palette", PonderPalette.OUTPUT, "duration", 64));
+                    Map.of("palette", PonderPalette.OUTPUT, "duration", 48));
             ctx.idle(72);
 
             ctx.itemCue("tfc:glue", gluePos, Map.of("pointing", Pointing.DOWN));

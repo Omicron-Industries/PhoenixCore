@@ -13,13 +13,13 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface SceneBuilderAccessor extends SceneBuilderInternalAccess {
 
     @Accessor(value = "scene", remap = false)
-    PonderScene ponderjs$getPonderScene();
+    PonderScene phoenixcore$getPonderScene();
 
     @Accessor(value = "world", remap = false)
     @Mutable
-    void ponderjs$setWorldInstructions(WorldInstructions worldInstructions);
+    void phoenixcore$setWorldInstructions(WorldInstructions worldInstructions);
 
     @Accessor(value = "special", remap = false)
     @Mutable
-    void ponderjs$setSpecialInstructions(SpecialInstructions specialInstructions);
+    void phoenixcore$setSpecialInstructions(SpecialInstructions specialInstructions);
 }

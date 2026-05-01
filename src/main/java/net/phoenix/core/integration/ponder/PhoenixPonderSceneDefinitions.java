@@ -95,7 +95,7 @@ public class PhoenixPonderSceneDefinitions {
                 PhoenixCore.MOD_ID,
                 "refined_multiblock_source_tank",
                 "Refined Multiblock Source Tank",
-                "tfg:gregtech_multiblocks/blank_64");
+                "tfg:gregtech_multiblocks/blank_48");
 
         String casingBlock = getBlockId(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING);
         String controllerBlock = getBlockId(PhoenixMachines.REFINED_MULTIBLOCK_SOURCE_TANK.asStack());
@@ -163,7 +163,7 @@ public class PhoenixPonderSceneDefinitions {
                 PhoenixCore.MOD_ID,
                 "honey_crystallization_chamber",
                 "Honey Crystallization Chamber",
-                "tfg:gregtech_multiblocks/blank_64");
+                "tfg:gregtech_multiblocks/blank_48");
 
         String steelFrame = getBlockId("gtceu", "steel_frame");
         String bronzeBricks = getBlockId(GTBlocks.CASING_BRONZE_BRICKS);
@@ -352,7 +352,7 @@ public class PhoenixPonderSceneDefinitions {
                 PhoenixCore.MOD_ID,
                 "alchemical_imbuer",
                 "Alchemical Imbuer",
-                "tfg:gregtech_multiblocks/blank_64");
+                "tfg:gregtech_multiblocks/blank_48");
 
         String sourceFiberCasing = getBlockId(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING);
         String sourcestone = "ars_nouveau:sourcestone";
@@ -495,7 +495,7 @@ public class PhoenixPonderSceneDefinitions {
                 PhoenixCore.MOD_ID,
                 "source_reactor",
                 "Source Reactor",
-                "tfg:gregtech_multiblocks/blank_64");
+                "tfg:gregtech_multiblocks/blank_48");
 
         String sourceFiberCasing = getBlockId(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING);
         String ptfePipe = getBlockId(GTBlocks.CASING_POLYTETRAFLUOROETHYLENE_PIPE);

@@ -1,5 +1,6 @@
 package net.phoenix.core.integration.ponder.api;
 
+import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -88,15 +89,13 @@ public class GTPonderRegistrar {
                 });
     }
 
-    // This method will be called to register all GTPonder scenes
     public static void registerAllGTPonderScenes() {
-        PonderRegistrationManager.register(event -> {
-            // registerAllMultiblockScenes iterates every GT MultiblockMachineDefinition and
-            // calls addGeneratedMultiblockScene() for each one — this is what populates the
-            // Ponder index. The old register() stub is intentionally empty and must NOT be
-            // called here.
-            GTPonderMultiblocks.registerAllMultiblockScenes(event);
-            GTPonderProcesses.register(event);
+        PonderRegistrationManager.register(builder -> {
+            // Pass the builder to Multiblocks (Update that method signature!)
+            GTPonderMultiblocks.registerAllMultiblockScenes(builder);
+            // Pass the builder to Processes
+            GTPonderProcesses.register(builder);
+            GTPonderProcesses.registerManualTest(builder);
         });
     }
 }

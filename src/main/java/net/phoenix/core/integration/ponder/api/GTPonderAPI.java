@@ -26,7 +26,7 @@ public class GTPonderAPI {
 
     public static final String GTPONDER_API_VERSION = "0.1.0";
     public static final ResourceLocation GTPONDER_DEFAULT_STRUCTURE_ID = new ResourceLocation(
-            "tfg:gregtech_multiblocks/blank_64");
+            "phoenixcore:blank_48");
     public static final int GTPONDER_DEFAULT_BASE_PLATE_SIZE = 7;
     public static final int GTPONDER_DEFAULT_TEXT_DURATION = 56;
     public static final int GTPONDER_DEFAULT_CUE_DURATION = 36;

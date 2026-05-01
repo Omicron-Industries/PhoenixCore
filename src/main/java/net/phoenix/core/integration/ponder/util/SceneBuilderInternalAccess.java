@@ -7,9 +7,9 @@ import net.createmod.ponder.foundation.PonderScene;
 // NOT a mixin — plain interface for casting in normal code
 public interface SceneBuilderInternalAccess {
 
-    PonderScene ponderjs$getPonderScene();
+    PonderScene phoenixcore$getPonderScene();
 
-    void ponderjs$setWorldInstructions(WorldInstructions worldInstructions);
+    void phoenixcore$setWorldInstructions(WorldInstructions worldInstructions);
 
-    void ponderjs$setSpecialInstructions(SpecialInstructions specialInstructions);
+    void phoenixcore$setSpecialInstructions(SpecialInstructions specialInstructions);
 }

@@ -1,5 +1,6 @@
 package net.phoenix.core.integration.ponder;
 
+import lombok.Getter;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.createmod.ponder.api.scene.PonderStoryBoard;
 import net.createmod.ponder.api.scene.SceneBuilder;
@@ -20,8 +21,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+@Getter
 public class PonderBuilder {
 
+    // In PonderBuilder.java
     private final PonderSceneRegistrationHelper<ResourceLocation> helper;
 
     public PonderBuilder(PonderSceneRegistrationHelper<ResourceLocation> helper) {
@@ -58,7 +61,7 @@ public class PonderBuilder {
         }
 
         public ForItemsBuilder scene(String name, String title, ExtendedPonderStoryBoard scene) {
-            return scene(name, title, "phoenixcore:gregtech_multiblocks/blank_64", scene);
+            return scene(name, title, "phoenixcore:blank_48", scene);
         }
 
         /**
@@ -66,7 +69,7 @@ public class PonderBuilder {
          *                      — the phoenixcore namespace is prepended automatically.
          * @param title         human-readable title registered via registerSharedText.
          * @param structureName full namespaced schematic id string
-         *                      (e.g. "phoenixcore:gregtech_multiblocks/blank_64").
+         *                      (e.g. "phoenixcore:gregtech_multiblocks/blank_48").
          *                      Passed directly as a ResourceLocation — NOT run through
          *                      appendPonderJSNamespaceToId.
          * @param scene         storyboard lambda.

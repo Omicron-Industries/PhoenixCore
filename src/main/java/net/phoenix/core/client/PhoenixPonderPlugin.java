@@ -34,14 +34,6 @@ public class PhoenixPonderPlugin implements PonderPlugin {
 
     @Override
     public void registerSharedText(SharedTextRegistrationHelper helper) {
-        // --- Multiblock scenes ---
-        // addGeneratedMultiblockScene() registers scenes with id path = "gregtech_multiblocks/<machinePath>".
-        // Ponder looks up tooltip text as "<sceneIdPath>.header", so we register
-        // "gregtech_multiblocks/<machinePath>.header" here — the keys now match.
-        //
-        // NOTE: The old code used "gregtech_multiblocks/<path>" as schematicPath and registered
-        // schematicPath + ".header", but the scene id was "<path>_structure", causing a mismatch.
-        // Both sides are now aligned on "gregtech_multiblocks/<path>".
         GTRegistries.MACHINES.values().stream()
                 .filter(MultiblockMachineDefinition.class::isInstance)
                 .map(MultiblockMachineDefinition.class::cast)
@@ -54,13 +46,14 @@ public class PhoenixPonderPlugin implements PonderPlugin {
                 })
                 .forEach(def -> {
                     String path = def.getId().getPath();
-                    // Scene id path used in addGeneratedMultiblockScene():
+                    // Scene id path used in addGeneratedMultiblockScene() — must use "/" separator
+                    // to match the id.getPath() that ForItemsBuilder.scene() registers with Ponder.
                     String sceneIdPath = "gregtech_multiblocks/" + path;
                     String title = toTitleCase(path);
-                    // Register the header (displayed in the Ponder scene title bar)
+                    // Register the header (displayed in the Ponder scene title bar).
+                    // Ponder resolves shared text by scene id path (slash-separated, no namespace).
                     helper.registerSharedText(sceneIdPath + ".header", title);
                     // Register a description tooltip shown in the Ponder index / item hover.
-                    // Ponder looks this up as "<sceneIdPath>.description".
                     helper.registerSharedText(sceneIdPath + ".description",
                             "Shows the assembled structure, part locations, and operating mechanics for the " + title +
                                     ".");

@@ -27,7 +27,6 @@
     "minecraft.RecipeManagerMixin"
   ],
   "client": [
-    "ParticleAccessor",
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
     "minecraft.GameRendererMixin",

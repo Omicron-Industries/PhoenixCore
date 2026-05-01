@@ -39,7 +39,7 @@ const $GTPonderResourceLocation = Java.loadClass(
 
 const GTPONDER_API_VERSION = "0.1.0";
 const GTPONDER_DEFAULT_STRUCTURE_ID = new $GTPonderResourceLocation(
-  "tfg:gregtech_multiblocks/blank_64",
+  "tfg:gregtech_multiblocks/blank_48",
 );
 const GTPONDER_DEFAULT_BASE_PLATE_SIZE = 7;
 const GTPONDER_DEFAULT_TEXT_DURATION = 56;
