@@ -3,14 +3,14 @@
   "loader": "gtceu:machine",
   "machine": "phoenixcore:alchemical_imbuer",
   "texture_overrides": {
-    "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh"
+    "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel"
   },
   "variants": {
     "is_formed=false,recipe_logic_status=idle": {
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front",
           "overlay_front_emissive": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_emissive"
         }
@@ -20,7 +20,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_paused"
         }
       }
@@ -29,7 +29,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active",
           "overlay_front_emissive": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active_emissive"
         }
@@ -39,7 +39,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active",
           "overlay_front_emissive": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active_emissive"
         }
@@ -49,7 +49,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front",
           "overlay_front_emissive": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_emissive"
         }
@@ -59,7 +59,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_paused"
         }
       }
@@ -68,7 +68,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active",
           "overlay_front_emissive": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active_emissive"
         }
@@ -78,7 +78,7 @@
       "model": {
         "parent": "gtceu:block/machine/template/cube_all/sided",
         "textures": {
-          "all": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh",
+          "all": "gtceu:block/casings/mechanic/machine_casing_turbine_tungstensteel",
           "overlay_front": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active",
           "overlay_front_emissive": "phoenixcore:block/multiblock/alchemical_imbuer/overlay_front_active_emissive"
         }

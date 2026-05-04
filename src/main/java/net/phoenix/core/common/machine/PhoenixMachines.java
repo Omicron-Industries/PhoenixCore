@@ -94,6 +94,7 @@ import static net.phoenix.core.api.machine.PhoenixPartAbility.SOURCE_INPUT;
 import static net.phoenix.core.api.machine.PhoenixPartAbility.SOURCE_OUTPUT;
 import static net.phoenix.core.client.tooltips.PhoenixMachineTooltips.*;
 import static net.phoenix.core.common.block.PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING;
+import static net.phoenix.core.common.block.PhoenixBlocks.SUPER_STABLE_FUSION_CASING;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 import static net.phoenix.core.configs.PhoenixConfigs.INSTANCE;
@@ -182,15 +183,18 @@ public class PhoenixMachines {
         return builder.register();
     }
 
-    public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
-            "refined_multiblock_source_tank",
-            "Refined Multiblock Source Tank",
-            50000 * 1000,
-            SOURCE_FIBER_MACHINE_CASING,
-            100,
-            (builder, overlay) -> builder
-                    .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
-                            overlay));
+    /*
+     * public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
+     * "refined_multiblock_source_tank",
+     * "Refined Multiblock Source Tank",
+     * 50000 * 1000,
+     * SOURCE_FIBER_MACHINE_CASING,
+     * 100,
+     * (builder, overlay) -> builder
+     * .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
+     * overlay));
+     * 
+     */
 
     public static final MachineDefinition[] SOURCE_IMPORT_HATCH = registerSourceHatch(
             "source_input_hatch", "Source Input Hatch",
@@ -1241,7 +1245,7 @@ public class PhoenixMachines {
                                     .getValue(ResourceLocation.parse("ars_nouveau:vitalic_sourcelink"))))
                     .where("K", Predicates.controller(Predicates.blocks(definition.get())))
                     .build())
-            .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
+            .workableCasingModel(GTCEu.id("block/casings/mechanic/machine_casing_turbine_tungstensteel"),
                     PhoenixCore.id("block/multiblock/alchemical_imbuer"))
             .tooltipBuilder(ALCHEMICAL_IMBUER_TOOLTIPS)
             .register();
@@ -1252,7 +1256,7 @@ public class PhoenixMachines {
             .langValue("§5Source Reactor")
             .recipeType(PhoenixRecipeTypes.SOURCE_REACTOR_RECIPES)
             .recipeModifiers(SourceReactorMachine::recipeModifier, OC_NON_PERFECT_SUBTICK, BATCH_MODE)
-            .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
+            .appearanceBlock(SUPER_STABLE_FUSION_CASING)
             .pattern(definition -> {
                 var casing = blocks(SOURCE_FIBER_MACHINE_CASING.get()).setMinGlobalLimited(10);
                 var abilities = Predicates.autoAbilities(definition.getRecipeTypes())

@@ -25,6 +25,20 @@ public class PhoenixFissionBlocks {
 
     public static void init() {}
 
+    public static final BlockEntry<NukeBlock> NUKE_BLOCK = REGISTRATE
+            .block("nuke", NukeBlock::new)
+            .initialProperties(() -> Blocks.TNT)
+            .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                    prov.models().cubeBottomTop(
+                            ctx.getName(),
+                            PhoenixCore.id("block/nuke_side"),
+                            PhoenixCore.id("block/nuke_bottom"),
+                            PhoenixCore.id("block/nuke_top"))))
+            .item(BlockItem::new)
+            .build()
+            .register();
+
     // --- Coolers ---
     public static final BlockEntry<FissionCoolerBlock> COOLER_BASIC = createCoolerBlock(
             FissionCoolerBlock.FissionCoolerTypes.COOLER_BASIC);
@@ -77,34 +91,6 @@ public class PhoenixFissionBlocks {
     public static BlockEntry<Block> FISSILE_SAFE_GEARBOX_CASING = registerSimpleBlock("§bFissile Safe Gearbox",
             "fissile_safe_gearbox_casing", "fissile_safe_gearbox", BlockItem::new);
 
-    public static final BlockEntry<NukeBlock> NUKE_BLOCK = REGISTRATE
-            .block("nuke", NukeBlock::new)
-            .initialProperties(() -> Blocks.TNT)
-            .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
-            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                    prov.models().cubeBottomTop(
-                            ctx.getName(),
-                            PhoenixCore.id("block/nuke_side"),
-                            PhoenixCore.id("block/nuke_bottom"),
-                            PhoenixCore.id("block/nuke_top"))))
-            .item(BlockItem::new)
-            .build()
-            .register();
-
-    private static BlockEntry<FissionModeratorBlock> createModeratorBlock(IFissionModeratorType type) {
-        var moderator = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionModeratorBlock(p, type))
-                .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false))
-                .blockstate(PhoenixFissionMachineModels.createFissionModeratorModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
-                .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
-                .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
-                .build().register();
-        PhoenixAPI.FISSION_MODERATORS.put(type, moderator);
-        return moderator;
-    }
-
     public static final BlockEntry<Block> EMPTY_REACTOR_COMPONENT = REGISTRATE
             .block("empty_reactor_component", Block::new)
             .initialProperties(() -> Blocks.IRON_BLOCK)
@@ -115,54 +101,80 @@ public class PhoenixFissionBlocks {
             .build()
             .register();
 
-    private static BlockEntry<FissionFuelRodBlock> createFuelRodBlock(IFissionFuelRodType type) {
-        var rod = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionFuelRodBlock(p, type))
+    private static BlockEntry<FissionModeratorBlock> createModeratorBlock(IFissionModeratorType type) {
+        var moderator = REGISTRATE
+                .block("%s".formatted(type.getName()),
+                        p -> new FissionModeratorBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false))
-                .blockstate(PhoenixFissionMachineModels.createFuelRodModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
+                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                .blockstate(PhoenixFissionMachineModels.createFissionModeratorModel(type))
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
-                .build().register();
+                .build()
+                .register();
+
+        PhoenixAPI.FISSION_MODERATORS.put(type, moderator);
+        return moderator;
+    }
+
+    private static BlockEntry<FissionFuelRodBlock> createFuelRodBlock(IFissionFuelRodType type) {
+        var rod = REGISTRATE
+                .block("%s".formatted(type.getName()),
+                        p -> new FissionFuelRodBlock(p, type))
+                .initialProperties(() -> Blocks.IRON_BLOCK)
+                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                .blockstate(PhoenixFissionMachineModels.createFuelRodModel(type))
+                .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
+                .item(BlockItem::new)
+                .build()
+                .register();
         PhoenixAPI.FISSION_FUEL_RODS.put(type, rod);
         return rod;
     }
 
     private static BlockEntry<FissionBlanketBlock> createBlanketBlock(IFissionBlanketType type) {
-        var blanket = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionBlanketBlock(p, type))
+        var blanket = REGISTRATE
+                .block("%s".formatted(type.getName()),
+                        p -> new FissionBlanketBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false)) // Added noOcclusion()
+                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
                 .blockstate(PhoenixFissionMachineModels.createBlanketRodModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
-                .build().register();
+                .build()
+                .register();
+
         PhoenixAPI.FISSION_BLANKETS.put(type, blanket);
         return blanket;
     }
 
     private static BlockEntry<FissionCoolerBlock> createCoolerBlock(IFissionCoolerType type) {
-        var cooler = REGISTRATE.block("%s".formatted(type.getName()), p -> new FissionCoolerBlock(p, type))
+        var cooler = REGISTRATE
+                .block("%s".formatted(type.getName()),
+                        p -> new FissionCoolerBlock(p, type))
                 .initialProperties(() -> Blocks.IRON_BLOCK)
-                .properties(p -> p.noOcclusion().isValidSpawn((state, level, pos, ent) -> false))
+                .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
                 .blockstate(PhoenixFissionMachineModels.createActiveCoolerModel(type))
-                .color(() -> () -> (state, world, pos, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
                 .tag(CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
                 .item(BlockItem::new)
-                .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? type.getTintColor() : 0xFFFFFFFF)
-                .build().register();
+                .build()
+                .register();
+
         PhoenixAPI.FISSION_COOLERS.put(type, cooler);
         return cooler;
     }
 
     private static @NotNull BlockEntry<Block> registerSimpleBlock(String name, String id, String texture,
                                                                   NonNullBiFunction<Block, Item.Properties, ? extends BlockItem> func) {
-        return REGISTRATE.block(id, Block::new).initialProperties(() -> Blocks.IRON_BLOCK)
+        return REGISTRATE
+                .block(id, Block::new)
+                .initialProperties(() -> Blocks.IRON_BLOCK)
                 .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                         prov.models().cubeAll(ctx.getName(), PhoenixCore.id("block/" + texture))))
-                .lang(name).item(func).build().register();
+                .lang(name)
+                .item(func)
+                .build()
+                .register();
     }
 }

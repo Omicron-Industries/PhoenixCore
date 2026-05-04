@@ -234,12 +234,8 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
     @Override
     public void onStructureInvalid() {
-        // We REMOVE the doMeltdown() checks here.
-        // Breaking a block is now a valid (if messy) way to stop a meltdown.
-
         super.onStructureInvalid();
 
-        // Reset all internal logic so the machine "forgets" it was about to explode
         meltdownInProgress = false;
         meltdownTimerTicks = -1;
         meltdownTimerMax = 0;
@@ -304,12 +300,8 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         handleReactorLogic(running);
         this.lastRunning = running;
 
-        // ── HATCH TICKS ──────────────────────────────────────────────────────
-        // Sensor hatches push neighbour updates so the redstone network stays
-        // in sync. Advanced scram hatches need a tick to run their sustain timer.
         tickSensorHatches();
         tickAdvancedScramHatches();
-        // ─────────────────────────────────────────────────────────────────────
 
         markDirty();
     }
@@ -365,11 +357,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             }
         }
 
-        // Check Fuel for the CURRENT parallel count
-        // hasFuelAvailableForNextTick() already calculates based on lastParallels
         if (!hasFuelAvailableForNextTick()) {
-            // This is the "Stall" point. By returning false, the reactor logic
-            // in reactorTick() will call setMachineActiveSafe(false).
             return false;
         }
 
@@ -397,10 +385,9 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
         int toConsumeNow = (int) Math.floor(fuelRemainder);
         if (toConsumeNow > 0) {
-            // SECONDARY SAFETY: If for some reason we got here but can't consume,
-            // we reset heat to 0 production rather than melting down.
+
             if (!tryConsumeItemKey(itemId, toConsumeNow)) {
-                fuelRemainder = 0; // Reset to avoid double-dipping next tick
+                fuelRemainder = 0;
                 return;
             }
             fuelRemainder -= toConsumeNow;
@@ -593,11 +580,8 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         } else {
             lastParallels = Math.max(1, computeParallels());
 
-            // --- NEW VARIABLE PASSIVE COOLING ---
             if (cfg().passiveCooling) {
-                // Calculate a 0.5% decay based on current heat
                 double variableCooling = this.heat * 0.005;
-                // Ensure we at least lose the idleHeatLoss so it doesn't stall near 0
                 heat -= Math.max(cfg().idleHeatLoss, variableCooling);
             }
         }
@@ -618,8 +602,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         if (!cfg().coolingRequiresCoolant || lastHasCoolant) {
             double aboveMin = Math.max(0.0, heat - cfg().minHeat);
 
-            // If running, use full cooling.
-            // If off, perhaps coolers run at 25% efficiency (residual coolant flow)
             double coolingPower = running ? totalCooling : (totalCooling * 0.25);
 
             removed = Math.min(aboveMin, coolingPower);
@@ -1021,9 +1003,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         double safe = cfg().maxSafeHeat;
 
         if (heat <= safe) {
-            // --- UPDATED LOGIC ---
-            // Only reset the timer if the config allows it.
-            // If false, the timer remains 'stored' at its last value.
             if (cfg().meltdown.clearTimerWhenSafe) {
                 meltdownTimerTicks = -1;
                 meltdownTimerMax = 0;
@@ -1031,7 +1010,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             return;
         }
 
-        // Calculation for dynamic grace period based on heat severity
         double excess = heat - safe;
         double sev = Math.max(0.0001, cfg().meltdown.excessHeatSeverity);
 
@@ -1065,18 +1043,14 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             BlockPos controllerPos = getPos();
             var state = this.getMultiblockState();
 
-            // 1. Capture the structural blocks BEFORE unforming
             List<BlockPos> structureBlocks = new ArrayList<>();
-            // FIX: Added null checks for state and getCache() to prevent NullPointerException
             if (state != null && this.isFormed() && state.getCache() != null) {
                 structureBlocks.addAll(state.getCache());
             }
 
-            // 2. UNFORM THE MACHINE
-            // This stops the reactor logic and detaches the controller from the blocks
             this.onStructureInvalid();
 
-            // 3. TARGETED VAPORIZATION
+            // TARGETED VAPORIZATION
             if (cfg().explosion.destructiveExplosion) {
                 for (BlockPos structurePos : structureBlocks) {
                     if (structurePos.equals(controllerPos)) continue;
@@ -1093,7 +1067,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                             block instanceof FissionModeratorBlock;
 
                     if (shouldVaporize) {
-                        // Vaporize: remove block, no drops, spawn smoke
                         world.removeBlock(structurePos, false);
                         world.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,
                                 structurePos.getX() + 0.5, structurePos.getY() + 0.5, structurePos.getZ() + 0.5,
@@ -1102,19 +1075,15 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 }
             }
 
-            // 4. THE VISUAL/AUDIO POP
-            // We use NONE interaction so it doesn't break the dirt/floor
             float explosionPower = cfg().explosion.baseExplosionPower +
                     (float) (activeFuelRods.size() * cfg().explosion.explosionPowerPerFuelRod);
 
             world.explode(null, controllerPos.getX() + 0.5, controllerPos.getY() + 0.5, controllerPos.getZ() + 0.5,
                     explosionPower, false, Level.ExplosionInteraction.NONE);
 
-            // 5. REMOVE CONTROLLER
             world.removeBlock(controllerPos, false);
         }
 
-        // Reset stats
         meltdownTimerTicks = -1;
         heat = cfg().minHeat;
         meltdownInProgress = false;
@@ -1277,22 +1246,17 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         final var cfg = cfg();
         final boolean overheating = heat > cfg.maxSafeHeat;
 
-        // 1. Heat: Uses the key you defined: "Core Temperature: %s / %s HU"
         textList.add(Component.translatable("phoenixcore.current_heat_display",
                 String.format("%.1f", heat), String.format("%.1f", cfg.maxSafeHeat))
                 .withStyle(s -> s.withColor(overheating ? 0xFF3333 : 0x33FF33)));
 
-        // 2. EU Output: Custom helper for the GT Voltage tiers
         textList.add(getVoltageFormattedOutput(lastGeneratedEUt));
 
-        // 3. Parallels: Uses "Parallel Processing: %sx"
         textList.add(Component.translatable("phoenixcore.parallels", lastParallels));
 
-        // 4. Cooling: Uses "Cooling Capacity: %s HU/t"
         textList.add(Component.translatable("phoenixcore.cooling_power", lastProvidedCooling)
                 .withStyle(s -> s.withColor(0x55FFFF)));
 
-        // 5. Primary Components (Fixing the "None" and "Raw Name" issue)
         textList.add(Component.literal("Fuel Rods: " + activeFuelRods.size() + " (Primary: ")
                 .append(getComponentTranslation(primaryFuelRodType))
                 .append(")"));
@@ -1305,13 +1269,11 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 .append(getComponentTranslation(primaryCoolerType))
                 .append(")"));
 
-        // 6. Stats: Using the keys from your block tooltips
         textList.add(Component.translatable("block.phoenixcore.fission_moderator.boost",
                 getModeratorEUBoostClamped() + "%"));
         textList.add(Component.translatable("block.phoenixcore.fission_moderator.fuel_discount",
                 getModeratorFuelDiscountClamped() + "%"));
 
-        // 7. Status
         textList.add(Component
                 .translatable(lastHasCoolant ? "phoenixcore.coolant_status.ok" : "phoenixcore.coolant_status.empty"));
 
@@ -1320,9 +1282,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         }
     }
 
-    /**
-     * Helper to translate the Enum types into the names you defined in your Lang Handler
-     */
     private Component getComponentTranslation(@Nullable Object type) {
         if (type == null) return Component.literal("None").withStyle(ChatFormatting.DARK_GRAY);
 
@@ -1338,26 +1297,19 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
      * Formats EU into GregTech tiers (ULV, LV, MV...) with color
      */
     private Component getVoltageFormattedOutput(long euOut) {
-        // Default to ULV (Tier 0)
         int tier = 0;
 
-        // Iterate through the voltage array to find the highest tier
-        // that the current output meets or exceeds.
-        // GTValues.V contains the base voltages: [8, 32, 128, 512, 2048, 8192, ...]
         for (int i = 0; i < GTValues.V.length; i++) {
             if (euOut >= GTValues.V[i]) {
                 tier = i;
             } else {
-                // Once we find a tier voltage higher than our output, we stop.
                 break;
             }
         }
 
-        // Formatting: "Output: 8192 EU/t (IV)"
-        // This will now stay "IV" until euOut reaches 32768 (LuV)
         return Component.translatable("phoenixcore.eu_generation", euOut)
                 .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(GTValues.VNF[tier])) // VNF contains the colored strings like "IV"
+                .append(Component.literal(GTValues.VNF[tier]))
                 .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
 

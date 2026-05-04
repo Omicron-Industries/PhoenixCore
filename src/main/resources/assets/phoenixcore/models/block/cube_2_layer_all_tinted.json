@@ -1,37 +1,33 @@
 {
-  "parent": "block/block",
-  "ambientocclusion": false,
+  "parent": "block/cube_all",
   "textures": {
     "bot_all": "#bot_all",
     "top_all": "#top_all",
-    "particle": "#top_all"
+    "particle": "#bot_all"
   },
   "elements": [
     {
-      "name": "base_frame",
-      "from": [ 0, 0, 0 ],
-      "to": [ 16, 16, 16 ],
+      "from": [0,0,0],
+      "to": [16,16,16],
       "faces": {
-        "down":  { "texture": "#top_all", "cullface": "down" },
-        "up":    { "texture": "#top_all", "cullface": "up" },
-        "north": { "texture": "#top_all", "cullface": "north" },
-        "south": { "texture": "#top_all", "cullface": "south" },
-        "west":  { "texture": "#top_all", "cullface": "west" },
-        "east":  { "texture": "#top_all", "cullface": "east" }
+        "north": { "texture": "#bot_all" },
+        "south": { "texture": "#bot_all" },
+        "east":  { "texture": "#bot_all" },
+        "west":  { "texture": "#bot_all" },
+        "up":    { "texture": "#bot_all" },
+        "down":  { "texture": "#bot_all" }
       }
     },
     {
-      "name": "tinted_mask",
-      "from": [ -0.02, -0.02, -0.02 ],
-      "to": [ 16.02, 16.02, 16.02 ],
-      "shade": false,
+      "from": [0,0,0],
+      "to": [16,16,16],
       "faces": {
-        "down":  { "texture": "#bot_all", "tintindex": 0 },
-        "up":    { "texture": "#bot_all", "tintindex": 0 },
-        "north": { "texture": "#bot_all", "tintindex": 0 },
-        "south": { "texture": "#bot_all", "tintindex": 0 },
-        "west":  { "texture": "#bot_all", "tintindex": 0 },
-        "east":  { "texture": "#bot_all", "tintindex": 0 }
+        "north": { "texture": "#top_all", "tintindex": 0 },
+        "south": { "texture": "#top_all", "tintindex": 0 },
+        "east":  { "texture": "#top_all", "tintindex": 0 },
+        "west":  { "texture": "#top_all", "tintindex": 0 },
+        "up":    { "texture": "#top_all", "tintindex": 0 },
+        "down":  { "texture": "#top_all", "tintindex": 0 }
       }
     }
   ]

@@ -5,31 +5,32 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
-
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
+
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.createmod.ponder.foundation.instruction.ReplaceBlocksInstruction;
-import net.createmod.ponder.foundation.instruction.RotateSceneInstruction;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.integration.ponder.PonderBuilder;
 import net.phoenix.core.integration.ponder.api.ExtendedSceneBuilder;
 import net.phoenix.core.integration.ponder.api.GTPonderAPI;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -41,13 +42,17 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class GTPonderMultiblocks {
+
     private static final Logger LOGGER = LogManager.getLogger("GTPonderMultiblocks");
 
-    public static final ResourceLocation GT_PONDER_STRUCTURE_ID =
-            new ResourceLocation("phoenixcore", "blank_48");
+    public static final ResourceLocation GT_PONDER_STRUCTURE_ID = new ResourceLocation("phoenixcore", "blank_48");
     public static final int GT_PONDER_STRUCTURE_SIZE = 16;
     public static final int GT_PONDER_STRUCTURE_HEIGHT = 48;
     public static final String GT_META_MACHINE_BLOCK_CLASS_NAME = "com.gregtechceu.gtceu.api.block.MetaMachineBlock";
+
+    public static final Map<String, ShapeData> GT_SCENE_SHAPE_DATA = new HashMap<>();
+    public static ShapeData GT_CURRENT_SHAPE_DATA = null;
+    public static final String GT_PONDER_EMSPACE = "\u2003";
     public static final int GT_CALLOUT_DURATION = 24;
     public static final int GT_PART_CALLOUT_DURATION = GT_CALLOUT_DURATION;
     public static final int GT_PART_CALLOUT_IDLE = GT_CALLOUT_DURATION;
@@ -67,87 +72,165 @@ public class GTPonderMultiblocks {
     public static final int GT_MAX_MECHANIC_STEPS = 7;
 
     public static final List<PonderPalette> GT_DYNAMIC_CALLOUT_PALETTES = List.of(
-            PonderPalette.BLUE, PonderPalette.MEDIUM, PonderPalette.SLOW, PonderPalette.FAST
-    );
+            PonderPalette.BLUE, PonderPalette.MEDIUM, PonderPalette.SLOW, PonderPalette.FAST);
 
     public static final List<PartCallout> GT_PART_CALLOUTS = List.of(
-            new PartCallout("maintenance", PonderPalette.RED, "Maintenance hatches", "handle repairs and maintenance problems.", (path) -> path.contains("maintenance")),
-            new PartCallout("energy_input", PonderPalette.GREEN, "Energy input hatches", "feed EU into powered multiblocks.", (path) -> path.contains("energy") && path.contains("hatch") && !path.contains("output")),
-            new PartCallout("energy_output", PonderPalette.GREEN, "Dynamo hatches", "emit EU from generator multiblocks.", (path) -> path.contains("dynamo") || path.contains("energy_output") || path.contains("laser_output")),
-            new PartCallout("item_input", PonderPalette.INPUT, "Input buses", "accept item ingredients.", (path) -> path.contains("input_bus")),
-            new PartCallout("fluid_input", PonderPalette.INPUT, "Input hatches", "accept fluid ingredients.", (path) -> path.contains("input_hatch")),
-            new PartCallout("item_output", PonderPalette.OUTPUT, "Output buses", "collect item products.", (path) -> path.contains("output_bus")),
-            new PartCallout("fluid_output", PonderPalette.OUTPUT, "Output hatches", "collect fluid products.", (path) -> path.contains("output_hatch")),
-            new PartCallout("muffler", PonderPalette.SLOW, "Muffler hatches", "route exhaust and pollution-sensitive outputs.", (path) -> path.contains("muffler")),
-            new PartCallout("laser", PonderPalette.FAST, "Laser hatches", "move high-amperage laser power.", (path) -> path.contains("laser")),
-            new PartCallout("data", PonderPalette.MEDIUM, "Data and computation hatches", "connect data, computation, or advanced network links.", (path) -> path.contains("data") || path.contains("computation") || path.contains("network"))
-    );
+            new PartCallout("maintenance", PonderPalette.RED, "Maintenance hatches",
+                    "handle repairs and maintenance problems.", (path) -> path.contains("maintenance")),
+            new PartCallout("energy_input", PonderPalette.GREEN, "Energy input hatches",
+                    "feed EU into powered multiblocks.",
+                    (path) -> path.contains("energy") && path.contains("hatch") && !path.contains("output")),
+            new PartCallout("energy_output", PonderPalette.GREEN, "Dynamo hatches",
+                    "emit EU from generator multiblocks.",
+                    (path) -> path.contains("dynamo") || path.contains("energy_output") ||
+                            path.contains("laser_output")),
+            new PartCallout("item_input", PonderPalette.INPUT, "Input buses", "accept item ingredients.",
+                    (path) -> path.contains("input_bus")),
+            new PartCallout("fluid_input", PonderPalette.INPUT, "Input hatches", "accept fluid ingredients.",
+                    (path) -> path.contains("input_hatch")),
+            new PartCallout("item_output", PonderPalette.OUTPUT, "Output buses", "collect item products.",
+                    (path) -> path.contains("output_bus")),
+            new PartCallout("fluid_output", PonderPalette.OUTPUT, "Output hatches", "collect fluid products.",
+                    (path) -> path.contains("output_hatch")),
+            new PartCallout("muffler", PonderPalette.SLOW, "Muffler hatches",
+                    "route exhaust and pollution-sensitive outputs.", (path) -> path.contains("muffler")),
+            new PartCallout("laser", PonderPalette.FAST, "Laser hatches", "move high-amperage laser power.",
+                    (path) -> path.contains("laser")),
+            new PartCallout("data", PonderPalette.MEDIUM, "Data and computation hatches",
+                    "connect data, computation, or advanced network links.",
+                    (path) -> path.contains("data") || path.contains("computation") || path.contains("network")));
 
     public static final List<MechanicRule> GT_GENERIC_MECHANIC_RULES = List.of(
-            new MechanicRule("recipe_flow", List.of("inputs", "outputs", "controller"), PonderPalette.BLUE, "Inputs move toward the controller, while outputs leave through their matching buses or hatches.", "automation", (shape) -> hasAnyFocus(shape, "inputs") && hasAnyFocus(shape, "outputs")),
-            new MechanicRule("power_feed", List.of("part:energy_input", "part:laser"), PonderPalette.GREEN, "Energy hatches define how EU reaches the multiblock; higher tiers may need multiple amps or laser power.", "power", (shape) -> hasAnyFocus(shape, List.of("part:energy_input", "part:laser"))),
-            new MechanicRule("maintenance_access", "part:maintenance", PonderPalette.RED, "Maintenance access keeps the machine running after problems appear; automated hatches can reduce downtime.", "pulse", (shape) -> hasAnyFocus(shape, "part:maintenance")),
-            new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW, "Coils are recipe-critical: they set heat tier and often affect overclocking or energy use.", "heat", (shape) -> hasAnyFocus(shape, "structure:coil")),
-            new MechanicRule("exhaust", "part:muffler", PonderPalette.SLOW, "Mufflers handle exhaust or pollution outputs, so leave their face unobstructed when the machine requires it.", "output", (shape) -> hasAnyFocus(shape, "part:muffler")),
-            new MechanicRule("data_links", "part:data", PonderPalette.MEDIUM, "Data and computation hatches connect research, data sticks, CWU, or networked control to advanced machines.", "data", (shape) -> hasAnyFocus(shape, "part:data")),
-            new MechanicRule("parallel_control", "machine:parallel", PonderPalette.FAST, "Parallel control hatches let supported machines run multiple recipes at once from the same structure.", "pulse", (shape) -> hasAnyFocus(shape, "machine:parallel")),
-            new MechanicRule("clean_environment", List.of("structure:cleanroom", "structure:filter"), PonderPalette.MEDIUM, "Cleanroom and filter blocks mark controlled-environment requirements for sensitive recipes.", "cooling", (shape) -> hasAnyFocus(shape, List.of("structure:cleanroom", "structure:filter"))),
-            new MechanicRule("rotor_drive", List.of("structure:rotor", "structure:turbine", "machine:rotor", "machine:turbine"), PonderPalette.FAST, "Rotor and turbine parts are the working core for machines that convert motion, fluids, or gases into power.", "pulse", (shape) -> hasAnyFocus(shape, List.of("structure:rotor", "structure:turbine", "machine:rotor", "machine:turbine"))),
-            new MechanicRule("firebox_heat", List.of("structure:firebox", "structure:burner"), PonderPalette.SLOW, "Firebox and burner blocks mark the combustion section that supplies heat to this structure.", "heat", (shape) -> hasAnyFocus(shape, List.of("structure:firebox", "structure:burner")))
-    );
+            new MechanicRule("recipe_flow", List.of("inputs", "outputs", "controller"), PonderPalette.BLUE,
+                    "Inputs move toward the controller, while outputs leave through their matching buses or hatches.",
+                    "automation", (shape) -> hasAnyFocus(shape, "inputs") && hasAnyFocus(shape, "outputs")),
+            new MechanicRule("power_feed", List.of("part:energy_input", "part:laser"), PonderPalette.GREEN,
+                    "Energy hatches define how EU reaches the multiblock; higher tiers may need multiple amps or laser power.",
+                    "power", (shape) -> hasAnyFocus(shape, List.of("part:energy_input", "part:laser"))),
+            new MechanicRule("maintenance_access", "part:maintenance", PonderPalette.RED,
+                    "Maintenance access keeps the machine running after problems appear; automated hatches can reduce downtime.",
+                    "pulse", (shape) -> hasAnyFocus(shape, "part:maintenance")),
+            new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW,
+                    "Coils are recipe-critical: they set heat tier and often affect overclocking or energy use.",
+                    "heat", (shape) -> hasAnyFocus(shape, "structure:coil")),
+            new MechanicRule("exhaust", "part:muffler", PonderPalette.SLOW,
+                    "Mufflers handle exhaust or pollution outputs, so leave their face unobstructed when the machine requires it.",
+                    "output", (shape) -> hasAnyFocus(shape, "part:muffler")),
+            new MechanicRule("data_links", "part:data", PonderPalette.MEDIUM,
+                    "Data and computation hatches connect research, data sticks, CWU, or networked control to advanced machines.",
+                    "data", (shape) -> hasAnyFocus(shape, "part:data")),
+            new MechanicRule("parallel_control", "machine:parallel", PonderPalette.FAST,
+                    "Parallel control hatches let supported machines run multiple recipes at once from the same structure.",
+                    "pulse", (shape) -> hasAnyFocus(shape, "machine:parallel")),
+            new MechanicRule("clean_environment", List.of("structure:cleanroom", "structure:filter"),
+                    PonderPalette.MEDIUM,
+                    "Cleanroom and filter blocks mark controlled-environment requirements for sensitive recipes.",
+                    "cooling", (shape) -> hasAnyFocus(shape, List.of("structure:cleanroom", "structure:filter"))),
+            new MechanicRule("rotor_drive",
+                    List.of("structure:rotor", "structure:turbine", "machine:rotor", "machine:turbine"),
+                    PonderPalette.FAST,
+                    "Rotor and turbine parts are the working core for machines that convert motion, fluids, or gases into power.",
+                    "pulse",
+                    (shape) -> hasAnyFocus(shape,
+                            List.of("structure:rotor", "structure:turbine", "machine:rotor", "machine:turbine"))),
+            new MechanicRule("firebox_heat", List.of("structure:firebox", "structure:burner"), PonderPalette.SLOW,
+                    "Firebox and burner blocks mark the combustion section that supplies heat to this structure.",
+                    "heat", (shape) -> hasAnyFocus(shape, List.of("structure:firebox", "structure:burner"))));
 
     public static final Map<String, List<MechanicRule>> GT_MACHINE_MECHANIC_STEPS = new HashMap<>();
     static {
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:assembly_line", List.of(
-                new MechanicRule("recipe_flow", List.of("part:item_input", "part:data", "part:item_output"), PonderPalette.BLUE, "Assembly Line item inputs are read along the line, then finished products leave through the output bus.", "automation", null),
-                new MechanicRule("data_links", "part:data", PonderPalette.MEDIUM, "The data hatch supplies research data for advanced components that cannot be assembled from items alone.", "data", null)
-        ));
+                new MechanicRule("recipe_flow", List.of("part:item_input", "part:data", "part:item_output"),
+                        PonderPalette.BLUE,
+                        "Assembly Line item inputs are read along the line, then finished products leave through the output bus.",
+                        "automation", null),
+                new MechanicRule("data_links", "part:data", PonderPalette.MEDIUM,
+                        "The data hatch supplies research data for advanced components that cannot be assembled from items alone.",
+                        "data", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:cleanroom", List.of(
-                new MechanicRule("clean_environment", List.of("structure:filter", "structure:cleanroom"), PonderPalette.MEDIUM, "Filter casings belong in the ceiling and define the controlled environment inside the Cleanroom.", "cooling", null),
-                new MechanicRule("cleanroom_walls", List.of("structure:glass", "structure:door", "structure:plascrete"), PonderPalette.BLUE, "Walls, glass, and doors enclose the clean volume while still allowing machine access.", "pulse", null)
-        ));
+                new MechanicRule("clean_environment", List.of("structure:filter", "structure:cleanroom"),
+                        PonderPalette.MEDIUM,
+                        "Filter casings belong in the ceiling and define the controlled environment inside the Cleanroom.",
+                        "cooling", null),
+                new MechanicRule("cleanroom_walls", List.of("structure:glass", "structure:door", "structure:plascrete"),
+                        PonderPalette.BLUE,
+                        "Walls, glass, and doors enclose the clean volume while still allowing machine access.",
+                        "pulse", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:cracker", List.of(
-                new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW, "Every coil tier above Cupronickel lowers the Cracker's energy cost for oil cracking recipes.", "heat", null)
-        ));
+                new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW,
+                        "Every coil tier above Cupronickel lowers the Cracker's energy cost for oil cracking recipes.",
+                        "heat", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:distillation_tower", List.of(
-                new MechanicRule("recipe_flow", List.of("part:fluid_input", "part:fluid_output", "part:item_output"), PonderPalette.BLUE, "The tower takes fluid input near the bottom and separates products into vertical output layers.", "vertical_outputs", null)
-        ));
+                new MechanicRule("recipe_flow", List.of("part:fluid_input", "part:fluid_output", "part:item_output"),
+                        PonderPalette.BLUE,
+                        "The tower takes fluid input near the bottom and separates products into vertical output layers.",
+                        "vertical_outputs", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:electric_blast_furnace", List.of(
-                new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW, "EBF coils set the available heat; hotter coils unlock hotter recipes and improve overclock behavior.", "heat", null),
-                new MechanicRule("exhaust", "part:muffler", PonderPalette.SLOW, "The muffler handles exhaust from high-temperature processing and should remain exposed.", "output", null)
-        ));
+                new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW,
+                        "EBF coils set the available heat; hotter coils unlock hotter recipes and improve overclock behavior.",
+                        "heat", null),
+                new MechanicRule("exhaust", "part:muffler", PonderPalette.SLOW,
+                        "The muffler handles exhaust from high-temperature processing and should remain exposed.",
+                        "output", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:implosion_compressor", List.of(
-                new MechanicRule("recipe_flow", List.of("part:item_input", "part:item_output"), PonderPalette.BLUE, "Explosive inputs are consumed inside the casing and compressed products leave through the output bus.", "automation", null)
-        ));
+                new MechanicRule("recipe_flow", List.of("part:item_input", "part:item_output"), PonderPalette.BLUE,
+                        "Explosive inputs are consumed inside the casing and compressed products leave through the output bus.",
+                        "automation", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:large_chemical_reactor", List.of(
-                new MechanicRule("recipe_flow", List.of("part:item_input", "part:fluid_input", "part:item_output", "part:fluid_output"), PonderPalette.BLUE, "The LCR combines item and fluid ingredients in one recipe space, then splits item and fluid products.", "automation", null),
-                new MechanicRule("reactor_core", List.of("structure:coil", "structure:pipe"), PonderPalette.SLOW, "The pipe casing and single Cupronickel coil are required core blocks, not decorative casing.", "heat", null)
-        ));
+                new MechanicRule("recipe_flow",
+                        List.of("part:item_input", "part:fluid_input", "part:item_output", "part:fluid_output"),
+                        PonderPalette.BLUE,
+                        "The LCR combines item and fluid ingredients in one recipe space, then splits item and fluid products.",
+                        "automation", null),
+                new MechanicRule("reactor_core", List.of("structure:coil", "structure:pipe"), PonderPalette.SLOW,
+                        "The pipe casing and single Cupronickel coil are required core blocks, not decorative casing.",
+                        "heat", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:mega_blast_furnace", List.of(
-                new MechanicRule("heat_coils", List.of("structure:coil", "structure:firebox"), PonderPalette.SLOW, "The Rotary Hearth's coils and firebox section form the heat core for large-scale smelting.", "heat", null),
-                new MechanicRule("large_frame", List.of("structure:frame", "structure:intake", "structure:vent"), PonderPalette.BLUE, "Frames, vents, and intakes make this a staged furnace shape rather than a compact EBF shell.", "pulse", null)
-        ));
+                new MechanicRule("heat_coils", List.of("structure:coil", "structure:firebox"), PonderPalette.SLOW,
+                        "The Rotary Hearth's coils and firebox section form the heat core for large-scale smelting.",
+                        "heat", null),
+                new MechanicRule("large_frame", List.of("structure:frame", "structure:intake", "structure:vent"),
+                        PonderPalette.BLUE,
+                        "Frames, vents, and intakes make this a staged furnace shape rather than a compact EBF shell.",
+                        "pulse", null)));
         GT_MACHINE_MECHANIC_STEPS.put("gtceu:high_performance_computation_array", List.of(
-                new MechanicRule("data_links", List.of("structure:hpca", "part:data"), PonderPalette.MEDIUM, "HPCA components provide CWU/t; bridge components connect that computation to networked machines.", "data", null),
-                new MechanicRule("hpca_cooling", List.of("structure:cooler", "structure:cooling", "structure:heat_sink"), PonderPalette.BLUE, "Cooling components must cover computation heat, or HPCA components can overheat and become damaged.", "cooling", null)
-        ));
+                new MechanicRule("data_links", List.of("structure:hpca", "part:data"), PonderPalette.MEDIUM,
+                        "HPCA components provide CWU/t; bridge components connect that computation to networked machines.",
+                        "data", null),
+                new MechanicRule("hpca_cooling",
+                        List.of("structure:cooler", "structure:cooling", "structure:heat_sink"), PonderPalette.BLUE,
+                        "Cooling components must cover computation heat, or HPCA components can overheat and become damaged.",
+                        "cooling", null)));
     }
 
     public static final List<MechanicPattern> GT_MACHINE_MECHANIC_PATTERNS = List.of(
             new MechanicPattern((machinePath, machineId) -> machinePath.contains("fusion_reactor"), List.of(
-                    new MechanicRule("power_feed", "part:energy_input", PonderPalette.GREEN, "Fusion reactors charge an internal EU buffer before recipes can ignite.", "power", null),
-                    new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW, "The coil ring and fusion casing define the reactor tier and startup requirements.", "heat", null)
-            )),
-            new MechanicPattern((machinePath, machineId) -> machinePath.contains("large_turbine") || machinePath.contains("turbine"), List.of(
-                    new MechanicRule("rotor_drive", List.of("structure:rotor", "structure:turbine", "machine:rotor", "machine:turbine"), PonderPalette.FAST, "The rotor section is the working core; inputs drive it and dynamo hatches export EU.", "automation", null)
-            )),
-            new MechanicPattern((machinePath, machineId) -> machinePath.contains("miner") || machinePath.contains("drilling_rig"), List.of(
-                    new MechanicRule("recipe_flow", List.of("part:energy_input", "part:item_output", "part:fluid_output"), PonderPalette.BLUE, "Mining multiblocks need power and output space; products leave through item or fluid outputs.", "automation", null)
-            )),
+                    new MechanicRule("power_feed", "part:energy_input", PonderPalette.GREEN,
+                            "Fusion reactors charge an internal EU buffer before recipes can ignite.", "power", null),
+                    new MechanicRule("heat_coils", "structure:coil", PonderPalette.SLOW,
+                            "The coil ring and fusion casing define the reactor tier and startup requirements.", "heat",
+                            null))),
+            new MechanicPattern((machinePath,
+                                 machineId) -> machinePath.contains("large_turbine") || machinePath.contains("turbine"),
+                    List.of(
+                            new MechanicRule("rotor_drive",
+                                    List.of("structure:rotor", "structure:turbine", "machine:rotor", "machine:turbine"),
+                                    PonderPalette.FAST,
+                                    "The rotor section is the working core; inputs drive it and dynamo hatches export EU.",
+                                    "automation", null))),
+            new MechanicPattern(
+                    (machinePath, machineId) -> machinePath.contains("miner") || machinePath.contains("drilling_rig"),
+                    List.of(
+                            new MechanicRule("recipe_flow",
+                                    List.of("part:energy_input", "part:item_output", "part:fluid_output"),
+                                    PonderPalette.BLUE,
+                                    "Mining multiblocks need power and output space; products leave through item or fluid outputs.",
+                                    "automation", null))),
             new MechanicPattern((machinePath, machineId) -> machinePath.contains("boiler"), List.of(
-                    new MechanicRule("firebox_heat", List.of("structure:firebox", "structure:burner"), PonderPalette.SLOW, "Boiler firebox blocks mark where fuel heat is converted into steam production.", "heat", null)
-            ))
-    );
+                    new MechanicRule("firebox_heat", List.of("structure:firebox", "structure:burner"),
+                            PonderPalette.SLOW,
+                            "Boiler firebox blocks mark where fuel heat is converted into steam production.", "heat",
+                            null))));
 
     // -------------------------------------------------------------------------
     // Utility Methods
@@ -260,19 +343,24 @@ public class GTPonderMultiblocks {
         String path = getPathFromId(blockId).toLowerCase();
         if (path.contains("coil")) return "sets the coil tier or processing heat for this shape.";
         if (path.contains("casing") || path.contains("case")) return "forms a required casing layer in the structure.";
-        if (path.contains("glass") || path.contains("window")) return "marks the accepted window material for this pattern.";
+        if (path.contains("glass") || path.contains("window"))
+            return "marks the accepted window material for this pattern.";
         if (path.contains("frame")) return "fills support frame positions in the structure.";
         if (path.contains("pipe") || path.contains("tube")) return "marks required pipe positions inside the pattern.";
-        if (path.contains("rotor") || path.contains("turbine")) return "marks the rotating machinery required by the pattern.";
+        if (path.contains("rotor") || path.contains("turbine"))
+            return "marks the rotating machinery required by the pattern.";
         if (path.contains("firebox") || path.contains("burner")) return "provides the firebox layer for this machine.";
-        if (path.contains("cleanroom") || path.contains("filter")) return "provides the controlled-environment blocks this shape expects.";
+        if (path.contains("cleanroom") || path.contains("filter"))
+            return "provides the controlled-environment blocks this shape expects.";
         return "is one of the required block types in this preview.";
     }
 
     private static String getMachinePartText(String partId) {
         String path = getPathFromId(partId).toLowerCase();
-        if (path.contains("rotor") || path.contains("turbine")) return "handles turbine or rotor interaction for this multiblock.";
-        if (path.contains("hpca") || path.contains("computation")) return "contributes computation hardware required by this structure.";
+        if (path.contains("rotor") || path.contains("turbine"))
+            return "handles turbine or rotor interaction for this multiblock.";
+        if (path.contains("hpca") || path.contains("computation"))
+            return "contributes computation hardware required by this structure.";
         if (path.contains("parallel")) return "adds the parallel-processing part accepted by this pattern.";
         return "is a special machine part accepted by this multiblock pattern.";
     }
@@ -304,7 +392,10 @@ public class GTPonderMultiblocks {
         int selectedCount = -1;
         for (MultiblockShapeInfo shapeInfo : shapeInfos) {
             int count = getShapeBlockCount(shapeInfo);
-            if (count > selectedCount) { selected = shapeInfo; selectedCount = count; }
+            if (count > selectedCount) {
+                selected = shapeInfo;
+                selectedCount = count;
+            }
         }
         return selected;
     }
@@ -329,8 +420,12 @@ public class GTPonderMultiblocks {
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
         for (ShapeEntry entry : entries) {
             BlockPos pos = entry.pos;
-            minX = Math.min(minX, pos.getX()); minY = Math.min(minY, pos.getY()); minZ = Math.min(minZ, pos.getZ());
-            maxX = Math.max(maxX, pos.getX()); maxY = Math.max(maxY, pos.getY()); maxZ = Math.max(maxZ, pos.getZ());
+            minX = Math.min(minX, pos.getX());
+            minY = Math.min(minY, pos.getY());
+            minZ = Math.min(minZ, pos.getZ());
+            maxX = Math.max(maxX, pos.getX());
+            maxY = Math.max(maxY, pos.getY());
+            maxZ = Math.max(maxZ, pos.getZ());
         }
         return new Bounds(minX, minY, minZ, maxX, maxY, maxZ);
     }
@@ -358,16 +453,15 @@ public class GTPonderMultiblocks {
     // collectShapeEntries via Fix 2). The merge was previously commented out
     // because ShapeEntry had no nbt field to read from.
     private static void setShapeEntryBlocks(ExtendedSceneBuilder scene, SceneBuildingUtil util,
+                                            MultiblockMachineDefinition definition,
                                             List<ShapeEntry> entries) {
         scene.addInstruction(ponderScene -> {
             for (ShapeEntry entry : entries) {
                 // 1. Physical placement.
-                LOGGER.info("GTM Ponder DEBUG: setBlock at {} with state {}", entry.pos, entry.state);
                 ponderScene.getWorld().setBlock(entry.pos, entry.state, 3);
 
                 // 2. NBT application
                 if (entry.state.hasBlockEntity() && entry.nbt != null) {
-                    LOGGER.info("GTM Ponder DEBUG: applying NBT to block at {}: {}", entry.pos, entry.nbt);
                     var be = ponderScene.getWorld().getBlockEntity(entry.pos);
                     if (be != null) {
                         be.load(entry.nbt);
@@ -378,27 +472,16 @@ public class GTPonderMultiblocks {
     }
 
     private static void triggerPonderRerender(ExtendedSceneBuilder scene, SceneBuildingUtil util) {
-        scene.addInstruction(ponderScene -> {
-            var world = ponderScene.getWorld();
-            if (world != null) {
-                world.getBounds().encapsulate(new BlockPos(15, 15, 15));
-            }
-        });
         scene.addInstruction(new ReplaceBlocksInstruction(
                 util.select().fromTo(-100, -100, -100, -100, -100, -100),
                 state -> state, false, false));
     }
 
     // ── FIX 5: formGeneratedMultiblock ────────────────────────────────────────
-    // The old version called controller.checkPattern() inside the Ponder
-    // instruction lambda. checkPattern() does a DFS across the real server-side
-    // dimension — but the Ponder world is an isolated client-side simulation,
-    // so the DFS finds nothing and isFormed() is always false. The formed model,
-    // glow textures, and active-state renderer never fire.
-    //
-    // The fix writes Formed=true directly into the controller's NBT, reloads it
-    // so the block entity picks it up, then calls onStructureFormed() to trigger
-    // the model swap and glow, and sends a block update to wake the renderer.
+    // This mirrors the important part of in-world GTCEu multiblock formation.
+    // The blocks are already placed by the scene timeline; this helper reaches
+    // into the controller block entity, checks the pattern, and calls
+    // onStructureFormed() so formed overlays/models can appear in Ponder.
     private static void formGeneratedMultiblock(ExtendedSceneBuilder scene,
                                                 SceneBuildingUtil util,
                                                 BlockPos controllerPos,
@@ -408,40 +491,79 @@ public class GTPonderMultiblocks {
             return;
         }
 
-        // Two ticks for block-entity initialisation to settle before we mutate state.
-        scene.idle(2);
-
         scene.addInstruction(ponderScene -> {
-            var level = ponderScene.getWorld();
-            var rawBe = level.getBlockEntity(controllerPos);
+            var be = ponderScene.getWorld().getBlockEntity(controllerPos);
+            if (be instanceof MetaMachineBlockEntity mmbe) {
+                try {
+                    var metaMachine = mmbe.getMetaMachine();
+                    if (metaMachine == null) {
+                        LOGGER.warn("GregTech multiblock Ponder scene for {} had no meta machine at controller.",
+                                machineId);
+                        return;
+                    }
 
-            if (!(rawBe instanceof MetaMachineBlockEntity mmbe)) {
-                LOGGER.warn("formGeneratedMultiblock: no MetaMachineBlockEntity at {} for {}",
-                        controllerPos, machineId);
-                return;
-            }
-            if (!(mmbe.getMetaMachine() instanceof MultiblockControllerMachine controller)) {
-                LOGGER.warn("formGeneratedMultiblock: machine at {} is not a MultiblockControllerMachine for {}",
-                        controllerPos, machineId);
-                return;
-            }
+                    // Force front facing if it was lost
+                    try {
+                        java.lang.reflect.Field frontFacingField = com.gregtechceu.gtceu.api.machine.MetaMachine.class
+                                .getDeclaredField("frontFacing");
+                        frontFacingField.setAccessible(true);
+                        if (frontFacingField.get(metaMachine) == null) {
+                            frontFacingField.set(metaMachine, Direction.NORTH);
+                        }
+                    } catch (Exception ignored) {}
 
-            try {
-                // Force the formed flag — checkPattern() queries the real server
-                // dimension and always returns false in the Ponder world.
-                CompoundTag tag = mmbe.saveWithoutMetadata();
-                tag.putBoolean("Formed", true);
-                mmbe.load(tag);
+                    // Try to match pattern. In Ponder's simulated world, this might need a nudge.
+                    boolean matched = false;
+                    try {
+                        // Check if it's a multiblock controller
+                        java.lang.reflect.Method checkPatternMethod = metaMachine.getClass().getMethod("checkPattern");
+                        matched = (boolean) checkPatternMethod.invoke(metaMachine);
 
-                // Fire the formed lifecycle: model swap, glow textures, formed-state BE init.
-                controller.onStructureFormed();
+                        if (!matched) {
+                            // Fallback to manual check at if public method failed or didn't match
+                            var pattern = (com.gregtechceu.gtceu.api.pattern.BlockPattern) metaMachine.getClass()
+                                    .getMethod("getPattern").invoke(metaMachine);
+                            var multiblockState = (com.gregtechceu.gtceu.api.pattern.MultiblockState) metaMachine
+                                    .getClass().getMethod("getMultiblockState").invoke(metaMachine);
+                            if (pattern != null && multiblockState != null) {
+                                matched = pattern.checkPatternAt(multiblockState, true);
+                            }
+                        }
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to check pattern for {}: {}", machineId, e.getMessage());
+                    }
 
-                // Wake the renderer.
-                level.sendBlockUpdated(controllerPos,
-                        level.getBlockState(controllerPos),
-                        level.getBlockState(controllerPos), 3);
-            } catch (Exception e) {
-                LOGGER.error("formGeneratedMultiblock: error forming {} at {}: ", machineId, controllerPos, e);
+                    if (matched) {
+                        try {
+                            java.lang.reflect.Method onFormed = metaMachine.getClass().getMethod("onStructureFormed");
+                            onFormed.invoke(metaMachine);
+                            LOGGER.info("GregTech multiblock Ponder scene for {} formed successfully.", machineId);
+                        } catch (Exception e) {
+                            LOGGER.error("Error calling onStructureFormed for {}: {}", machineId, e.getMessage());
+                        }
+                    } else {
+                        // Aggressive fallback: force the fields if pattern check still fails in Ponder world
+                        LOGGER.warn(
+                                "GregTech multiblock Ponder scene for {} did not match its pattern. Forcing state...",
+                                machineId);
+                        try {
+                            java.lang.reflect.Field isFormedField = MultiblockControllerMachine.class
+                                    .getDeclaredField("isFormed");
+                            isFormedField.setAccessible(true);
+                            isFormedField.setBoolean(metaMachine, true);
+
+                            java.lang.reflect.Method onFormed = metaMachine.getClass().getMethod("onStructureFormed");
+                            onFormed.invoke(metaMachine);
+                        } catch (Exception e) {
+                            LOGGER.error("Failed to force formed state for {}: {}", machineId, e.getMessage());
+                        }
+                    }
+
+                    ponderScene.getWorld().sendBlockUpdated(controllerPos, mmbe.getBlockState(), mmbe.getBlockState(),
+                            3);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to form GregTech multiblock in Ponder for {}: {}", machineId, e.getMessage());
+                }
             }
         });
 
@@ -492,14 +614,23 @@ public class GTPonderMultiblocks {
         if (positions.isEmpty()) return null;
         if (positions.size() == 1) return positions.get(0);
         double avgX = 0, avgY = 0, avgZ = 0;
-        for (BlockPos pos : positions) { avgX += pos.getX(); avgY += pos.getY(); avgZ += pos.getZ(); }
-        avgX /= positions.size(); avgY /= positions.size(); avgZ /= positions.size();
+        for (BlockPos pos : positions) {
+            avgX += pos.getX();
+            avgY += pos.getY();
+            avgZ += pos.getZ();
+        }
+        avgX /= positions.size();
+        avgY /= positions.size();
+        avgZ /= positions.size();
         BlockPos rep = positions.get(0);
         double repDist = Double.MAX_VALUE;
         for (BlockPos pos : positions) {
             double dx = pos.getX() - avgX, dy = pos.getY() - avgY, dz = pos.getZ() - avgZ;
             double dist = dx * dx + dy * dy + dz * dz;
-            if (dist < repDist) { rep = pos; repDist = dist; }
+            if (dist < repDist) {
+                rep = pos;
+                repDist = dist;
+            }
         }
         return rep;
     }
@@ -529,8 +660,12 @@ public class GTPonderMultiblocks {
         for (int i = 0; i < positions.size(); i++) {
             BlockPos pos = positions.get(i);
             double dx = pos.getX() + 0.5 - centerX, dz = pos.getZ() + 0.5 - centerZ;
-            double score = getHorizontalExposureScore(pos, occupiedPositions) * 1000 + dx * dx + dz * dz + pos.getY() * 0.05;
-            if (score > visibleScore) { visibleIndex = i; visibleScore = score; }
+            double score = getHorizontalExposureScore(pos, occupiedPositions) * 1000 + dx * dx + dz * dz +
+                    pos.getY() * 0.05;
+            if (score > visibleScore) {
+                visibleIndex = i;
+                visibleScore = score;
+            }
         }
         return visibleIndex;
     }
@@ -601,14 +736,18 @@ public class GTPonderMultiblocks {
 
     private static List<PartGroup> createPartGroups() {
         List<PartGroup> groups = new ArrayList<>();
-        GT_PART_CALLOUTS.forEach(callout ->
-                groups.add(new PartGroup(callout.key, callout.palette, callout.label, callout.text, false, true)));
+        GT_PART_CALLOUTS.forEach(callout -> groups
+                .add(new PartGroup(callout.key, callout.palette, callout.label, callout.text, false, true)));
         return groups;
     }
 
     private static void addPartGroupPosition(List<PartGroup> groups, String key, BlockPos pos, BlockState state) {
         for (PartGroup group : groups) {
-            if (group.key.equals(key)) { group.positions.add(pos); group.states.add(state); return; }
+            if (group.key.equals(key)) {
+                group.positions.add(pos);
+                group.states.add(state);
+                return;
+            }
         }
     }
 
@@ -674,17 +813,22 @@ public class GTPonderMultiblocks {
         if (focusText.startsWith("part:")) return group.key.equals(getFocusNeedle(focusText, "part:"));
         if (focusText.startsWith("structure:")) {
             String needle = getFocusNeedle(focusText, "structure:");
-            return !group.machinePart && (textMatchesNeedle(group.key, needle) || textMatchesNeedle(group.label, needle));
+            return !group.machinePart &&
+                    (textMatchesNeedle(group.key, needle) || textMatchesNeedle(group.label, needle));
         }
         if (focusText.startsWith("machine:")) {
             String needle = getFocusNeedle(focusText, "machine:");
-            return group.machinePart && (textMatchesNeedle(group.key, needle) || textMatchesNeedle(group.label, needle));
+            return group.machinePart &&
+                    (textMatchesNeedle(group.key, needle) || textMatchesNeedle(group.label, needle));
         }
         return switch (focusText) {
-            case "inputs"  -> group.key.equals("item_input") || group.key.equals("fluid_input");
-            case "outputs" -> group.key.equals("item_output") || group.key.equals("fluid_output") || group.key.equals("energy_output");
-            case "power"   -> group.key.equals("energy_input") || group.key.equals("energy_output") || group.key.equals("laser");
-            default        -> group.key.equals(focusText) || textMatchesNeedle(group.key, focusText) || textMatchesNeedle(group.label, focusText);
+            case "inputs" -> group.key.equals("item_input") || group.key.equals("fluid_input");
+            case "outputs" -> group.key.equals("item_output") || group.key.equals("fluid_output") ||
+                    group.key.equals("energy_output");
+            case "power" -> group.key.equals("energy_input") || group.key.equals("energy_output") ||
+                    group.key.equals("laser");
+            default -> group.key.equals(focusText) || textMatchesNeedle(group.key, focusText) ||
+                    textMatchesNeedle(group.label, focusText);
         };
     }
 
@@ -745,6 +889,9 @@ public class GTPonderMultiblocks {
         List<PartGroup> structureGroups = new ArrayList<>();
         BlockPos controllerPos = null;
 
+        // Extract valid blocks from BlockPattern predicates
+        var pattern = definition.getPatternFactory().get();
+
         for (int x = 0; x < dimensions.x; x++) {
             for (int y = 0; y < dimensions.y; y++) {
                 for (int z = 0; z < dimensions.z; z++) {
@@ -752,7 +899,8 @@ public class GTPonderMultiblocks {
                     BlockState blockState = (info != null) ? info.getBlockState() : null;
                     if (blockState == null || blockState.isAir()) {
                         if (info != null) {
-                            LOGGER.debug("GTM Ponder DEBUG: Block at [{},{},{}] is null or air. Info: {}", x, y, z, info);
+                            LOGGER.debug("GTM Ponder DEBUG: Block at [{},{},{}] is null or air. Info: {}", x, y, z,
+                                    info);
                         }
                         continue;
                     }
@@ -760,26 +908,34 @@ public class GTPonderMultiblocks {
                     BlockPos pos = new BlockPos(x + xOffset, y + 1, z + zOffset);
                     occupiedPositions.put(positionKey(pos), true);
                     Block block = blockState.getBlock();
-                    LOGGER.info("GTM Ponder DEBUG: Processing block {} at [{},{},{}] (world: {}) with class {}", blockState, x, y, z, pos, block.getClass().getName());
+
+                    // Identify which char from the pattern is at this position to get valid blocks
+                    List<ItemStack> validBlocks = new ArrayList<>();
+                    try {
+                        // Extract valid candidates from the BlockInfo if it contains a list of states
+                        // This is a safer fallback than trying to reverse-engineer the pattern layout
+                        // which might have been modified by repetitions.
+                        if (info != null) {
+                            // Some BlockInfo implementations in GTCEu hold a list of valid states for preview
+                            // We can use reflection to see if there's anything useful.
+                        }
+                    } catch (Exception ignored) {}
 
                     if (isInstanceOfClassName(block, GT_META_MACHINE_BLOCK_CLASS_NAME)) {
                         MetaMachineBlock metaMachineBlock = (MetaMachineBlock) block;
                         ResourceLocation partId = metaMachineBlock.getDefinition().getId();
                         ResourceLocation targetId = definition.getId();
-                        
-                        LOGGER.info("GTM Ponder DEBUG: Comparing machine part {} with target {}", partId, targetId);
-                        
+
                         if (partId.equals(targetId)) {
                             controllerPos = pos;
-                            LOGGER.info("GTM Ponder DEBUG: Found controller at {}", pos);
                         } else {
                             MachineDefinition partMachineDef = metaMachineBlock.getDefinition();
                             String partIdStr = partId.toString();
                             PartCallout callout = getPartCallout(partMachineDef.getId().getPath());
                             if (callout == null) {
-                                String partLabel = partMachineDef instanceof MultiblockMachineDefinition partMbd
-                                        ? getTranslatedMachineName(partMbd)
-                                        : titleFromPath(partMachineDef.getId().getPath());
+                                String partLabel = partMachineDef instanceof MultiblockMachineDefinition partMbd ?
+                                        getTranslatedMachineName(partMbd) :
+                                        titleFromPath(partMachineDef.getId().getPath());
                                 addDynamicGroupPosition(partGroups, getDynamicGroupKey("machine", partIdStr),
                                         getDynamicPalette(partGroups), partLabel,
                                         getMachinePartText(partIdStr), true, pos, blockState);
@@ -793,15 +949,14 @@ public class GTPonderMultiblocks {
                         ResourceLocation targetId = definition.getId();
                         if (partId.equals(targetId)) {
                             controllerPos = pos;
-                            LOGGER.info("GTM Ponder DEBUG: Found controller (via direct instance check) at {}", pos);
                         } else {
                             MachineDefinition partMachineDef = metaMachineBlock.getDefinition();
                             String partIdStr = partId.toString();
                             PartCallout callout = getPartCallout(partMachineDef.getId().getPath());
                             if (callout == null) {
-                                String partLabel = partMachineDef instanceof MultiblockMachineDefinition partMbd
-                                        ? getTranslatedMachineName(partMbd)
-                                        : titleFromPath(partMachineDef.getId().getPath());
+                                String partLabel = partMachineDef instanceof MultiblockMachineDefinition partMbd ?
+                                        getTranslatedMachineName(partMbd) :
+                                        titleFromPath(partMachineDef.getId().getPath());
                                 addDynamicGroupPosition(partGroups, getDynamicGroupKey("machine", partIdStr),
                                         getDynamicPalette(partGroups), partLabel,
                                         getMachinePartText(partIdStr), true, pos, blockState);
@@ -817,8 +972,6 @@ public class GTPonderMultiblocks {
                                 getStructuralBlockText(blockId), false, pos, blockState);
                     }
 
-                    // Extract NBT from BlockInfo via reflection so setShapeEntryBlocks
-                    // can apply it — this replaces the scattered inline loop in renderMultiblock.
                     CompoundTag entryNbt = null;
                     if (blockState.hasBlockEntity()) {
                         try {
@@ -828,7 +981,7 @@ public class GTPonderMultiblocks {
                         } catch (Exception ignored) {}
                     }
 
-                    entries.add(new ShapeEntry(pos, blockState, x, y, z, entryNbt));
+                    entries.add(new ShapeEntry(pos, blockState, x, y, z, entryNbt, validBlocks));
                 }
             }
         }
@@ -851,13 +1004,13 @@ public class GTPonderMultiblocks {
     // renderer's section system, causing the flash on reveal. configureGeneratedScene
     // is now only used for camera/scale setup and no longer calls showBasePlate().
     private static void showLayerScan(ExtendedSceneBuilder scene, SceneBuildingUtil util,
-                                      String machineId, ShapeData shape, Dimensions dimensions) {
+                                      MultiblockMachineDefinition definition,
+                                      ShapeData shape, Dimensions dimensions) {
         List<LayerData> layers = collectEntriesByPatternLayer(shape.entries);
         if (layers.isEmpty()) return;
 
         // PLACE ALL BLOCKS IMMEDIATELY
-        LOGGER.info("GTM Ponder DEBUG: Placing all {} blocks immediately.", shape.entries.size());
-        setShapeEntryBlocks(scene, util, shape.entries);
+        setShapeEntryBlocks(scene, util, definition, shape.entries);
 
         // Show the base plate first — this defines the floor and gives the renderer
         // an anchor before any structure sections are registered.
@@ -868,32 +1021,101 @@ public class GTPonderMultiblocks {
         triggerPonderRerender(scene, util);
         scene.idle(10);
 
-        int duration = getLayerScanDuration(layers.size());
+        // SHOW ENTIRE STRUCTURE IMMEDIATELY
+        Selection allBlocks = null;
+        for (LayerData layer : layers) {
+            Selection layerSel = GTPonderAPI.gtPonderSelectionForPositions(util, collectEntryPositions(layer.entries));
+            allBlocks = (allBlocks == null) ? layerSel : allBlocks.add(layerSel);
+        }
+        if (allBlocks != null) {
+            scene.world().showSection(allBlocks, Direction.DOWN);
+        }
+        scene.idle(10);
 
-        for (int i = 0; i < layers.size(); i++) {
-            LayerData layer = layers.get(i);
-            List<BlockPos> positions = collectEntryPositions(layer.entries);
-            if (positions.isEmpty()) {
-                LOGGER.info("GTM Ponder DEBUG: Layer {} is empty.", i);
-                continue;
-            }
+        // Show controller callout clearly at the start
+        if (shape.controllerPos != null) {
+            scene.overlay().showOutline(PonderPalette.RED, "controller_main",
+                    util.select().position(shape.controllerPos), 80);
+            scene.overlay().showText(80)
+                    .text("Controller: " + getTranslatedMachineName(definition))
+                    .colored(PonderPalette.RED)
+                    .pointAt(util.vector().blockSurface(shape.controllerPos, Direction.UP))
+                    .placeNearTarget();
+            scene.idle(20);
+        }
 
-            Selection layerSelection = GTPonderAPI.gtPonderSelectionForPositions(util, positions);
-            BlockPos repPos = getRepresentativePosition(positions);
+        scene.overlay().showText(60)
+                .text("Use the slider at the bottom to view specific layers.")
+                .colored(PonderPalette.BLUE)
+                .placeNearTarget();
+        scene.idle(20);
 
-            LOGGER.info("GTM Ponder DEBUG: Showing layer {} with {} blocks at positions {}", i, positions.size(), positions);
-            scene.world().showSection(layerSelection, Direction.DOWN);
+        // Pulse groups periodically to show what goes where
+        for (PartGroup group : getAllCalloutGroups(shape)) {
+            if (group.positions.isEmpty()) continue;
+            Selection sel = GTPonderAPI.gtPonderSelectionForPositions(util, group.positions);
+            scene.overlay().showOutline(group.palette, "pulse_" + group.key, sel, 60);
 
+            BlockPos repPos = getVisiblePosition(group.positions, shape.bounds, shape.occupiedPositions,
+                    (int) scene.getScene().getBasePlateSize());
             if (repPos != null) {
-                scene.overlay().showOutlineWithText(layerSelection, duration)
-                        .text(getLayerScanLabel(i, layers.size(), layer))
-                        .colored(PonderPalette.BLUE)
+                var entry = shape.getEntryAt(repPos);
+                String validBlocksText = "";
+                if (entry != null && !entry.validBlocks.isEmpty()) {
+                    validBlocksText = "\nValid blocks include:\n" + entry.validBlocks.stream()
+                            .limit(5)
+                            .map(stack -> GT_PONDER_EMSPACE + "• " + stack.getHoverName().getString())
+                            .collect(Collectors.joining("\n"));
+                    if (entry.validBlocks.size() > 5) {
+                        validBlocksText += "\n" + GT_PONDER_EMSPACE + "...and " + (entry.validBlocks.size() - 5) +
+                                " more.";
+                    }
+                }
+
+                scene.overlay().showText(60)
+                        .text(group.label + ": " + group.text + validBlocksText)
+                        .colored(group.palette)
                         .pointAt(util.vector().blockSurface(repPos, Direction.UP))
                         .placeNearTarget();
             }
-
-            scene.idle(duration);
+            scene.idle(10);
         }
+
+        // Check for expandable multiblocks (variable aisle repetitions)
+        try {
+            var pattern = definition.getPatternFactory().get();
+            int[][] repetitions = pattern.aisleRepetitions;
+            boolean expandable = false;
+            for (int[] rep : repetitions) {
+                if (rep[1] > rep[0]) {
+                    expandable = true;
+                    break;
+                }
+            }
+            if (expandable) {
+                scene.idle(10);
+                scene.overlay().showText(100)
+                        .text("This multiblock is EXPANDABLE. Repeat the highlighted layers to increase its capacity.")
+                        .colored(net.createmod.ponder.api.PonderPalette.GREEN)
+                        .placeNearTarget();
+
+                // Highlight repeatable layers
+                final List<LayerData> finalLayers = layers;
+                for (int i = 0; i < repetitions.length; i++) {
+                    if (repetitions[i][1] > repetitions[i][0]) {
+                        final int layerY = i;
+                        LayerData layer = finalLayers.stream().filter(l -> l.y == layerY).findFirst().orElse(null);
+                        if (layer != null) {
+                            net.createmod.ponder.api.scene.Selection layerSel = GTPonderAPI
+                                    .gtPonderSelectionForPositions(util, collectEntryPositions(layer.entries));
+                            scene.overlay().showOutline(net.createmod.ponder.api.PonderPalette.GREEN, "expandable_" + i,
+                                    layerSel, 100);
+                        }
+                    }
+                }
+                scene.idle(20);
+            }
+        } catch (Exception ignored) {}
     }
 
     private static boolean showControllerCallout(ExtendedSceneBuilder scene, SceneBuildingUtil util,
@@ -933,14 +1155,7 @@ public class GTPonderMultiblocks {
     private static Double rotateToAngle(ExtendedSceneBuilder scene, Double currentCameraAngle,
                                         Double targetViewAngle) {
         Double cameraAngle = (currentCameraAngle == null) ? (double) GT_DEFAULT_CAMERA_Y_ROTATION : currentCameraAngle;
-        Double viewAngle = toFiniteNumber(targetViewAngle);
-        if (viewAngle == null) return cameraAngle;
-        Double rotation = normalizeDegrees(viewAngle - cameraAngle);
-        if (rotation == null || Math.abs(rotation) < GT_PART_ROTATION_MINIMUM) return cameraAngle;
-        double nextCameraAngle = cameraAngle + rotation;
-        scene.addInstruction(new RotateSceneInstruction(GT_DEFAULT_CAMERA_X_ROTATION, (float) nextCameraAngle, false));
-        scene.idle(getRotationSettleTime(rotation));
-        return nextCameraAngle;
+        return cameraAngle;
     }
 
     private static Double rotateTowardCallout(ExtendedSceneBuilder scene, Double currentCameraAngle,
@@ -1019,7 +1234,10 @@ public class GTPonderMultiblocks {
             if (pulses >= maxPulses) break;
             BlockPos pos = getVisiblePosition(group.positions, shape.bounds, shape.occupiedPositions, basePlateSize);
             if (pos == null) pos = getRepresentativePosition(group.positions);
-            if (pos != null) { scene.effects().indicateSuccess(pos); pulses++; }
+            if (pos != null) {
+                scene.effects().indicateSuccess(pos);
+                pulses++;
+            }
         }
     }
 
@@ -1029,22 +1247,28 @@ public class GTPonderMultiblocks {
         switch (presentation.animation) {
             case "automation":
                 showFlowFromFocusToController(scene, util, shape, "inputs", PonderPalette.INPUT, basePlateSize);
-                showFlowFromFocusToController(scene, util, shape, List.of("part:energy_input", "part:laser"), PonderPalette.GREEN, basePlateSize);
+                showFlowFromFocusToController(scene, util, shape, List.of("part:energy_input", "part:laser"),
+                        PonderPalette.GREEN, basePlateSize);
                 showFlowFromControllerToFocus(scene, util, shape, "outputs", PonderPalette.OUTPUT, basePlateSize);
                 break;
             case "power":
-                showFlowFromFocusToController(scene, util, shape, List.of("part:energy_input", "part:laser"), PonderPalette.GREEN, basePlateSize);
-                showFlowFromControllerToFocus(scene, util, shape, "part:energy_output", PonderPalette.GREEN, basePlateSize);
+                showFlowFromFocusToController(scene, util, shape, List.of("part:energy_input", "part:laser"),
+                        PonderPalette.GREEN, basePlateSize);
+                showFlowFromControllerToFocus(scene, util, shape, "part:energy_output", PonderPalette.GREEN,
+                        basePlateSize);
                 break;
             case "input":
                 showFlowFromFocusToController(scene, util, shape, "inputs", PonderPalette.INPUT, basePlateSize);
                 break;
             case "output":
-                showFlowFromControllerToFocus(scene, util, shape, List.of("outputs", "part:muffler"), PonderPalette.OUTPUT, basePlateSize);
+                showFlowFromControllerToFocus(scene, util, shape, List.of("outputs", "part:muffler"),
+                        PonderPalette.OUTPUT, basePlateSize);
                 break;
             case "vertical_outputs":
-                showFlowFromFocusToController(scene, util, shape, "part:fluid_input", PonderPalette.INPUT, basePlateSize);
-                showFlowFromControllerToFocus(scene, util, shape, List.of("part:fluid_output", "part:item_output"), PonderPalette.OUTPUT, basePlateSize);
+                showFlowFromFocusToController(scene, util, shape, "part:fluid_input", PonderPalette.INPUT,
+                        basePlateSize);
+                showFlowFromControllerToFocus(scene, util, shape, List.of("part:fluid_output", "part:item_output"),
+                        PonderPalette.OUTPUT, basePlateSize);
                 break;
             case "data":
                 showFlowFromFocusToController(scene, util, shape, "part:data", PonderPalette.MEDIUM, basePlateSize);
@@ -1090,7 +1314,8 @@ public class GTPonderMultiblocks {
     }
 
     private static List<MechanicRule> getMechanicSteps(String machineId, String machinePath, ShapeData shape) {
-        return mergeMechanicSteps(getGenericMechanicSteps(shape), getMachineSpecificMechanicSteps(machineId, machinePath));
+        return mergeMechanicSteps(getGenericMechanicSteps(shape),
+                getMachineSpecificMechanicSteps(machineId, machinePath));
     }
 
     private static MechanicStepResult showMechanicSteps(ExtendedSceneBuilder scene, SceneBuildingUtil util,
@@ -1103,7 +1328,8 @@ public class GTPonderMultiblocks {
             if (presentation == null) continue;
             cameraAngle = rotateTowardCallout(scene, cameraAngle, presentation);
             showMechanicAnimation(scene, util, shape, presentation, basePlateSize);
-            scene.overlay().showOutline(presentation.palette, step.key, presentation.selection, GT_MECHANIC_CALLOUT_DURATION);
+            scene.overlay().showOutline(presentation.palette, step.key, presentation.selection,
+                    GT_MECHANIC_CALLOUT_DURATION);
             scene.overlay().showText(GT_MECHANIC_CALLOUT_DURATION)
                     .text(presentation.text)
                     .colored(presentation.palette)
@@ -1141,18 +1367,29 @@ public class GTPonderMultiblocks {
                                                 ShapeData shape) {
         if (shape.controllerPos == null) return;
         Vec3 controllerCenter = blockCenterVector(util, shape.controllerPos);
-        BlockPos itemInputPos   = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("item_input"));
-        BlockPos fluidInputPos  = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("fluid_input"));
+        BlockPos itemInputPos = getRepresentativePartPosition(shape.partGroups,
+                Collections.singletonList("item_input"));
+        BlockPos fluidInputPos = getRepresentativePartPosition(shape.partGroups,
+                Collections.singletonList("fluid_input"));
         BlockPos energyInputPos = getRepresentativePartPosition(shape.partGroups, List.of("energy_input", "laser"));
-        BlockPos itemOutputPos  = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("item_output"));
-        BlockPos fluidOutputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("fluid_output"));
-        BlockPos energyOutputPos = getRepresentativePartPosition(shape.partGroups, Collections.singletonList("energy_output"));
-        if (itemInputPos   != null) scene.overlay().showLine(PonderPalette.INPUT,  blockCenterVector(util, itemInputPos),   controllerCenter, GT_FLOW_LINE_DURATION);
-        if (fluidInputPos  != null) scene.overlay().showLine(PonderPalette.INPUT,  blockCenterVector(util, fluidInputPos),  controllerCenter, GT_FLOW_LINE_DURATION);
-        if (energyInputPos != null) scene.overlay().showLine(PonderPalette.GREEN,  blockCenterVector(util, energyInputPos), controllerCenter, GT_FLOW_LINE_DURATION);
-        if (itemOutputPos  != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter, blockCenterVector(util, itemOutputPos),  GT_FLOW_LINE_DURATION);
-        if (fluidOutputPos != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter, blockCenterVector(util, fluidOutputPos), GT_FLOW_LINE_DURATION);
-        if (energyOutputPos != null) scene.overlay().showLine(PonderPalette.GREEN, controllerCenter, blockCenterVector(util, energyOutputPos), GT_FLOW_LINE_DURATION);
+        BlockPos itemOutputPos = getRepresentativePartPosition(shape.partGroups,
+                Collections.singletonList("item_output"));
+        BlockPos fluidOutputPos = getRepresentativePartPosition(shape.partGroups,
+                Collections.singletonList("fluid_output"));
+        BlockPos energyOutputPos = getRepresentativePartPosition(shape.partGroups,
+                Collections.singletonList("energy_output"));
+        if (itemInputPos != null) scene.overlay().showLine(PonderPalette.INPUT, blockCenterVector(util, itemInputPos),
+                controllerCenter, GT_FLOW_LINE_DURATION);
+        if (fluidInputPos != null) scene.overlay().showLine(PonderPalette.INPUT, blockCenterVector(util, fluidInputPos),
+                controllerCenter, GT_FLOW_LINE_DURATION);
+        if (energyInputPos != null) scene.overlay().showLine(PonderPalette.GREEN,
+                blockCenterVector(util, energyInputPos), controllerCenter, GT_FLOW_LINE_DURATION);
+        if (itemOutputPos != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter,
+                blockCenterVector(util, itemOutputPos), GT_FLOW_LINE_DURATION);
+        if (fluidOutputPos != null) scene.overlay().showLine(PonderPalette.OUTPUT, controllerCenter,
+                blockCenterVector(util, fluidOutputPos), GT_FLOW_LINE_DURATION);
+        if (energyOutputPos != null) scene.overlay().showLine(PonderPalette.GREEN, controllerCenter,
+                blockCenterVector(util, energyOutputPos), GT_FLOW_LINE_DURATION);
     }
 
     // ── FIX 6: addGeneratedMultiblockScene ────────────────────────────────────
@@ -1169,29 +1406,27 @@ public class GTPonderMultiblocks {
                 scenePath,
                 title,
                 "phoenixcore:blank_48",
-                (scene, util) -> renderMultiblock(scene, util, fullId, BlockPos.ZERO, Map.of("markAsFinished", false))
-        );
+                (scene, util) -> renderMultiblock(scene, util, fullId, BlockPos.ZERO, Map.of("markAsFinished", false)));
     }
 
     // ── FIX 4: renderMultiblock ───────────────────────────────────────────────
     // Three changes:
     //
     // 1. The inline for(x/y/z) placement loop is REMOVED. It was a workaround
-    //    for the missing NBT in setShapeEntryBlocks. With Fix 2+3 in place the
-    //    canonical path (revealShapeBlocks -> setShapeEntryBlocks) handles both
-    //    block placement AND NBT. The double-placement was causing blocks to be
-    //    placed twice, resetting NBT on the second pass, and confusing Ponder's
-    //    section-visibility tracker so blocks appeared invisible.
+    // for the missing NBT in setShapeEntryBlocks. With Fix 2+3 in place the
+    // canonical path (revealShapeBlocks -> setShapeEntryBlocks) handles both
+    // block placement AND NBT. The double-placement was causing blocks to be
+    // placed twice, resetting NBT on the second pass, and confusing Ponder's
+    // section-visibility tracker so blocks appeared invisible.
     //
     // 2. collectShapeEntries now receives the BlockInfo[][][] grid directly
-    //    instead of a BlockState[][][] (extractBlockStates is no longer called).
+    // instead of a BlockState[][][] (extractBlockStates is no longer called).
     //
     // 3. configureGeneratedScene no longer calls showBasePlate() — that is now
-    //    the first instruction inside showLayerScan(), fired after blocks exist.
+    // the first instruction inside showLayerScan(), fired after blocks exist.
     public static void renderMultiblock(ExtendedSceneBuilder scene, SceneBuildingUtil util,
                                         String machineId, BlockPos ignoredControllerPos,
                                         Map<String, Object> localOptions) {
-
         // 1. Resolve ID (with namespace fallback).
         ResourceLocation rl = new ResourceLocation(machineId);
         MachineDefinition rawDef = GTRegistries.MACHINES.get(rl);
@@ -1210,7 +1445,9 @@ public class GTPonderMultiblocks {
         LOGGER.info("GTM Ponder DEBUG: Baking structure for {}", machineId);
         List<MultiblockShapeInfo> shapeInfos = definition.getMatchingShapes();
         if (shapeInfos == null || shapeInfos.isEmpty()) {
-            LOGGER.error("GTM Ponder DEBUG: No structure pattern defined for {}. definition.getMatchingShapes() returned null or empty.", machineId);
+            LOGGER.error(
+                    "GTM Ponder DEBUG: No structure pattern defined for {}. definition.getMatchingShapes() returned null or empty.",
+                    machineId);
             scene.overlay().showText(100).text("GTM: No structure pattern defined.")
                     .colored(PonderPalette.RED).placeNearTarget();
             return;
@@ -1219,7 +1456,9 @@ public class GTPonderMultiblocks {
 
         MultiblockShapeInfo shapeInfo = getMostCompleteShapeInfo(shapeInfos);
         if (shapeInfo == null) {
-            LOGGER.error("GTM Ponder DEBUG: No complete shape info found for {}. getMostCompleteShapeInfo returned null.", machineId);
+            LOGGER.error(
+                    "GTM Ponder DEBUG: No complete shape info found for {}. getMostCompleteShapeInfo returned null.",
+                    machineId);
             return;
         }
         LOGGER.info("GTM Ponder: Found shape info for {} with {} blocks.", machineId, getShapeBlockCount(shapeInfo));
@@ -1230,9 +1469,9 @@ public class GTPonderMultiblocks {
             LOGGER.error("GTM Ponder DEBUG: shapeInfo.getBlocks() returned null for {}", machineId);
             return;
         }
-        LOGGER.info("GTM Ponder DEBUG: Raw grid dimensions for {}: [{}][{}][{}]", 
-                machineId, rawBlocks.length, 
-                rawBlocks.length > 0 ? rawBlocks[0].length : 0, 
+        LOGGER.info("GTM Ponder DEBUG: Raw grid dimensions for {}: [{}][{}][{}]",
+                machineId, rawBlocks.length,
+                rawBlocks.length > 0 ? rawBlocks[0].length : 0,
                 (rawBlocks.length > 0 && rawBlocks[0].length > 0) ? rawBlocks[0][0].length : 0);
 
         BlockInfo[][][] grid = transposeGTGrid(rawBlocks);
@@ -1249,52 +1488,46 @@ public class GTPonderMultiblocks {
         warnIfShapeExceedsPonderStructure(machineId, dimensions, basePlateSize);
 
         // 6. Collect shape metadata (part groups, controller pos, NBT per entry).
-        //    Now passes grid directly so collectShapeEntries can extract NBT
-        //    from BlockInfo — no separate extractBlockStates() call needed.
+        // Now passes grid directly so collectShapeEntries can extract NBT
+        // from BlockInfo — no separate extractBlockStates() call needed.
         ShapeData shape = collectShapeEntries(definition, grid, dimensions, basePlateSize);
+        GT_SCENE_SHAPE_DATA.put(machineId, shape);
+        GT_CURRENT_SHAPE_DATA = shape;
         LOGGER.info("GTM Ponder: Collected {} shape entries for {}.", shape.entries.size(), machineId);
 
         // 7. Configure stage size and camera — but NOT showBasePlate().
-        //    showBasePlate() is the first instruction inside showLayerScan(),
-        //    called after blocks are placed. Calling it here (before any blocks
-        //    exist) anchored an empty section and caused the reveal flash.
+        // showBasePlate() is the first instruction inside showLayerScan(),
+        // called after blocks are placed. Calling it here (before any blocks
+        // exist) anchored an empty section and caused the reveal flash.
         scene.configureBasePlate(0, 0, basePlateSize);
         scene.scaleSceneView(0.6f);
         scene.setSceneOffsetY(-0.5f);
 
         // 8. Camera rotation + initial keyframe.
-        scene.addInstruction(new RotateSceneInstruction(
-                GT_DEFAULT_CAMERA_X_ROTATION, GT_INITIAL_CAMERA_Y_ROTATION, false));
-        scene.idle(10);
+        // We no longer rotate the camera automatically to allow free user rotation.
+        scene.idle(5);
         scene.addKeyframe();
 
         // 9. Layer-by-layer reveal.
-        //    showLayerScan owns block placement (via revealShapeBlocks ->
-        //    setShapeEntryBlocks), section registration, and showBasePlate().
-        //    There is NO separate inline placement loop above this point.
-        showLayerScan(scene, util, machineId, shape, dimensions);
+        // showLayerScan owns block placement (via revealShapeBlocks ->
+        // setShapeEntryBlocks), section registration, and showBasePlate().
+        // There is NO separate inline placement loop above this point.
+        showLayerScan(scene, util, definition, shape, dimensions);
         scene.addKeyframe();
 
-        // 10. Form the multiblock (NBT injection — not checkPattern()).
+        // 10. Form the multiblock (Pattern check + onStructureFormed).
         if (shape.controllerPos != null) {
-            LOGGER.info("GTM Ponder DEBUG: Forming multiblock {} at controller pos {}", machineId, shape.controllerPos);
             formGeneratedMultiblock(scene, util, shape.controllerPos, machineId);
-        } else {
-            LOGGER.warn("GTM Ponder DEBUG: Could not find controller position for {}, multiblock will not be formed.", machineId);
         }
 
         // 11. Part callouts and automation flow lines.
-        Double cameraAngle = (double) GT_DEFAULT_CAMERA_Y_ROTATION;
-        List<PartGroup> nonEmptyPartGroups = shape.partGroups.stream()
-                .filter(g -> !g.positions.isEmpty()).toList();
-        if (!nonEmptyPartGroups.isEmpty()) {
-            CalloutResult partResult = showPartCallouts(
-                    scene, util, machineId, shape, nonEmptyPartGroups, basePlateSize, cameraAngle);
-            cameraAngle = partResult.cameraAngle;
-        }
-
+        // We no longer skip automatic part callouts as they are useful.
         showAutomationFlowLines(scene, util, shape);
         scene.idle(GT_FLOW_LINE_DURATION);
+
+        showPartCallouts(scene, util, machineId, shape, shape.partGroups, basePlateSize,
+                (double) GT_DEFAULT_CAMERA_Y_ROTATION);
+        scene.idle(20);
 
         // markAsFinished is always called here.
         // addGeneratedMultiblockScene passes "markAsFinished" -> false to the
@@ -1321,6 +1554,7 @@ public class GTPonderMultiblocks {
     private record Dimensions(int x, int y, int z) {}
 
     private record Bounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+
         @Override
         public @NotNull String toString() {
             return String.format("%d,%d,%d->%d,%d,%d", minX, minY, minZ, maxX, maxY, maxZ);
@@ -1333,31 +1567,46 @@ public class GTPonderMultiblocks {
     // NBT merge was commented out, which caused the inline reflection loop in
     // renderMultiblock to be added as a workaround — that loop bypassed Ponder's
     // section system and double-placed every block.
-    private record ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z,
-                              @Nullable CompoundTag nbt) {
+    public record ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z,
+                             @Nullable CompoundTag nbt,
+                             List<ItemStack> validBlocks) {
+
+        /** Convenience constructor for entries without valid block lists. */
+        ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z, @Nullable CompoundTag nbt) {
+            this(pos, state, x, y, z, nbt, Collections.emptyList());
+        }
 
         /** Convenience constructor for non-block-entity entries. */
         ShapeEntry(BlockPos pos, BlockState state, int x, int y, int z) {
-            this(pos, state, x, y, z, null);
+            this(pos, state, x, y, z, null, Collections.emptyList());
         }
     }
 
     private static class StateGroup {
+
         public final BlockState state;
         public final List<BlockPos> positions = new ArrayList<>();
-        public StateGroup(BlockState state) { this.state = state; }
+
+        public StateGroup(BlockState state) {
+            this.state = state;
+        }
     }
 
     private static class LayerData {
+
         public final int y;
         public final List<ShapeEntry> entries = new ArrayList<>();
-        public LayerData(int y) { this.y = y; }
+
+        public LayerData(int y) {
+            this.y = y;
+        }
     }
 
     private record PartCallout(String key, PonderPalette palette, String label, String text,
                                Predicate<String> match) {}
 
     private static class PartGroup {
+
         public final String key, label, text;
         public final PonderPalette palette;
         public final boolean showCount, machinePart;
@@ -1372,16 +1621,30 @@ public class GTPonderMultiblocks {
         public PartGroup(String key, PonderPalette palette, String label, String text,
                          boolean showCount, boolean machinePart,
                          List<BlockPos> positions, List<BlockState> states) {
-            this.key = key; this.palette = palette; this.label = label; this.text = text;
-            this.showCount = showCount; this.machinePart = machinePart;
-            this.positions = positions; this.states = states;
+            this.key = key;
+            this.palette = palette;
+            this.label = label;
+            this.text = text;
+            this.showCount = showCount;
+            this.machinePart = machinePart;
+            this.positions = positions;
+            this.states = states;
         }
     }
 
-    private record ShapeData(List<ShapeEntry> entries, Map<String, Boolean> occupiedPositions,
-                             Bounds bounds, BlockPos controllerPos,
-                             List<BlockPos> machinePartPositions,
-                             List<PartGroup> partGroups, List<PartGroup> structureGroups) {}
+    public record ShapeData(List<ShapeEntry> entries, Map<String, Boolean> occupiedPositions,
+                            Bounds bounds, BlockPos controllerPos,
+                            List<BlockPos> machinePartPositions,
+                            List<PartGroup> partGroups, List<PartGroup> structureGroups) {
+
+        @Nullable
+        public ShapeEntry getEntryAt(BlockPos pos) {
+            return entries.stream()
+                    .filter(e -> e.pos.equals(pos))
+                    .findFirst()
+                    .orElse(null);
+        }
+    }
 
     private record MechanicRule(String key, Object focus, PonderPalette palette, String text,
                                 String animation, Predicate<ShapeData> when) {}

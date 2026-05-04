@@ -1,6 +1,7 @@
 package net.phoenix.core.client;
 
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderManager;
+import com.gregtechceu.gtceu.common.data.machines.GCYMMachines;
 
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -24,11 +25,14 @@ import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.client.particle.PhoenixParticles;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
+import net.phoenix.core.common.machine.PhoenixMachines;
 import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchScreen;
+import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
 import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
+import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -48,9 +52,6 @@ public class PhoenixClient {
         DynamicRenderManager.register(PhoenixCore.id("honey_chamber"), HoneyChamberDynamicRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("tesla_tower"), TeslaTowerRenderer.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
-
-        // Removed the call to PonderScriptInstaller
-        // PonderScriptInstaller.installBundledKubeJsFiles();
     }
 
     // --- PARTICLE FACTORY REGISTRATION ---
@@ -97,6 +98,11 @@ public class PhoenixClient {
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
             PonderIndex.addPlugin(new PhoenixPonderPlugin());
+
+            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixMachines.ALCHEMICAL_IMBUER);
+            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(GCYMMachines.MEGA_BLAST_FURNACE);
+            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixTeslaMachines.TESLA_TOWER);
+
         });
     }
 }

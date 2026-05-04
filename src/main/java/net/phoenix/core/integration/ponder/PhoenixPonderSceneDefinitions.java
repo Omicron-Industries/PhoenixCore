@@ -43,7 +43,7 @@ public class PhoenixPonderSceneDefinitions {
             java.nio.file.Files.createDirectories(outputDir);
 
             // Your existing generation logic
-            generateRefinedMultiblockSourceTankScene(outputDir);
+            // generateRefinedMultiblockSourceTankScene(outputDir);
             generateHoneyCrystallizationChamberScene(outputDir);
             generateAlchemicalImbuerScene(outputDir);
             generateSourceReactorScene(outputDir);
@@ -89,73 +89,76 @@ public class PhoenixPonderSceneDefinitions {
         return new ResourceLocation(modId, blockName).toString();
     }
 
-    private static void generateRefinedMultiblockSourceTankScene(Path outputDir) throws IOException {
-        String fileName = "refined_multiblock_source_tank_scene.js";
-        PonderSceneGenerator generator = new PonderSceneGenerator(
-                PhoenixCore.MOD_ID,
-                "refined_multiblock_source_tank",
-                "Refined Multiblock Source Tank",
-                "tfg:gregtech_multiblocks/blank_48");
-
-        String casingBlock = getBlockId(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING);
-        String controllerBlock = getBlockId(PhoenixMachines.REFINED_MULTIBLOCK_SOURCE_TANK.asStack());
-
-        // Define the pattern as a 3D char array [y][z][x]
-        char[][][] patternChars = {
-                // Y = 0 (bottom layer)
-                {
-                        { 'C', 'C', 'C' }, // Z = 0 (back)
-                        { 'C', 'C', 'C' }, // Z = 1 (middle)
-                        { 'C', 'C', 'C' }  // Z = 2 (front)
-                },
-                // Y = 1 (middle layer)
-                {
-                        { 'C', 'C', 'C' }, // Z = 0 (back)
-                        { 'C', '#', 'C' }, // Z = 1 (middle) - # is air
-                        { 'C', 'C', 'C' }  // Z = 2 (front)
-                },
-                // Y = 2 (top layer)
-                {
-                        { 'C', 'C', 'C' }, // Z = 0 (back)
-                        { 'C', 'S', 'C' }, // Z = 1 (middle) - S is controller
-                        { 'C', 'C', 'C' }  // Z = 2 (front)
-                }
-        };
-
-        Map<Character, String> blockMapping = new HashMap<>();
-        blockMapping.put('C', casingBlock);
-        blockMapping.put('S', controllerBlock);
-        // '#' is handled as air, no need to map
-
-        int controllerX = -1, controllerY = -1, controllerZ = -1;
-
-        for (int y = 0; y < patternChars.length; y++) {
-            for (int z = 0; z < patternChars[y].length; z++) {
-                for (int x = 0; x < patternChars[y][z].length; x++) {
-                    char blockChar = patternChars[y][z][x];
-                    if (blockChar == 'S') {
-                        controllerX = x;
-                        controllerY = y;
-                        controllerZ = z;
-                    }
-                    if (blockChar != '#' && blockChar != ' ') { // Don't add air blocks
-                        generator.addBlock(x, y, z, blockMapping.getOrDefault(blockChar, casingBlock));
-                    }
-                }
-            }
-        }
-
-        if (controllerX != -1) {
-            generator
-                    .addText("The Refined Multiblock Source Tank stores large amounts of Source.", controllerX,
-                            controllerY, controllerZ, "gold")
-                    .addIdle(60);
-        }
-
-        Path scriptFile = outputDir.resolve(fileName);
-        generator.writeScript(scriptFile);
-        generatedFileNames.add(fileName);
-    }
+    /*
+     * private static void generateRefinedMultiblockSourceTankScene(Path outputDir) throws IOException {
+     * String fileName = "refined_multiblock_source_tank_scene.js";
+     * PonderSceneGenerator generator = new PonderSceneGenerator(
+     * PhoenixCore.MOD_ID,
+     * "refined_multiblock_source_tank",
+     * "Refined Multiblock Source Tank",
+     * "tfg:gregtech_multiblocks/blank_48");
+     * 
+     * String casingBlock = getBlockId(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING);
+     * String controllerBlock = getBlockId(PhoenixMachines.REFINED_MULTIBLOCK_SOURCE_TANK.asStack());
+     * 
+     * // Define the pattern as a 3D char array [y][z][x]
+     * char[][][] patternChars = {
+     * // Y = 0 (bottom layer)
+     * {
+     * { 'C', 'C', 'C' }, // Z = 0 (back)
+     * { 'C', 'C', 'C' }, // Z = 1 (middle)
+     * { 'C', 'C', 'C' } // Z = 2 (front)
+     * },
+     * // Y = 1 (middle layer)
+     * {
+     * { 'C', 'C', 'C' }, // Z = 0 (back)
+     * { 'C', '#', 'C' }, // Z = 1 (middle) - # is air
+     * { 'C', 'C', 'C' } // Z = 2 (front)
+     * },
+     * // Y = 2 (top layer)
+     * {
+     * { 'C', 'C', 'C' }, // Z = 0 (back)
+     * { 'C', 'S', 'C' }, // Z = 1 (middle) - S is controller
+     * { 'C', 'C', 'C' } // Z = 2 (front)
+     * }
+     * };
+     * 
+     * Map<Character, String> blockMapping = new HashMap<>();
+     * blockMapping.put('C', casingBlock);
+     * blockMapping.put('S', controllerBlock);
+     * // '#' is handled as air, no need to map
+     * 
+     * int controllerX = -1, controllerY = -1, controllerZ = -1;
+     * 
+     * for (int y = 0; y < patternChars.length; y++) {
+     * for (int z = 0; z < patternChars[y].length; z++) {
+     * for (int x = 0; x < patternChars[y][z].length; x++) {
+     * char blockChar = patternChars[y][z][x];
+     * if (blockChar == 'S') {
+     * controllerX = x;
+     * controllerY = y;
+     * controllerZ = z;
+     * }
+     * if (blockChar != '#' && blockChar != ' ') { // Don't add air blocks
+     * generator.addBlock(x, y, z, blockMapping.getOrDefault(blockChar, casingBlock));
+     * }
+     * }
+     * }
+     * }
+     * 
+     * if (controllerX != -1) {
+     * generator
+     * .addText("The Refined Multiblock Source Tank stores large amounts of Source.", controllerX,
+     * controllerY, controllerZ, "gold")
+     * .addIdle(60);
+     * }
+     * 
+     * Path scriptFile = outputDir.resolve(fileName);
+     * generator.writeScript(scriptFile);
+     * generatedFileNames.add(fileName);
+     * }
+     * 
+     */
 
     private static void generateHoneyCrystallizationChamberScene(Path outputDir) throws IOException {
         String fileName = "honey_crystallization_chamber_scene.js";

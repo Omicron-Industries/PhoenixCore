@@ -20,6 +20,7 @@ import net.createmod.ponder.foundation.PonderIndex;
 import net.createmod.ponder.foundation.PonderTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -30,6 +31,7 @@ import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -60,6 +62,7 @@ import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.Source
 import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
 import net.phoenix.core.integration.ars_nouveau.common.event.SourceHatchJarTransferTick;
 import net.phoenix.core.integration.matter_manipulater.common.data.item.ManipulaterItems;
+import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
@@ -68,7 +71,6 @@ import net.phoenix.core.integration.ponder.PonderStoriesManager;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
-import net.minecraftforge.event.TickEvent;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import org.apache.logging.log4j.LogManager;
@@ -76,6 +78,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
+import static net.minecraft.commands.Commands.literal;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
 @SuppressWarnings("all")
@@ -186,6 +189,7 @@ public class PhoenixCore {
         event.enqueueWork(() -> {
             // ADD: bind the screen class to the menu type
             MenuScreens.register(RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
+
         });
     }
 
@@ -239,11 +243,20 @@ public class PhoenixCore {
 
     @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
     public static class ClientForgeEvents {
+
         private static boolean ponderReloaded = false;
 
         @SubscribeEvent
         public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
-            LOGGER.info("PhoenixCore: Registering client commands...");
+            event.getDispatcher().register(
+                    net.minecraft.commands.Commands.literal("phantasia")
+                            .executes(context -> {
+                                Minecraft.getInstance().tell(() -> {
+                                    Minecraft.getInstance().setScreen(
+                                            new PhantasiaSceneSelectionScreen(null));
+                                });
+                                return 1;
+                            }));
         }
 
         @SubscribeEvent
@@ -263,9 +276,6 @@ public class PhoenixCore {
     public static Fluid plasma(Material material) {
         return material.getFluid(FluidStorageKeys.PLASMA, 1).getFluid();
     }
-
-
-
 
     protected static ResourceLocation appendPonderNamespaceToId(String namespace, String id) {
         if (!id.contains(":")) id = namespace + ":" + id;

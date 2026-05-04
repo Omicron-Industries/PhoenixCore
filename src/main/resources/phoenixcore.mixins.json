@@ -27,6 +27,7 @@
     "minecraft.RecipeManagerMixin"
   ],
   "client": [
+    "PonderUIMixin",
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
     "minecraft.GameRendererMixin",
