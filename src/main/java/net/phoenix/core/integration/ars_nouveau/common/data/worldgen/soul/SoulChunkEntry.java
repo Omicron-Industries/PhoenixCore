@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 public class SoulChunkEntry {
 
     public float currentSoul;
-    public float maxCapacity; // Stores the unique "Hotspot" value
+    public float maxCapacity;
     public long lastUpdateTime;
 
     public SoulChunkEntry(float currentSoul, float maxCapacity, long lastUpdateTime) {

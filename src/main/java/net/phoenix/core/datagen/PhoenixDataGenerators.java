@@ -22,9 +22,6 @@ public class PhoenixDataGenerators {
                     new SoundEntryBuilder.SoundEntryProvider(packOutput, PhoenixCore.MOD_ID));
 
             // ADD THIS: Your new Ponder provider
-            event.getGenerator().addProvider(
-                    true,
-                    new PhoenixPonderDataProvider(packOutput));
         }
     }
 }

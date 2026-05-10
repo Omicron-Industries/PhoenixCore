@@ -167,15 +167,29 @@ public class PhantasiaFakeLevel extends Level {
 
     @Override
     public boolean setBlock(BlockPos pos, BlockState state, int flags) {
-        blocks.put(pos.immutable(), state);
+        BlockPos immutablePos = pos.immutable();
+        BlockState oldState = blocks.getOrDefault(immutablePos, Blocks.AIR.defaultBlockState());
+        blocks.put(immutablePos, state);
+
+        if (oldState.hasBlockEntity()) {
+            removeBlockEntity(immutablePos); // Remove old BE if exists
+        }
 
         if (state.hasBlockEntity()) {
-            BlockEntity be = ((EntityBlock) state.getBlock()).newBlockEntity(pos, state);
+            BlockEntity be = tryCreateBlockEntity(immutablePos, state); // Use the more robust method
             if (be != null) {
                 be.setLevel(this);
-                blockEntities.put(pos.immutable(), be);
+                blockEntities.put(immutablePos, be);
                 be.requestModelDataUpdate();
+                be.onLoad(); // NEW: Call onLoad for newly created BlockEntities
             }
+        }
+        // Notify neighbors about the block change
+        updateNeighborsAt(immutablePos, oldState.getBlock()); // This will now call neighborChanged on blocks
+        // Also ensure the block itself gets its model updated if it's a BE
+        BlockEntity selfBE = getBlockEntity(immutablePos);
+        if (selfBE != null) {
+            selfBE.requestModelDataUpdate();
         }
         return true;
     }
@@ -230,6 +244,36 @@ public class PhantasiaFakeLevel extends Level {
         }
     }
 
+    @Override
+    public void updateNeighborsAt(BlockPos pos, net.minecraft.world.level.block.Block changedBlock) {
+        // Notify the block at 'pos' itself
+        BlockState selfState = getBlockState(pos);
+        if (!selfState.isAir()) {
+            selfState.neighborChanged(this, pos, changedBlock, pos, false);
+        }
+
+        // Notify all direct neighbors
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            BlockState neighborState = getBlockState(neighborPos);
+            if (!neighborState.isAir()) {
+                neighborState.neighborChanged(this, neighborPos, changedBlock, pos, false);
+            }
+        }
+        // Also ensure BlockEntities get their model data updated, as neighborChanged doesn't always do this.
+        BlockEntity selfBE = getBlockEntity(pos);
+        if (selfBE != null) {
+            selfBE.requestModelDataUpdate();
+        }
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            BlockEntity neighborBE = getBlockEntity(neighborPos);
+            if (neighborBE != null) {
+                neighborBE.requestModelDataUpdate();
+            }
+        }
+    }
+
     // ── Lighting — always full bright ─────────────────────────────────────────
 
     @Override
@@ -242,13 +286,18 @@ public class PhantasiaFakeLevel extends Level {
     }
 
     @Override
-    public int getBrightness(LightLayer type, BlockPos pos) {
-        return 15;
+    public int getBrightness(LightLayer layer, BlockPos pos) {
+        return 15; // Max brightness for both Sky and Block light
     }
 
     @Override
-    public int getRawBrightness(BlockPos pos, int ambientDark) {
-        return 15;
+    public int getRawBrightness(BlockPos pos, int amount) {
+        return 15; // Ensures the internal renderer sees full bright
+    }
+
+    @Override
+    public boolean isOutsideBuildHeight(BlockPos pos) {
+        return false; // Prevents the renderer from culling blocks thinking they are in the void
     }
 
     @Override

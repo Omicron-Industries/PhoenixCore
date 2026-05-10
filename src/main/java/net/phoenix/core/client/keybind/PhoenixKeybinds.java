@@ -52,6 +52,12 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_W,
             "key.categories.phoenixcore");
 
+    public static final KeyMapping OPEN_PHANTASIA_MENU = new KeyMapping(
+            "key.phoenixcore.phantasia_menu",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_P,
+            "key.categories.phoenixcore");
+
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);
@@ -61,5 +67,6 @@ public class PhoenixKeybinds {
         event.register(OPEN_RECIPE_BUILDER);
         event.register(SPRAY_CAN_MENU);
         event.register(OPEN_PONDER);
+        event.register(OPEN_PHANTASIA_MENU);
     }
 }

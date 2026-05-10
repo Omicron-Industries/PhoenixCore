@@ -1245,7 +1245,7 @@ public class PhoenixMachines {
                                     .getValue(ResourceLocation.parse("ars_nouveau:vitalic_sourcelink"))))
                     .where("K", Predicates.controller(Predicates.blocks(definition.get())))
                     .build())
-            .workableCasingModel(GTCEu.id("block/casings/mechanic/machine_casing_turbine_tungstensteel"),
+            .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
                     PhoenixCore.id("block/multiblock/alchemical_imbuer"))
             .tooltipBuilder(ALCHEMICAL_IMBUER_TOOLTIPS)
             .register();
@@ -1321,7 +1321,7 @@ public class PhoenixMachines {
             .rotationState(RotationState.ALL)
             .recipeTypes(GCYMRecipeTypes.ALLOY_BLAST_RECIPES)
             .recipeModifiers(PARALLEL_HATCH, BATCH_MODE, GTRecipeModifiers::ebfOverclock)
-            .appearanceBlock(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING)
+            .appearanceBlock(CASING_STEEL_SOLID)
             .pattern(definition -> {
                 return FactoryBlockPattern.start()
                         .aisle("BCCCB", "BCDCB", "BCDCB", "BEEEB", "BFFFB", "BCCCB", "BBBBB", "BBBBB", "BBBBB")

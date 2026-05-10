@@ -48,8 +48,6 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
         return IInteractionItem.super.onEntitySwing(stack, entity);
     }
 
-    // --- Mode Handling ---
-
     public PhoenixManipulatorMode getMode(ItemStack stack) {
         if (stack.hasTag()) {
             assert stack.getTag() != null;
@@ -65,11 +63,6 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
         player.displayClientMessage(mode.getDisplayName(), true);
     }
 
-    // --- Interaction Logic ---
-
-    // --- Interaction Logic ---
-
-    // Helper to keep code clean
     private int calculateVolume(BlockPos a, BlockPos b) {
         return (Math.abs(a.getX() - b.getX()) + 1) * (Math.abs(a.getY() - b.getY()) + 1) *
                 (Math.abs(a.getZ() - b.getZ()) + 1);
@@ -87,24 +80,20 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
         PhoenixManipulatorMode mode = getMode(stack);
         BlockPos start = getStartPos(stack);
 
-        // --- ACTIVE WARNING LOGIC ---
         if (player.isShiftKeyDown()) {
-            // User is trying to set Point 2
             if (start != null && pos.getY() > start.getY()) {
-                // Point 2 is higher than Point 1: Trigger Hotbar Warning
                 player.displayClientMessage(
                         Component.literal("§c⚠ Error: Point 2 (Shift-Click) cannot be higher than Point 1!"), true);
                 player.playSound(SoundEvents.NOTE_BLOCK_BASS.get(), 1.0f, 0.5f);
-                return InteractionResult.FAIL; // Prevent setting the invalid point
+                return InteractionResult.FAIL;
             }
             setEndPos(stack, pos);
         } else {
             setStartPos(stack, pos);
         }
 
-        // Calculation & Action Bar
         BlockPos end = getEndPos(stack);
-        start = getStartPos(stack); // Re-fetch in case it just changed
+        start = getStartPos(stack);
 
         if (start != null && end != null) {
             int count = PhoenixPlacementEngine.getTargetPositions(start, end, mode).size();
@@ -120,7 +109,6 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // This code only runs when you click AIR, because useOn() returns SUCCESS for blocks
         if (!level.isClientSide) {
             BlockPos start = getStartPos(stack);
             BlockPos end = getEndPos(stack);
@@ -145,20 +133,17 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
         tooltip.add(Component.literal("§7Mode: §6" + mode.getName()));
         tooltip.add(Component.literal("§8» §b" + getModeDescription(mode)));
 
-        // --- TOOLTIP WARNING ---
         tooltip.add(Component.empty());
         tooltip.add(Component.literal("§e§l⚠ PLACEMENT RULE:"));
         tooltip.add(Component.literal("§fAlways set §6Point 1 §fHIGHER than §ePoint 2§f."));
         tooltip.add(Component.literal("§7(Vertical building only works downwards)"));
         tooltip.add(Component.empty());
 
-        // Selection Status
         if (start != null && end != null) {
             int dx = Math.abs(end.getX() - start.getX()) + 1;
             int dy = Math.abs(end.getY() - start.getY()) + 1;
             int dz = Math.abs(end.getZ() - start.getZ()) + 1;
 
-            // Simplified count for display
             int count = PhoenixPlacementEngine.getTargetPositions(start, end, mode).size();
 
             tooltip.add(Component.literal("§7Selection: §a" + start.toShortString() + " §7→ §a" + end.toShortString()));
@@ -171,14 +156,12 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
 
         tooltip.add(Component.empty());
 
-        // Controls
         tooltip.add(Component.literal("§6Controls:"));
         tooltip.add(Component.literal("§8[R-Click Block] §7Set §6Point 1 (Higher)"));
         tooltip.add(Component.literal("§8[Shift + R-Click Block] §7Set §ePoint 2 (Lower)"));
         tooltip.add(Component.literal("§8[R-Click Air] §7Execute §aAction"));
     }
 
-    // Helper for the tooltip description
     private String getModeDescription(PhoenixManipulatorMode mode) {
         return switch (mode) {
             case LINE -> "Builds in a single straight axis.";
@@ -191,7 +174,7 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
 
     @Override
     public boolean doesSneakBypassUse(ItemStack stack, LevelReader level, BlockPos pos, Player player) {
-        return true; // Allows setting selection points on machines without opening GUIs
+        return true;
     }
 
     public Set<GTToolType> getToolTypes(ItemStack stack) {
@@ -204,8 +187,6 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
                 GTToolActions.DEFAULT_WIRE_CUTTER_ACTIONS.contains(toolAction) ||
                 super.canPerformAction(stack, toolAction);
     }
-
-    // --- Data Storage (NBT) ---
 
     private void setStartPos(ItemStack stack, @Nullable BlockPos pos) {
         if (pos == null) stack.getOrCreateTag().remove("start_pos");
@@ -238,7 +219,6 @@ public class PhoenixManipulatorItem extends Item implements IInteractionItem {
             return;
         }
 
-        // --- FINAL EXECUTION FAIL-SAFE ---
         if (end.getY() > start.getY()) {
             player.displayClientMessage(Component.literal("§cCannot Build: Point 2 is higher than Point 1!"), true);
             player.playSound(SoundEvents.NOTE_BLOCK_BASS.get(), 1.0f, 0.5f);

@@ -16,6 +16,7 @@ import net.phoenix.core.common.machine.multiblock.unique.BlazingCleanroom;
 import net.phoenix.core.common.machine.multiblock.unique.CreativeEnergyMultiMachine;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.kubejs.recipe.PhoenixRecipeSchema;
+import net.phoenix.core.integration.phantasia.PhantasiaKubeJS;
 
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
@@ -63,8 +64,14 @@ public class PhoenixKubeJSPlugin extends KubeJSPlugin {
         event.add("CreativeEnergyMultiMachine", CreativeEnergyMultiMachine.class);
         event.add("PhoenixItems", PhoenixItems.class);
         event.add("PhoenixRecipeTypes", PhoenixRecipeTypes.class);
-
         event.add("PhoenixDynamicRenderHelpers", PhoenixDynamicRenderHelpers.class);
         event.add("PhoenixCore", PhoenixCore.class);
+
+        // Phantasia — only register for client-side startup scripts
+        // PhantasiaKubeJS.register() is safe to call from startup scripts;
+        // it resolves block registry lookups which are available after startup.
+        if (event.getType() == ScriptType.STARTUP) {
+            event.add("Phantasia", PhantasiaKubeJS.class);
+        }
     }
 }

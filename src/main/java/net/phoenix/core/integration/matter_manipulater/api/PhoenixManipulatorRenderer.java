@@ -17,7 +17,6 @@ import java.util.List;
 public class PhoenixManipulatorRenderer {
 
     public static void renderSelection(RenderLevelStageEvent event) {
-        // Render after transparency to ensure it's visible over blocks
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
 
         Minecraft mc = Minecraft.getInstance();
@@ -40,15 +39,13 @@ public class PhoenixManipulatorRenderer {
         poseStack.pushPose();
         poseStack.translate(-camera.x, -camera.y, -camera.z);
 
-        // Define colors based on mode
-        float r = 0.2f, g = 1.0f, b = 1.0f, a = 0.4f; // Default Cyan
+        float r = 0.2f, g = 1.0f, b = 1.0f, a = 0.4f;
         if (mode == PhoenixManipulatorMode.CONNECT_ONLY) {
             r = 0.2f;
             g = 1.0f;
-            b = 0.2f; // Green for repair
+            b = 0.2f;
         }
 
-        // Draw individual ghost blocks
         for (BlockPos pos : targets) {
             LevelRenderer.renderLineBox(poseStack, buffer,
                     pos.getX(), pos.getY(), pos.getZ(),
@@ -56,7 +53,6 @@ public class PhoenixManipulatorRenderer {
                     r, g, b, a);
         }
 
-        // Draw a thick outer bounding box to clearly define the selection area
         drawBoundingBox(poseStack, buffer, start, end, 1.0f, 1.0f, 1.0f, 0.8f);
 
         poseStack.popPose();
@@ -67,7 +63,7 @@ public class PhoenixManipulatorRenderer {
         double minX = Math.min(start.getX(), end.getX());
         double minY = Math.min(start.getY(), end.getY());
         double minZ = Math.min(start.getZ(), end.getZ());
-        double maxX = Math.max(start.getX(), end.getX()) + 1.05; // Slightly larger to avoid Z-fighting
+        double maxX = Math.max(start.getX(), end.getX()) + 1.05;
         double maxY = Math.max(start.getY(), end.getY()) + 1.05;
         double maxZ = Math.max(start.getZ(), end.getZ()) + 1.05;
 

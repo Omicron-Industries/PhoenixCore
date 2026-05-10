@@ -8,9 +8,6 @@ import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.Configurable;
 import dev.toma.configuration.config.format.ConfigFormats;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Config(id = PhoenixCore.MOD_ID)
 public class PhoenixConfigs {
 
@@ -489,10 +486,6 @@ public class PhoenixConfigs {
         @Configurable.Comment("Configuration for Fission Fuel Rods")
         public FuelRodConfigs fuelRods = new FuelRodConfigs();
 
-        @Configurable
-        @Configurable.Comment("Configuration for Breeder Blankets")
-        public BlanketConfigs blankets = new BlanketConfigs();
-
         public static class CoolerConfigs {
 
         }
@@ -634,38 +627,6 @@ public class PhoenixConfigs {
             @Configurable
             @Configurable.Comment("Depleted Fuel produced for the T5 fuel rod. (Registry name string)")
             public String depletedGivenT5 = "phoenixcore:spent_uranium_242_nugget";
-        }
-
-        public static class BlanketConfigs {
-
-            @Configurable.Comment("Blanket cycle in ticks for the Thorium blanket.")
-            public int blanketCycleTicksThoriumBlanket = 1200;
-            @Configurable.Comment("Blanket cycle in ticks for the Uranium blanket.")
-            public int blanketCycleTicksUraniumBlanket = 2400;
-            @Configurable.Comment("Blanket cycle in ticks for the Neptunium blanket.")
-            public int blanketCycleTicksNeptuniumBlanket = 4800;
-            @Configurable.Comment("Blanket cycle in ticks for the Plutonium blanket.")
-            public int blanketCycleTicksPlutoniumBlanket = 9600;
-            @Configurable.Comment("Blanket cycle in ticks for the Americium blanket.")
-            public int blanketCycleTicksAmericiumBlanket = 19200;
-
-            @Configurable
-            @Configurable.Comment("Amount of items processed per cycle for each blanket.")
-            public Map<String, Integer> amountPerCycle = new HashMap<>(Map.of(
-                    "thorium_blanket", 4,
-                    "uranium_blanket", 4,
-                    "neptunium_blanket", 2,
-                    "plutonium_blanket", 2,
-                    "americium_blanket", 1));
-
-            @Configurable
-            @Configurable.Comment("Input item registry ID for each blanket.")
-            public Map<String, String> inputKeys = new HashMap<>(Map.of(
-                    "thorium_blanket", "phoenixcore:thorium_fuel_pellet",
-                    "uranium_blanket", "gtceu:uranium_dust",
-                    "neptunium_blanket", "gtceu:neptunium_dust",
-                    "plutonium_blanket", "gtceu:plutonium_dust",
-                    "americium_blanket", "gtceu:lead_dust"));
         }
     }
 

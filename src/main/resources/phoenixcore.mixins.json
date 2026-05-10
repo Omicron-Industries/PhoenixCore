@@ -5,9 +5,6 @@
   "minVersion": "0.8",
   "refmap": "mixins.phoenixcore.refmap.json",
   "mixins": [
-    "PonderInstructionMixin",
-    "PonderTagRegistryAccessor",
-    "SceneBuilderAccessor",
     "accessor.AbilitiesAccessor",
     "accessor.ColorSprayBehaviourAccessor",
     "accessor.GTOresAccessor",
@@ -21,13 +18,13 @@
     "gtceu.ColorSprayBehaviourMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
     "gtceu.MixinGTOres",
+    "gtceu.MixinSceneWidget",
     "gtceu.WorkableMultiblockMachineMixin",
     "kubejs.MiscForgeHelperMixin",
     "minecraft.ItemStackTooltipMixin",
     "minecraft.RecipeManagerMixin"
   ],
   "client": [
-    "PonderUIMixin",
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
     "minecraft.GameRendererMixin",

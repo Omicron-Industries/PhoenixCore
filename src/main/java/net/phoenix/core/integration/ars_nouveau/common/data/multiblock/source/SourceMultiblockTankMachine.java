@@ -37,7 +37,6 @@ import static net.phoenix.core.utils.CompactCount.fmt;
 
 public class SourceMultiblockTankMachine extends MultiblockControllerMachine implements IFancyUIMachine {
 
-    // Use your custom trait
     @Getter
     @DescSynced
     @Persisted

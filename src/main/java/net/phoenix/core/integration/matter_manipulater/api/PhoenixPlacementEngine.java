@@ -41,7 +41,6 @@ public class PhoenixPlacementEngine {
                 if (isAir) {
                     if (offhandStack.getItem() instanceof PipeBlockItem pipeItem) {
                         // Let setBlock trigger GT's own node registration naturally —
-                        // do NOT call addNode manually, the first version proves this is reliable
                         if (!PhoenixInventoryService.consumePipe(player, offhandStack)) break;
                         level.setBlock(pos, pipeItem.getBlock().defaultBlockState(), 3);
                         actionCount++;
@@ -51,7 +50,6 @@ public class PhoenixPlacementEngine {
                         }
                     }
                 } else if (isCableBus && offhandStack.getItem() instanceof IPartItem<?>) {
-                    // Cable bus already exists, try to add the part to it
                     if (placeAE2Cable(level, pos, offhandStack, player)) {
                         actionCount++;
                     }
@@ -60,7 +58,6 @@ public class PhoenixPlacementEngine {
         }
 
         // PASS 2: CONNECTIONS
-        // Only needed for GT pipes — AE2 handles its own connections via notifyNeighbors
         if (mode != PhoenixManipulatorMode.DISCONNECT) {
             for (BlockPos pos : targets) {
                 if (level.getBlockEntity(pos) instanceof IPipeNode<?, ?> node) {
@@ -81,7 +78,6 @@ public class PhoenixPlacementEngine {
                     }
                 }
 
-                // AE2 neighbor notify — safe to call even if nothing changed
                 if (level.getBlockEntity(pos) instanceof CableBusBlockEntity bus) {
                     bus.notifyNeighbors();
                     level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);

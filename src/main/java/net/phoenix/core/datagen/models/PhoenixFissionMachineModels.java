@@ -56,12 +56,12 @@ public class PhoenixFissionMachineModels {
 
             var inactive = prov.models()
                     .withExistingParent(name, tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/coolers/" + type.getName()))
                     .texture("top_all", coolerMask());
 
             var active = prov.models()
                     .withExistingParent(name + "_active", tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/coolers/" + type.getName()))
                     .texture("top_all", coolerMaskOn());
 
             prov.getVariantBuilder(block)
@@ -80,12 +80,12 @@ public class PhoenixFissionMachineModels {
 
             var inactive = prov.models()
                     .withExistingParent(name, tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/blankets/" + type.getName()))
                     .texture("top_all", blanketMask());
 
             var active = prov.models()
                     .withExistingParent(name + "_active", tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/blankets/" + type.getName()))
                     .texture("top_all", blanketMaskOn());
 
             prov.getVariantBuilder(block)
@@ -104,12 +104,12 @@ public class PhoenixFissionMachineModels {
 
             var inactive = prov.models()
                     .withExistingParent(name, tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/fuel_rods/" + type.getName()))
                     .texture("top_all", rodMask());
 
             var active = prov.models()
                     .withExistingParent(name + "_active", tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/fuel_rods/" + type.getName()))
                     .texture("top_all", rodMaskOn());
 
             prov.getVariantBuilder(block)
@@ -128,7 +128,7 @@ public class PhoenixFissionMachineModels {
 
             var model = prov.models()
                     .withExistingParent(name, tinted2LayerParent())
-                    .texture("bot_all", type.getTexture())
+                    .texture("bot_all", PhoenixCore.id("block/fission/moderators/" + type.getName()))
                     .texture("top_all", modMask());
 
             prov.simpleBlock(block, model);

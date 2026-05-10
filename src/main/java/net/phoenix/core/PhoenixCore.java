@@ -66,8 +66,6 @@ import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
-import net.phoenix.core.integration.ponder.PhoenixPonderLang;
-import net.phoenix.core.integration.ponder.PonderStoriesManager;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
@@ -89,10 +87,8 @@ public class PhoenixCore {
     public static final Logger LOGGER = LogManager.getLogger();
     public static GTRegistrate PHOENIX_REGISTRATE = GTRegistrate.create(MOD_ID);
 
-    // Ponder Integration Fields and Constants
-    public static final String PONDER_MOD_ID = "phoenixcore"; // Original MOD_ID for phoenixcore internal logic
+    public static final String PONDER_MOD_ID = "phoenixcore";
     public static final Set<String> PONDER_NAMESPACES = new HashSet<>();
-    public static final PonderStoriesManager PONDER_STORIES_MANAGER = new PonderStoriesManager();
     private static boolean ponderInitialized;
 
     public static RegistryEntry<CreativeModeTab> PHOENIX_CREATIVE_TAB = REGISTRATE
@@ -153,7 +149,6 @@ public class PhoenixCore {
     public static final RegistryObject<MenuType<SourceHatchMenu>> SOURCE_HATCH_MENU = MENUS.register("source_hatch",
             () -> IForgeMenuType.create((IContainerFactory<SourceHatchMenu>) SourceHatchMenu::fromNetwork));
 
-    // ADD: Recipe Builder menu type — same pattern as SOURCE_HATCH_MENU
     public static final RegistryObject<MenuType<RecipeBuilderMenu>> RECIPE_BUILDER_MENU = MENUS.register(
             "recipe_builder",
             () -> IForgeMenuType.create(
@@ -187,7 +182,6 @@ public class PhoenixCore {
         LOGGER.info("PhoenixCore: Client setup complete.");
 
         event.enqueueWork(() -> {
-            // ADD: bind the screen class to the menu type
             MenuScreens.register(RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
 
         });
@@ -262,9 +256,7 @@ public class PhoenixCore {
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
             if (event.phase == TickEvent.Phase.END && !ponderReloaded) {
-                // Check if the client world is loaded, indicating models are likely baked
                 if (Minecraft.getInstance().level != null) {
-                    PhoenixCore.reloadPonderIntegration();
                     PhoenixCore.ponderInitialized = true;
                     ponderReloaded = true;
                     PhoenixCore.LOGGER.info("PhoenixCore: Ponder integration reloaded during client tick.");
@@ -286,17 +278,13 @@ public class PhoenixCore {
         return appendPonderNamespaceToId(PONDER_MOD_ID, id);
     }
 
-    public static void reloadPonderIntegration() {
-        new PhoenixPonderLang().generate("en_us");
-    }
-
     public static boolean isPonderIntegrationInitialized() {
         return ponderInitialized;
     }
 
     public static ResourceLocation ponderIdOf(String id) {
         if (id.contains(":")) return new ResourceLocation(id);
-        return new ResourceLocation(MOD_ID, id);   // "phoenixcore:<id>"
+        return new ResourceLocation(MOD_ID, id);
     }
 
     /**
