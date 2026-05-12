@@ -57,6 +57,9 @@ repositories {
         url 'https://maven.blamejared.com'
     }
 
+
+
+
     maven {
         name 'FirstDarkDev'
         url "https://maven.firstdarkdev.xyz/snapshots/"
@@ -236,6 +239,8 @@ dependencies {
 
     modRuntimeOnly("curse.maven:jade-324717:5390389")
     modCompileOnly("curse.maven:jade-324717:5390389")
+
+    implementation 'javazoom:jlayer:1.0.1'
 
 
    // modImplementation "curse.maven:crazy-ae2-addons-1223804:7250497"

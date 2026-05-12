@@ -219,9 +219,9 @@ import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.machine.PhoenixMachines;
 import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchScreen;
-import net.phoenix.core.integration.phantasia.AlchemicalImbuerPhantasiaScript;
-import net.phoenix.core.integration.phantasia.RotaryHearthFurnacePhantasiaScript; // NEW IMPORT
-import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
+import net.phoenix.core.integration.phantasia.client.AlchemicalImbuerPhantasiaScript;
+import net.phoenix.core.integration.phantasia.client.RotaryHearthFurnacePhantasiaScript; // NEW IMPORT
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;

@@ -1,6 +1,7 @@
 package net.phoenix.core.integration.phantasia;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
 
 import java.util.HashMap;
 import java.util.Map;

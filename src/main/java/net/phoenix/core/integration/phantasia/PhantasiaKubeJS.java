@@ -5,6 +5,7 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 
 import java.util.function.Consumer;
 

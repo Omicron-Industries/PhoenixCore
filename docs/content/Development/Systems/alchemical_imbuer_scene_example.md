@@ -86,8 +86,8 @@ package net.phoenix.core.client;
 
 // ... other imports ...
 import net.phoenix.core.common.machine.PhoenixMachines;
-import net.phoenix.core.integration.phantasia.AlchemicalImbuerPhantasiaScript;
-import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
+import net.phoenix.core.integration.phantasia.client.AlchemicalImbuerPhantasiaScript;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 // ... other imports ...
 
 // ... other class code ...

@@ -27,6 +27,8 @@
   "client": [
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
+    "gtceu.AccessorWorldSceneRenderer",
+    "gtceu.MixinWorldSceneRenderer",
     "minecraft.GameRendererMixin",
     "minecraft.GuiGraphicsCountSuffixMixin"
   ],

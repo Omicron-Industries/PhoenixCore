@@ -18,6 +18,7 @@ public class PhoenixRecipeTypes {
     public static GTRecipeType HONEY_CHAMBER_RECIPES;
     public static GTRecipeType PLEASE;
     public static GTRecipeType TESLA_TOWER;
+    public static GTRecipeType JUKEBLOCK;
     public static GTRecipeType HIGH_PERFORMANCE_BREEDER_REACTOR_RECIPES;
     public static GTRecipeType ADVANCED_PRESSURIZED_FISSION_REACTOR_RECIPES;
     public static GTRecipeType PRESSURIZED_FISSION_REACTOR_RECIPES;
@@ -35,6 +36,13 @@ public class PhoenixRecipeTypes {
 
     public static void init() {
         AETHERIAL_FABIRCATION_RECIPES = register("aetherial_fabrication", MULTIBLOCK)
+                .setEUIO(IO.IN)
+                .setMaxIOSize(3, 25, 1, 0)
+                .setSlotOverlay(false, false, GuiTextures.SOLIDIFIER_OVERLAY)
+                .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, ProgressTexture.FillDirection.LEFT_TO_RIGHT)
+                .setSound(GTSoundEntries.ARC);
+
+        JUKEBLOCK = register("jukeblock", MULTIBLOCK)
                 .setEUIO(IO.IN)
                 .setMaxIOSize(3, 25, 1, 0)
                 .setSlotOverlay(false, false, GuiTextures.SOLIDIFIER_OVERLAY)

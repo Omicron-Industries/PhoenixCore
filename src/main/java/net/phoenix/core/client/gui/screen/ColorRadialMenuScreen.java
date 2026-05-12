@@ -47,12 +47,11 @@ public class ColorRadialMenuScreen extends Screen {
 
         boolean hoveringSolvent = distToCenter < INNER_RADIUS;
 
-        // Draw Solvent center
+
         int solventColor = hoveringSolvent ? 0xFFFF55 : 0xFFFFFF;
         Component solventText = Component.translatable("behaviour.paintspray.solvent.short");
         guiGraphics.drawCenteredString(this.font, solventText, centerX, centerY - 4, solventColor);
 
-        // Render Radial Segments
         for (int i = 0; i < numSegments; i++) {
             float startAngleDeg = i * segmentAngle;
             float endAngleDeg = (i + 1) * segmentAngle;
@@ -62,7 +61,6 @@ public class ColorRadialMenuScreen extends Screen {
             float midAngleRad = (float) Math.toRadians(startAngleDeg - 90);
             float itemAngleRad = (float) Math.toRadians(((startAngleDeg + endAngleDeg) / 2.0f) - 90);
 
-            // Draw separation lines
             int x1 = centerX + (int) (Mth.cos(midAngleRad) * INNER_RADIUS);
             int y1 = centerY + (int) (Mth.sin(midAngleRad) * INNER_RADIUS);
             int x2 = centerX + (int) (Mth.cos(midAngleRad) * RADIUS);
@@ -77,7 +75,6 @@ public class ColorRadialMenuScreen extends Screen {
                 guiGraphics.fill(itemX - 4, itemY - 4, itemX + 20, itemY + 20, 0x44FFFFFF);
                 RenderSystem.setShaderColor(1, 1, 1, 1);
 
-                // Tooltip rendered last to be on top
                 guiGraphics.renderTooltip(this.font,
                         Component.translatable("color.minecraft." + colors[i].getSerializedName()), mouseX, mouseY);
             }
@@ -86,7 +83,6 @@ public class ColorRadialMenuScreen extends Screen {
             guiGraphics.renderFakeItem(dyeStack, itemX, itemY);
         }
 
-        // --- CHROMATIC BUTTON ---
         int btnW = 110;
         int btnH = 20;
         int buttonX = centerX - (btnW / 2);
@@ -94,7 +90,6 @@ public class ColorRadialMenuScreen extends Screen {
         boolean hoveringCustom = mouseX >= buttonX && mouseX <= buttonX + btnW && mouseY >= buttonY &&
                 mouseY <= buttonY + btnH;
 
-        // Terminal-style background and green outline
         guiGraphics.fill(buttonX, buttonY, buttonX + btnW, buttonY + btnH, hoveringCustom ? 0xAA333333 : 0xAA000000);
         guiGraphics.renderOutline(buttonX, buttonY, btnW, btnH, 0xFF00FF00);
 
@@ -106,7 +101,6 @@ public class ColorRadialMenuScreen extends Screen {
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        // 1. Check Chromatic Button
         int btnW = 110;
         int btnH = 20;
         int buttonX = centerX - (btnW / 2);
@@ -119,8 +113,6 @@ public class ColorRadialMenuScreen extends Screen {
             }
             return true;
         }
-
-        // 2. Check Radial Distance
         double distToCenter = Math.sqrt(Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2));
 
         if (distToCenter < INNER_RADIUS) {

@@ -3,7 +3,6 @@ package net.phoenix.core.integration.phantasia;
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -13,79 +12,72 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 
-import org.lwjgl.glfw.GLFW;
+import net.phoenix.core.client.keybind.PhoenixKeybinds;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 
 /**
  * PhantasiaKeybind
  *
- * Registers the "Phantasize" keybind (default: G) and draws an in-world HUD bar
- * when the player looks at a registered multiblock controller.
+ * Handles the look-at HUD bar and context-sensitive key behaviour for Phantasia.
  *
- * HOW IT WORKS:
- * - Every render tick: check the player's crosshair target.
- * If it's a MetaMachineBlock whose definition is in PhantasiaScripts,
- * draw the "Hold [G] to Phantasize" bar at the bottom of the screen.
- * - When the key is pressed (not just looked at): open PhantasiaSceneScreen.
+ * KEY BEHAVIOUR (uses the unified OPEN_PHANTASIA_MENU binding from PhoenixKeybinds):
+ *   - Looking at a registered multiblock controller → opens that machine's PhantasiaSceneScreen directly.
+ *   - Not looking at one                           → opens PhantasiaSceneSelectionScreen.
  *
- * REGISTRATION (call from your mod's client event bus subscriber):
+ * HUD BAR:
+ *   - Drawn directly above the vanilla hotbar when the player looks at a registered multiblock.
+ *   - Styled to match the Phantasia theme (C_BG / C_ACCENT).
+ *   - Suppressed while any screen is open or the F3 debug overlay is active.
  *
- * // In your mod's constructor or FMLJavaModLoadingContext.get().getModEventBus():
- * ModLoadingContext.get().getActiveContainer(); // (just to show context)
- * FMLJavaModLoadingContext.get().getModEventBus().addListener(PhantasiaKeybind::onRegisterKeyMappings);
+ * REGISTRATION — call from PhoenixClient.init():
+ *   MinecraftForge.EVENT_BUS.register(PhantasiaClientEvents.class);
+ *   modBus.addListener(PhoenixKeybinds::register);   // already done
  *
- * // On the FORGE event bus (in your ClientEvents class annotated @Mod.EventBusSubscriber):
- * 
- * @SubscribeEvent
- *                 public static void onKeyInput(InputEvent.Key event) { PhantasiaKeybind.onKeyInput(event); }
- *
- * @SubscribeEvent
- *                 public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
- *                 PhantasiaKeybind.onRenderOverlay(event); }
+ * Do NOT register a second keybind here. PHANTASIZE_KEY has been removed;
+ * everything is unified under PhoenixKeybinds.OPEN_PHANTASIA_MENU (default: P).
  */
 @OnlyIn(Dist.CLIENT)
 public class PhantasiaKeybind {
 
-    public static final KeyMapping PHANTASIZE_KEY = new KeyMapping(
-            "key.phantasia.phantasize",   // translation key
-            GLFW.GLFW_KEY_G,              // default: G
-            "key.categories.phantasia"    // category
-    );
-
-    // ── Registration ──────────────────────────────────────────────────────────
-
-    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(PHANTASIZE_KEY);
-    }
-
     // ── Key press → open screen ───────────────────────────────────────────────
 
+    /**
+     * Call from a Forge-bus InputEvent.Key subscriber.
+     * Dispatches to the machine-specific scene or the selection screen depending on look target.
+     */
     public static void onKeyInput(InputEvent.Key event) {
-        if (!PHANTASIZE_KEY.consumeClick()) return;
+        if (!PhoenixKeybinds.OPEN_PHANTASIA_MENU.consumeClick()) return;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.screen != null) return;
 
         MultiblockMachineDefinition def = getLookedAtDefinition(mc);
-        if (def == null) return;
-
-        mc.setScreen(new PhantasiaSceneScreen(def, null));
+        if (def != null) {
+            // Context-sensitive: jump straight to this machine's scene
+            mc.setScreen(new PhantasiaSceneScreen(def, null));
+        } else {
+            // Fallback: open the full selection screen
+            mc.setScreen(new PhantasiaSceneSelectionScreen(null));
+        }
     }
 
     // ── HUD overlay ───────────────────────────────────────────────────────────
 
     /**
      * Call from RenderGuiOverlayEvent.Post, checking overlay == VanillaGuiOverlay.CROSSHAIR.
-     * Draws the "Hold [G] to Phantasize" bar only when looking at a registered multiblock.
+     * Draws the "Press [P] to Phantasize" bar only when looking at a registered multiblock.
      */
     public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
         if (event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type()) return;
 
         Minecraft mc = Minecraft.getInstance();
+        // Suppress while any screen is open or the F3 debug screen is active
         if (mc.level == null || mc.player == null || mc.screen != null) return;
+        if (mc.options.renderDebug) return;
 
         MultiblockMachineDefinition def = getLookedAtDefinition(mc);
         if (def == null) return;
@@ -93,62 +85,66 @@ public class PhantasiaKeybind {
         renderPhantasiaBar(event.getGuiGraphics(), mc, def);
     }
 
+    // ── Bar rendering ─────────────────────────────────────────────────────────
+
     private static void renderPhantasiaBar(GuiGraphics g, Minecraft mc, MultiblockMachineDefinition def) {
         int screenW = mc.getWindow().getGuiScaledWidth();
         int screenH = mc.getWindow().getGuiScaledHeight();
 
-        String keyName = PHANTASIZE_KEY.getTranslatedKeyMessage().getString();
-        String machineName = def.getLangValue();
-
-        // Bar layout
+        // FIX (B7): sit directly above the vanilla hotbar (hotbar = bottom 22 px + 2 px gap)
         int barH = 22;
-        int barY = screenH - 60 - barH;
         int barW = Math.min(screenW - 40, 320);
         int barX = (screenW - barW) / 2;
+        int barY = screenH - 24 - barH;   // was: screenH - 60 - barH
 
-        // Background
+        // Background — matches PhantasiaThemeUtils.C_BG / C_PANEL
         g.fill(barX, barY, barX + barW, barY + barH, 0xCC08080F);
-        // Accent border top
+        // Accent border — top only (bottom sits flush with hotbar gap)
         g.fill(barX, barY, barX + barW, barY + 1, 0xFF4FC3F7);
-        // Accent border bottom
+        // Subtle bottom fade
         g.fill(barX, barY + barH - 1, barX + barW, barY + barH, 0x554FC3F7);
 
+        String keyName    = PhoenixKeybinds.OPEN_PHANTASIA_MENU.getTranslatedKeyMessage().getString();
+        String machineName = def.getLangValue();
+
+        int textMidY = barY + (barH - 8) / 2;
+
         // Key badge
-        String badge = " [" + keyName + "] ";
-        int badgeW = mc.font.width(badge) + 4;
-        int badgeX = barX + 8;
-        int badgeMidY = barY + (barH - 8) / 2;
-        g.fill(badgeX - 2, badgeMidY - 2, badgeX + badgeW, badgeMidY + 10, 0xFF1A2840);
-        g.fill(badgeX - 2, badgeMidY - 2, badgeX + badgeW, badgeMidY - 1, 0xFF4FC3F7);
-        g.drawString(mc.font, badge, badgeX, badgeMidY, 0xFF4FC3F7, false);
+        String badge  = " [" + keyName + "] ";
+        int badgeW    = mc.font.width(badge) + 4;
+        int badgeX    = barX + 8;
+        g.fill(badgeX - 2, textMidY - 2, badgeX + badgeW, textMidY + 10, 0xFF1A2840);
+        g.fill(badgeX - 2, textMidY - 2, badgeX + badgeW, textMidY - 1, 0xFF4FC3F7);
+        g.drawString(mc.font, badge, badgeX, textMidY, 0xFF4FC3F7, false);
 
         // "to Phantasize:" label
         String action = " to Phantasize: ";
-        g.drawString(mc.font, action, badgeX + badgeW + 2, badgeMidY, 0xFFBBBBBB, false);
+        int actionX   = badgeX + badgeW + 2;
+        g.drawString(mc.font, action, actionX, textMidY, 0xFFBBBBBB, false);
 
-        // Machine name (truncated)
+        // Machine name (truncated to fit remaining bar width)
+        int nameX   = actionX + mc.font.width(action);
+        int maxNameW = barX + barW - nameX - 14;   // leave room for the script dot
         String name = machineName;
-        int nameX = badgeX + badgeW + 2 + mc.font.width(action);
-        int maxNameW = barX + barW - nameX - 6;
-        while (mc.font.width(name) > maxNameW && name.length() > 3) {
+        while (mc.font.width(name) > maxNameW && name.length() > 3)
             name = name.substring(0, name.length() - 2) + "\u2026";
-        }
-        g.drawString(mc.font, name, nameX, badgeMidY, 0xFFDDDDDD, false);
+        g.drawString(mc.font, name, nameX, textMidY, 0xFFDDDDDD, false);
 
-        // "Has script" dot
+        // "Has script" dot — green if a custom script is registered
         if (PhantasiaScripts.has(def)) {
-            g.fill(barX + barW - 8, barY + barH / 2 - 2, barX + barW - 4, barY + barH / 2 + 2, 0xFF66BB6A);
+            int dotX = barX + barW - 10;
+            int dotY = barY + barH / 2 - 2;
+            g.fill(dotX, dotY, dotX + 4, dotY + 4, 0xFF66BB6A);
         }
     }
 
     // ── Utility ───────────────────────────────────────────────────────────────
 
     /**
-     * Returns the MultiblockMachineDefinition the player is looking at if it
-     * is registered in PhantasiaSceneSelectionScreen.PHANTASIA_SCENES,
-     * or null if not looking at one.
+     * Returns the MultiblockMachineDefinition the player is looking at, if it is
+     * registered in PhantasiaSceneSelectionScreen.PHANTASIA_SCENES, otherwise null.
      */
-    private static MultiblockMachineDefinition getLookedAtDefinition(Minecraft mc) {
+    public static MultiblockMachineDefinition getLookedAtDefinition(Minecraft mc) {
         if (mc.hitResult == null || mc.hitResult.getType() != HitResult.Type.BLOCK) return null;
 
         BlockPos pos = ((BlockHitResult) mc.hitResult).getBlockPos();
@@ -160,7 +156,7 @@ public class PhantasiaKeybind {
         var rawDef = machineBlock.getDefinition();
         if (!(rawDef instanceof MultiblockMachineDefinition multiDef)) return null;
 
-        // Only show for definitions that are in the Phantasia registry
+        // Only show for definitions that are registered in Phantasia
         if (!PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.contains(multiDef)) return null;
 
         return multiDef;

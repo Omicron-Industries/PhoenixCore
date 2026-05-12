@@ -16,24 +16,11 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.phoenix.core.client.keybind.PhoenixKeybinds;
-import net.phoenix.core.integration.phantasia.PhantasiaSceneScreen;
-import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phantasia.PhantasiaScripts;
 
-/**
- * PhantasiaClientEvents
- *
- * Forge event handler (registered on MinecraftForge.EVENT_BUS in PhoenixClient.init).
- * Handles:
- * - Client tick: track how long OPEN_PHANTASIA_MENU is held while looking at a
- * registered multiblock. Opens PhantasiaSceneScreen after HOLD_TICKS ticks.
- * - RenderGuiOverlayEvent.Post (CROSSHAIR): draws the "Hold [P] to Phantasize"
- * bar with a filling progress arc when looking at a registered multiblock.
- *
- * The keybind used is PhoenixKeybinds.OPEN_PHANTASIA_MENU (default: P).
- * No separate KeyMapping is defined here — the key is already registered in
- * PhoenixKeybinds and wired to the mod event bus from PhoenixClient.
- */
+
 @OnlyIn(Dist.CLIENT)
 public class PhantasiaClientEvents {
 
@@ -184,15 +171,7 @@ public class PhantasiaClientEvents {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Utility
-    // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Returns the MultiblockMachineDefinition the player is looking at,
-     * only if it is registered in PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.
-     * Returns null otherwise.
-     */
     static MultiblockMachineDefinition getLookedAtDefinition(Minecraft mc) {
         if (mc.hitResult == null || mc.hitResult.getType() != HitResult.Type.BLOCK) return null;
 
@@ -218,3 +197,5 @@ public class PhantasiaClientEvents {
         return 0xFF000000 | (r << 16) | (gr << 8) | bl;
     }
 }
+
+

@@ -1,11 +1,18 @@
 package net.phoenix.core.integration.phantasia;
 
+import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
+import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.common.block.CoilBlock;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 import lombok.Getter;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -17,9 +24,19 @@ import java.util.function.Predicate;
 public class PhantasiaScript {
 
     // ── Step ─────────────────────────────────────────────────────────────────
-    // Change Predicate<BlockPos> to PhantasiaSceneScreen.ViewFilter
-    // In PhantasiaScript.java
-    public record Step(int tickOffset, String caption, Predicate<BlockPos> filter, boolean working) {}
+    public record Step(
+            int tickOffset,
+            String caption,
+            Predicate<BlockPos> filter,
+            boolean working,
+            int forceShape,
+            int forceCoil,
+            float yaw,    // NEW: Camera Yaw
+            float pitch,  // NEW: Camera Pitch
+            boolean useCam // NEW: Does this step actually want to move the camera?
+    ) {
+        public boolean hasCamera() { return useCam; }
+    }
 
     // ── Common-mistake warning marker ─────────────────────────────────────────
     public record LocalWarning(BlockPos localPos, String label, int color) {
@@ -88,6 +105,24 @@ public class PhantasiaScript {
             return this;
         }
 
+
+        public Builder working(boolean working) {
+            this.pendingWorking = working;
+            return this;
+        }
+
+
+        private int pendingCoil = -1; // NEW: Track coil tier
+
+        /**
+         * Sets the coil tier for this step.
+         * @param index The index in your COIL_TIERS list (0=Cupronickel, 1=Kanthal, etc.)
+         */
+        public Builder coil(int index) {
+            this.pendingCoil = index;
+            return this;
+        }
+
         private final List<Step> steps = new ArrayList<>();
         private final List<LocalWarning> commonMistakes = new ArrayList<>();
         private final List<String> globalMistakes = new ArrayList<>();
@@ -150,6 +185,76 @@ public class PhantasiaScript {
                     return true;
                 }
                 return false;
+            });
+        }
+
+        public Builder showController() {
+            return filter(state -> {
+                if (state.getBlock() instanceof MetaMachineBlock mmb) {
+                    MachineDefinition def = mmb.getDefinition();
+                    // In GTCEu, MultiblockMachineDefinition is a specific class for controllers
+                    return def instanceof MultiblockMachineDefinition;
+                }
+                return false;
+            });
+        }
+
+        public Builder showIdContains(String text) {
+            return filter(state -> state.getBlock().getDescriptionId().contains(text));
+        }
+
+        /**
+         * Shows all Input/Output hatches and busses (Parts).
+         */
+        public Builder showParts() {
+            return filter(state -> {
+                if (state.getBlock() instanceof com.gregtechceu.gtceu.api.block.MetaMachineBlock mmb) {
+                    var def = mmb.getDefinition();
+                    // 1. Check if it's NOT a controller
+                    if (def instanceof MultiblockMachineDefinition) return false;
+
+                    // 2. Check for common Part keywords in the ID
+                    String path = def.getId().getPath();
+                    if (path.contains("hatch") || path.contains("bus") || path.contains("access") ||
+                            path.contains("port") || path.contains("storage") || path.contains("input") || path.contains("output")) {
+                        return true;
+                    }
+
+                    // 3. Fallback: If it's a machine but not a controller, it's likely a part
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        /**
+         * Shows blocks matching a specific class (e.g., CoilBlock.class).
+         */
+        public Builder showType(Class<?> blockClass) {
+            return filter(state -> blockClass.isInstance(state.getBlock()));
+        }
+
+        /**
+         * Shows all blocks that ARE NOT air and ARE NOT standard casings.
+         * Useful for highlighting the "interesting" parts of a machine.
+         */
+        public Builder showFunctional() {
+            return filter(state -> {
+                if (state.isAir()) return false;
+                // If it's a machine part or a special block (like a coil or frame), show it
+                boolean isMachine = state.getBlock() instanceof MetaMachineBlock;
+                boolean isSpecial = state.getBlock().getDescriptionId().contains("frame") ||
+                        state.getBlock().getDescriptionId().contains("gearbox");
+                return isMachine || isSpecial;
+            });
+        }
+
+        public Builder filter(Predicate<BlockState> statePredicate) {
+            return addAllow(pos -> {
+                if (PhantasiaSceneScreen.SHARED_LEVEL == null) return false;
+                BlockPos wp = pos.offset(PhantasiaSceneScreen.getOriginForCurrentPattern());
+                BlockState state = PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(wp);
+                return statePredicate.test(state);
             });
         }
 
@@ -222,6 +327,13 @@ public class PhantasiaScript {
             return tier(name, color, s::contains);
         }
 
+        private int pendingShape = -1;
+
+        public Builder shape(int index) {
+            this.pendingShape = index;
+            return this;
+        }
+
         public PhantasiaScript build() {
             commitPending();
             return new PhantasiaScript(
@@ -241,25 +353,56 @@ public class PhantasiaScript {
             return this;
         }
 
+        private float pendingYaw = 0;
+        private float pendingPitch = 0;
+        private boolean pendingUseCam = false;
+
+        /**
+         * Set the camera orientation for this step.
+         * @param yaw Rotation around the Y-axis (0-360)
+         * @param pitch Look up/down angle (-90 to 90)
+         */
+        public Builder camera(float yaw, float pitch) {
+            this.pendingYaw = yaw;
+            this.pendingPitch = pitch;
+            this.pendingUseCam = true;
+            return this;
+        }
+
+        // ... other methods ...
+
         private void commitPending() {
             if (pendingTick < 0) return;
 
-            // Create the logical rules for this step
             Predicate<BlockPos> allow = allowPred != null ? allowPred : pos -> false;
             Predicate<BlockPos> deny = denyPred != null ? denyPred : pos -> false;
 
-            // Combine them into a single Predicate
-            Predicate<BlockPos> finalFilter = pos -> allow.test(pos) && !deny.test(pos);
+            // Create the step with all forced values including Camera
+            steps.add(new Step(
+                    pendingTick,
+                    pendingCaption,
+                    pos -> allow.test(pos) && !deny.test(pos),
+                    pendingWorking,
+                    pendingShape,
+                    pendingCoil,
+                    pendingYaw,
+                    pendingPitch,
+                    pendingUseCam
+            ));
 
-            // Add to the steps list
-            steps.add(new Step(pendingTick, pendingCaption, finalFilter, pendingWorking));
-
-            // Reset builder state
+            // Reset all pending state
             pendingTick = -1;
             pendingCaption = null;
             allowPred = null;
             denyPred = null;
             pendingWorking = false;
+            pendingShape = -1;
+            pendingCoil = -1;
+
+            // Reset camera state so it doesn't "stick" to the next step
+            pendingYaw = 0;
+            pendingPitch = 0;
+            pendingUseCam = false;
         }
     }
 

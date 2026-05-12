@@ -50,7 +50,7 @@ public class PhantasiaLoadedPattern {
                                   int minY, int maxY,
                                   MultiblockControllerMachine controller,
                                   PhantasiaScript script) {
-        this.blockMap = Map.copyOf(blockMap);
+        this.blockMap = new HashMap<>(blockMap);
         this.localToWorld = Map.copyOf(localToWorld);
         this.baseplatePositions = Set.copyOf(baseplatePositions);
         this.controllerWorldPos = controllerWorldPos;
@@ -106,6 +106,13 @@ public class PhantasiaLoadedPattern {
     }
 
     // ── Convenience accessors ─────────────────────────────────────────────────
+
+    /**
+     * Returns all local (relative) positions that make up this multiblock pattern.
+     */
+    public Set<BlockPos> getRelativePositions() {
+        return localToWorld.keySet();
+    }
 
     /** Returns the step index (0 to buildOrder.size()-1) for a local position. Returns -1 if not in build order. */
     public int getGroupIndex(BlockPos localPos) {

@@ -1,4 +1,4 @@
-package net.phoenix.core.integration.phantasia;
+package net.phoenix.core.integration.phantasia.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,6 +10,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import lombok.Getter;
+import net.phoenix.core.integration.phantasia.PhantasiaLoadedPattern;
+import net.phoenix.core.integration.phantasia.PhantasiaScript;
 
 import java.util.*;
 

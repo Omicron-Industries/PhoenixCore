@@ -36,6 +36,13 @@ public class PhoenixNetwork {
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
         CHANNEL.registerMessage(id++,
+                S2CPlayStreamPacket.class,
+                S2CPlayStreamPacket::toBytes,
+                S2CPlayStreamPacket::new,
+                S2CPlayStreamPacket::handle
+        );
+
+        CHANNEL.registerMessage(id++,
                 PacketPhoenixModeSync.class,
                 PacketPhoenixModeSync::encode,
                 PacketPhoenixModeSync::decode,

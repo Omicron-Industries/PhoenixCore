@@ -20,7 +20,6 @@ import net.createmod.ponder.foundation.PonderIndex;
 import net.createmod.ponder.foundation.PonderTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -62,12 +61,12 @@ import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.Source
 import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
 import net.phoenix.core.integration.ars_nouveau.common.event.SourceHatchJarTransferTick;
 import net.phoenix.core.integration.matter_manipulater.common.data.item.ManipulaterItems;
-import net.phoenix.core.integration.phantasia.PhantasiaSceneSelectionScreen;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
-import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
-import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
+//import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
+//import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -76,7 +75,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-import static net.minecraft.commands.Commands.literal;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
 @SuppressWarnings("all")
@@ -149,10 +147,10 @@ public class PhoenixCore {
     public static final RegistryObject<MenuType<SourceHatchMenu>> SOURCE_HATCH_MENU = MENUS.register("source_hatch",
             () -> IForgeMenuType.create((IContainerFactory<SourceHatchMenu>) SourceHatchMenu::fromNetwork));
 
-    public static final RegistryObject<MenuType<RecipeBuilderMenu>> RECIPE_BUILDER_MENU = MENUS.register(
-            "recipe_builder",
-            () -> IForgeMenuType.create(
-                    (windowId, inv, data) -> new RecipeBuilderMenu(windowId, inv)));
+  //  public static final RegistryObject<MenuType<RecipeBuilderMenu>> RECIPE_BUILDER_MENU = MENUS.register(
+    //        "recipe_builder",
+  //          () -> IForgeMenuType.create(
+     //               (windowId, inv, data) -> new RecipeBuilderMenu(windowId, inv)));
 
     public void registerConditions(GTCEuAPI.RegisterEvent<String, RecipeConditionType<?>> event) {
         FluidInHatchCondition.TYPE = new RecipeConditionType<>(
@@ -182,7 +180,7 @@ public class PhoenixCore {
         LOGGER.info("PhoenixCore: Client setup complete.");
 
         event.enqueueWork(() -> {
-            MenuScreens.register(RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
+       //     MenuScreens.register(RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
 
         });
     }
@@ -269,38 +267,4 @@ public class PhoenixCore {
         return material.getFluid(FluidStorageKeys.PLASMA, 1).getFluid();
     }
 
-    protected static ResourceLocation appendPonderNamespaceToId(String namespace, String id) {
-        if (!id.contains(":")) id = namespace + ":" + id;
-        return new ResourceLocation(id);
-    }
-
-    public static ResourceLocation appendphoenixcoreNamespaceToId(String id) {
-        return appendPonderNamespaceToId(PONDER_MOD_ID, id);
-    }
-
-    public static boolean isPonderIntegrationInitialized() {
-        return ponderInitialized;
-    }
-
-    public static ResourceLocation ponderIdOf(String id) {
-        if (id.contains(":")) return new ResourceLocation(id);
-        return new ResourceLocation(MOD_ID, id);
-    }
-
-    /**
-     * Looks up a registered {@link PonderTag} by its full {@link ResourceLocation}.
-     */
-    public static Optional<PonderTag> getPonderTagByName(ResourceLocation res) {
-        return PonderIndex.getTagAccess().getListedTags().stream()
-                .filter(tag -> tag.getId().equals(res))
-                .findFirst();
-    }
-
-    /**
-     * Looks up a registered {@link PonderTag} by a bare path or
-     * {@code namespace:path} string (resolved via {@link #ponderIdOf}).
-     */
-    public static Optional<PonderTag> getPonderTagByName(String tag) {
-        return getPonderTagByName(ponderIdOf(tag));
-    }
 }

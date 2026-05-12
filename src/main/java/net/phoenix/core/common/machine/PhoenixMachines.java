@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.FluidPipeProperties;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.DrumMachineItem;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
@@ -23,6 +24,7 @@ import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.OverclockingLogic;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.registry.registrate.MachineBuilder;
@@ -57,6 +59,7 @@ import net.phoenix.core.api.pattern.PhoenixPredicates;
 import net.phoenix.core.client.renderer.machine.multiblock.PhoenixDynamicRenderHelpers;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
+import net.phoenix.core.common.data.materials.PhoenixProgressionMaterials;
 import net.phoenix.core.common.machine.multiblock.electric.research.PhoenixHPCAMachine;
 import net.phoenix.core.common.machine.multiblock.part.ShieldRenderProperty;
 import net.phoenix.core.common.machine.multiblock.part.fluid.PlasmaHatchPartMachine;
@@ -70,6 +73,8 @@ import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.Al
 import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.BioAethericEngineMachine;
 import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceMultiblockTankMachine;
 import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source.SourceReactorMachine;
+import net.phoenix.core.integration.vocal_resonance.ResonantJukeboxMachine;
+import net.phoenix.core.integration.vocal_resonance.SoundHatchPartMachine;
 
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -195,6 +200,33 @@ public class PhoenixMachines {
      * overlay));
      * 
      */
+
+    public static final PartAbility SOUND_DISC = new PartAbility("sound_disc");
+    public static final PartAbility SOUND_LIBRARY = new PartAbility("sound_library");
+    public static final PartAbility SOUND_STREAM = new PartAbility("sound_stream");
+
+    public static final MachineDefinition[] DISC_HATCH = registerSoundHatch(
+            "disc_hatch", "Disc Reader Hatch", SoundHatchPartMachine.SoundHatchType.DISC, SOUND_DISC);
+
+    public static final MachineDefinition[] LIBRARY_HATCH = registerSoundHatch(
+            "library_hatch", "Sound Library Hatch", SoundHatchPartMachine.SoundHatchType.LIBRARY, SOUND_LIBRARY);
+
+    public static final MachineDefinition[] STREAM_HATCH = registerSoundHatch(
+            "stream_hatch", "Web Stream Hatch", SoundHatchPartMachine.SoundHatchType.STREAM, SOUND_STREAM);
+
+    private static MachineDefinition[] registerSoundHatch(String name, String displayName,
+                                                          SoundHatchPartMachine.SoundHatchType type,
+                                                          PartAbility ability) {
+        return registerTieredMachines(name,
+                (holder, tier) -> new SoundHatchPartMachine(holder, tier, type), // Clean constructor
+                (tier, builder) -> builder
+                        .langValue(GTValues.VNF[tier] + ' ' + displayName)
+                        .abilities(ability)
+                        .rotationState(RotationState.ALL)
+                        .overlayTieredHullModel("source_hatch")
+                        .register(),
+                ELECTRIC_TIERS);
+    }
 
     public static final MachineDefinition[] SOURCE_IMPORT_HATCH = registerSourceHatch(
             "source_input_hatch", "Source Input Hatch",
@@ -1256,7 +1288,7 @@ public class PhoenixMachines {
             .langValue("§5Source Reactor")
             .recipeType(PhoenixRecipeTypes.SOURCE_REACTOR_RECIPES)
             .recipeModifiers(SourceReactorMachine::recipeModifier, OC_NON_PERFECT_SUBTICK, BATCH_MODE)
-            .appearanceBlock(SUPER_STABLE_FUSION_CASING)
+            .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
             .pattern(definition -> {
                 var casing = blocks(SOURCE_FIBER_MACHINE_CASING.get()).setMinGlobalLimited(10);
                 var abilities = Predicates.autoAbilities(definition.getRecipeTypes())
@@ -1558,6 +1590,34 @@ public class PhoenixMachines {
             .workableCasingModel(GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
                     GTCEu.id("block/multiblock/large_miner"))
             .tooltipBuilder(AETHERIAL_FABRICATOR_TOOLTIPS)
+            .register();
+
+
+    public static final MultiblockMachineDefinition JUKEBLOCK = REGISTRATE
+            .multiblock("jukeblock", ResonantJukeboxMachine::new)
+            .rotationState(RotationState.ALL)
+            .recipeTypes(PhoenixRecipeTypes.JUKEBLOCK)
+            .noRecipeModifier()
+            .appearanceBlock(GTBlocks.CASING_STAINLESS_CLEAN)
+            .pattern(definition -> {
+                return FactoryBlockPattern.start()
+                        .aisle("aafaa", "bbcbb", "bdcdb", "bdcdb", "dbbbd")
+                        .aisle("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
+                        .aisle("aaaaa", "ceeec", "cdddc", "cdddc", "bdddb")
+                        .aisle("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
+                        .aisle("aaaaa", "bbcbb", "bdcdb", "bdcdd", "dbbbd")
+                        .where("a", Predicates.blocks(CASING_STEEL_SOLID.get()).or(PhoenixPredicates.soundHatches()))
+                        .where("b", Predicates.blocks(ChemicalHelper.getBlock(frameGt, AURUM_STEEL)))
+                        .where("c", Predicates.blocks(CASING_TEMPERED_GLASS.get()))
+                        .where("d", air())
+                        .where("e", PhoenixPredicates.tieredSpeakers())
+                        .where("f", Predicates.controller(Predicates.blocks(definition.get())))
+                        .build();
+            })
+            .workableCasingModel(
+                    GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
+                    new ResourceLocation("minecraft", "block/note_block") // Wrap the string here
+            )
             .register();
 
     public static void init() {}

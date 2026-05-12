@@ -1,4 +1,4 @@
-package net.phoenix.core.integration.phantasia;
+package net.phoenix.core.integration.phantasia.client;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 
@@ -13,6 +13,8 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.phoenix.core.integration.phantasia.PhantasiaLoadedPattern;
+import net.phoenix.core.integration.phantasia.PhantasiaScript;
 
 import java.util.*;
 

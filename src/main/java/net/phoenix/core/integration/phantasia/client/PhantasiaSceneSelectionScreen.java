@@ -1,4 +1,4 @@
-package net.phoenix.core.integration.phantasia;
+package net.phoenix.core.integration.phantasia.client;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 
@@ -10,6 +10,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.phoenix.core.integration.phantasia.PhantasiaScript;
+import net.phoenix.core.integration.phantasia.PhantasiaScripts;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,11 @@
-package net.phoenix.core.integration.phantasia;
+package net.phoenix.core.integration.phantasia.client;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 
 import net.minecraft.core.BlockPos;
 import net.phoenix.core.common.machine.PhoenixMachines;
+import net.phoenix.core.integration.phantasia.PhantasiaScript;
+import net.phoenix.core.integration.phantasia.PhantasiaScripts;
 
 public class AlchemicalImbuerPhantasiaScript {
 

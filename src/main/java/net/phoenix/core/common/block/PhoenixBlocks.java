@@ -23,6 +23,9 @@ import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatt
 
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import net.phoenix.core.integration.vocal_resonance.ISpeakerType;
+import net.phoenix.core.integration.vocal_resonance.SpeakerBlock;
+import net.phoenix.core.integration.vocal_resonance.SpeakerTier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -215,4 +218,32 @@ public class PhoenixBlocks {
         GTCEuAPI.HEATING_COILS.put(coilType, coilBlock);
         return coilBlock;
     }
+
+
+
+
+    public static final BlockEntry<SpeakerBlock> SPEAKER_LV = createSpeaker(SpeakerTier.LV);
+    public static final BlockEntry<SpeakerBlock> SPEAKER_MV = createSpeaker(SpeakerTier.MV);
+    public static final BlockEntry<SpeakerBlock> SPEAKER_HV = createSpeaker(SpeakerTier.HV);
+
+    private static BlockEntry<SpeakerBlock> createSpeaker(ISpeakerType speakerData) {
+        String tierName = speakerData.getName().toLowerCase();
+
+        return REGISTRATE
+                .block("speaker_%s".formatted(tierName), p -> new SpeakerBlock(p, speakerData))
+                .initialProperties(() -> Blocks.IRON_BLOCK)
+                .lang(speakerData.getName() + " Speaker Component")
+                .blockstate((ctx, prov) -> {
+                    // Assuming you have front/side textures in your assets
+                    String folder = "block/casings/speakers/";
+                    var side = PhoenixCore.id(folder + "side");
+                    var front = PhoenixCore.id(folder + tierName + "_front");
+                    prov.simpleBlock(ctx.getEntry(),
+                            prov.models().cubeColumn(ctx.getName(), front, side));
+                })
+                .item(BlockItem::new)
+                .build()
+                .register();
+    }
+
 }

@@ -273,6 +273,8 @@ public class PhoenixMachineRecipes {
                 .EUt(24576)
                 .fusionStartEU(140_000_000)
                 .save(provider);
+
+
         PhoenixRecipeTypes.HONEY_CHAMBER_RECIPES.recipeBuilder("mercury_and_magnesium_to_uranium_235_plasma")
                 .inputFluids(GTMaterials.Mercury.getFluid(125))
                 .inputFluids(GTMaterials.Magnesium.getFluid(16))
@@ -280,6 +282,8 @@ public class PhoenixMachineRecipes {
                 .duration(1000028)
                 .EUt(24576)
                 .save(provider);
+
+
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("electronic_circuit_mv_universal").EUt(VA[LV]).duration(300)
                 .inputItems(GOOD_CIRCUIT_BOARD)
                 .inputItems(CustomTags.LV_CIRCUITS, 2)
@@ -553,6 +557,13 @@ public class PhoenixMachineRecipes {
                 .save(provider);
 
         COMPRESSOR_RECIPES.recipeBuilder("source_fibers_to_mesh")
+                .inputItems(SOURCE_FIBERS, 2)
+                .outputItems(PhoenixItems.SOURCE_FIBER_MESH)
+                .duration(80)
+                .EUt(VA[LV])
+                .save(provider);
+
+        JUKEBLOCK.recipeBuilder("source_fibers_to_mesh")
                 .inputItems(SOURCE_FIBERS, 2)
                 .outputItems(PhoenixItems.SOURCE_FIBER_MESH)
                 .duration(80)
