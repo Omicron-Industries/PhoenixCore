@@ -16,25 +16,17 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
-import net.createmod.ponder.foundation.PonderIndex;
 import net.createmod.ponder.foundation.PonderTag;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.IContainerFactory;
@@ -61,12 +53,10 @@ import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.Source
 import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
 import net.phoenix.core.integration.ars_nouveau.common.event.SourceHatchJarTransferTick;
 import net.phoenix.core.integration.matter_manipulater.common.data.item.ManipulaterItems;
-import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
-//import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
-//import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
+import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.network.PhoenixNetwork;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -109,7 +99,6 @@ public class PhoenixCore {
 
         PhoenixParticles.init(modEventBus);
         if (Platform.isClient()) {
-            modEventBus.addListener(this::clientSetup);
             modEventBus.addListener(PhoenixKeybinds::register);
             PhoenixClient.init(modEventBus);
         }
@@ -147,10 +136,10 @@ public class PhoenixCore {
     public static final RegistryObject<MenuType<SourceHatchMenu>> SOURCE_HATCH_MENU = MENUS.register("source_hatch",
             () -> IForgeMenuType.create((IContainerFactory<SourceHatchMenu>) SourceHatchMenu::fromNetwork));
 
-  //  public static final RegistryObject<MenuType<RecipeBuilderMenu>> RECIPE_BUILDER_MENU = MENUS.register(
-    //        "recipe_builder",
-  //          () -> IForgeMenuType.create(
-     //               (windowId, inv, data) -> new RecipeBuilderMenu(windowId, inv)));
+    public static final RegistryObject<MenuType<RecipeBuilderMenu>> RECIPE_BUILDER_MENU = MENUS.register(
+            "recipe_builder",
+            () -> IForgeMenuType.create(
+                    (windowId, inv, data) -> new RecipeBuilderMenu(windowId, inv)));
 
     public void registerConditions(GTCEuAPI.RegisterEvent<String, RecipeConditionType<?>> event) {
         FluidInHatchCondition.TYPE = new RecipeConditionType<>(
@@ -173,15 +162,6 @@ public class PhoenixCore {
             MapIngredientTypeManager.registerMapIngredient(
                     SourceIngredient.class,
                     MapSourceIngredient::convertToMapIngredient);
-        });
-    }
-
-    private void clientSetup(final FMLClientSetupEvent event) {
-        LOGGER.info("PhoenixCore: Client setup complete.");
-
-        event.enqueueWork(() -> {
-       //     MenuScreens.register(RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
-
         });
     }
 
@@ -220,51 +200,11 @@ public class PhoenixCore {
         PhoenixTeslaMachines.init();
     }
 
-    @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModBusEvents {
-
-        @SubscribeEvent
-        public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-            event.registerAboveAll("spray_can_info", net.phoenix.core.client.render.SprayCanHudOverlay.HUD_SPRAY_CAN);
-        }
-    }
-
     public static ResourceLocation id(String path) {
         return new ResourceLocation(MOD_ID, path);
-    }
-
-    @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-    public static class ClientForgeEvents {
-
-        private static boolean ponderReloaded = false;
-
-        @SubscribeEvent
-        public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
-            event.getDispatcher().register(
-                    net.minecraft.commands.Commands.literal("phantasia")
-                            .executes(context -> {
-                                Minecraft.getInstance().tell(() -> {
-                                    Minecraft.getInstance().setScreen(
-                                            new PhantasiaSceneSelectionScreen(null));
-                                });
-                                return 1;
-                            }));
-        }
-
-        @SubscribeEvent
-        public static void onClientTick(TickEvent.ClientTickEvent event) {
-            if (event.phase == TickEvent.Phase.END && !ponderReloaded) {
-                if (Minecraft.getInstance().level != null) {
-                    PhoenixCore.ponderInitialized = true;
-                    ponderReloaded = true;
-                    PhoenixCore.LOGGER.info("PhoenixCore: Ponder integration reloaded during client tick.");
-                }
-            }
-        }
     }
 
     public static Fluid plasma(Material material) {
         return material.getFluid(FluidStorageKeys.PLASMA, 1).getFluid();
     }
-
 }

@@ -29,10 +29,12 @@ public abstract class GuiGraphicsCountSuffixMixin {
             cancellable = true)
     private void phoenix$compactString(Font font, String text, int x, int y, int color, boolean dropShadow,
                                        CallbackInfoReturnable<Integer> cir) {
-        if (phoenix$isInsideTextField()) return;
+        if (text == null || phoenix$isInsideTextField()) return; // Added null text check
 
         String compacted = CompactCount.compactIfNumeric(text);
-        if (!compacted.equals(text)) {
+
+        // FIX: Ensure compacted is not null before calling .equals()
+        if (compacted != null && !compacted.equals(text)) {
             cir.setReturnValue(this.phoenix$renderScaled(font, compacted, x, y, color, dropShadow));
         }
     }
@@ -42,7 +44,7 @@ public abstract class GuiGraphicsCountSuffixMixin {
             cancellable = true)
     private void phoenix$compactSequence(Font font, FormattedCharSequence text, int x, int y, int color,
                                          boolean dropShadow, CallbackInfoReturnable<Integer> cir) {
-        if (phoenix$isInsideTextField()) return;
+        if (text == null || phoenix$isInsideTextField()) return;
 
         StringBuilder sb = new StringBuilder();
         text.accept((index, style, codePoint) -> {
@@ -53,7 +55,8 @@ public abstract class GuiGraphicsCountSuffixMixin {
         String original = sb.toString();
         String compacted = CompactCount.compactIfNumeric(original);
 
-        if (!compacted.equals(original)) {
+        // FIX: Ensure compacted is not null before calling .equals()
+        if (compacted != null && !compacted.equals(original)) {
             cir.setReturnValue(this.phoenix$renderScaled(font, compacted, x, y, color, dropShadow));
         }
     }

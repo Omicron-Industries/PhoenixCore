@@ -37,5 +37,8 @@ public class PhoenixJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(new HighPressurePlasmaArcFurnaceProvider(), Block.class);
         registration.registerBlockComponent(new FissionMachineProvider(), Block.class);
         registration.registerBlockComponent(new ThreadedRecipeOutputProvider(), Block.class);
+
+        // Phantasia — shows the hold-to-phantasize hint in the Jade HUD
+        registration.registerBlockComponent(PhantasiaJadeProvider.INSTANCE, Block.class);
     }
 }

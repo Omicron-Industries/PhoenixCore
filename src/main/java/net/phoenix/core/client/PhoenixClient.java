@@ -1,7 +1,6 @@
 package net.phoenix.core.client;
 
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderManager;
-import com.gregtechceu.gtceu.common.data.machines.GCYMMachines;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -14,6 +13,7 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -24,18 +24,15 @@ import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.client.particle.PhoenixParticles;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
-import net.phoenix.core.common.machine.PhoenixMachines;
 import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchScreen;
-import net.phoenix.core.integration.phantasia.client.AlchemicalImbuerPhantasiaScript;
-import net.phoenix.core.integration.phantasia.client.HeatExchangerPhantasiaScript;
+import net.phoenix.core.integration.phantasia.PhantasiaKeybind;
+import net.phoenix.core.integration.phantasia.PhantasiaScriptLoader;
 import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
-import net.phoenix.core.integration.phantasia.client.RotaryHearthFurnacePhantasiaScript;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
-import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
 import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
-import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
+import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +43,9 @@ public class PhoenixClient {
 
     public static void init(IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
-        MinecraftForge.EVENT_BUS.register(PhantasiaClientEvents.class); // Register the new event handler
+        MinecraftForge.EVENT_BUS.register(PhantasiaKeybind.class);
+
+        MinecraftForge.EVENT_BUS.register(PhantasiaClientEvents.class);
         // GTCEu Dynamic Renders
         DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
@@ -95,22 +94,29 @@ public class PhoenixClient {
         event.register(PlasmaArcFurnaceRender.SPHERE_MODEL_RL);
     }
 
+    // Inside PhoenixClient.java
+    @SubscribeEvent
+    public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
+        event.registerAboveAll("spray_can_info", net.phoenix.core.client.render.SprayCanHudOverlay.HUD_SPRAY_CAN);
+    }
+
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            // Register your new screen here
+            MenuScreens.register(PhoenixCore.RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
+
+            // Keep your existing registrations
             MenuScreens.register(PhoenixCore.SOURCE_HATCH_MENU.get(), SourceHatchScreen::new);
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
 
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixMachines.ALCHEMICAL_IMBUER);
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(GCYMMachines.MEGA_BLAST_FURNACE);
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixTeslaMachines.TESLA_TOWER);
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixFissionMachines.HEAT_EXCHANGER);
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR);
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR);
-            AlchemicalImbuerPhantasiaScript.registerAlchemicalImbuerScript();
-            HeatExchangerPhantasiaScript.register();
-            RotaryHearthFurnacePhantasiaScript.registerRotaryHearthFurnaceScript();
+            PhantasiaScriptLoader.discoverAndLoad();
         });
+    }
+
+    private static void addPhantasiaMachine(com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition def) {
+        if (!PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.contains(def))
+            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(def);
     }
 }

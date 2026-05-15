@@ -204,6 +204,13 @@ public class PhoenixItems {
             .lang("§6Aurum Steel Drill Head")
             .register();
 
+    public static final ItemEntry<TooltipItem> SOURCE_IMBUED_TITANIUM_DRILL_HEAD = REGISTRATE
+            .item("source_imbued_titanium_drill_head", p -> new TooltipItem(p,
+                    "§z§lA marvel of metallurgy and magic, humming with pure Source energy.",
+                    "§5The titanium core stabilizes the flux, allowing it to dissolve the toughest bonds at a molecular level."))
+            .lang("§zSource Imbued Titanium Drill Head")
+            .register();
+
     public static final ItemEntry<TooltipItem> FLAMING_MESH = REGISTRATE
             .item("flaming_mesh", p -> new TooltipItem(p,
                     "§6A superheated lattice used to filter neural essences.",

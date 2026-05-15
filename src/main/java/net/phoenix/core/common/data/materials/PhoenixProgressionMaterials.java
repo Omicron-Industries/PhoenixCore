@@ -269,7 +269,7 @@ public class PhoenixProgressionMaterials {
                 .buildAndRegister();
         AURUM_STEEL = new Material.Builder(PhoenixCore.id("aurum_steel")).ingot().fluid().color(0xd0a860)
                 .secondaryColor(0xc0c0c0).iconSet(MaterialIconSet.METALLIC)
-                .cableProperties(LV, 1, 2, false)
+                .cableProperties(LV, 1, 2, true)
                 .fluidPipeProperties(5000, 50, true, true, false, false)
                 .flags(GENERATE_PLATE, GENERATE_RING, GENERATE_ROUND, GENERATE_GEAR, PHOSPHORESCENT, GENERATE_ROD,
                         GENERATE_BOLT_SCREW, GENERATE_FRAME, GENERATE_DENSE, GENERATE_ROTOR, GENERATE_FOIL,

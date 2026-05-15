@@ -47,7 +47,6 @@ public class ColorRadialMenuScreen extends Screen {
 
         boolean hoveringSolvent = distToCenter < INNER_RADIUS;
 
-
         int solventColor = hoveringSolvent ? 0xFFFF55 : 0xFFFFFF;
         Component solventText = Component.translatable("behaviour.paintspray.solvent.short");
         guiGraphics.drawCenteredString(this.font, solventText, centerX, centerY - 4, solventColor);

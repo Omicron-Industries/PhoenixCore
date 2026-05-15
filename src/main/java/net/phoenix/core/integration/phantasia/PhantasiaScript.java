@@ -1,72 +1,84 @@
 package net.phoenix.core.integration.phantasia;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
-import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
-import com.gregtechceu.gtceu.common.block.CoilBlock;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
 
 import lombok.Getter;
-import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
 
 import java.util.*;
 import java.util.function.Predicate;
 
 /**
- * PhantasiaScript — timed animation script for a multiblock's Phantasia scene.
+ * PhantasiaScript — runtime-compiled animation script.
+ *
+ * Always built from a {@link PhantasiaScriptData} via {@link #fromData}.
+ * Never serialised directly. The data layer (PhantasiaScriptData / JSON) is the
+ * source of truth; this class is the fast predicate form the renderer consumes.
+ *
+ * The fluent Builder is kept as a compatibility shim — it still works but
+ * produces a PhantasiaScriptData under the hood so the JSON registry stays consistent.
  */
 @Getter
 public class PhantasiaScript {
 
-    // ── Step ─────────────────────────────────────────────────────────────────
+    // ── Step record ───────────────────────────────────────────────────────────
+
     public record Step(
-            int tickOffset,
-            String caption,
-            Predicate<BlockPos> filter,
-            boolean working,
-            int forceShape,
-            int forceCoil,
-            float yaw,    // NEW: Camera Yaw
-            float pitch,  // NEW: Camera Pitch
-            boolean useCam // NEW: Does this step actually want to move the camera?
-    ) {
-        public boolean hasCamera() { return useCam; }
-    }
+                       int tickOffset,
+                       String caption,
+                       Predicate<BlockPos> filter,
+                       boolean working,
+                       int forceShape,
+                       int forceCoil,
+                       float yaw,
+                       float pitch,
+                       boolean useCam) {
 
-    // ── Common-mistake warning marker ─────────────────────────────────────────
-    public record LocalWarning(BlockPos localPos, String label, int color) {
-
-        public LocalWarning(BlockPos localPos, String label) {
-            this(localPos, label, 0xFFFFB74D); // default amber
+        public boolean hasCamera() {
+            return useCam;
         }
     }
 
-    // ── Heatmap tier ─────────────────────────────────────────────────────────
+    // ── Warning / heatmap records ─────────────────────────────────────────────
+
+    public record LocalWarning(BlockPos localPos, String label, int color) {
+
+        public LocalWarning(BlockPos localPos, String label) {
+            this(localPos, label, 0xFFFFB74D);
+        }
+    }
+
     public record HeatmapTier(String name, int color, Predicate<BlockPos> matcher) {}
 
     // ── Fields ────────────────────────────────────────────────────────────────
+
+    /** Raw data this was compiled from — kept so the editor can round-trip edits. */
+    private final PhantasiaScriptData sourceData;
+
     private final List<Step> steps;
     private final int totalTicks;
     private final List<LocalWarning> commonMistakes;
-    private final List<String> globalMistakes; // FIXED: Added missing field declaration
+    private final List<String> globalMistakes;
     private final List<HeatmapTier> heatmapTiers;
 
-    private PhantasiaScript(List<Step> steps,
+    private PhantasiaScript(PhantasiaScriptData data,
+                            List<Step> steps,
                             List<LocalWarning> commonMistakes,
                             List<String> globalMistakes,
                             List<HeatmapTier> heatmapTiers) {
+        this.sourceData = data;
         this.steps = Collections.unmodifiableList(steps);
         this.commonMistakes = Collections.unmodifiableList(commonMistakes);
         this.globalMistakes = Collections.unmodifiableList(globalMistakes);
         this.heatmapTiers = Collections.unmodifiableList(heatmapTiers);
-        this.totalTicks = steps.isEmpty() ? 60 :
-                steps.get(steps.size() - 1).tickOffset() + 60;
+        this.totalTicks = steps.isEmpty() ? 60 : steps.get(steps.size() - 1).tickOffset() + 60;
     }
+
+    // ── Queries ───────────────────────────────────────────────────────────────
 
     public boolean hasMistakes() {
         return !commonMistakes.isEmpty() || !globalMistakes.isEmpty();
@@ -80,6 +92,7 @@ public class PhantasiaScript {
         return !heatmapTiers.isEmpty();
     }
 
+    /** Returns the most recent step whose tickOffset ≤ currentTick, or null. */
     public Step getActiveStep(int currentTick) {
         Step active = null;
         for (Step s : steps) {
@@ -89,328 +102,239 @@ public class PhantasiaScript {
         return active;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Builder
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Compilation ───────────────────────────────────────────────────────────
+
+    /** Compile a {@link PhantasiaScriptData} into a runtime script. Single entry point. */
+    public static PhantasiaScript fromData(PhantasiaScriptData data) {
+        List<Step> steps = new ArrayList<>();
+        for (PhantasiaScriptData.StepData sd : data.getSteps())
+            steps.add(compileStep(sd));
+
+        List<LocalWarning> mistakes = new ArrayList<>();
+        for (PhantasiaScriptData.MistakeData md : data.getMistakes())
+            mistakes.add(new LocalWarning(new BlockPos(md.x, md.y, md.z), md.label, md.colorArgb()));
+
+        List<String> globalMistakes = new ArrayList<>(data.getGlobalMistakes());
+        List<HeatmapTier> tiers = new ArrayList<>(); // reserved for future JSON extension
+
+        return new PhantasiaScript(data, steps, mistakes, globalMistakes, tiers);
+    }
+
+    private static Step compileStep(PhantasiaScriptData.StepData sd) {
+        Predicate<BlockPos> allow = buildShowPredicate(sd);
+        Predicate<BlockPos> deny = buildHidePredicate(sd);
+        Predicate<BlockPos> filter = pos -> allow.test(pos) && !deny.test(pos);
+
+        float yaw = 0f, pitch = 0f;
+        boolean useCam = false;
+        if (sd.camera != null) {
+            yaw = sd.camera.yaw;
+            pitch = sd.camera.pitch;
+            useCam = true;
+        }
+
+        return new Step(sd.tick, sd.caption, filter,
+                sd.working, /* forceShape */ -1, /* forceCoil */ -1,
+                yaw, pitch, useCam);
+    }
+
+    private static Predicate<BlockPos> buildShowPredicate(PhantasiaScriptData.StepData sd) {
+        String show = sd.show == null ? "all" : sd.show.toLowerCase(Locale.ROOT);
+        return switch (show) {
+            case "all" -> pos -> true;
+
+            case "layer" -> {
+                int y = sd.layer;
+                yield pos -> pos.getY() == y;
+            }
+
+            case "layers" -> {
+                int lo = sd.layerMin, hi = sd.layerMax;
+                yield pos -> pos.getY() >= lo && pos.getY() <= hi;
+            }
+
+            case "pos" -> {
+                Set<BlockPos> set = new HashSet<>();
+                for (int[] xyz : sd.positions) if (xyz.length >= 3) set.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
+                yield set::contains;
+            }
+
+            case "parts" -> localPred(state -> {
+                if (!(state.getBlock() instanceof MetaMachineBlock mmb)) return false;
+                if (mmb.getDefinition() instanceof MultiblockMachineDefinition) return false;
+                String p = mmb.getDefinition().getId().getPath();
+                return p.contains("hatch") || p.contains("bus") || p.contains("port") || p.contains("storage") ||
+                        p.contains("input") || p.contains("output") || p.contains("muffler") ||
+                        p.contains("maintenance");
+            });
+
+            case "controller" -> localPred(state -> state.getBlock() instanceof MetaMachineBlock mmb &&
+                    mmb.getDefinition() instanceof MultiblockMachineDefinition);
+
+            case "functional" -> localPred(state -> {
+                if (state.isAir()) return false;
+                return state.getBlock() instanceof MetaMachineBlock ||
+                        state.getBlock().getDescriptionId().contains("frame") ||
+                        state.getBlock().getDescriptionId().contains("gearbox");
+            });
+
+            default -> pos -> true;
+        };
+    }
+
+    private static Predicate<BlockPos> buildHidePredicate(PhantasiaScriptData.StepData sd) {
+        Predicate<BlockPos> deny = pos -> false;
+
+        if (sd.hideLayer >= 0) {
+            int hy = sd.hideLayer;
+            deny = deny.or(pos -> pos.getY() == hy);
+        }
+
+        if (!sd.hidePositions.isEmpty()) {
+            Set<BlockPos> hidden = new HashSet<>();
+            for (int[] xyz : sd.hidePositions) if (xyz.length >= 3)
+                hidden.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
+            deny = deny.or(hidden::contains);
+        }
+
+        return deny;
+    }
+
+    private static Predicate<BlockPos> localPred(Predicate<BlockState> statePred) {
+        return localPos -> {
+            if (PhantasiaSceneScreen.SHARED_LEVEL == null) return false;
+            BlockPos wp = localPos.offset(PhantasiaSceneScreen.getOriginForCurrentPattern());
+            try {
+                return statePred.test(PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(wp));
+            } catch (Exception e) {
+                return false;
+            }
+        };
+    }
+
+    // ── Convenience factories ─────────────────────────────────────────────────
+
+    public static PhantasiaScript showAll() {
+        return fromData(PhantasiaScriptData.defaultFor(""));
+    }
+
+    public static PhantasiaScript simple(String caption) {
+        return fromData(PhantasiaScriptData.simpleFor("", caption));
+    }
+
+    // ── Legacy fluent Builder (compatibility shim) ────────────────────────────
+    // Existing Java callsites still compile. Internally produces PhantasiaScriptData.
+
     public static Builder builder() {
         return new Builder();
     }
 
     public static class Builder {
 
-        private boolean pendingWorking = false;
+        private final PhantasiaScriptData data = new PhantasiaScriptData();
+        private PhantasiaScriptData.StepData pending = null;
 
-        public Builder setWorking(boolean working) {
-            this.pendingWorking = working;
+        public Builder step(int tick, String caption) {
+            commit();
+            pending = new PhantasiaScriptData.StepData(tick, caption);
             return this;
         }
 
-
-        public Builder working(boolean working) {
-            this.pendingWorking = working;
-            return this;
-        }
-
-
-        private int pendingCoil = -1; // NEW: Track coil tier
-
-        /**
-         * Sets the coil tier for this step.
-         * @param index The index in your COIL_TIERS list (0=Cupronickel, 1=Kanthal, etc.)
-         */
-        public Builder coil(int index) {
-            this.pendingCoil = index;
-            return this;
-        }
-
-        private final List<Step> steps = new ArrayList<>();
-        private final List<LocalWarning> commonMistakes = new ArrayList<>();
-        private final List<String> globalMistakes = new ArrayList<>();
-        private final List<HeatmapTier> heatmapTiers = new ArrayList<>();
-
-        private int pendingTick = -1;
-        private String pendingCaption = null;
-        private Predicate<BlockPos> allowPred = null;
-        private Predicate<BlockPos> denyPred = null;
-
-        // NEW: Global string-based mistakes (no position needed)
-        public Builder mistake(String message) {
-            this.globalMistakes.add(message);
-            return this;
-        }
-
-        public Builder step(int tickOffset, String caption) {
-            commitPending();
-            pendingTick = tickOffset;
-            pendingCaption = caption;
-            allowPred = null;
-            denyPred = null;
-            return this;
-        }
-
-        private BlockPos controllerWorldPos = BlockPos.ZERO;
-
-        // Inside PhantasiaScript.java -> Builder
-        // Inside the Builder class in PhantasiaScript.java
-        public Builder tierState(String name, int color, Predicate<BlockState> statePredicate) {
-            return tier(name, color, lp -> {
-                if (PhantasiaSceneScreen.SHARED_LEVEL == null) return false;
-                // Translate local pos (e.g. 0,1,0) to world pos (e.g. 512,51,0)
-                BlockPos wp = lp.offset(PhantasiaSceneScreen.getOriginForCurrentPattern());
-                BlockState state = PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(wp);
-                return statePredicate.test(state);
-            });
-        }
-
-        // Inside PhantasiaScript.java -> Builder
-        public Builder coilHeatmap(String name) {
-            // We pass a dummy color (0) because we will override it inside the matcher
-            // logic if your Script system supports dynamic colors, OR we just use a
-            // static mapping if it doesn't.
-
-            return tier(name, 0xFFFF0000, lp -> { // Default Red if material fails
-                if (PhantasiaSceneScreen.SHARED_LEVEL == null) return false;
-
-                BlockPos wp = lp.offset(PhantasiaSceneScreen.getOriginForCurrentPattern());
-                BlockState state = PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(wp);
-
-                if (state.getBlock() instanceof CoilBlock coilBlock) {
-                    // This is the magic line: it gets the actual color of the Cupronickel/Kanthal/etc.
-                    int materialColor = coilBlock.coilType.getMaterial().getMaterialRGB();
-
-                    // To make it look like a "Heatmap", we usually want it semi-transparent
-                    // or forced to full alpha.
-                    // You could store this color in a temporary map or use it to
-                    // return true for a specific tier check.
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        public Builder showController() {
-            return filter(state -> {
-                if (state.getBlock() instanceof MetaMachineBlock mmb) {
-                    MachineDefinition def = mmb.getDefinition();
-                    // In GTCEu, MultiblockMachineDefinition is a specific class for controllers
-                    return def instanceof MultiblockMachineDefinition;
-                }
-                return false;
-            });
-        }
-
-        public Builder showIdContains(String text) {
-            return filter(state -> state.getBlock().getDescriptionId().contains(text));
-        }
-
-        /**
-         * Shows all Input/Output hatches and busses (Parts).
-         */
-        public Builder showParts() {
-            return filter(state -> {
-                if (state.getBlock() instanceof com.gregtechceu.gtceu.api.block.MetaMachineBlock mmb) {
-                    var def = mmb.getDefinition();
-                    // 1. Check if it's NOT a controller
-                    if (def instanceof MultiblockMachineDefinition) return false;
-
-                    // 2. Check for common Part keywords in the ID
-                    String path = def.getId().getPath();
-                    if (path.contains("hatch") || path.contains("bus") || path.contains("access") ||
-                            path.contains("port") || path.contains("storage") || path.contains("input") || path.contains("output")) {
-                        return true;
-                    }
-
-                    // 3. Fallback: If it's a machine but not a controller, it's likely a part
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        /**
-         * Shows blocks matching a specific class (e.g., CoilBlock.class).
-         */
-        public Builder showType(Class<?> blockClass) {
-            return filter(state -> blockClass.isInstance(state.getBlock()));
-        }
-
-        /**
-         * Shows all blocks that ARE NOT air and ARE NOT standard casings.
-         * Useful for highlighting the "interesting" parts of a machine.
-         */
-        public Builder showFunctional() {
-            return filter(state -> {
-                if (state.isAir()) return false;
-                // If it's a machine part or a special block (like a coil or frame), show it
-                boolean isMachine = state.getBlock() instanceof MetaMachineBlock;
-                boolean isSpecial = state.getBlock().getDescriptionId().contains("frame") ||
-                        state.getBlock().getDescriptionId().contains("gearbox");
-                return isMachine || isSpecial;
-            });
-        }
-
-        public Builder filter(Predicate<BlockState> statePredicate) {
-            return addAllow(pos -> {
-                if (PhantasiaSceneScreen.SHARED_LEVEL == null) return false;
-                BlockPos wp = pos.offset(PhantasiaSceneScreen.getOriginForCurrentPattern());
-                BlockState state = PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(wp);
-                return statePredicate.test(state);
-            });
-        }
-
-        // show* methods
         public Builder showAll() {
-            allowPred = pos -> true;
+            step().show = "all";
             return this;
         }
 
         public Builder showLayer(int y) {
-            return addAllow(pos -> pos.getY() == y);
+            step().show = "layer";
+            step().layer = y;
+            return this;
         }
 
-        public Builder showLayers(int minY, int maxY) {
-            return addAllow(pos -> pos.getY() >= minY && pos.getY() <= maxY);
+        public Builder showLayers(int lo, int hi) {
+            step().show = "layers";
+            step().layerMin = lo;
+            step().layerMax = hi;
+            return this;
         }
 
         public Builder showPos(BlockPos... positions) {
-            Set<BlockPos> s = new HashSet<>(Arrays.asList(positions));
-            return addAllow(s::contains);
+            step().show = "pos";
+            for (BlockPos p : positions) step().positions.add(new int[] { p.getX(), p.getY(), p.getZ() });
+            return this;
         }
 
-        public Builder showWhere(Predicate<BlockPos> p) {
-            return addAllow(p);
+        public Builder showParts() {
+            step().show = "parts";
+            return this;
         }
 
-        // hide* methods
-        public Builder hidePos(BlockPos... positions) {
-            Set<BlockPos> s = new HashSet<>(Arrays.asList(positions));
-            return addDeny(s::contains);
+        public Builder showController() {
+            step().show = "controller";
+            return this;
+        }
+
+        public Builder showFunctional() {
+            step().show = "functional";
+            return this;
         }
 
         public Builder hideLayer(int y) {
-            return addDeny(pos -> pos.getY() == y);
+            step().hideLayer = y;
+            return this;
         }
 
-        public Builder hideWhere(Predicate<BlockPos> p) {
-            return addDeny(p);
+        public Builder hidePos(BlockPos... ps) {
+            for (BlockPos p : ps) step().hidePositions.add(new int[] { p.getX(), p.getY(), p.getZ() });
+            return this;
         }
 
-        // Positional Mistakes
+        public Builder working(boolean w) {
+            step().working = w;
+            return this;
+        }
+
+        public Builder camera(float yaw, float pitch) {
+            step().camera = new PhantasiaScriptData.CameraData(yaw, pitch);
+            return this;
+        }
+
         public Builder mistake(int x, int y, int z, String label) {
-            commonMistakes.add(new LocalWarning(new BlockPos(x, y, z), label));
+            data.getMistakes().add(new PhantasiaScriptData.MistakeData(x, y, z, label));
             return this;
         }
 
-        public Builder mistake(int x, int y, int z, String label, int color) {
-            commonMistakes.add(new LocalWarning(new BlockPos(x, y, z), label, color));
+        public Builder mistake(int x, int y, int z, String label, int argb) {
+            data.getMistakes()
+                    .add(new PhantasiaScriptData.MistakeData(x, y, z, label, String.format("%06X", argb & 0xFFFFFF)));
             return this;
         }
 
-        public Builder mistake(BlockPos pos, String label) {
-            commonMistakes.add(new LocalWarning(pos, label));
-            return this;
-        }
-
-        public Builder mistake(BlockPos pos, String label, int color) {
-            commonMistakes.add(new LocalWarning(pos, label, color));
-            return this;
-        }
-
-        // Heatmap tiers
-        public Builder tier(String name, int color, Predicate<BlockPos> matcher) {
-            heatmapTiers.add(new HeatmapTier(name, color, matcher));
-            return this;
-        }
-
-        public Builder tier(String name, int color, BlockPos... positions) {
-            Set<BlockPos> s = new HashSet<>(Arrays.asList(positions));
-            return tier(name, color, s::contains);
-        }
-
-        private int pendingShape = -1;
-
-        public Builder shape(int index) {
-            this.pendingShape = index;
+        public Builder mistake(String global) {
+            data.getGlobalMistakes().add(global);
             return this;
         }
 
         public PhantasiaScript build() {
-            commitPending();
-            return new PhantasiaScript(
-                    new ArrayList<>(steps),
-                    new ArrayList<>(commonMistakes),
-                    new ArrayList<>(globalMistakes),
-                    new ArrayList<>(heatmapTiers));
+            commit();
+            return PhantasiaScript.fromData(data);
         }
 
-        private Builder addAllow(Predicate<BlockPos> p) {
-            allowPred = allowPred == null ? p : allowPred.or(p);
-            return this;
+        public PhantasiaScriptData buildData() {
+            commit();
+            return data;
         }
 
-        private Builder addDeny(Predicate<BlockPos> p) {
-            denyPred = denyPred == null ? p : denyPred.or(p);
-            return this;
+        private PhantasiaScriptData.StepData step() {
+            if (pending == null) pending = new PhantasiaScriptData.StepData(0, null);
+            return pending;
         }
 
-        private float pendingYaw = 0;
-        private float pendingPitch = 0;
-        private boolean pendingUseCam = false;
-
-        /**
-         * Set the camera orientation for this step.
-         * @param yaw Rotation around the Y-axis (0-360)
-         * @param pitch Look up/down angle (-90 to 90)
-         */
-        public Builder camera(float yaw, float pitch) {
-            this.pendingYaw = yaw;
-            this.pendingPitch = pitch;
-            this.pendingUseCam = true;
-            return this;
+        private void commit() {
+            if (pending != null) {
+                data.getSteps().add(pending);
+                pending = null;
+            }
         }
-
-        // ... other methods ...
-
-        private void commitPending() {
-            if (pendingTick < 0) return;
-
-            Predicate<BlockPos> allow = allowPred != null ? allowPred : pos -> false;
-            Predicate<BlockPos> deny = denyPred != null ? denyPred : pos -> false;
-
-            // Create the step with all forced values including Camera
-            steps.add(new Step(
-                    pendingTick,
-                    pendingCaption,
-                    pos -> allow.test(pos) && !deny.test(pos),
-                    pendingWorking,
-                    pendingShape,
-                    pendingCoil,
-                    pendingYaw,
-                    pendingPitch,
-                    pendingUseCam
-            ));
-
-            // Reset all pending state
-            pendingTick = -1;
-            pendingCaption = null;
-            allowPred = null;
-            denyPred = null;
-            pendingWorking = false;
-            pendingShape = -1;
-            pendingCoil = -1;
-
-            // Reset camera state so it doesn't "stick" to the next step
-            pendingYaw = 0;
-            pendingPitch = 0;
-            pendingUseCam = false;
-        }
-    }
-
-    public static PhantasiaScript showAll() {
-        return builder().step(0, null).showAll().build();
-    }
-
-    public static PhantasiaScript simple(String text) {
-        return builder().step(0, text).showAll().build();
     }
 }

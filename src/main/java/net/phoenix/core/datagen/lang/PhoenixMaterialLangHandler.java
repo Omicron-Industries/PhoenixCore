@@ -149,6 +149,17 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.magma", "§cMagma");
         provider.add("material.phoenixcore.space_grade_steel", "Space Grade Steel");
         addMaterialLang(provider, "superconductive_honey", "§6Superconductive Honey");
+        addMaterialLang(provider, "pollen_concentrate_fluid", "§6Pollen Concentrate Fluid");
+        addMaterialLang(provider, "amino_acids", "Amino Acids");
+        addMaterialLang(provider, "oleum", "Oleum");
+        addMaterialLang(provider, "ammonium_persulfate", "Ammonium Persulfate");
+        addMaterialLang(provider, "ammonium_bisulfate", "Ammonium Bisulfate");
+        addMaterialLang(provider, "ammonium_bisulfate_solution", "Ammonium Bisulfate Solution");
+        addMaterialLang(provider, "skim_milk", "Skim Milk");
+        addMaterialLang(provider, "acetone_cyanohydrin", "Acetone Cyanohydrin");
+        addMaterialLang(provider, "honey_catalyst", "§6Honey Catalyst");
+        addMaterialLang(provider, "honey_comb_base_mixture", "Honeycomb Base Mixture");
+        addMaterialLang(provider, "cream", "Cream");
         addMaterialLang(provider, "low_level_radioactive_waste", "Low Level Radioactive Waste");
         addMaterialLang(provider, "medium_level_radioactive_waste", "Medium Level Radioactive Waste");
         addMaterialLang(provider, "impure_hafnium", "Impure Hafnium");

@@ -19,8 +19,8 @@ import net.phoenix.core.client.gui.screen.ColorRadialMenuScreen;
 import net.phoenix.core.client.keybind.PhoenixKeybinds;
 import net.phoenix.core.common.data.item.PhoenixArmorItem;
 import net.phoenix.core.common.item.ChameleonSprayCanItem;
-//import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
-//import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
+import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
+import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
 import net.phoenix.core.network.packet.SelectColorPacket;
 
@@ -47,7 +47,7 @@ public class ClientTickHandler {
                 mc.setScreen(new ColorRadialMenuScreen(InteractionHand.MAIN_HAND));
             }
         }
-/*
+
         // ── Recipe Builder Logic ──────────────────────────────────────────
         while (PhoenixKeybinds.OPEN_RECIPE_BUILDER.consumeClick()) {
             if (mc.screen == null) {
@@ -59,11 +59,7 @@ public class ClientTickHandler {
                         new RecipeBuilderScreen(menu, mc.player.getInventory(), Component.literal("Recipe Builder")));
             }
         }
-
- */
     }
-
-
 
     @SubscribeEvent
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {

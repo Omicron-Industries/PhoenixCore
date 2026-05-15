@@ -36,13 +36,6 @@ public class PhoenixNetwork {
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
         CHANNEL.registerMessage(id++,
-                S2CPlayStreamPacket.class,
-                S2CPlayStreamPacket::toBytes,
-                S2CPlayStreamPacket::new,
-                S2CPlayStreamPacket::handle
-        );
-
-        CHANNEL.registerMessage(id++,
                 PacketPhoenixModeSync.class,
                 PacketPhoenixModeSync::encode,
                 PacketPhoenixModeSync::decode,
@@ -77,5 +70,34 @@ public class PhoenixNetwork {
                 SelectChromaticCodePacket::decode,
                 SelectChromaticCodePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        /*
+         * CHANNEL.registerMessage(id++,
+         * S2CPlaySoundPacket.class,
+         * S2CPlaySoundPacket::encode,
+         * S2CPlaySoundPacket::new,
+         * S2CPlaySoundPacket::handle,
+         * Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+         * 
+         * CHANNEL.registerMessage(id++,
+         * S2CSoundMetadataPacket.class,
+         * S2CSoundMetadataPacket::encode,
+         * S2CSoundMetadataPacket::new,
+         * S2CSoundMetadataPacket::handle,
+         * Optional.of(NetworkDirection.PLAY_TO_CLIENT)); // Changed from TO_SERVER
+         * 
+         * CHANNEL.registerMessage(id++,
+         * C2SSelectSoundPacket.class,
+         * C2SSelectSoundPacket::encode,
+         * C2SSelectSoundPacket::new,
+         * C2SSelectSoundPacket::handle,
+         * Optional.of(NetworkDirection.PLAY_TO_SERVER));
+         * CHANNEL.registerMessage(id++,
+         * S2CPlayStreamPacket.class,
+         * S2CPlayStreamPacket::toBytes,
+         * S2CPlayStreamPacket::new,
+         * S2CPlayStreamPacket::handle,
+         * Optional.of(NetworkDirection.PLAY_TO_CLIENT)); // Added NetworkDirection.PLAY_TO_CLIENT
+         */
     }
 }

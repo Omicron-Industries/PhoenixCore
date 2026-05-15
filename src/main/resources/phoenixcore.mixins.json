@@ -18,9 +18,7 @@
     "gtceu.ColorSprayBehaviourMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
     "gtceu.MixinGTOres",
-    "gtceu.MixinSceneWidget",
     "gtceu.WorkableMultiblockMachineMixin",
-    "kubejs.MiscForgeHelperMixin",
     "minecraft.ItemStackTooltipMixin",
     "minecraft.RecipeManagerMixin"
   ],
@@ -28,6 +26,7 @@
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
     "gtceu.AccessorWorldSceneRenderer",
+    "gtceu.MixinSceneWidget",
     "gtceu.MixinWorldSceneRenderer",
     "minecraft.GameRendererMixin",
     "minecraft.GuiGraphicsCountSuffixMixin"

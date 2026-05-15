@@ -1,67 +1,51 @@
 package net.phoenix.core.mixin.gtceu;
 
 import com.lowdragmc.lowdraglib.client.scene.WorldSceneRenderer;
-import com.lowdragmc.lowdraglib.utils.PositionedRect;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
+
 import net.minecraft.client.Minecraft;
+import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Invoker;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(value = WorldSceneRenderer.class, remap = false)
 public abstract class MixinWorldSceneRenderer {
 
-    @Shadow private Vector3f eyePos;
-    @Shadow private Vector3f lookAt;
-    @Shadow
-    private Vector3f worldUp;
-    @Shadow protected boolean ortho;
+    // 1. Create an Invoker to bypass 'protected' access
+    @Invoker("clearView")
+    public abstract void invoker$clearView(int x, int y, int width, int height);
 
-    /**
-     * @author Phantasia
-     * @reason Fixes the vertical offset by providing a "Pure" camera matrix
-     * and bypasses the expensive setupCamera calls that cause stutter.
-     */
-    @Overwrite
-    protected void setupCamera(PositionedRect viewport) {
-        int x = viewport.getPosition().x;
-        int y = viewport.getPosition().y;
-        int width = viewport.getSize().width;
-        int height = viewport.getSize().height;
+    @Redirect(
+              method = "setupCamera",
+              at = @At(value = "INVOKE",
+                       target = "Lcom/lowdragmc/lowdraglib/client/scene/WorldSceneRenderer;clearView(IIII)V"))
+    private void phantasia$conditionalClear(WorldSceneRenderer instance, int x, int y, int width, int height) {
+        if (Minecraft.getInstance().screen instanceof PhantasiaSceneScreen) {
+            // Your custom logic for your specific screen
+            RenderSystem.clearColor(0, 0, 0, 0);
+            RenderSystem.clear(16640, Minecraft.ON_OSX);
+        } else {
+            // Use the invoker to call the original protected method
+            this.invoker$clearView(x, y, width, height);
+        }
+    }
 
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableBlend();
-        RenderSystem.viewport(x, y, width, height);
-        RenderSystem.depthMask(true);
-
-        // CLEARING: Use the fixed clear view logic
-        int clearColor = 0; // Or fetch from shadow
-        RenderSystem.clearColor(0, 0, 0, 0);
-        RenderSystem.clear(16640, Minecraft.ON_OSX);
-
-        RenderSystem.backupProjectionMatrix();
-        float aspectRatio = (float)width / (float)height;
-
-        // OFFSET FIX: We define a very specific perspective matrix that
-        // doesn't allow LDLib to "nudge" the Y-offset.
-        Matrix4f proj = new Matrix4f().setPerspective((float) Math.toRadians(60.0f), aspectRatio, 0.05f, 1000.0f);
-        RenderSystem.setProjectionMatrix(proj, VertexSorting.byDistance(0, 0, 0));
-
-        PoseStack posesStack = RenderSystem.getModelViewStack();
-        posesStack.pushPose();
-        posesStack.setIdentity();
-
-        // Use the native JOML lookAt for maximum precision
-        posesStack.last().pose().lookAt(
-                eyePos.x, eyePos.y, eyePos.z,
-                lookAt.x, lookAt.y, lookAt.z,
-                worldUp.x, worldUp.y, worldUp.z
-        );
-
-        RenderSystem.applyModelViewMatrix();
+    @Redirect(
+              method = "setupCamera",
+              at = @At(value = "INVOKE",
+                       target = "Lcom/mojang/blaze3d/systems/RenderSystem;setProjectionMatrix(Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/vertex/VertexSorting;)V"))
+    private void phantasia$conditionalProjection(Matrix4f proj, VertexSorting sorting) {
+        if (Minecraft.getInstance().screen instanceof PhantasiaSceneScreen) {
+            // Calculate your "Pure" camera matrix here if needed
+            // Otherwise, just pass through the fixed one
+            RenderSystem.setProjectionMatrix(proj, sorting);
+        } else {
+            RenderSystem.setProjectionMatrix(proj, sorting);
+        }
     }
 }

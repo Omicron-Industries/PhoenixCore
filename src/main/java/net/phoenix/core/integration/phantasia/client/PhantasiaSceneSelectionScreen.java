@@ -108,7 +108,7 @@ public class PhantasiaSceneSelectionScreen extends Screen {
     private void renderCard(GuiGraphics g, int mx, int my,
                             MultiblockMachineDefinition def,
                             int cx, int cy, boolean hovered) {
-        // Card background
+        // 1. Card background and borders
         g.fill(cx, cy, cx + CARD_W, cy + CARD_H, hovered ? C_CARD_HOV : C_CARD);
         g.fill(cx, cy, cx + CARD_W, cy + 2, hovered ? C_ACCENT : 0x664FC3F7);
         if (hovered) {
@@ -117,34 +117,45 @@ public class PhantasiaSceneSelectionScreen extends Screen {
             g.fill(cx, cy + CARD_H - 1, cx + CARD_W, cy + CARD_H, C_ACCENT);
         }
 
-        // ── Block icon — renders the controller block as a 2D item sprite ──
-        // This always works; no FBO, no SceneWidget, no camera state needed.
+        // 2. Block icon (2D Item Sprite)
         Block block = def.getBlock();
         if (block != null) {
             ItemStack stack = new ItemStack(block);
-            // GuiGraphics.renderItem handles all the heavy lifting
             int iconSize = 32;
             int iconX = cx + (CARD_W - iconSize) / 2;
             int iconY = cy + 6;
-            // Scale up via pose stack (default renderItem is 16×16)
+
             g.pose().pushPose();
             g.pose().translate(iconX, iconY, 0);
-            g.pose().scale(2f, 2f, 1f); // 2× scale → 32×32
+            g.pose().scale(2f, 2f, 1f);
             g.renderItem(stack, 0, 0);
             g.pose().popPose();
         }
 
-        // ── Machine name ──
+        // 3. Machine name with Truncation and Fallback
         String name = def.getLangValue();
-        while (font.width(name) > CARD_W - 8 && name.length() > 3)
-            name = name.substring(0, name.length() - 2) + "\u2026";
+
+        // Fallback logic: If name is null, empty, or just the translation key
+        if (name == null || name.isEmpty() || name.contains("gtceu.multiblock.")) {
+            // Fallback to the internal ID name (e.g., "primitive_pump" -> "Primitive Pump")
+            name = def.getId().getPath().replace('_', ' ');
+            // Capitalize words for a cleaner look
+            name = org.apache.commons.lang3.text.WordUtils.capitalizeFully(name);
+        }
+
+        int maxWidth = CARD_W - 8;
         int nameY = cy + CARD_H - 22;
+
+        // Use Minecraft's internal utility for pixel-perfect truncation
+        if (font.width(name) > maxWidth) {
+            name = font.plainSubstrByWidth(name, maxWidth - font.width("...")) + "...";
+        }
+
         g.drawString(font, name, cx + 4, nameY, hovered ? C_ACCENT : C_TEXT, false);
 
-        // ── Script info ──
+        // 4. Script info
         boolean hasScript = PhantasiaScripts.has(def);
         if (hasScript) {
-            // Green dot top-right
             g.fill(cx + CARD_W - 8, cy + 4, cx + CARD_W - 4, cy + 8, C_SCRIPT);
             PhantasiaScript script = PhantasiaScripts.get(def);
             String steps = script.getSteps().size() + " steps";

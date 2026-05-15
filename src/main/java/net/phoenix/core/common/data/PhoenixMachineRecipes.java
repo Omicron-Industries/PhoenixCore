@@ -274,7 +274,6 @@ public class PhoenixMachineRecipes {
                 .fusionStartEU(140_000_000)
                 .save(provider);
 
-
         PhoenixRecipeTypes.HONEY_CHAMBER_RECIPES.recipeBuilder("mercury_and_magnesium_to_uranium_235_plasma")
                 .inputFluids(GTMaterials.Mercury.getFluid(125))
                 .inputFluids(GTMaterials.Magnesium.getFluid(16))
@@ -282,7 +281,6 @@ public class PhoenixMachineRecipes {
                 .duration(1000028)
                 .EUt(24576)
                 .save(provider);
-
 
         CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("electronic_circuit_mv_universal").EUt(VA[LV]).duration(300)
                 .inputItems(GOOD_CIRCUIT_BOARD)

@@ -94,6 +94,7 @@ public class PhoenixLangHandler {
 
         // General Source Machine Tooltips
         provider.add("jade.phoenixcore.source_container", "Source Energy");
+        provider.add("config.jade.plugin_phoenixcore.phantasia_jade", "Phantasia Info");
 
         // Specialized Tank Tooltips
         provider.add("jade.phoenixcore.source_tank_header", "Source Tank Content");

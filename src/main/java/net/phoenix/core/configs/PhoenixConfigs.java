@@ -40,6 +40,32 @@ public class PhoenixConfigs {
     @Configurable
     public FissionBlockStatsConfigs fissionStats = new FissionBlockStatsConfigs();
 
+    @Configurable
+    public PhantasiaUIConfig phantasiaUI = new PhantasiaUIConfig();
+
+    public static class PhantasiaUIConfig {
+
+        @Configurable
+        @Configurable.Comment({
+                "LOOK_AT: Bar appears when looking at a placed controller.",
+                "HELD_ITEM: Bar appears when holding a controller in your hand.",
+                "PERSISTENT: Bar stays on screen for the last accessed machine."
+        })
+        public DisplayMode displayMode = DisplayMode.TOOLTIP_HOTBAR;
+
+        @Configurable
+        @Configurable.Comment("Ticks required to hold the key to open the menu (20 ticks = 1 second).")
+        public int activationTicks = 20;
+
+        public enum DisplayMode {
+            TOOLTIP_ONLY,
+            JADE_ONLY,
+            HOTBAR_ONLY,
+            TOOLTIP_JADE,
+            TOOLTIP_HOTBAR
+        }
+    }
+
     // --- COLOR CONFIG ---
 
     public static class ColorConfig {
@@ -488,6 +514,9 @@ public class PhoenixConfigs {
 
         public static class CoolerConfigs {
 
+            @Configurable
+            @Configurable.Comment("EU/t boost multiplier for the basic cooler.")
+            public int coolingPowerBasicCooler = 2;
         }
 
         public static class ModeratorConfigs {
