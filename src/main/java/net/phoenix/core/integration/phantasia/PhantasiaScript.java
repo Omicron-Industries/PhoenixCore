@@ -6,47 +6,56 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.integration.phantasia.client.PhantasiaSceneScreen;
+import net.phoenix.core.integration.phantasia.client.camera.LerpType;
 
 import lombok.Getter;
 
 import java.util.*;
+import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
 /**
  * PhantasiaScript — runtime-compiled animation script.
  *
  * Always built from a {@link PhantasiaScriptData} via {@link #fromData}.
- * Never serialised directly. The data layer (PhantasiaScriptData / JSON) is the
- * source of truth; this class is the fast predicate form the renderer consumes.
+ * Never serialised directly; the data layer (PhantasiaScriptData / JSON) is the
+ * source of truth. This class is the fast predicate form the renderer consumes.
  *
- * The fluent Builder is kept as a compatibility shim — it still works but
- * produces a PhantasiaScriptData under the hood so the JSON registry stays consistent.
+ * The fluent Builder is kept as a compatibility shim — it still works but produces
+ * a PhantasiaScriptData under the hood so the JSON registry stays consistent.
  */
 @Getter
 public class PhantasiaScript {
 
     // ── Step record ───────────────────────────────────────────────────────────
 
+    /**
+     * A compiled script step.
+     *
+     * Camera fields (yaw/pitch/zoom/lerpType/lerpTicks) are only meaningful when
+     * useCam() is true.  lerpType defaults to SNAP and lerpTicks to 0 when no
+     * camera block was declared in the JSON.
+     */
     public record Step(
-                       int tickOffset,
-                       String caption,
-                       Predicate<BlockPos> filter,
-                       boolean working,
-                       int forceShape,
-                       int forceCoil,
-                       float yaw,
-                       float pitch,
-                       boolean useCam) {
+            int tickOffset,
+            String caption,
+            Predicate<BlockPos> filter,
+            boolean working,
+            int forceShape,
+            int forceCoil,
+            float yaw,
+            float pitch,
+            float zoom,
+            boolean useCam,
+            LerpType lerpType,
+            int lerpTicks) {
 
-        public boolean hasCamera() {
-            return useCam;
-        }
+        public boolean hasCamera() { return useCam; }
     }
 
     // ── Warning / heatmap records ─────────────────────────────────────────────
 
     public record LocalWarning(BlockPos localPos, String label, int color) {
-
         public LocalWarning(BlockPos localPos, String label) {
             this(localPos, label, 0xFFFFB74D);
         }
@@ -70,26 +79,25 @@ public class PhantasiaScript {
                             List<LocalWarning> commonMistakes,
                             List<String> globalMistakes,
                             List<HeatmapTier> heatmapTiers) {
-        this.sourceData = data;
-        this.steps = Collections.unmodifiableList(steps);
+        this.sourceData     = data;
+        this.steps          = Collections.unmodifiableList(steps);
         this.commonMistakes = Collections.unmodifiableList(commonMistakes);
         this.globalMistakes = Collections.unmodifiableList(globalMistakes);
-        this.heatmapTiers = Collections.unmodifiableList(heatmapTiers);
-        this.totalTicks = steps.isEmpty() ? 60 : steps.get(steps.size() - 1).tickOffset() + 60;
+        this.heatmapTiers   = Collections.unmodifiableList(heatmapTiers);
+        this.totalTicks     = steps.isEmpty() ? 60
+                : steps.get(steps.size() - 1).tickOffset() + 60;
     }
 
     // ── Queries ───────────────────────────────────────────────────────────────
 
-    public boolean hasMistakes() {
-        return !commonMistakes.isEmpty() || !globalMistakes.isEmpty();
-    }
+    public boolean hasMistakes()       { return !commonMistakes.isEmpty() || !globalMistakes.isEmpty(); }
+    public boolean hasCommonMistakes() { return !commonMistakes.isEmpty(); }
+    public boolean hasHeatmap()        { return !heatmapTiers.isEmpty(); }
 
-    public boolean hasCommonMistakes() {
-        return !commonMistakes.isEmpty();
-    }
-
-    public boolean hasHeatmap() {
-        return !heatmapTiers.isEmpty();
+    /** Returns the top-level start camera declaration, or null if not set. */
+    @Nullable
+    public PhantasiaScriptData.StartCameraData getStartCamera() {
+        return sourceData != null ? sourceData.getStartCamera() : null;
     }
 
     /** Returns the most recent step whose tickOffset ≤ currentTick, or null. */
@@ -104,7 +112,7 @@ public class PhantasiaScript {
 
     // ── Compilation ───────────────────────────────────────────────────────────
 
-    /** Compile a {@link PhantasiaScriptData} into a runtime script. Single entry point. */
+    /** Single entry point: compile a {@link PhantasiaScriptData} into a runtime script. */
     public static PhantasiaScript fromData(PhantasiaScriptData data) {
         List<Step> steps = new ArrayList<>();
         for (PhantasiaScriptData.StepData sd : data.getSteps())
@@ -121,22 +129,32 @@ public class PhantasiaScript {
     }
 
     private static Step compileStep(PhantasiaScriptData.StepData sd) {
-        Predicate<BlockPos> allow = buildShowPredicate(sd);
-        Predicate<BlockPos> deny = buildHidePredicate(sd);
+        Predicate<BlockPos> allow  = buildShowPredicate(sd);
+        Predicate<BlockPos> deny   = buildHidePredicate(sd);
         Predicate<BlockPos> filter = pos -> allow.test(pos) && !deny.test(pos);
 
-        float yaw = 0f, pitch = 0f;
-        boolean useCam = false;
+        float    yaw       = 0f;
+        float    pitch     = 0f;
+        float    zoom      = -1f;      // -1 = auto
+        boolean  useCam    = false;
+        LerpType lerpType  = LerpType.SNAP;
+        int      lerpTicks = 0;
+
         if (sd.camera != null) {
-            yaw = sd.camera.yaw;
-            pitch = sd.camera.pitch;
-            useCam = true;
+            yaw       = sd.camera.yaw;
+            pitch     = sd.camera.pitch;
+            zoom      = sd.camera.zoom;
+            useCam    = true;
+            lerpType  = LerpType.fromString(sd.camera.lerpType);
+            lerpTicks = sd.camera.lerpTicks;
         }
 
         return new Step(sd.tick, sd.caption, filter,
                 sd.working, /* forceShape */ -1, /* forceCoil */ -1,
-                yaw, pitch, useCam);
+                yaw, pitch, zoom, useCam, lerpType, lerpTicks);
     }
+
+    // ── Show predicate ────────────────────────────────────────────────────────
 
     private static Predicate<BlockPos> buildShowPredicate(PhantasiaScriptData.StepData sd) {
         String show = sd.show == null ? "all" : sd.show.toLowerCase(Locale.ROOT);
@@ -155,7 +173,8 @@ public class PhantasiaScript {
 
             case "pos" -> {
                 Set<BlockPos> set = new HashSet<>();
-                for (int[] xyz : sd.positions) if (xyz.length >= 3) set.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
+                for (int[] xyz : sd.positions)
+                    if (xyz.length >= 3) set.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
                 yield set::contains;
             }
 
@@ -163,24 +182,28 @@ public class PhantasiaScript {
                 if (!(state.getBlock() instanceof MetaMachineBlock mmb)) return false;
                 if (mmb.getDefinition() instanceof MultiblockMachineDefinition) return false;
                 String p = mmb.getDefinition().getId().getPath();
-                return p.contains("hatch") || p.contains("bus") || p.contains("port") || p.contains("storage") ||
-                        p.contains("input") || p.contains("output") || p.contains("muffler") ||
-                        p.contains("maintenance");
+                return p.contains("hatch") || p.contains("bus") || p.contains("port")
+                        || p.contains("storage") || p.contains("input")
+                        || p.contains("output") || p.contains("muffler")
+                        || p.contains("maintenance");
             });
 
-            case "controller" -> localPred(state -> state.getBlock() instanceof MetaMachineBlock mmb &&
-                    mmb.getDefinition() instanceof MultiblockMachineDefinition);
+            case "controller" -> localPred(state ->
+                    state.getBlock() instanceof MetaMachineBlock mmb
+                            && mmb.getDefinition() instanceof MultiblockMachineDefinition);
 
             case "functional" -> localPred(state -> {
                 if (state.isAir()) return false;
-                return state.getBlock() instanceof MetaMachineBlock ||
-                        state.getBlock().getDescriptionId().contains("frame") ||
-                        state.getBlock().getDescriptionId().contains("gearbox");
+                return state.getBlock() instanceof MetaMachineBlock
+                        || state.getBlock().getDescriptionId().contains("frame")
+                        || state.getBlock().getDescriptionId().contains("gearbox");
             });
 
             default -> pos -> true;
         };
     }
+
+    // ── Hide predicate ────────────────────────────────────────────────────────
 
     private static Predicate<BlockPos> buildHidePredicate(PhantasiaScriptData.StepData sd) {
         Predicate<BlockPos> deny = pos -> false;
@@ -192,13 +215,15 @@ public class PhantasiaScript {
 
         if (!sd.hidePositions.isEmpty()) {
             Set<BlockPos> hidden = new HashSet<>();
-            for (int[] xyz : sd.hidePositions) if (xyz.length >= 3)
-                hidden.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
+            for (int[] xyz : sd.hidePositions)
+                if (xyz.length >= 3) hidden.add(new BlockPos(xyz[0], xyz[1], xyz[2]));
             deny = deny.or(hidden::contains);
         }
 
         return deny;
     }
+
+    // ── localPred helper ──────────────────────────────────────────────────────
 
     private static Predicate<BlockPos> localPred(Predicate<BlockState> statePred) {
         return localPos -> {
@@ -223,11 +248,8 @@ public class PhantasiaScript {
     }
 
     // ── Legacy fluent Builder (compatibility shim) ────────────────────────────
-    // Existing Java callsites still compile. Internally produces PhantasiaScriptData.
 
-    public static Builder builder() {
-        return new Builder();
-    }
+    public static Builder builder() { return new Builder(); }
 
     public static class Builder {
 
@@ -240,62 +262,44 @@ public class PhantasiaScript {
             return this;
         }
 
-        public Builder showAll() {
-            step().show = "all";
-            return this;
-        }
-
-        public Builder showLayer(int y) {
-            step().show = "layer";
-            step().layer = y;
-            return this;
-        }
-
-        public Builder showLayers(int lo, int hi) {
-            step().show = "layers";
-            step().layerMin = lo;
-            step().layerMax = hi;
-            return this;
-        }
+        public Builder showAll()                    { step().show = "all"; return this; }
+        public Builder showLayer(int y)             { step().show = "layer"; step().layer = y; return this; }
+        public Builder showLayers(int lo, int hi)   { step().show = "layers"; step().layerMin = lo; step().layerMax = hi; return this; }
+        public Builder showParts()                  { step().show = "parts"; return this; }
+        public Builder showController()             { step().show = "controller"; return this; }
+        public Builder showFunctional()             { step().show = "functional"; return this; }
 
         public Builder showPos(BlockPos... positions) {
             step().show = "pos";
-            for (BlockPos p : positions) step().positions.add(new int[] { p.getX(), p.getY(), p.getZ() });
+            for (BlockPos p : positions) step().positions.add(new int[]{ p.getX(), p.getY(), p.getZ() });
             return this;
         }
 
-        public Builder showParts() {
-            step().show = "parts";
-            return this;
-        }
-
-        public Builder showController() {
-            step().show = "controller";
-            return this;
-        }
-
-        public Builder showFunctional() {
-            step().show = "functional";
-            return this;
-        }
-
-        public Builder hideLayer(int y) {
-            step().hideLayer = y;
-            return this;
-        }
+        public Builder hideLayer(int y)             { step().hideLayer = y; return this; }
 
         public Builder hidePos(BlockPos... ps) {
-            for (BlockPos p : ps) step().hidePositions.add(new int[] { p.getX(), p.getY(), p.getZ() });
+            for (BlockPos p : ps) step().hidePositions.add(new int[]{ p.getX(), p.getY(), p.getZ() });
             return this;
         }
 
-        public Builder working(boolean w) {
-            step().working = w;
-            return this;
-        }
+        public Builder working(boolean w)           { step().working = w; return this; }
 
+        /** Snap camera (backwards-compatible). */
         public Builder camera(float yaw, float pitch) {
             step().camera = new PhantasiaScriptData.CameraData(yaw, pitch);
+            return this;
+        }
+
+        /** Camera with explicit zoom, snap. */
+        public Builder camera(float yaw, float pitch, float zoom) {
+            step().camera = new PhantasiaScriptData.CameraData(yaw, pitch, zoom);
+            return this;
+        }
+
+        /** Camera with lerp. */
+        public Builder camera(float yaw, float pitch, float zoom, LerpType lerpType, int lerpTicks) {
+            step().camera = new PhantasiaScriptData.CameraData(yaw, pitch, zoom,
+                    lerpType.name(), lerpTicks);
             return this;
         }
 
@@ -305,8 +309,8 @@ public class PhantasiaScript {
         }
 
         public Builder mistake(int x, int y, int z, String label, int argb) {
-            data.getMistakes()
-                    .add(new PhantasiaScriptData.MistakeData(x, y, z, label, String.format("%06X", argb & 0xFFFFFF)));
+            data.getMistakes().add(new PhantasiaScriptData.MistakeData(x, y, z, label,
+                    String.format("%06X", argb & 0xFFFFFF)));
             return this;
         }
 
@@ -315,15 +319,8 @@ public class PhantasiaScript {
             return this;
         }
 
-        public PhantasiaScript build() {
-            commit();
-            return PhantasiaScript.fromData(data);
-        }
-
-        public PhantasiaScriptData buildData() {
-            commit();
-            return data;
-        }
+        public PhantasiaScript     build()     { commit(); return PhantasiaScript.fromData(data); }
+        public PhantasiaScriptData buildData() { commit(); return data; }
 
         private PhantasiaScriptData.StepData step() {
             if (pending == null) pending = new PhantasiaScriptData.StepData(0, null);
@@ -331,10 +328,7 @@ public class PhantasiaScript {
         }
 
         private void commit() {
-            if (pending != null) {
-                data.getSteps().add(pending);
-                pending = null;
-            }
+            if (pending != null) { data.getSteps().add(pending); pending = null; }
         }
     }
 }

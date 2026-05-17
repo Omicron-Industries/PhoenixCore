@@ -28,8 +28,11 @@
     "gtceu.AccessorWorldSceneRenderer",
     "gtceu.MixinSceneWidget",
     "gtceu.MixinWorldSceneRenderer",
+    "minecraft.ChannelMixin",
     "minecraft.GameRendererMixin",
-    "minecraft.GuiGraphicsCountSuffixMixin"
+    "minecraft.GuiGraphicsCountSuffixMixin",
+    "minecraft.MixinOggAudioStream",
+    "minecraft.SoundEngineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

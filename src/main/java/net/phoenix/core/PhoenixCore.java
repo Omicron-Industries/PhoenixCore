@@ -24,6 +24,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -57,6 +58,7 @@ import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEnti
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
+import net.phoenix.core.integration.vocal_resonance.JukeDebugCommand;
 import net.phoenix.core.network.PhoenixNetwork;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -163,6 +165,14 @@ public class PhoenixCore {
                     SourceIngredient.class,
                     MapSourceIngredient::convertToMapIngredient);
         });
+    }
+
+    // Runs on both client and server — safe because JukeDebugCommand contains
+    // no client-only classes (it only references S2CPlaySoundPacket and
+    // PhoenixNetwork, both of which are dist-neutral).
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        //JukeDebugCommand.register(event.getDispatcher());
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {}

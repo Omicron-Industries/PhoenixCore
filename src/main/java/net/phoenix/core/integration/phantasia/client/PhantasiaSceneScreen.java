@@ -10,8 +10,6 @@ import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 
-import com.lowdragmc.lowdraglib.client.scene.WorldSceneRenderer;
-import com.lowdragmc.lowdraglib.gui.widget.SceneWidget;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
 import com.lowdragmc.lowdraglib.utils.TrackedDummyWorld;
 
@@ -34,11 +32,13 @@ import net.phoenix.core.integration.phantasia.PhantasiaLoadedPattern;
 import net.phoenix.core.integration.phantasia.PhantasiaScript;
 import net.phoenix.core.integration.phantasia.PhantasiaScriptData;
 import net.phoenix.core.integration.phantasia.PhantasiaScripts;
+import net.phoenix.core.integration.phantasia.client.camera.CameraView;
+import net.phoenix.core.integration.phantasia.client.camera.LerpType;
+import net.phoenix.core.integration.phantasia.client.camera.PhantasiaCamera;
+import net.phoenix.core.integration.phantasia.client.render.PhantasiaWorldRenderer;
 import net.phoenix.core.integration.phantasia.utils.PhantasiaThemeUtils;
 import net.phoenix.core.integration.phantasia.utils.PhantasiaUIUtils;
-import net.phoenix.core.mixin.gtceu.AccessorWorldSceneRenderer;
 
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
@@ -59,26 +59,40 @@ public class PhantasiaSceneScreen extends Screen {
 
     public static void invalidateSharedLevel() {
         SHARED_LEVEL = null;
-        NEXT_REGION = 0;
+        NEXT_REGION  = 0;
     }
 
     public static BlockPos getOriginForCurrentPattern() {
         var mc = Minecraft.getInstance();
-        if (mc.screen instanceof PhantasiaSceneScreen pss && pss.pattern != null) return pss.pattern.origin;
+        if (mc.screen instanceof PhantasiaSceneScreen pss && pss.pattern != null)
+            return pss.pattern.origin;
         if (mc.screen instanceof PhantasiaFootprintScreen pfs && pfs.getPattern() != null)
             return pfs.getPattern().origin;
         return BlockPos.ZERO;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Layout
+    // Layout constants
     // ─────────────────────────────────────────────────────────────────────────
 
-    private static final int FULL_PANEL_W = 168;
+    private static final int FULL_PANEL_W      = 168;
     private static final int COLLAPSED_PANEL_W = 18;
-    private static final int TIMELINE_H = 26;
-    /** FIX (F6): solid caption strip replaces the old floating text overlay. */
-    private static final int CAPTION_STRIP_H = 22;
+    private static final int TIMELINE_H        = 26;
+    private static final int CAPTION_STRIP_H   = 22;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Camera defaults
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static final float CAM_TARGET_Y_BIAS     = 0.0f;
+    private static final float CAM_DEFAULT_PITCH     = 5.0f;
+    private static final float CAM_DEFAULT_ZOOM      = 40.0f;
+    private static final float CAM_ZOOM_IN_FACTOR    = 0.9f;
+    private static final float CAM_ZOOM_OUT_FACTOR   = 1.1f;
+    private static final float CAM_ZOOM_MIN          = 2.0f;
+    private static final float CAM_ZOOM_MAX          = 100.0f;
+    private static final float CAM_ORBIT_SENSITIVITY = 0.5f;
+    private static final float CAM_PAN_SPEED         = 0.02f;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Core state
@@ -86,145 +100,61 @@ public class PhantasiaSceneScreen extends Screen {
 
     private final Screen parent;
     public final MultiblockMachineDefinition definition;
-    // Non-final so the editor can hot-swap the compiled script after saving JSON
     private PhantasiaScript script;
 
     private PhantasiaLoadedPattern pattern;
-    private SceneWidget sceneWidget;
-    private int shapeIndex = 0;
+
+    /**
+     * Our custom renderer. Created once on first init(), survives re-inits
+     * (window resize, sub-screen returns) so VBOs are preserved.
+     * Explicitly closed in onClose() and on shape changes.
+     */
+    private PhantasiaWorldRenderer renderer;
+
+    private int                       shapeIndex      = 0;
     private List<MultiblockShapeInfo> availableShapes = new ArrayList<>();
 
     // ─────────────────────────────────────────────────────────────────────────
     // Camera
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * FIX (B2): single source-of-truth for zoom distance.
-     * Never re-read from the renderer after a scroll — the renderer defers its
-     * camera write by one frame, so a re-read returns the stale pre-scroll value.
-     */
-    // ─────────────────────────────────────────────────────────────────────────
-    // Camera defaults — change these to adjust the fallback starting position
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * How far above the machine's vertical midpoint the look-at target sits.
-     * 0 = aim exactly at midpoint. Positive = look higher up the machine.
-     */
-    private static final float CAM_TARGET_Y_BIAS = 0.0f;
-
-    /**
-     * Default pitch (vertical tilt) when no script camera is declared.
-     * Negative = looking downward. Range: -85 (steep) to -5 (nearly horizontal).
-     * -30 gives a comfortable isometric-ish view from slightly above.
-     */
-    private static final float CAM_DEFAULT_PITCH = 5.0f;
-
-    /**
-     * Default zoom distance when opening the screen fresh.
-     * Larger machines may need a higher value; scripts can override per-step.
-     */
-    private static final float CAM_DEFAULT_ZOOM = 40.0f;
-
-    /**
-     * Zoom multiplier per scroll tick. 0.9 = 10% closer per tick (feel free to tune).
-     */
-    private static final float CAM_ZOOM_IN_FACTOR = 0.9f;
-    private static final float CAM_ZOOM_OUT_FACTOR = 1.1f;
-
-    /** Hard zoom limits in world units. */
-    private static final float CAM_ZOOM_MIN = 2.0f;
-    private static final float CAM_ZOOM_MAX = 100.0f;
-
-    /** Orbit sensitivity: degrees rotated per pixel dragged. */
-    private static final float CAM_ORBIT_SENSITIVITY = 0.5f;
-
-    /** Pan speed: world units moved per pixel dragged (middle-click pan). */
-    private static final float CAM_PAN_SPEED = 0.02f;
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Camera runtime state
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private float currentZoomDist = CAM_DEFAULT_ZOOM;
-    // Camera accessors for the editor's "Capture Camera" feature
-    @Getter
-    private float rotationYaw = -135.0f;   // overwritten in resolveStartingCamera()
-    @Getter
-    private float rotationPitch = CAM_DEFAULT_PITCH;
-    private float cameraTargetX, cameraTargetY, cameraTargetZ;
-    private boolean isCameraLocked = true;
-
-    /**
-     * True once the player has dragged or scrolled.
-     * While true, system-driven re-inits preserve the player's exact position
-     * instead of snapping back to the script/facing default.
-     * Cleared only by centerCamera().
-     */
-    private boolean playerHasMovedCamera = false;
-
-    /**
-     * True when the last camera move was made by the system (script step, init),
-     * NOT by the player. On the player's very first drag after a system move we
-     * sync our yaw/pitch fields FROM the renderer before adding the drag delta,
-     * so there is no position jump.
-     */
-    private boolean cameraMovedBySystem = false;
-
-    private boolean isPanning = false;
+    private PhantasiaCamera camera;
+    private boolean         isPanning = false;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Playback
     // ─────────────────────────────────────────────────────────────────────────
 
-    private boolean playing = true;
-    private int playbackTick = 0;
-    private float tickAccum = 0f;
-    private float playbackSpeed = 1.0f;
-    private boolean scrubbing = false;
+    private boolean              playing        = true;
+    private int                  playbackTick   = 0;
+    private float                tickAccum      = 0f;
+    private float                playbackSpeed  = 1.0f;
+    private boolean              scrubbing      = false;
     private PhantasiaScript.Step lastAppliedStep = null;
 
     // ─────────────────────────────────────────────────────────────────────────
     // View / filter
     // ─────────────────────────────────────────────────────────────────────────
 
-    public enum ViewFilter {
-        ALL,
-        HATCHES_BUSES,
-        ENERGY_IO,
-        BLOCK_ENTITIES,
-        CONTROLLER
-    }
+    public enum ViewFilter { ALL, HATCHES_BUSES, ENERGY_IO, BLOCK_ENTITIES, CONTROLLER }
 
-    private ViewFilter viewFilter = ViewFilter.ALL;
-    /**
-     * FIX (B5): remember whether the script was playing before a filter was activated,
-     * so we can restore playback when the filter is cleared.
-     */
-    private boolean wasPlayingBeforeFilter = false;
+    private ViewFilter viewFilter             = ViewFilter.ALL;
+    private boolean    wasPlayingBeforeFilter = false;
+    private int        manualLayer            = -1;
 
-    private int manualLayer = -1;
-
-    // Filter sets built lazily from the loaded pattern
-    private Set<BlockPos> filteredHatchBus = null;
-    private Set<BlockPos> filteredEnergyIO = null;
-    private Set<BlockPos> filteredHasBE = null;
+    private Set<BlockPos> filteredHatchBus   = null;
+    private Set<BlockPos> filteredEnergyIO   = null;
+    private Set<BlockPos> filteredHasBE      = null;
     private Set<BlockPos> filteredController = null;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Build-order mode
     // ─────────────────────────────────────────────────────────────────────────
 
-    private boolean buildOrderMode = false;
-    private int buildOrderGroup = 0;
-    private float buildPulse = 0f;
-    private boolean buildPulseUp = true;
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // GPU baking
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private final Set<BlockPos> currentlyBakedPositions = new HashSet<>();
+    private boolean buildOrderMode  = false;
+    private int     buildOrderGroup = 0;
+    private float   buildPulse      = 0f;
+    private boolean buildPulseUp    = true;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Coil cycling
@@ -241,22 +171,21 @@ public class PhantasiaSceneScreen extends Screen {
     // Caption
     // ─────────────────────────────────────────────────────────────────────────
 
-    private float captionAlpha = 0f;
-    private String captionCurrent = null;
+    private float  captionAlpha    = 0f;
+    private String captionCurrent  = null;
     private String captionOutgoing = null;
-    private float captionOutAlpha = 0f;
+    private float  captionOutAlpha = 0f;
 
     // ─────────────────────────────────────────────────────────────────────────
     // UI
     // ─────────────────────────────────────────────────────────────────────────
 
     private final List<PhantasiaUIUtils.ButtonAction> activeButtons = new ArrayList<>();
-    private boolean sidePanelCollapsed = false;
-    private BlockPos hoveredPos = null;
+    private boolean  sidePanelCollapsed = false;
+    private BlockPos hoveredPos         = null;
 
-    /** Exposed so PhantasiaBlockFilterScreen can toggle it. */
-    public boolean showMistakes = false;
-    public int selectedTierIndex = -1;
+    public boolean showMistakes      = false;
+    public int     selectedTierIndex = -1;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Constructor
@@ -264,14 +193,13 @@ public class PhantasiaSceneScreen extends Screen {
 
     public PhantasiaSceneScreen(MultiblockMachineDefinition definition, Screen parent) {
         super(Component.literal(definition.getLangValue()));
-        this.parent = parent;
+        this.parent     = parent;
         this.definition = definition;
-        this.script = PhantasiaScripts.get(definition);
+        this.script     = PhantasiaScripts.get(definition);
     }
 
-    /** Called by PhantasiaScriptEditorScreen after saving to hot-swap the compiled script. */
     public void reloadScript() {
-        this.script = PhantasiaScripts.get(definition);
+        this.script          = PhantasiaScripts.get(definition);
         this.lastAppliedStep = null;
         applyVisibility();
     }
@@ -283,11 +211,9 @@ public class PhantasiaSceneScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+
         if (SHARED_LEVEL == null) {
-            if (Minecraft.getInstance().level == null) {
-                onClose();
-                return;
-            }
+            if (Minecraft.getInstance().level == null) { onClose(); return; }
             SHARED_LEVEL = new TrackedDummyWorld();
         }
 
@@ -297,107 +223,148 @@ public class PhantasiaSceneScreen extends Screen {
             pattern = loadPattern(availableShapes.get(shapeIndex));
         }
 
-        int sw = this.width - getCurrentPanelWidth();
-        int sh = this.height - TIMELINE_H - CAPTION_STRIP_H;
-
-        if (sceneWidget == null) {
-            sceneWidget = new SceneWidget(0, 0, sw, sh, SHARED_LEVEL);
-            sceneWidget.setDraggable(true);
-            WorldSceneRenderer r = sceneWidget.getRenderer();
-            r.useCacheBuffer(true);
-            if (r instanceof AccessorWorldSceneRenderer acc) acc.setEndBatchLast(true);
-        } else {
-            sceneWidget.setSize(sw, sh);
+        // ── Renderer ──────────────────────────────────────────────────────────
+        // Created once; re-inits (resize, sub-screen returns) reuse it so baked
+        // VBOs survive the re-init without a redundant rebake.
+        if (renderer == null) {
+            renderer = new PhantasiaWorldRenderer(SHARED_LEVEL);
+            if (pattern != null) renderer.setBaseplatePositions(pattern.baseplatePositions);
         }
 
-        if (pattern != null) {
-            if (!playerHasMovedCamera) {
-                // Fresh open or player hasn't touched the camera yet.
-                // Recalculate the look-at target and resolve starting angles.
-                BlockPos cp = pattern.controllerWorldPos != null ? pattern.controllerWorldPos : pattern.origin;
-                float midY = pattern.origin.getY() + (pattern.minY + pattern.maxY) * 0.5f + CAM_TARGET_Y_BIAS;
-                cameraTargetX = cp.getX() + 0.5f;
-                cameraTargetY = midY;
-                cameraTargetZ = cp.getZ() + 0.5f;
-                resolveStartingCamera();
-
-                // Tell the widget about our starting angles and flag a sync so the
-                // first player drag reads from the renderer instead of our stale fields.
-                sceneWidget.setCameraYawAndPitch(rotationPitch, rotationYaw);
-                cameraMovedBySystem = true;
-            } else {
-                // Player has already moved the camera — preserve every field exactly.
-                // Re-sync the widget's internal orbit state so its drag handler starts
-                // from the right angle (setSize() above may have reset it).
-                // Do NOT set cameraMovedBySystem — our fields are authoritative and we
-                // don't want syncFieldsFromRenderer() to overwrite them on the next drag.
-                sceneWidget.setCameraYawAndPitch(rotationPitch, rotationYaw);
-                // cameraMovedBySystem intentionally left as-is (false when player was last to move)
-            }
-
-            updateCameraTarget(currentZoomDist);
-            currentlyBakedPositions.clear();
-            applyVisibility();
+        // ── Camera ────────────────────────────────────────────────────────────
+        if (camera == null) {
+            camera = buildFreshCamera();
+        } else if (camera.hasSavedSnapshot()) {
+            // Returning from a sub-screen — restore the exact view the player had.
+            camera.restore();
+        } else if (!camera.isPlayerOwned()) {
+            // System re-init with no snapshot and no player input — recalculate
+            // default (e.g. window was resized; script step-0 camera still applies).
+            resetCameraToDefault(LerpType.SNAP, 0);
         }
+        // playerOwned + no snapshot = player moved the camera before resize; keep it.
+
+        if (pattern != null) applyVisibility();
     }
 
-    /**
-     * FIX (B4): derive the ideal starting yaw from the controller block's HORIZONTAL_FACING
-     * property so the camera always approaches from in front of the machine.
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Camera helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private PhantasiaCamera buildFreshCamera() {
+        float[] yp     = resolveStartingYawPitch();
+        float   zoom   = resolveStartingZoom();
+        float[] target = resolveTarget();
+        PhantasiaCamera cam = new PhantasiaCamera(yp[0], yp[1], zoom,
+                target[0], target[1], target[2]);
+        if (pattern != null) cam.setFloorY(pattern.origin.getY() + 0.5f);
+        return cam;
+    }
+
+    private void resetCameraToDefault(LerpType type, int ticks) {
+        float[] yp     = resolveStartingYawPitch();
+        float   zoom   = resolveStartingZoom();
+        float[] target = resolveTarget();
+        camera.setTarget(target[0], target[1], target[2]);
+        camera.hardReset(yp[0], yp[1], zoom, target[0], target[1], target[2], type, ticks);
+        if (pattern != null) camera.setFloorY(pattern.origin.getY() + 0.5f);
+    }
+
+    private float[] resolveStartingYawPitch() {
+        // 1. Explicit startCamera on the script (highest priority).
+        if (script != null) {
+            var sc = script.getStartCamera();
+            if (sc != null) {
+                float yaw   = sc.hasYaw()   ? sc.getYaw()   : getFacingYaw();
+                float pitch = sc.hasPitch() ? sc.getPitch() : CAM_DEFAULT_PITCH;
+                return new float[]{ yaw, pitch };
+            }
+        }
+        // 2. Step-0 animation camera (kept for backwards compatibility).
+        if (script != null && !script.getSteps().isEmpty()) {
+            PhantasiaScript.Step s0 = script.getSteps().get(0);
+            if (s0.hasCamera()) return new float[]{ s0.yaw(), s0.pitch() };
+        }
+        // 3. Auto: face from the controller's facing direction.
+        return new float[]{ getFacingYaw(), CAM_DEFAULT_PITCH };
+    }
+
+    private float resolveStartingZoom() {
+        // 1. Explicit startCamera zoom.
+        if (script != null) {
+            var sc = script.getStartCamera();
+            if (sc != null && sc.hasZoom()) return sc.getZoom();
+        }
+        // 2. Step-0 animation camera zoom.
+        if (script != null && !script.getSteps().isEmpty()) {
+            PhantasiaScript.Step s0 = script.getSteps().get(0);
+            if (s0.hasCamera() && s0.zoom() > 0) return s0.zoom();
+        }
+        // 3. Auto from bounding box: use the largest dimension across all three axes
+        //    so both tall narrow machines and wide flat ones frame comfortably.
+        if (pattern == null || SHARED_LEVEL == null) return CAM_DEFAULT_ZOOM;
+        org.joml.Vector3f size = SHARED_LEVEL.getSize();
+        float maxDim = Math.max(size.x, Math.max(size.y, size.z));
+        return Math.max(CAM_DEFAULT_ZOOM, maxDim * 3.0f);
+    }
+
+    private float[] resolveTarget() {
+        if (pattern == null) return new float[]{ 0, 0, 0 };
+
+        // Use world-space bounding box centre so asymmetric and offset machines
+        // are framed correctly, rather than always pointing at the controller.
+        float cx, cy, cz;
+        if (SHARED_LEVEL != null) {
+            // minPos/maxPos are populated by TrackedDummyWorld.addBlock() and span
+            // the entire rendered set. We want the machine body centre, not the
+            // baseplate centre, so use the pattern's local Y range for vertical.
+            org.joml.Vector3f min = SHARED_LEVEL.getMinPos();
+            org.joml.Vector3f max = SHARED_LEVEL.getMaxPos();
+            cx = (min.x + max.x) * 0.5f;
+            cz = (min.z + max.z) * 0.5f;
+            // Y: use the local pattern range (avoids the baseplate pulling the
+            // target too low on tall machines).
+            cy = pattern.origin.getY()
+                    + (pattern.minY + pattern.maxY) * 0.5f + CAM_TARGET_Y_BIAS;
+        } else {
+            // Fallback: controller position.
+            BlockPos cp = pattern.controllerWorldPos != null
+                    ? pattern.controllerWorldPos : pattern.origin;
+            cx = cp.getX() + 0.5f;
+            cy = pattern.origin.getY()
+                    + (pattern.minY + pattern.maxY) * 0.5f + CAM_TARGET_Y_BIAS;
+            cz = cp.getZ() + 0.5f;
+        }
+
+        // Apply any manual target offset from startCamera.
+        if (script != null) {
+            var sc = script.getStartCamera();
+            if (sc != null && sc.hasTargetOffset()) {
+                cx += sc.getTargetOffsetX();
+                cy += sc.getTargetOffsetY();
+                cz += sc.getTargetOffsetZ();
+            }
+        }
+
+        return new float[]{ cx, cy, cz };
+    }
+
     private float getFacingYaw() {
-        if (pattern == null || pattern.controllerWorldPos == null || SHARED_LEVEL == null) return -135.0f;
+        if (pattern == null || pattern.controllerWorldPos == null || SHARED_LEVEL == null)
+            return -135f;
         try {
             BlockState ctrl = SHARED_LEVEL.getBlockState(pattern.controllerWorldPos);
             if (ctrl.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 return switch (ctrl.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
-                    // If facing North, camera should be at the North looking South (180)
-                    case NORTH -> 180.0f;
-                    // If facing South, camera should be at the South looking North (0)
-                    case SOUTH -> 0.0f;
-                    // If facing West, camera should be at the West looking East (270)
-                    case WEST -> 270.0f;
-                    // If facing East, camera should be at the East looking West (90)
-                    case EAST -> 90.0f;
-                    default -> -135.0f;
+                    case NORTH -> 180f;
+                    case SOUTH ->   0f;
+                    case WEST  -> 270f;
+                    case EAST  ->  90f;
+                    default    -> -135f;
                 };
             }
         } catch (Exception ignored) {}
-        return -135.0f;
-    }
-
-    /**
-     * Sets rotationYaw, rotationPitch and currentZoomDist for a "fresh open":
-     * 1. Script step-0 declared camera — script author chose the ideal angle.
-     * 2. Controller HORIZONTAL_FACING — face the machine front, isometric pitch.
-     * 3. Isometric fallback — safe default when facing is unavailable.
-     *
-     * Zoom is auto-sized to the machine's height so small and large machines both
-     * fit comfortably in frame. Only called when playerHasMovedCamera is false.
-     */
-    private void resolveStartingCamera() {
-        // Auto-size zoom: taller machines need more distance.
-        // Base distance of CAM_DEFAULT_ZOOM covers ~8 blocks; scale linearly above that.
-        if (pattern != null) {
-            int machineH = pattern.maxY - pattern.minY + 1;
-            currentZoomDist = CAM_DEFAULT_ZOOM + Math.max(0, machineH - 8) * 1.5f;
-        } else {
-            currentZoomDist = CAM_DEFAULT_ZOOM;
-        }
-
-        // 1. Script step-0 declared camera
-        if (!script.getSteps().isEmpty()) {
-            PhantasiaScript.Step first = script.getSteps().get(0);
-            if (first.hasCamera()) {
-                rotationYaw = first.yaw();
-                rotationPitch = first.pitch();
-                return;
-            }
-        }
-
-        // 2. Controller facing yaw + named default pitch
-        rotationYaw = getFacingYaw();
-        rotationPitch = CAM_DEFAULT_PITCH;
+        return -135f;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -408,18 +375,20 @@ public class PhantasiaSceneScreen extends Screen {
         int regionIndex = NEXT_REGION++;
         BlockPos origin = new BlockPos(regionIndex * REGION_SIZE, 50, 0);
 
-        Map<BlockPos, BlockInfo> blockMap = new HashMap<>();
-        Map<BlockPos, BlockPos> localToWorld = new HashMap<>();
-        Set<BlockPos> baseplatePos = new HashSet<>();
-        Set<BlockPos> bePos = new HashSet<>();
-        BlockPos controllerWP = null;
+        Map<BlockPos, BlockInfo> blockMap     = new HashMap<>();
+        Map<BlockPos, BlockPos>  localToWorld = new HashMap<>();
+        Set<BlockPos>            baseplatePos = new HashSet<>();
+        Set<BlockPos>            bePos        = new HashSet<>();
+        BlockPos                 controllerWP = null;
         MultiblockControllerMachine controller = null;
 
-        BlockInfo floor = BlockInfo.fromBlockState(Blocks.DEEPSLATE_BRICKS.defaultBlockState());
-        BlockInfo[][][] raw = shape.getBlocks();
+        BlockInfo floor  = BlockInfo.fromBlockState(Blocks.DEEPSLATE_BRICKS.defaultBlockState());
+        BlockInfo[][][] raw   = shape.getBlocks();
         int sxLen = raw.length;
         int szLen = sxLen > 0 && raw[0].length > 0 ? raw[0][0].length : 0;
-        int padX = Math.max(2, sxLen / 2 + 1), padZ = Math.max(2, szLen / 2 + 1);
+        int padX  = Math.max(2, sxLen / 2 + 1);
+        int padZ  = Math.max(2, szLen / 2 + 1);
+
         for (int bx = -padX; bx <= sxLen + padX; bx++)
             for (int bz = -padZ; bz <= szLen + padZ; bz++) {
                 BlockPos wp = origin.offset(bx, -1, bz);
@@ -440,7 +409,7 @@ public class PhantasiaSceneScreen extends Screen {
                             mbe.setLevel(SHARED_LEVEL);
                             var machine = mbe.getMetaMachine();
                             if (machine instanceof MultiblockControllerMachine ctrl && controllerWP == null) {
-                                controller = ctrl;
+                                controller   = ctrl;
                                 controllerWP = wp;
                             }
                             bePos.add(wp);
@@ -468,105 +437,31 @@ public class PhantasiaSceneScreen extends Screen {
             minY = Math.min(minY, lp.getY());
             maxY = Math.max(maxY, lp.getY());
         }
-        if (minY > maxY) {
-            minY = 0;
-            maxY = 0;
-        }
+        if (minY > maxY) { minY = 0; maxY = 0; }
 
         return new PhantasiaLoadedPattern(blockMap, localToWorld, baseplatePos,
                 controllerWP, bePos, origin, minY, maxY, controller, script);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Camera
+    // Visibility
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * FIX (B2): writes dist into {@code currentZoomDist} immediately so subsequent
-     * drag-rotation calls read the correct value without consulting the renderer.
-     *
-     * Also clamps the computed eye Y so it never goes below the baseplate surface
-     * (baseplateY + 0.5). This prevents large machines from pushing the camera
-     * underground when auto-zoom makes the distance large enough that even a shallow
-     * pitch results in the eye being below the floor.
-     */
-    private void updateCameraTarget(float dist) {
-        if (sceneWidget == null) return;
-        this.currentZoomDist = dist;
-
-        double yr = Math.toRadians(rotationYaw);
-        double pr = Math.toRadians(rotationPitch);
-        float nx = (float) (Math.cos(pr) * Math.sin(yr));
-        float ny = (float) Math.sin(pr);
-        float nz = (float) (Math.cos(pr) * Math.cos(yr));
-
-        float eyeX = cameraTargetX + nx * dist;
-        float eyeY = cameraTargetY + ny * dist;
-        float eyeZ = cameraTargetZ + nz * dist;
-
-        // Clamp: eye must always be above the baseplate surface.
-        // Baseplate blocks sit at origin.Y - 1, so the top face is at origin.Y.
-        // We add a small margin (0.5) so the camera never clips into the floor.
-        if (pattern != null) {
-            float baseplateTopY = pattern.origin.getY() + 0.5f;
-            eyeY = Math.max(eyeY, baseplateTopY);
-        }
-
-        sceneWidget.getRenderer().setCameraLookAt(
-                new Vector3f(eyeX, eyeY, eyeZ),
-                new Vector3f(cameraTargetX, cameraTargetY, cameraTargetZ),
-                new Vector3f(0, 1, 0));
-    }
-
-    /**
-     * Reads the renderer's current eye direction back into rotationYaw, rotationPitch,
-     * and currentZoomDist. Called once on the player's first drag/scroll after any
-     * system-driven camera move so there is no position jump.
-     *
-     * Does NOT overwrite cameraTargetX/Y/Z — those are set by init() and centerCamera()
-     * and are always authoritative. Overwriting them here would break the look-at point
-     * when the widget's own drag handler drifts it slightly.
-     */
-    private void syncFieldsFromRenderer() {
-        if (sceneWidget == null) return;
-        WorldSceneRenderer r = sceneWidget.getRenderer();
-        Vector3f eye = r.getEyePos();
-        Vector3f target = r.getLookAt();
-        if (eye == null || target == null) return;
-
-        float dx = eye.x - target.x;
-        float dy = eye.y - target.y;
-        float dz = eye.z - target.z;
-        float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist < 0.001f) return;
-
-        rotationPitch = (float) Math.toDegrees(Math.asin(Mth.clamp(dy / dist, -1f, 1f)));
-        rotationYaw = (float) Math.toDegrees(Math.atan2(dx, dz));
-        currentZoomDist = dist;
-        // NOTE: cameraTargetX/Y/Z deliberately NOT updated here — they remain
-        // as set by init() / centerCamera() which are the authoritative look-at values.
-    }
-
-    /** Recomputes and uploads the visible block set to the GPU — call after any state change. */
     public void applyVisibility() {
-        if (sceneWidget == null || pattern == null) return;
+        if (renderer == null || pattern == null || SHARED_LEVEL == null) return;
         PhantasiaScript.Step step = script.getActiveStep(playbackTick);
-        Set<BlockPos> next = new HashSet<>(pattern.baseplatePositions);
-        for (Map.Entry<BlockPos, BlockPos> e : pattern.localToWorld.entrySet())
-            if (isBlockVisible(e.getKey(), e.getValue(), step)) next.add(e.getValue());
 
-        if (!next.equals(currentlyBakedPositions)) {
-            currentlyBakedPositions.clear();
-            currentlyBakedPositions.addAll(next);
-            sceneWidget.setRenderedCore(currentlyBakedPositions, null);
-            sceneWidget.getRenderer().needCompileCache();
+        Set<BlockPos> next = new HashSet<>();
+        for (Map.Entry<BlockPos, BlockPos> e : pattern.localToWorld.entrySet()) {
+            if (isBlockVisible(e.getKey(), e.getValue(), step))
+                next.add(e.getValue());
         }
+        // Baseplate positions are managed inside the renderer via setBaseplatePositions.
+        // We pass only machine-block world positions here so alpha transitions don't
+        // affect the floor.
+        renderer.setVisible(next);
     }
 
-    /**
-     * FIX (B5): a non-ALL filter has TOTAL authority — the script filter is skipped.
-     * Ensures clicking a filter always shows what the label says, regardless of playback state.
-     */
     private boolean isBlockVisible(BlockPos local, BlockPos world, PhantasiaScript.Step step) {
         if (viewFilter != ViewFilter.ALL) {
             Set<BlockPos> fs = getFilterSet(viewFilter);
@@ -581,10 +476,6 @@ public class PhantasiaSceneScreen extends Screen {
         return true;
     }
 
-    /**
-     * Called by {@link PhantasiaBlockFilterScreen#onClose()} so the filter change is
-     * applied immediately on returning to this screen (FIX B5/B6).
-     */
     public void applyViewFilter(ViewFilter vf) {
         if (viewFilter == vf) return;
         viewFilter = vf;
@@ -595,13 +486,40 @@ public class PhantasiaSceneScreen extends Screen {
     // Filter sets (lazy build)
     // ─────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Returns true if the available shapes represent genuinely different machine sizes
+     * (different XZ footprint), as opposed to coil-tier variations of the same structure.
+     *
+     * Strategy: compare the total block count of each shape. Coil-tier variants have
+     * identical block counts (same structure, different materials). Size variants have
+     * different block counts. This is data-driven and requires no machine-type checks.
+     */
+    private boolean computeHasRealSizeVariants() {
+        if (availableShapes == null || availableShapes.size() <= 1) return false;
+        int firstCount = countBlocks(availableShapes.get(0));
+        for (int i = 1; i < availableShapes.size(); i++) {
+            if (countBlocks(availableShapes.get(i)) != firstCount) return true;
+        }
+        return false;
+    }
+
+    private static int countBlocks(MultiblockShapeInfo shape) {
+        int count = 0;
+        for (BlockInfo[][] layer : shape.getBlocks())
+            for (BlockInfo[] row : layer)
+                for (BlockInfo b : row)
+                    if (b != null && b.getBlockState() != null && !b.getBlockState().isAir())
+                        count++;
+        return count;
+    }
+
     private void buildFilterSets() {
         if (pattern == null || SHARED_LEVEL == null) return;
-        filteredHatchBus = new HashSet<>();
-        filteredEnergyIO = new HashSet<>();
-        filteredHasBE = pattern.blockEntityWorldPos;
-        // FIX: CONTROLLER filter now has a proper set
-        filteredController = pattern.controllerWorldPos != null ? Set.of(pattern.controllerWorldPos) : Set.of();
+        filteredHatchBus   = new HashSet<>();
+        filteredEnergyIO   = new HashSet<>();
+        filteredHasBE      = pattern.blockEntityWorldPos;
+        filteredController = pattern.controllerWorldPos != null
+                ? Set.of(pattern.controllerWorldPos) : Set.of();
 
         for (Map.Entry<BlockPos, BlockPos> e : pattern.localToWorld.entrySet()) {
             BlockPos wp = e.getValue();
@@ -611,9 +529,11 @@ public class PhantasiaSceneScreen extends Screen {
             ResourceLocation rl = ForgeRegistries.BLOCKS.getKey(state.getBlock());
             if (rl == null) continue;
             String p = rl.getPath();
-            if (p.contains("hatch") || p.contains("bus") || p.contains("muffler") || p.contains("maintenance"))
+            if (p.contains("hatch") || p.contains("bus")
+                    || p.contains("muffler") || p.contains("maintenance"))
                 filteredHatchBus.add(wp);
-            if (p.contains("energy") || p.contains("dynamo") || p.contains("laser") || p.contains("power"))
+            if (p.contains("energy") || p.contains("dynamo")
+                    || p.contains("laser") || p.contains("power"))
                 filteredEnergyIO.add(wp);
         }
     }
@@ -621,11 +541,11 @@ public class PhantasiaSceneScreen extends Screen {
     private Set<BlockPos> getFilterSet(ViewFilter vf) {
         if (filteredHatchBus == null) buildFilterSets();
         return switch (vf) {
-            case HATCHES_BUSES -> filteredHatchBus;
-            case ENERGY_IO -> filteredEnergyIO;
+            case HATCHES_BUSES  -> filteredHatchBus;
+            case ENERGY_IO      -> filteredEnergyIO;
             case BLOCK_ENTITIES -> filteredHasBE;
-            case CONTROLLER -> filteredController;
-            default -> null;
+            case CONTROLLER     -> filteredController;
+            default             -> null;
         };
     }
 
@@ -637,38 +557,30 @@ public class PhantasiaSceneScreen extends Screen {
     public void tick() {
         super.tick();
 
+        // Advance camera lerp one game-tick.
+        if (camera != null) camera.tick();
+
         // Caption fades
-        if (captionCurrent != null && captionAlpha < 1f) captionAlpha = Math.min(1f, captionAlpha + 0.1f);
+        if (captionCurrent != null && captionAlpha < 1f)
+            captionAlpha = Math.min(1f, captionAlpha + 0.1f);
         if (captionOutgoing != null) {
             captionOutAlpha -= 0.1f;
-            if (captionOutAlpha <= 0f) {
-                captionOutgoing = null;
-                captionOutAlpha = 0f;
-            }
+            if (captionOutAlpha <= 0f) { captionOutgoing = null; captionOutAlpha = 0f; }
         }
 
         // Build-order pulse
         if (buildOrderMode) {
             buildPulse += buildPulseUp ? 0.05f : -0.05f;
-            if (buildPulse >= 1f) {
-                buildPulse = 1f;
-                buildPulseUp = false;
-            }
-            if (buildPulse <= 0f) {
-                buildPulse = 0f;
-                buildPulseUp = true;
-            }
+            if (buildPulse >= 1f) { buildPulse = 1f; buildPulseUp = false; }
+            if (buildPulse <= 0f) { buildPulse = 0f; buildPulseUp = true;  }
         }
 
-        // skip playback advance while a filter is active
-        if (!playing || scrubbing || buildOrderMode || script == null || viewFilter != ViewFilter.ALL) return;
+        if (!playing || scrubbing || buildOrderMode || script == null
+                || viewFilter != ViewFilter.ALL) return;
 
         int prevTick = playbackTick;
         tickAccum += playbackSpeed;
-        while (tickAccum >= 1f) {
-            tickAccum -= 1f;
-            playbackTick++;
-        }
+        while (tickAccum >= 1f) { tickAccum -= 1f; playbackTick++; }
         if (playbackTick >= script.getTotalTicks()) {
             playbackTick = (int) script.getTotalTicks();
             playing = false;
@@ -676,64 +588,37 @@ public class PhantasiaSceneScreen extends Screen {
 
         PhantasiaScript.Step step = script.getActiveStep(playbackTick);
 
-        // Per-tick transitions
-        if (step != null) {
-            if (step.useCam() && isCameraLocked) {
-                rotationYaw = step.yaw();
-                rotationPitch = step.pitch();
-                if (sceneWidget != null) {
-                    // Keep the Widget's internal orbit logic in sync with the script values
-                    sceneWidget.setCameraYawAndPitch(rotationPitch, rotationYaw);
-
-                    // FIX: Flag that the system moved the camera.
-                    // This ensures the NEXT player drag starts from the script's position.
-                    cameraMovedBySystem = true;
-
-                    // Refresh the actual renderer view
-                    updateCameraTarget(currentZoomDist);
-                }
-            }
-            if (step.forceCoil() != -1 && step.forceCoil() != coilIndex) {
-                coilIndex = step.forceCoil();
-                updateCoilType();
-            }
+        if (step != null && step.forceCoil() != -1 && step.forceCoil() != coilIndex) {
+            coilIndex = step.forceCoil();
+            updateCoilType();
         }
 
-        // Heavy operations only on step boundary
         if (playbackTick != prevTick && step != lastAppliedStep) {
             lastAppliedStep = step;
 
-            if (step != null && step.forceShape() != -1 && step.forceShape() != shapeIndex && availableShapes != null &&
-                    step.forceShape() < availableShapes.size()) {
+            // Script camera — PhantasiaCamera enforces locked/unlocked ownership.
+            if (step != null && step.hasCamera() && camera != null) {
+                float zoom = step.zoom() > 0 ? step.zoom() : camera.getZoom();
+                camera.scriptDrive(step.yaw(), step.pitch(), zoom,
+                        step.lerpType(), step.lerpTicks());
+            }
 
-                // SAVE current state before init() resets variables to defaults
-                float savedYaw = rotationYaw;
-                float savedPitch = rotationPitch;
-                float savedDist = currentZoomDist;
-                float savedTX = cameraTargetX;
-                float savedTY = cameraTargetY;
-                float savedTZ = cameraTargetZ;
-                boolean hadMoved = playerHasMovedCamera;
+            // Script shape change
+            if (step != null && step.forceShape() != -1
+                    && step.forceShape() != shapeIndex
+                    && availableShapes != null
+                    && step.forceShape() < availableShapes.size()) {
 
                 shapeIndex = step.forceShape();
+                // Hard-reset camera so the script reclaims authority for the new shape.
+                if (camera != null)
+                    camera.hardReset(getFacingYaw(), CAM_DEFAULT_PITCH, CAM_DEFAULT_ZOOM,
+                            0, 0, 0);
+                // Close old renderer before allocating the new one.
+                if (renderer != null) { renderer.close(); renderer = null; }
                 pattern = null;
-                init(); // Note: your new init() handles the cameraMovedBySystem flag
-
-                if (hadMoved) {
-                    // RESTORE exact position and target so it doesn't "shunt" to the center
-                    rotationYaw = savedYaw;
-                    rotationPitch = savedPitch;
-                    currentZoomDist = savedDist;
-                    cameraTargetX = savedTX;
-                    cameraTargetY = savedTY;
-                    cameraTargetZ = savedTZ;
-
-                    if (sceneWidget != null) {
-                        sceneWidget.setCameraYawAndPitch(savedPitch, savedYaw);
-                        cameraMovedBySystem = true;
-                        updateCameraTarget(savedDist);
-                    }
-                }
+                init();
+                return; // init() already calls applyVisibility
             }
 
             applyVisibility();
@@ -747,18 +632,20 @@ public class PhantasiaSceneScreen extends Screen {
         if (!Objects.equals(next, captionCurrent)) {
             captionOutgoing = captionCurrent;
             captionOutAlpha = captionAlpha;
-            captionCurrent = next;
-            captionAlpha = 0f;
+            captionCurrent  = next;
+            captionAlpha    = 0f;
         }
     }
 
     private void updateMachineState(PhantasiaScript.Step step) {
         if (pattern == null || pattern.controller == null) return;
-        boolean working = step != null && step.working() && playbackTick < script.getTotalTicks();
+        boolean working = step != null && step.working()
+                && playbackTick < script.getTotalTicks();
         if (pattern.controller instanceof WorkableMultiblockMachine w) {
             RecipeLogic logic = w.getRecipeLogic();
             if ((logic.getStatus() == RecipeLogic.Status.WORKING) != working)
-                logic.setStatus(working ? RecipeLogic.Status.WORKING : RecipeLogic.Status.IDLE);
+                logic.setStatus(working
+                        ? RecipeLogic.Status.WORKING : RecipeLogic.Status.IDLE);
         }
         var rs = pattern.controller.getRenderState();
         var ap = com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties.IS_ACTIVE;
@@ -770,43 +657,58 @@ public class PhantasiaSceneScreen extends Screen {
         if (pattern == null || pattern.blockMap == null) return;
         BlockInfo newCoil = COIL_TIERS.get(coilIndex);
         for (Map.Entry<BlockPos, BlockInfo> e : pattern.blockMap.entrySet()) {
-            if (e.getValue().getBlockState().getBlock() instanceof com.gregtechceu.gtceu.common.block.CoilBlock) {
+            if (e.getValue().getBlockState().getBlock()
+                    instanceof com.gregtechceu.gtceu.common.block.CoilBlock) {
                 e.setValue(newCoil);
                 if (SHARED_LEVEL != null)
-                    SHARED_LEVEL.setBlock(e.getKey().offset(pattern.origin), newCoil.getBlockState(), 3);
+                    SHARED_LEVEL.setBlock(e.getKey(), newCoil.getBlockState(), 3);
             }
         }
-        if (sceneWidget != null) {
-            currentlyBakedPositions.clear();
-            sceneWidget.getRenderer().needCompileCache();
-            applyVisibility();
-            if (!playerHasMovedCamera) updateCameraTarget(currentZoomDist);
-        }
+        // invalidate() forces a rebake even though the POSITIONS haven't changed —
+        // only the block states at those positions have changed.
+        if (renderer != null) renderer.invalidate();
+        applyVisibility();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Rendering
+    // render()
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
         activeButtons.clear();
 
-        g.fill(0, 0, this.width, this.height, C_BG);
-        if (sceneWidget != null) sceneWidget.drawInBackground(g, mx, my, partial);
+        int pw = getCurrentPanelWidth();
+        int sw = this.width  - pw;
+        int sh = this.height - TIMELINE_H - CAPTION_STRIP_H;
 
+        // Background fill
+        g.fill(0, 0, this.width, this.height, C_BG);
+
+        // ── 3-D scene ─────────────────────────────────────────────────────────
+        if (renderer != null && camera != null) {
+            CameraView view = camera.getView(partial);
+            renderer.setMousePos(mx, my);
+            // Viewport starts below the caption strip
+            renderer.render(view, 0, CAPTION_STRIP_H, sw, sh);
+            BlockHitResult hit = renderer.getLastHitResult();
+            hoveredPos = (hit != null && hit.getType() == HitResult.Type.BLOCK)
+                    ? hit.getBlockPos() : null;
+        }
+
+        // ── GUI overlays (on top of 3-D) ──────────────────────────────────────
         renderCaption(g);
         if (buildOrderMode && pattern != null) renderBuildPulseBanner(g);
-        if (showMistakes && script != null && script.hasCommonMistakes()) renderMistakesOverlay(g);
+        if (showMistakes && script != null && script.hasCommonMistakes())
+            renderMistakesOverlay(g);
 
         renderTimeline(g, mx, my);
         renderSidePanel(g, mx, my);
-
         regBtn(g, mx, my, 10, 10, 50, 18, "Back", this::onClose);
 
         super.render(g, mx, my, partial);
 
-        int pw = getCurrentPanelWidth();
+        // Hovered-block name in panel gutter
         int px = this.width - pw;
         if (hoveredPos != null && SHARED_LEVEL != null) {
             try {
@@ -820,87 +722,112 @@ public class PhantasiaSceneScreen extends Screen {
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Timeline
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void renderTimeline(GuiGraphics g, int mx, int my) {
-        int px = this.width - getCurrentPanelWidth();
+        int px   = this.width - getCurrentPanelWidth();
         int barY = this.height - TIMELINE_H;
 
         g.fill(0, barY, px, this.height, C_TL_BG);
         g.fill(0, barY, px, barY + 1, C_ACCENT);
 
         int x = 6;
-        regBtn(g, mx, my, x, barY + 4, 18, 17, playing ? "⏸" : "▶", () -> playing = !playing);
+        regBtn(g, mx, my, x, barY + 4, 18, 17, playing ? "⏸" : "▶", () -> {
+            if (!playing && playbackTick >= script.getTotalTicks()) {
+                // At end — restart from the beginning
+                playbackTick    = 0;
+                tickAccum       = 0f;
+                lastAppliedStep = null;
+                applyVisibility();
+            }
+            playing = !playing;
+        });
         x += 22;
-        regBtn(g, mx, my, x, barY + 4, 18, 17, isCameraLocked ? "🔒" : "🔓",
-                () -> isCameraLocked = !isCameraLocked);
+        regBtn(g, mx, my, x, barY + 4, 18, 17,
+                camera != null && camera.isLocked() ? "🔒" : "🔓",
+                () -> { if (camera != null) camera.toggleLocked(); });
         x += 22;
         String spd = playbackSpeed == 0.5f ? "½x" : playbackSpeed == 2f ? "2x" : "1x";
-        regBtn(g, mx, my, x, barY + 4, 24, 17, spd,
-                () -> playbackSpeed = playbackSpeed == 1f ? 2f : playbackSpeed == 2f ? 0.5f : 1f);
+        regBtn(g, mx, my, x, barY + 4, 24, 17, spd, () ->
+                playbackSpeed = playbackSpeed == 1f ? 2f : playbackSpeed == 2f ? 0.5f : 1f);
 
         int tx = 80, tw = px - tx - 65, midY = barY + TIMELINE_H / 2;
         g.fill(tx, midY - 1, tx + tw, midY + 1, 0xFF1A2C3C);
 
         float total = script.getTotalTicks();
         for (PhantasiaScript.Step s : script.getSteps()) {
-            int mx2 = tx + (int) (tw * s.tickOffset() / total);
+            int mx2 = tx + (int)(tw * s.tickOffset() / total);
             g.fill(mx2 - 1, midY - 4, mx2 + 1, midY + 4, 0xAAFFFFFF);
         }
         float prog = total > 0 ? playbackTick / total : 0f;
-        g.fill(tx, midY - 1, tx + (int) (tw * prog), midY + 1, C_PROG);
-        g.fill(tx + (int) (tw * prog) - 2, midY - 4, tx + (int) (tw * prog) + 2, midY + 4, C_ACCENT);
+        g.fill(tx, midY - 1, tx + (int)(tw * prog), midY + 1, C_PROG);
+        g.fill(tx + (int)(tw * prog) - 2, midY - 4,
+               tx + (int)(tw * prog) + 2, midY + 4, C_ACCENT);
         g.drawString(font, formatTicks(playbackTick), tx + tw + 8, barY + 9, C_DIM, false);
     }
 
-    /**
-     * FIX (F6): Solid themed strip directly above the timeline.
-     * Outgoing caption fades out while incoming fades in.
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Caption strip
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void renderCaption(GuiGraphics g) {
         if (captionCurrent == null && captionOutgoing == null) return;
         g.pose().pushPose();
         g.pose().translate(0, 0, 500);
 
-        int sw = this.width - getCurrentPanelWidth();
+        int sw     = this.width - getCurrentPanelWidth();
         int stripY = this.height - TIMELINE_H - CAPTION_STRIP_H;
         g.fill(0, stripY, sw, stripY + CAPTION_STRIP_H, 0xDD08080F);
         g.fill(0, stripY, sw, stripY + 1, 0xFF4FC3F7);
         int ty = stripY + (CAPTION_STRIP_H - 8) / 2;
 
         if (captionOutgoing != null && captionOutAlpha > 0.05f) {
-            int col = ((int) (captionOutAlpha * 160) << 24) | 0xBBBBBB;
+            int col = ((int)(captionOutAlpha * 160) << 24) | 0xBBBBBB;
             g.drawCenteredString(font, trunc(captionOutgoing, sw - 20), sw / 2, ty, col);
         }
         if (captionCurrent != null && captionAlpha > 0.05f) {
-            int col = ((int) (captionAlpha * 255) << 24) | 0xDDDDDD;
+            int col = ((int)(captionAlpha * 255) << 24) | 0xDDDDDD;
             g.drawCenteredString(font, trunc(captionCurrent, sw - 20), sw / 2, ty, col);
         }
         g.pose().popPose();
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Build-order banner
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void renderBuildPulseBanner(GuiGraphics g) {
         if (buildOrderGroup >= pattern.buildOrder.size()) return;
         int sceneW = this.width - getCurrentPanelWidth();
-        int alpha = (int) (buildPulse * 0xBB);
-        int col = (alpha << 24) | (C_HILIGHT & 0x00FFFFFF);
-        int by = TIMELINE_H;
+        int alpha  = (int)(buildPulse * 0xBB);
+        int col    = (alpha << 24) | (C_HILIGHT & 0x00FFFFFF);
+        int by     = TIMELINE_H;
         g.fill(0, by, sceneW, by + 18, ((alpha / 3) << 24) | 0x1A1400);
         g.fill(0, by + 17, sceneW, by + 18, col);
-        List<BlockPos> next = pattern.buildOrder.get(buildOrderGroup);
-        g.drawCenteredString(font, "Next: Layer Y=" + next.get(0).getY() + " — " + next.size() + " block(s)",
+        List<BlockPos> grp = pattern.buildOrder.get(buildOrderGroup);
+        g.drawCenteredString(font,
+                "Next: Layer Y=" + grp.get(0).getY() + " — " + grp.size() + " block(s)",
                 sceneW / 2, by + 5, col);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Mistakes overlay
+    // ─────────────────────────────────────────────────────────────────────────
+
     private void renderMistakesOverlay(GuiGraphics g) {
-        List<PhantasiaScript.LocalWarning> local = script.getCommonMistakes();
-        List<String> global = script.getGlobalMistakes();
+        List<PhantasiaScript.LocalWarning> local  = script.getCommonMistakes();
+        List<String>                       global = script.getGlobalMistakes();
         int x = 8, y = TIMELINE_H + 26;
         int ph = (local.size() + global.size()) * 12 + 10;
         g.fill(x - 2, y - 2, x + 240, y + ph, 0xCC06060E);
-        g.fill(x - 2, y - 2, x + 240, y - 1, 0xFFFF5252);
+        g.fill(x - 2, y - 2, x + 240, y - 1,  0xFFFF5252);
         for (var w : local) {
             g.drawString(font, "⚠ " + w.label(), x, y, w.color(), false);
             BlockPos lp = w.localPos();
-            g.drawString(font, " [" + lp.getX() + "," + lp.getY() + "," + lp.getZ() + "]",
+            g.drawString(font,
+                    " [" + lp.getX() + "," + lp.getY() + "," + lp.getZ() + "]",
                     x + font.width("⚠ " + w.label()), y, C_DIM, false);
             y += 12;
         }
@@ -909,6 +836,10 @@ public class PhantasiaSceneScreen extends Screen {
             y += 12;
         }
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Side panel
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void renderSidePanel(GuiGraphics g, int mx, int my) {
         int pw = getCurrentPanelWidth();
@@ -919,68 +850,63 @@ public class PhantasiaSceneScreen extends Screen {
         g.fill(px, 0, px + 1, this.height, C_ACCENT);
 
         int y = 10;
-        g.drawString(font, trunc(definition.getLangValue(), pw - 20), px + 10, y, C_ACCENT, false);
+        g.drawString(font, trunc(definition.getLangValue(), pw - 20),
+                px + 10, y, C_ACCENT, false);
         y += 20;
         if (sidePanelCollapsed) return;
 
-        // Coil selector
-        boolean hasCoils = pattern != null && pattern.blockMap.values().stream()
-                .anyMatch(i -> i.getBlockState().getBlock() instanceof com.gregtechceu.gtceu.common.block.CoilBlock);
-        if (hasCoils) {
-            String cn = COIL_TIERS.get(coilIndex).getBlockState().getBlock().getName().getString();
-            regBtn(g, mx, my, px + 10, y, pw - 20, 16, "Coil: " + cn,
-                    () -> {
-                        coilIndex = (coilIndex + 1) % COIL_TIERS.size();
-                        updateCoilType();
-                    });
+        // Determine what kind of shape variation this multi has.
+        // If shapes differ in their XZ block footprint → genuinely different sizes.
+        // If shapes have the same footprint but different blocks → coil-tier variation.
+        boolean hasCoilBlocks = pattern != null && pattern.blockMap.values().stream()
+                .anyMatch(i -> i.getBlockState().getBlock()
+                        instanceof com.gregtechceu.gtceu.common.block.CoilBlock);
+        boolean hasRealSizeVariants = computeHasRealSizeVariants();
+        boolean isCoilTierMachine   = hasCoilBlocks && !hasRealSizeVariants;
+
+        if (isCoilTierMachine) {
+            String cn = COIL_TIERS.get(coilIndex).getBlockState().getBlock()
+                    .getName().getString();
+            regBtn(g, mx, my, px + 10, y, pw - 20, 16, "Coil: " + cn, () -> {
+                coilIndex = (coilIndex + 1) % COIL_TIERS.size();
+                updateCoilType();
+            });
             y += 20;
         }
 
-        // Shape selector
-        if (availableShapes != null && availableShapes.size() > 1) {
-            regBtn(g, mx, my, px + 10, y, pw - 20, 16, "Structure Size: " + (shapeIndex + 1), () -> {
-                shapeIndex = (shapeIndex + 1) % availableShapes.size();
-                float savedYaw = rotationYaw;
-                float savedPitch = rotationPitch;
-                float savedDist = currentZoomDist;
-                boolean hadMoved = playerHasMovedCamera;
-                pattern = null;
-                init();
-                if (hadMoved) {
-                    rotationYaw = savedYaw;
-                    rotationPitch = savedPitch;
-                    currentZoomDist = savedDist;
-                    if (sceneWidget != null) sceneWidget.setCameraYawAndPitch(savedPitch, savedYaw);
-                    updateCameraTarget(savedDist);
-                }
-            });
+        if (hasRealSizeVariants) {
+            regBtn(g, mx, my, px + 10, y, pw - 20, 16,
+                    "Structure Size: " + (shapeIndex + 1), () -> {
+                        if (camera != null) camera.save();
+                        shapeIndex = (shapeIndex + 1) % availableShapes.size();
+                        if (renderer != null) { renderer.close(); renderer = null; }
+                        pattern = null;
+                        init();
+                    });
             y += 20;
         }
         y += 5;
 
-        // Layer / build-order nav
         int bW = 20, lW = pw - 60, lX = px + 30;
         if (!buildOrderMode) {
             g.drawString(font, "Manual Layer:", px + 10, y, C_DIM, false);
             y += 12;
-            regBtn(g, mx, my, px + 10, y, bW, 16, "<", () -> nudgeLayer(-1));
-            regBtn(g, mx, my, lX, y, lW, 16, manualLayer < 0 ? "All" : "Layer " + manualLayer,
-                    () -> {
-                        manualLayer = -1;
-                        applyVisibility();
-                    });
+            regBtn(g, mx, my, px + 10,           y, bW, 16, "<", () -> nudgeLayer(-1));
+            regBtn(g, mx, my, lX,                y, lW, 16,
+                    manualLayer < 0 ? "All" : "Layer " + manualLayer,
+                    () -> { manualLayer = -1; applyVisibility(); });
             regBtn(g, mx, my, px + pw - 10 - bW, y, bW, 16, ">", () -> nudgeLayer(1));
             y += 25;
         } else {
             g.drawString(font, "Build Step:", px + 10, y, C_DIM, false);
             y += 12;
-            regBtn(g, mx, my, px + 10, y, bW, 16, "<", () -> buildOrderStep(-1));
-            regBtn(g, mx, my, lX, y, lW, 16, "Group " + (buildOrderGroup + 1), () -> {});
+            regBtn(g, mx, my, px + 10,           y, bW, 16, "<", () -> buildOrderStep(-1));
+            regBtn(g, mx, my, lX,                y, lW, 16,
+                    "Group " + (buildOrderGroup + 1), () -> {});
             regBtn(g, mx, my, px + pw - 10 - bW, y, bW, 16, ">", () -> buildOrderStep(1));
             y += 25;
         }
 
-        // Filter grid — FIX (B6): every button registered independently, no overlap possible
         g.drawString(font, "Show:", px + 10, y, C_DIM, false);
         y += 12;
         ViewFilter[] vfs = ViewFilter.values();
@@ -988,33 +914,34 @@ public class PhantasiaSceneScreen extends Screen {
         for (int i = 0; i < vfs.length; i++) {
             final ViewFilter vf = vfs[i];
             int bx = (i % 2 == 0) ? px + 10 : px + 15 + fw;
-            regBtn(g, mx, my, bx, y, fw, 14, vf.name(), viewFilter == vf, () -> toggleViewFilter(vf));
+            regBtn(g, mx, my, bx, y, fw, 14, vf.name(), viewFilter == vf,
+                    () -> toggleViewFilter(vf));
             if (i % 2 != 0 || i == vfs.length - 1) y += 17;
         }
 
         y += 8;
-        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "🧱", "Build Mode", buildOrderMode,
-                () -> {
-                    buildOrderMode = !buildOrderMode;
-                    applyVisibility();
-                    if (sceneWidget != null) {
-                        sceneWidget.setCameraYawAndPitch(rotationPitch, rotationYaw);
-                        // FIX: Prevent snap when clicking back into the scene after toggling build mode
-                        cameraMovedBySystem = true;
-                    }
-                });
+        if (script != null && script.hasCommonMistakes()) {
+            regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "⚠", "Common Mistakes",
+                    showMistakes, () -> showMistakes = !showMistakes);
+            y += 20;
+        }
+        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "🧱", "Build Mode",
+                buildOrderMode, () -> { buildOrderMode = !buildOrderMode; applyVisibility(); });
         y += 20;
-        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "🗺", "Footprint", false, this::openFootprintScreen);
+        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "🗺", "Footprint",
+                false, this::openFootprintScreen);
         y += 20;
-        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "⊕", "Center Camera", false, this::centerCamera);
+        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "⊕", "Center Camera",
+                false, this::centerCamera);
         y += 20;
-        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "🔍", "Block List", false, this::openBlockFilterScreen);
+        regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "🔍", "Block List",
+                false, this::openBlockFilterScreen);
         y += 20;
 
-        // Edit Script — only shown in creative mode so casual players don't accidentally change scripts
         var mc = Minecraft.getInstance();
         if (mc.player != null && mc.player.getAbilities().instabuild) {
-            regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "✏", "Edit Script", false, this::openScriptEditor);
+            regIconBtn(g, mx, my, px + 10, y, pw - 20, 16, "✏", "Edit Script",
+                    false, this::openScriptEditor);
         }
     }
 
@@ -1024,51 +951,40 @@ public class PhantasiaSceneScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        // 1. Check UI buttons first
         for (PhantasiaUIUtils.ButtonAction b : activeButtons) {
-            if (b.hit(mx, my)) {
-                b.action().run();
-                return true;
-            }
+            if (b.hit(mx, my)) { b.action().run(); return true; }
         }
 
-        int px = this.width - getCurrentPanelWidth();
+        int px  = this.width - getCurrentPanelWidth();
         int tlY = this.height - TIMELINE_H;
 
-        // 2. Timeline scrubbing (Left Click only)
+        // Timeline scrub click
         if (btn == 0 && my >= tlY && mx < px && !buildOrderMode) {
             int tx = 80, tw = px - tx - 65;
             if (mx >= tx && mx <= tx + tw) {
-                playing = false;
+                playing   = false;
                 scrubbing = true;
-                scrubTo((float) (mx - tx) / tw);
+                scrubTo((float)(mx - tx) / tw);
                 return true;
             }
         }
 
-        // 3. Scene Interactions (only if clicking inside the scene area)
-        if (mx < px && my < tlY) {
-            // RIGHT CLICK: Open Block Inspect Screen
+        // Scene-area interactions
+        if (mx < px && my > CAPTION_STRIP_H && my < tlY) {
             if (btn == 1 && hoveredPos != null && SHARED_LEVEL != null) {
                 try {
                     if (!SHARED_LEVEL.getBlockState(hoveredPos).isAir()) {
+                        if (camera != null) camera.save();
                         Minecraft.getInstance().setScreen(
                                 new PhantasiaBlockInspectScreen(hoveredPos, pattern, this));
                         return true;
                     }
                 } catch (Exception ignored) {}
             }
-
-            // MIDDLE CLICK: Start Panning
-            if (btn == 2 && !isCameraLocked) {
-                isPanning = true;
-                return true;
+            if (btn == 2 && camera != null && !camera.isLocked()) {
+                isPanning = true; return true;
             }
-
-            // LEFT CLICK: Let the SceneWidget handle standard dragging/selection
-            if (sceneWidget != null) {
-                return sceneWidget.mouseClicked(mx, my, btn);
-            }
+            if (btn == 0) return true; // consume so vanilla doesn't do anything
         }
 
         return super.mouseClicked(mx, my, btn);
@@ -1076,65 +992,38 @@ public class PhantasiaSceneScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
-        int px = this.width - getCurrentPanelWidth();
+        int px  = this.width - getCurrentPanelWidth();
         int tlY = this.height - TIMELINE_H;
-        if (mx >= px || my >= tlY || isCameraLocked) return super.mouseDragged(mx, my, btn, dx, dy);
+        if (mx >= px || my >= tlY || camera == null || camera.isLocked())
+            return super.mouseDragged(mx, my, btn, dx, dy);
 
-        if (sceneWidget != null) {
-            WorldSceneRenderer r = sceneWidget.getRenderer();
-            Vector3f fwd = new Vector3f(r.getLookAt()).sub(r.getEyePos()).normalize();
-            Vector3f rgt = new Vector3f(fwd).cross(r.getWorldUp()).normalize();
-            Vector3f up = new Vector3f(rgt).cross(fwd).normalize();
-
-            if (btn == 2) {
-                if (cameraMovedBySystem) {
-                    syncFieldsFromRenderer();
-                    cameraMovedBySystem = false;
-                }
-                float ps = CAM_PAN_SPEED;
-                cameraTargetX += (rgt.x * -dx + up.x * dy) * ps;
-                cameraTargetY += (rgt.y * -dx + up.y * dy) * ps;
-                cameraTargetZ += (rgt.z * -dx + up.z * dy) * ps;
-                playerHasMovedCamera = true;
-                updateCameraTarget(currentZoomDist);
-                return true;
-            }
-            if (btn == 0 || btn == 1) {
-                // Sync our fields from the renderer's current state before applying
-                // the first drag delta after a system-driven camera move (script step,
-                // init). Without this the camera jumps to our stale field values.
-                if (cameraMovedBySystem) {
-                    syncFieldsFromRenderer();
-                    cameraMovedBySystem = false;
-                }
-
-                float s = CAM_ORBIT_SENSITIVITY;
-                rotationYaw = (rotationYaw + (float) dx * s) % 360f;
-                rotationPitch = Mth.clamp(rotationPitch + (float) dy * s, -85f, -5f);
-                playerHasMovedCamera = true;
-                sceneWidget.setCameraYawAndPitch(rotationPitch, rotationYaw);
-                updateCameraTarget(currentZoomDist);
-                return true;
-            }
+        if (btn == 2 && isPanning) {
+            Vector3f right = new Vector3f(), up = new Vector3f();
+            camera.getRightAndUp(right, up);
+            float s = CAM_PAN_SPEED;
+            camera.pan(
+                    (right.x * (float)-dx + up.x * (float)dy) * s,
+                    (right.y * (float)-dx + up.y * (float)dy) * s,
+                    (right.z * (float)-dx + up.z * (float)dy) * s);
+            return true;
         }
+
+        if (btn == 0 || btn == 1) {
+            camera.orbit((float)dx * CAM_ORBIT_SENSITIVITY,
+                         (float)dy * CAM_ORBIT_SENSITIVITY);
+            return true;
+        }
+
         return super.mouseDragged(mx, my, btn, dx, dy);
     }
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        if (this.width - getCurrentPanelWidth() <= mx || isCameraLocked) return false;
-        if (sceneWidget != null) {
-            if (cameraMovedBySystem) {
-                syncFieldsFromRenderer();
-                cameraMovedBySystem = false;
-            }
-            currentZoomDist = Mth.clamp(currentZoomDist * (delta > 0 ? CAM_ZOOM_IN_FACTOR : CAM_ZOOM_OUT_FACTOR),
-                    CAM_ZOOM_MIN, CAM_ZOOM_MAX);
-            playerHasMovedCamera = true;
-            updateCameraTarget(currentZoomDist);
-            return true;
-        }
-        return super.mouseScrolled(mx, my, delta);
+        if (mx >= this.width - getCurrentPanelWidth()) return false;
+        if (camera == null || camera.isLocked()) return false;
+        camera.zoom(delta > 0 ? CAM_ZOOM_IN_FACTOR : CAM_ZOOM_OUT_FACTOR,
+                CAM_ZOOM_MIN, CAM_ZOOM_MAX);
+        return true;
     }
 
     @Override
@@ -1142,33 +1031,17 @@ public class PhantasiaSceneScreen extends Screen {
         if (btn == 2 || btn == 0) isPanning = false;
         if (scrubbing) {
             int px = this.width - getCurrentPanelWidth();
-            scrubTo(Mth.clamp((float) (mx - 80) / (px - 80 - 65), 0f, 1f));
+            scrubTo(Mth.clamp((float)(mx - 80) / (px - 80 - 65), 0f, 1f));
             scrubbing = false;
             applyVisibility();
         }
         return super.mouseReleased(mx, my, btn);
     }
 
-    @Override
-    public void mouseMoved(double mx, double my) {
-        if (sceneWidget == null) return;
-        sceneWidget.mouseMoved(mx, my);
-        if (mx < this.width - getCurrentPanelWidth()) {
-            BlockHitResult hit = sceneWidget.getRenderer().getLastTraceResult();
-            hoveredPos = (hit != null && hit.getType() == HitResult.Type.BLOCK) ? hit.getBlockPos() : null;
-        } else {
-            hoveredPos = null;
-        }
-    }
-
     // ─────────────────────────────────────────────────────────────────────────
     // Actions
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * FIX (B5 + B6): atomically pause the script when a filter is activated and
-     * restore playback when returning to ALL. Always calls applyVisibility() immediately.
-     */
     private void toggleViewFilter(ViewFilter vf) {
         if (viewFilter == vf) {
             viewFilter = ViewFilter.ALL;
@@ -1184,48 +1057,30 @@ public class PhantasiaSceneScreen extends Screen {
         applyVisibility();
     }
 
-    /**
-     * Resets the camera to the script's declared opening position (or the facing-aware
-     * isometric default). Clears playerHasMovedCamera so that subsequent system-driven
-     * updates (coil/shape swaps) can apply the script camera cleanly again.
-     */
     private void centerCamera() {
-        if (sceneWidget == null || pattern == null || isCameraLocked) return;
-
-        playerHasMovedCamera = false; // Resetting this allows init() to use defaults again
-
-        // Re-calculate the "Specific Place"
-        float midY = pattern.origin.getY() + (pattern.minY + pattern.maxY) * 0.5f + CAM_TARGET_Y_BIAS;
-        BlockPos cp = pattern.controllerWorldPos != null ? pattern.controllerWorldPos : pattern.origin;
-
-        cameraTargetX = cp.getX() + 0.5f;
-        cameraTargetY = midY;
-        cameraTargetZ = cp.getZ() + 0.5f;
-
-        resolveStartingCamera();
-        sceneWidget.setCameraYawAndPitch(rotationPitch, rotationYaw);
-
-        cameraMovedBySystem = true; // CRITICAL: Syncs the mouse anchor to this new target
-        updateCameraTarget(currentZoomDist);
+        if (camera == null || pattern == null) return;
+        resetCameraToDefault(LerpType.EASE_OUT, 12);
     }
 
     private void nudgeLayer(int delta) {
         if (pattern == null) return;
-        manualLayer = manualLayer < 0 ? (delta < 0 ? pattern.maxY : pattern.minY) :
-                Mth.clamp(manualLayer + delta, pattern.minY, pattern.maxY);
+        manualLayer = manualLayer < 0
+                ? (delta < 0 ? pattern.maxY : pattern.minY)
+                : Mth.clamp(manualLayer + delta, pattern.minY, pattern.maxY);
         applyVisibility();
     }
 
     private void buildOrderStep(int delta) {
         if (pattern == null) return;
-        buildOrderGroup = Mth.clamp(buildOrderGroup + delta, 0, pattern.buildOrder.size() - 1);
+        buildOrderGroup = Mth.clamp(buildOrderGroup + delta, 0,
+                pattern.buildOrder.size() - 1);
         applyVisibility();
     }
 
     private void scrubTo(float t) {
-        scrubbing = true;
-        playing = false;
-        playbackTick = (int) (Mth.clamp(t, 0f, 1f) * script.getTotalTicks());
+        scrubbing    = true;
+        playing      = false;
+        playbackTick = (int)(Mth.clamp(t, 0f, 1f) * script.getTotalTicks());
         PhantasiaScript.Step step = script.getActiveStep(playbackTick);
         if (step != lastAppliedStep) {
             lastAppliedStep = step;
@@ -1234,12 +1089,12 @@ public class PhantasiaSceneScreen extends Screen {
         }
     }
 
-    // Add this to PhantasiaSceneScreen.java
-    public PhantasiaLoadedPattern getLoadedPattern() {
-        return this.pattern;
-    }
+    // ─────────────────────────────────────────────────────────────────────────
+    // Sub-screen navigation
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void openScriptEditor() {
+        if (camera != null) camera.save();
         String machineId = definition.getId().toString();
         PhantasiaScriptData current = script.getSourceData();
         if (current == null) current = PhantasiaScriptData.defaultFor(machineId);
@@ -1248,41 +1103,58 @@ public class PhantasiaSceneScreen extends Screen {
     }
 
     private void openFootprintScreen() {
-        if (pattern != null)
-            Minecraft.getInstance().setScreen(new PhantasiaFootprintScreen(pattern, this, script));
+        if (pattern == null) return;
+        if (camera != null) camera.save();
+        Minecraft.getInstance().setScreen(
+                new PhantasiaFootprintScreen(pattern, this, script));
     }
 
     private void openBlockFilterScreen() {
-        if (pattern != null)
-            Minecraft.getInstance().setScreen(new PhantasiaBlockFilterScreen(pattern, script, viewFilter, this));
+        if (pattern == null) return;
+        if (camera != null) camera.save();
+        Minecraft.getInstance().setScreen(
+                new PhantasiaBlockFilterScreen(pattern, script, viewFilter, this));
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Accessors (used by sub-screens and script editor)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public float getRotationYaw()   { return camera != null ? camera.getYaw()   : 0f; }
+    public float getRotationPitch() { return camera != null ? camera.getPitch() : 0f; }
+    public PhantasiaLoadedPattern getLoadedPattern() { return pattern; }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Button helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void regBtn(GuiGraphics g, int mx, int my, int x, int y, int w, int h, String label, Runnable action) {
+    private void regBtn(GuiGraphics g, int mx, int my,
+                        int x, int y, int w, int h, String label, Runnable action) {
         boolean hov = isOver(mx, my, x, y, w, h);
         PhantasiaThemeUtils.drawThemedBtn(g, font, x, y, w, h, label, hov, C_BTN);
         activeButtons.add(new PhantasiaUIUtils.ButtonAction(x, y, w, h, action));
     }
 
-    private void regBtn(GuiGraphics g, int mx, int my, int x, int y, int w, int h,
+    private void regBtn(GuiGraphics g, int mx, int my,
+                        int x, int y, int w, int h,
                         String label, boolean active, Runnable action) {
         boolean hov = isOver(mx, my, x, y, w, h);
-        PhantasiaThemeUtils.drawThemedBtn(g, font, x, y, w, h, label, hov, active ? C_BTN_ACT : C_BTN);
+        PhantasiaThemeUtils.drawThemedBtn(g, font, x, y, w, h, label, hov,
+                active ? C_BTN_ACT : C_BTN);
         activeButtons.add(new PhantasiaUIUtils.ButtonAction(x, y, w, h, action));
     }
 
-    private void regIconBtn(GuiGraphics g, int mx, int my, int x, int y, int w, int h,
+    private void regIconBtn(GuiGraphics g, int mx, int my,
+                            int x, int y, int w, int h,
                             String icon, String label, boolean active, Runnable action) {
         boolean hov = isOver(mx, my, x, y, w, h);
-        PhantasiaThemeUtils.drawIconBtn(g, font, x, y, w, h, icon, label, hov, active ? C_BTN_ACT : C_BTN);
+        PhantasiaThemeUtils.drawIconBtn(g, font, x, y, w, h, icon, label, hov,
+                active ? C_BTN_ACT : C_BTN);
         activeButtons.add(new PhantasiaUIUtils.ButtonAction(x, y, w, h, action));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Misc helpers
+    // Misc
     // ─────────────────────────────────────────────────────────────────────────
 
     private int getCurrentPanelWidth() {
@@ -1295,7 +1167,8 @@ public class PhantasiaSceneScreen extends Screen {
 
     private String trunc(String s, int maxPx) {
         if (s == null) return "";
-        while (font.width(s) > maxPx && s.length() > 2) s = s.substring(0, s.length() - 2) + "\u2026";
+        while (font.width(s) > maxPx && s.length() > 2)
+            s = s.substring(0, s.length() - 2) + "\u2026";
         return s;
     }
 
@@ -1309,12 +1182,10 @@ public class PhantasiaSceneScreen extends Screen {
 
     @Override
     public void onClose() {
+        if (renderer != null) { renderer.close(); renderer = null; }
         invalidateSharedLevel();
         Minecraft.getInstance().setScreen(parent);
     }
 
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
+    @Override public boolean isPauseScreen() { return false; }
 }

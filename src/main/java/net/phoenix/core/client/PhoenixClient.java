@@ -16,6 +16,7 @@ import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -33,6 +34,7 @@ import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
 import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
+import net.phoenix.core.integration.vocal_vibrancy.VocalVibrancyClient;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -44,8 +46,15 @@ public class PhoenixClient {
     public static void init(IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
         MinecraftForge.EVENT_BUS.register(PhantasiaKeybind.class);
-
         MinecraftForge.EVENT_BUS.register(PhantasiaClientEvents.class);
+
+        // Hook VocalVibrancyClient into the client tick so LiveAcousticTracker
+        // fires every tick and sends bass data to the server.
+        // Without this, VocalVibrancyClient.tick() is defined but never called,
+        // meaning no S2CSoundMetadataPacket is ever sent and the machine never
+        // receives live bass data.
+        MinecraftForge.EVENT_BUS.register(VocalVibrancyClientTick.class);
+
         // GTCEu Dynamic Renders
         DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
@@ -55,6 +64,18 @@ public class PhoenixClient {
         DynamicRenderManager.register(PhoenixCore.id("honey_chamber"), HoneyChamberDynamicRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("tesla_tower"), TeslaTowerRenderer.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
+    }
+
+    // Inner static class keeps the tick handler co-located with the rest of
+    // PhoenixClient rather than scattering it into a separate file.
+    // Registered on the FORGE event bus (not MOD bus) so it fires every game tick.
+    public static class VocalVibrancyClientTick {
+        @SubscribeEvent
+        public static void onClientTick(TickEvent.ClientTickEvent event) {
+            // Only tick at END to avoid running twice per tick (START + END both fire)
+            if (event.phase != TickEvent.Phase.END) return;
+            VocalVibrancyClient.tick();
+        }
     }
 
     // --- PARTICLE FACTORY REGISTRATION ---
@@ -94,7 +115,6 @@ public class PhoenixClient {
         event.register(PlasmaArcFurnaceRender.SPHERE_MODEL_RL);
     }
 
-    // Inside PhoenixClient.java
     @SubscribeEvent
     public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("spray_can_info", net.phoenix.core.client.render.SprayCanHudOverlay.HUD_SPRAY_CAN);
@@ -103,14 +123,10 @@ public class PhoenixClient {
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            // Register your new screen here
             MenuScreens.register(PhoenixCore.RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
-
-            // Keep your existing registrations
             MenuScreens.register(PhoenixCore.SOURCE_HATCH_MENU.get(), SourceHatchScreen::new);
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
-
             PhantasiaScriptLoader.discoverAndLoad();
         });
     }
