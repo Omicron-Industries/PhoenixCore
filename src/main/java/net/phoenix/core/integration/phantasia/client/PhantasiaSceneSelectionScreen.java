@@ -4,6 +4,7 @@ import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -15,24 +16,23 @@ import net.phoenix.core.integration.phantasia.PhantasiaScripts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * PhantasiaSceneSelectionScreen
  *
- * Card-grid selection screen. Each card shows:
- * - The controller block as a 2D item icon (reliable, no FBO per card)
+ * Card-grid selection screen with an active search filter. Each card shows:
+ * - The controller block as a 2D item icon
  * - Machine name
  * - Script step count (green dot = has custom script)
- *
- * The previous FBO-per-card approach was architecturally broken because
- * FBOWorldSceneRenderer.render() signature doesn't accept x/y/w/h as we
- * were passing. Using ItemStack rendering is simpler, always works, and
- * has essentially zero performance cost.
  */
 @OnlyIn(Dist.CLIENT)
 public class PhantasiaSceneSelectionScreen extends Screen {
 
     public static final List<MultiblockMachineDefinition> PHANTASIA_SCENES = new ArrayList<>();
+
+    // Runtime filtered list matching the search query
+    private final List<MultiblockMachineDefinition> filteredScenes = new ArrayList<>();
 
     // ── Colors ────────────────────────────────────────────────────────────────
     private static final int C_BG = 0xFF080810;
@@ -52,15 +52,74 @@ public class PhantasiaSceneSelectionScreen extends Screen {
     private static final int CARD_PAD = 8;
     private static final int COLS = 3;
     private static final int HEADER_H = 38;
+    private static final int SEARCH_H = 24; // Extra space allocated for the search bar
     private static final int FOOTER_H = 30;
 
     private final Screen parent;
+    private EditBox searchBox;
     private int scrollOffset = 0; // in rows
     private int hoveredCard = -1;
 
     public PhantasiaSceneSelectionScreen(Screen parent) {
         super(Component.literal("Phantasia"));
         this.parent = parent;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        // Compute search bar width matching the exact layout grid width
+        int totalGridW = COLS * CARD_W + (COLS - 1) * CARD_PAD;
+        int searchX = (this.width - totalGridW) / 2;
+        int searchY = HEADER_H + 4;
+
+        // Initialize Minecraft's built-in text field widget
+        this.searchBox = new EditBox(this.font, searchX, searchY, totalGridW, 16, Component.literal("Search..."));
+        this.searchBox.setHint(Component.literal("Search machines...").withStyle(style -> style.withColor(0xFF888888)));
+        this.searchBox.setBordered(true);
+        this.searchBox.setMaxLength(32);
+
+        // Listen for typing events to update results actively
+        this.searchBox.setResponder(this::onSearchChanged);
+
+        this.addWidget(this.searchBox);
+        this.setInitialFocus(this.searchBox);
+
+        // Re-run filter on init to capture initial list state or retain previous queries
+        updateFilteredList();
+    }
+
+    private void onSearchChanged(String query) {
+        updateFilteredList();
+    }
+
+    private void updateFilteredList() {
+        filteredScenes.clear();
+        String query = searchBox != null ? searchBox.getValue().toLowerCase(Locale.ROOT).trim() : "";
+
+        for (MultiblockMachineDefinition def : PHANTASIA_SCENES) {
+            if (query.isEmpty()) {
+                filteredScenes.add(def);
+                continue;
+            }
+
+            // Match against translation string name
+            String name = def.getLangValue();
+            if (name != null && name.toLowerCase(Locale.ROOT).contains(query)) {
+                filteredScenes.add(def);
+                continue;
+            }
+
+            // Fallback match against ID path string
+            String idPath = def.getId().getPath().replace('_', ' ');
+            if (idPath.toLowerCase(Locale.ROOT).contains(query)) {
+                filteredScenes.add(def);
+            }
+        }
+
+        // Reset scroll position so users don't view empty rows if they were scrolled down
+        this.scrollOffset = 0;
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -71,6 +130,12 @@ public class PhantasiaSceneSelectionScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float partial) {
         g.fillGradient(0, 0, this.width, this.height, C_BG, C_BG_BOT);
         renderHeader(g);
+
+        // Draw the search box widget over the screen background
+        if (this.searchBox != null) {
+            this.searchBox.render(g, mx, my, partial);
+        }
+
         renderCards(g, mx, my);
         renderFooter(g, mx, my);
     }
@@ -85,12 +150,18 @@ public class PhantasiaSceneSelectionScreen extends Screen {
     private void renderCards(GuiGraphics g, int mx, int my) {
         int totalW = COLS * CARD_W + (COLS - 1) * CARD_PAD;
         int startX = (this.width - totalW) / 2;
-        int startY = HEADER_H + 6;
+        // Shift content down by SEARCH_H to prevent overlapping with our input bar
+        int startY = HEADER_H + SEARCH_H + 6;
         int maxRows = visibleRows();
 
         hoveredCard = -1;
 
-        for (int i = 0; i < PHANTASIA_SCENES.size(); i++) {
+        if (filteredScenes.isEmpty()) {
+            g.drawCenteredString(font, "No matching machines found", this.width / 2, startY + 20, C_DIM);
+            return;
+        }
+
+        for (int i = 0; i < filteredScenes.size(); i++) {
             int row = i / COLS - scrollOffset;
             int col = i % COLS;
             if (row < 0 || row >= maxRows) continue;
@@ -101,7 +172,7 @@ public class PhantasiaSceneSelectionScreen extends Screen {
             boolean hov = mx >= cx && mx < cx + CARD_W && my >= cy && my < cy + CARD_H;
             if (hov) hoveredCard = i;
 
-            renderCard(g, mx, my, PHANTASIA_SCENES.get(i), cx, cy, hov);
+            renderCard(g, mx, my, filteredScenes.get(i), cx, cy, hov);
         }
     }
 
@@ -135,18 +206,14 @@ public class PhantasiaSceneSelectionScreen extends Screen {
         // 3. Machine name with Truncation and Fallback
         String name = def.getLangValue();
 
-        // Fallback logic: If name is null, empty, or just the translation key
         if (name == null || name.isEmpty() || name.contains("gtceu.multiblock.")) {
-            // Fallback to the internal ID name (e.g., "primitive_pump" -> "Primitive Pump")
             name = def.getId().getPath().replace('_', ' ');
-            // Capitalize words for a cleaner look
             name = org.apache.commons.lang3.text.WordUtils.capitalizeFully(name);
         }
 
         int maxWidth = CARD_W - 8;
         int nameY = cy + CARD_H - 22;
 
-        // Use Minecraft's internal utility for pixel-perfect truncation
         if (font.width(name) > maxWidth) {
             name = font.plainSubstrByWidth(name, maxWidth - font.width("...")) + "...";
         }
@@ -170,8 +237,8 @@ public class PhantasiaSceneSelectionScreen extends Screen {
         g.fill(0, fy, this.width, this.height, 0xCC0A0A14);
         g.fill(0, fy, this.width, fy + 1, 0x44FFFFFF);
 
-        // Scroll indicator
-        int totalRows = (PHANTASIA_SCENES.size() + COLS - 1) / COLS;
+        // Scroll indicator evaluated against the filtered view count
+        int totalRows = (filteredScenes.size() + COLS - 1) / COLS;
         if (totalRows > visibleRows()) {
             g.drawCenteredString(font, "\u25B2 \u25BC  scroll to see more", this.width / 2, fy + 4, C_DIM);
         }
@@ -195,6 +262,11 @@ public class PhantasiaSceneSelectionScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
+        // Let the searchBox handle clicks first so it updates its focus state
+        if (this.searchBox != null && this.searchBox.mouseClicked(mx, my, btn)) {
+            return true;
+        }
+
         // Back button
         int fy = this.height - FOOTER_H;
         int bw = 80, bh = 18;
@@ -204,10 +276,10 @@ public class PhantasiaSceneSelectionScreen extends Screen {
             return true;
         }
 
-        // Card click
-        if (hoveredCard >= 0 && hoveredCard < PHANTASIA_SCENES.size()) {
+        // Card click matches against the filtered array context
+        if (hoveredCard >= 0 && hoveredCard < filteredScenes.size()) {
             Minecraft.getInstance().setScreen(
-                    new PhantasiaSceneScreen(PHANTASIA_SCENES.get(hoveredCard), this));
+                    new PhantasiaSceneScreen(filteredScenes.get(hoveredCard), this));
             return true;
         }
         return super.mouseClicked(mx, my, btn);
@@ -215,7 +287,7 @@ public class PhantasiaSceneSelectionScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        int totalRows = (PHANTASIA_SCENES.size() + COLS - 1) / COLS;
+        int totalRows = (filteredScenes.size() + COLS - 1) / COLS;
         int maxScroll = Math.max(0, totalRows - visibleRows());
         scrollOffset = Math.max(0, Math.min(maxScroll, scrollOffset + (delta > 0 ? -1 : 1)));
         return true;
@@ -223,11 +295,24 @@ public class PhantasiaSceneSelectionScreen extends Screen {
 
     @Override
     public boolean keyPressed(int kc, int sc, int mod) {
-        if (kc == 256) {
+        // Allow character deletion or text operations to be captured by input field
+        if (this.searchBox != null && this.searchBox.keyPressed(kc, sc, mod)) {
+            return true;
+        }
+        if (kc == 256) { // ESC Key
             onClose();
             return true;
         }
         return super.keyPressed(kc, sc, mod);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        // Crucial for text components to actually receive alphabetical character entries
+        if (this.searchBox != null && this.searchBox.charTyped(codePoint, modifiers)) {
+            return true;
+        }
+        return super.charTyped(codePoint, modifiers);
     }
 
     @Override
@@ -238,7 +323,8 @@ public class PhantasiaSceneSelectionScreen extends Screen {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private int visibleRows() {
-        return Math.max(1, (this.height - HEADER_H - FOOTER_H - 8) / (CARD_H + CARD_PAD));
+        // Deduct both HEADER_H and SEARCH_H from vertical room calculation
+        return Math.max(1, (this.height - HEADER_H - SEARCH_H - FOOTER_H - 8) / (CARD_H + CARD_PAD));
     }
 
     private boolean isOver(int mx, int my, int x, int y, int w, int h) {

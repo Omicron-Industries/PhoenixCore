@@ -9,10 +9,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.datagen.models.PhoenixFissionMachineModels;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
+import net.phoenix.core.integration.phoenix_fission.api.block.*;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
@@ -38,6 +35,39 @@ public class PhoenixFissionBlocks {
             .item(BlockItem::new)
             .build()
             .register();
+
+    // Inside PhoenixFissionBlocks.java
+
+    // Array/Map cache reference
+    public static final java.util.Map<IMSRCoreLinerType, BlockEntry<MSRCoreLinerBlock>> MSR_LINERS = new java.util.HashMap<>();
+
+    static {
+        for (MSRCoreLinerBlock.MSRLinerTypes type : MSRCoreLinerBlock.MSRLinerTypes.values()) {
+            var liner = REGISTRATE
+                    .block("msr_liner_%s".formatted(type.getName()), p -> new MSRCoreLinerBlock(p, type))
+                    .initialProperties(() -> net.minecraft.world.level.block.Blocks.IRON_BLOCK)
+                    .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+                    .blockstate((ctx, prov) -> {
+                        // Generates clean blockstates pointing to active / inactive variants
+                        String name = ctx.getName();
+                        var inactive = prov.models().cubeAll(name, type.getTexture());
+                        var active = prov.models().cubeAll(name + "_active",
+                                PhoenixCore.id("block/fission/msr/liners/" + type.getName() + "_active"));
+                        prov.getVariantBuilder(ctx.getEntry())
+                                .partialState()
+                                .with(com.gregtechceu.gtceu.api.block.property.GTBlockStateProperties.ACTIVE, false)
+                                .modelForState().modelFile(inactive).addModel()
+                                .partialState()
+                                .with(com.gregtechceu.gtceu.api.block.property.GTBlockStateProperties.ACTIVE, true)
+                                .modelForState().modelFile(active).addModel();
+                    })
+                    .tag(com.gregtechceu.gtceu.data.recipe.CustomTags.MINEABLE_WITH_CONFIG_VALID_PICKAXE_WRENCH)
+                    .item(net.minecraft.world.item.BlockItem::new)
+                    .build()
+                    .register();
+            MSR_LINERS.put(type, liner);
+        }
+    }
 
     // --- Coolers ---
     public static final BlockEntry<FissionCoolerBlock> COOLER_BASIC = createCoolerBlock(

@@ -594,20 +594,22 @@ public class TeslaBinderItem extends ComponentItem
             TeslaTeamEnergyData globalData = TeslaTeamEnergyData.get(overworld);
             TeslaTeamEnergyData.TeamEnergy team = globalData.getOrCreate(teamUUID);
 
-            tag.putString("StoredEU", team.stored.toString());
-            tag.putString("CapacityEU", team.capacity.toString());
-            tag.putString("TeamName", TeamUtils.getTeamName(teamUUID));
+            tag.putString("StoredEU", team.stored != null ? team.stored.toString() : "0");
+            tag.putString("CapacityEU", team.capacity != null ? team.capacity.toString() : "0");
+            tag.putString("TeamName",
+                    TeamUtils.getTeamName(teamUUID) != null ? TeamUtils.getTeamName(teamUUID) : "Unknown Team");
             tag.putString("NetInput", String.valueOf(team.lastNetInput));
             tag.putString("NetOutput", String.valueOf(team.lastNetOutput));
 
             // 1. Sync Hatch Data
             ListTag hatchList = new ListTag();
             for (TeslaTeamEnergyData.HatchInfo hatch : globalData.getHatches(teamUUID)) {
+                if (hatch == null || hatch.pos == null || hatch.dimension == null) continue;
                 CompoundTag hTag = new CompoundTag();
                 hTag.putLong("pos", hatch.pos.asLong());
                 hTag.putBoolean("isOut", hatch.isPhysicalOutput);
                 hTag.putString("dim", hatch.dimension.location().toString());
-                hTag.putString("buf", hatch.buffered.toString());
+                hTag.putString("buf", hatch.buffered != null ? hatch.buffered.toString() : "0");
                 hTag.putString("transfer", String.valueOf(team.machineDisplayFlow.getOrDefault(hatch.pos, 0L)));
                 hatchList.add(hTag);
             }
@@ -616,25 +618,31 @@ public class TeslaBinderItem extends ComponentItem
             // 2. Sync Machine Data (EV Lathes, etc)
             ListTag machineList = new ListTag();
             for (BlockPos mPos : team.soulLinkedMachines) {
+                if (mPos == null) continue;
                 ResourceKey<Level> mDim = team.posToDimension.getOrDefault(mPos, Level.OVERWORLD);
                 ServerLevel mLevel = serverPlayer.server.getLevel(mDim);
 
                 CompoundTag mTag = new CompoundTag();
                 mTag.putLong("pos", mPos.asLong());
-                mTag.putString("dim", mDim.location().toString());
+                mTag.putString("dim", mDim != null ? mDim.location().toString() : "minecraft:overworld");
 
                 if (mLevel != null && mLevel.isLoaded(mPos)) {
                     MetaMachine machine = MetaMachine.getMachine(mLevel, mPos);
                     if (machine != null) {
-                        mTag.putString("name", machine.getDefinition().getLangValue());
+                        String langVal = machine.getDefinition().getLangValue();
+                        mTag.putString("name", langVal != null ? langVal : "Soul Consumer");
                         if (machine instanceof TieredEnergyMachine tiered && tiered.energyContainer != null) {
                             mTag.putString("buf", String.valueOf(tiered.energyContainer.getEnergyStored()));
+                        } else {
+                            mTag.putString("buf", "0");
                         }
                     } else {
                         mTag.putString("name", "§c[Missing Machine]");
+                        mTag.putString("buf", "0");
                     }
                 } else {
                     mTag.putString("name", "§8[Unloaded]");
+                    mTag.putString("buf", "0");
                 }
                 mTag.putString("transfer", String.valueOf(team.machineDisplayFlow.getOrDefault(mPos, 0L)));
                 machineList.add(mTag);
@@ -644,6 +652,7 @@ public class TeslaBinderItem extends ComponentItem
             // 3. Sync Chargers
             ListTag chargerList = new ListTag();
             for (BlockPos cPos : team.activeChargers) {
+                if (cPos == null) continue;
                 CompoundTag cTag = new CompoundTag();
                 cTag.putLong("pos", cPos.asLong());
                 cTag.putBoolean("isCharger", true);
@@ -652,7 +661,8 @@ public class TeslaBinderItem extends ComponentItem
                 if (machine == null) machine = MetaMachine.getMachine(overworld, cPos);
 
                 if (machine instanceof TeslaWirelessChargerMachine) {
-                    cTag.putString("name", machine.getDefinition().getLangValue());
+                    String langVal = machine.getDefinition().getLangValue();
+                    cTag.putString("name", langVal != null ? langVal : "Wireless Charger");
                     cTag.putString("transfer", String.valueOf(team.machineDisplayFlow.getOrDefault(cPos, 0L)));
                     chargerList.add(cTag);
                 }

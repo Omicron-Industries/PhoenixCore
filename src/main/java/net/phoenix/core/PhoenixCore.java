@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
-import net.createmod.ponder.foundation.PonderTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -58,7 +57,6 @@ import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEnti
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
-import net.phoenix.core.integration.vocal_resonance.JukeDebugCommand;
 import net.phoenix.core.network.PhoenixNetwork;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -91,7 +89,6 @@ public class PhoenixCore {
                             .icon(PhoenixMachines.HIGH_YIELD_PHOTON_EMISSION_REGULATOR::asStack)
                             .build())
             .register();
-    public static final List<PonderTag> PENDING_TAGS = new ArrayList<>();
 
     public PhoenixCore() {
         PhoenixCore.init();
@@ -172,7 +169,7 @@ public class PhoenixCore {
     // PhoenixNetwork, both of which are dist-neutral).
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        //JukeDebugCommand.register(event.getDispatcher());
+        // JukeDebugCommand.register(event.getDispatcher());
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {}

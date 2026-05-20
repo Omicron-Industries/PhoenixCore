@@ -26,6 +26,7 @@ import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketTyp
 import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
 
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -103,22 +104,8 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         if (activeFuelRods == null || activeFuelRods.isEmpty()) return false;
         if (isScramActive()) return false;
 
-        // Check fuel availability first
-        if (!hasFuelAvailableForNextTick()) {
-            return false;
-        }
-
-        // Check blanket input availability if configured
-        if (primaryBlanket != null) {
-            String inputKey = primaryBlanket.getInputKey();
-            if (inputKey != null && !inputKey.isEmpty()) {
-                if (!canConsumeItemKey(inputKey, 1)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        // The reactor runs as long as it has driver fuel available!
+        return hasFuelAvailableForNextTick();
     }
 
     /**
@@ -162,8 +149,28 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         if (activeBlankets == null || activeBlankets.isEmpty()) return;
 
         IFissionBlanketType primary = primaryBlanket != null ? primaryBlanket : activeBlankets.get(0);
+        IFissionFuelRodType activeFuel = getFuelRodForConsumption();
+
+        // TIER CHECK: If there's no fuel, or the fuel tier is lower than the primary blanket tier, skip breeding
+        int fuelTier = activeFuel != null ? activeFuel.getTier() : 0;
+        if (fuelTier < primary.getTier()) {
+            return; // Breeding is inert, but reactor keeps running
+        }
 
         int duration = Math.max(1, primary.getDurationTicks());
+
+        // GATING CHECK FOR NON-ADDITIVE USAGE: Verify item is present before progressing the cycle
+        if (!cfg.blanketUsageAdditive) {
+            double burnMul = getBurnMultiplier();
+            int p = Math.max(1, parallels);
+            int basePerCycle = Math.max(0, primary.getAmountPerCycle());
+            int amount = (int) Math.ceil(basePerCycle * p * burnMul);
+
+            if (amount > 0 && !canConsumeResource(primary.getInputKey(), amount)) {
+                return; // Missing breeding inputs, pause progression
+            }
+        }
+
         blanketCycleTicks++;
 
         if (blanketCycleTicks < duration) return;
@@ -178,7 +185,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         Random rng = makeBlanketRng();
 
         if (!cfg.blanketUsageAdditive) {
-
             int basePerCycle = Math.max(0, primary.getAmountPerCycle());
             int amount = (int) Math.ceil(basePerCycle * p * burnMul);
             if (amount <= 0) return;
@@ -192,6 +198,9 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         }
 
         for (var blanket : activeBlankets) {
+            // TIER CHECK FOR ADDITIVE INDIVIDUAL BLANKETS:
+            if (fuelTier < blanket.getTier()) continue;
+
             int basePerCycle = Math.max(0, blanket.getAmountPerCycle());
             int amount = (int) Math.ceil(basePerCycle * p * burnMul);
             if (amount <= 0) continue;
@@ -455,5 +464,25 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             if (r <= cum) return w.key();
         }
         return dist.get(dist.size() - 1).key();
+    }
+
+    @Override
+    public void addDisplayText(@NotNull List<Component> textList) {
+        super.addDisplayText(textList);
+
+        if (isFormed() && primaryBlanket != null) {
+            IFissionFuelRodType activeFuel = getFuelRodForConsumption();
+            int fuelTier = activeFuel != null ? activeFuel.getTier() : 0;
+
+            if (fuelTier < primaryBlanket.getRequiredFuelTier()) {
+                textList.add(Component
+                        .literal("WARNING: Breeding Offline - Requires Tier " + primaryBlanket.getRequiredFuelTier() +
+                                "+ Driver Fuel")
+                        .withStyle(net.minecraft.ChatFormatting.GOLD));
+            } else {
+                textList.add(Component.literal("Breeding Active (Using Tier " + fuelTier + " Fuel)")
+                        .withStyle(net.minecraft.ChatFormatting.GREEN));
+            }
+        }
     }
 }

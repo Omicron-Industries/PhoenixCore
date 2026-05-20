@@ -16,6 +16,10 @@ public interface IFissionBlanketType {
 
     int getTier();
 
+    default int getRequiredFuelTier() {
+        return getTier(); // Default fallback: requires matching tier
+    }
+
     int getDurationTicks();
 
     int getAmountPerCycle();

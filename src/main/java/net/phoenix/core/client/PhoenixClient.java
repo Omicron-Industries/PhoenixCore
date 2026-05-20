@@ -70,6 +70,7 @@ public class PhoenixClient {
     // PhoenixClient rather than scattering it into a separate file.
     // Registered on the FORGE event bus (not MOD bus) so it fires every game tick.
     public static class VocalVibrancyClientTick {
+
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
             // Only tick at END to avoid running twice per tick (START + END both fire)

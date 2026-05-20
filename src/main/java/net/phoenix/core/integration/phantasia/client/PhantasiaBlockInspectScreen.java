@@ -276,28 +276,60 @@ public class PhantasiaBlockInspectScreen extends Screen {
             }
         }
 
-        // --- FOOTER BUTTON ---
+        // --- FOOTER BUTTONS (EMI Capability Added) ---
         int bw = 120, bh = 20;
-        int bx = this.width - bw - 30, by = this.height - 40;
-        boolean hov = mx >= bx && mx < bx + bw && my >= by && my < by + bh;
+        int bxClose = this.width - bw - 30;
+        int by = this.height - 40;
 
-        g.fill(bx, by, bx + bw, by + bh, hov ? 0xFF2A3A5A : 0xFF151A25);
-        if (hov) {
-            g.fill(bx, by, bx + bw, by + 1, C_ACCENT);
-            g.fill(bx, by + bh - 1, bx + bw, by + bh, C_ACCENT);
+        ItemStack itemStack = new ItemStack(state.getBlock().asItem()); // cite: 2
+        if (!itemStack.isEmpty()) {
+            // Shift Close button slightly left to make room for EMI button on the right
+            bxClose = this.width - (bw * 2) - 40;
+            int bxEmi = this.width - bw - 30;
+
+            boolean emiHov = mx >= bxEmi && mx < bxEmi + bw && my >= by && my < by + bh;
+            g.fill(bxEmi, by, bxEmi + bw, by + bh, emiHov ? 0xFF2A3A5A : 0xFF151A25);
+            if (emiHov) {
+                g.fill(bxEmi, by, bxEmi + bw, by + 1, C_ACCENT); // cite: 2
+                g.fill(bxEmi, by + bh - 1, bxEmi + bw, by + bh, C_ACCENT); // cite: 2
+            }
+            g.drawCenteredString(font, "EMI RECIPES", bxEmi + bw / 2, by + 6, emiHov ? C_ACCENT : C_TEXT);
         }
-        g.drawCenteredString(font, "CLOSE DATA", bx + bw / 2, by + 6, hov ? C_ACCENT : C_TEXT);
+
+        // --- CLOSE DATA BUTTON ---
+        boolean hov = mx >= bxClose && mx < bxClose + bw && my >= by && my < by + bh; // cite: 2
+        g.fill(bxClose, by, bxClose + bw, by + bh, hov ? 0xFF2A3A5A : 0xFF151A25); // cite: 2
+        if (hov) {
+            g.fill(bxClose, by, bxClose + bw, by + 1, C_ACCENT); // cite: 2
+            g.fill(bxClose, by + bh - 1, bxClose + bw, by + bh, C_ACCENT); // cite: 2
+        }
+        g.drawCenteredString(font, "CLOSE DATA", bxClose + bw / 2, by + 6, hov ? C_ACCENT : C_TEXT); // cite: 2
     }
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        int bw = 120, bh = 20;
-        int bx = this.width - bw - 30, by = this.height - 40;
-        if (mx >= bx && mx < bx + bw && my >= by && my < by + bh) {
-            onClose();
-            return true;
+        int bw = 120, bh = 20; // cite: 2
+        int bxClose = this.width - bw - 30; // cite: 2
+        int by = this.height - 40; // cite: 2
+
+        ItemStack itemStack = new ItemStack(state.getBlock().asItem()); // cite: 2
+        if (!itemStack.isEmpty()) {
+            bxClose = this.width - (bw * 2) - 40;
+            int bxEmi = this.width - bw - 30;
+
+            // Check EMI Recipes Button Click
+            if (mx >= bxEmi && mx < bxEmi + bw && my >= by && my < by + bh) {
+                dev.emi.emi.api.EmiApi.displayRecipes(dev.emi.emi.api.stack.EmiStack.of(itemStack));
+                return true;
+            }
         }
-        return super.mouseClicked(mx, my, btn);
+
+        // Check Close Data Button Click
+        if (mx >= bxClose && mx < bxClose + bw && my >= by && my < by + bh) { // cite: 2
+            onClose(); // cite: 2
+            return true; // cite: 2
+        } // cite: 2
+        return super.mouseClicked(mx, my, btn); // cite: 2
     }
 
     @Override

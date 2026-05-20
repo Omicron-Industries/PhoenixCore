@@ -10,6 +10,14 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore.soul_lens.tooltip.1", "Your way of checking on the Soul of the World.");
         provider.add("gtceu.bio_engine", "Bio Aetheric Engine");
 
+        // Main Structural Elements
+        provider.add("block.phoenixcore.fission_blanket.info_header", "Breeder Blanket Specifications:");
+        provider.add("phoenixcore.blanket.input", "Breeding Target Input");
+
+        // Custom Fission Tooltip Stats
+        provider.add("phoenixcore.tooltip.amount", "Yield Batch Size");
+        provider.add("phoenixcore.tooltip.required_fuel_tier", "Required Driver Fuel");
+
         // Tesla & Laser Tech
         provider.add("emi_info.phoenixcore.required_shield", "Required Shield: %s");
         provider.add("emi_info.phoenixcore.shield_heal", "Shield Health Restored: +%s");
@@ -64,8 +72,6 @@ public class PhoenixMachineLangHandler {
         provider.add("phoenixcore:critical_steam", "Supercritical Steam");
         provider.add("phoenixcore:hot_sodium_potassium", "Hot Sodium-Potassium");
 
-        provider.add("phoenixcore.tooltip.amount", "Yield Amount"); // Added for the Blanket tooltip fix
-
         // Breeding & Transmutation
         provider.add("phoenixcore.blanket.potential_outputs", "Potential Transmutations:");
         provider.add("phoenixcore.blanket.bias_hint",
@@ -115,7 +121,6 @@ public class PhoenixMachineLangHandler {
         provider.add("block.phoenixcore.fission_moderator.fuel_discount", "Fuel Discount: %s");
         provider.add("block.phoenixcore.fission_cooler.info_header", "Fission Cooler");
         provider.add("block.phoenixcore.fission_fuel_rod.info_header", "Fission Fuel Rod");
-        provider.add("block.phoenixcore.fission_blanket.info_header", "Breeder Blanket");
 
         provider.add("phoenixcore.current_heat_display", "Core Temperature: %s / %s HU");
         provider.add("phoenixcore.status.scram", "§c§lSCRAM ACTIVE");

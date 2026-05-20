@@ -51,7 +51,6 @@ repositories {
     }
 
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
-    maven { url = "https://maven.createmod.net" }
     maven {
 // 'Ars'
         url 'https://maven.blamejared.com'
@@ -233,9 +232,6 @@ dependencies {
     modImplementation("curse.maven:glodium-957920:5226922")
     modImplementation("curse.maven:guideme-1173950:7127447")
     modImplementation("curse.maven:phoenixs-chromatic-colors-1483210:7980147")
-    modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
-    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
 
     modRuntimeOnly("curse.maven:jade-324717:5390389")
     modCompileOnly("curse.maven:jade-324717:5390389")

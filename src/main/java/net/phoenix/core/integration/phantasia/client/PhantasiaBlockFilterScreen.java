@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.api.distmarker.Dist;
@@ -293,10 +294,16 @@ public class PhantasiaBlockFilterScreen extends Screen {
         }
     }
 
-    // ── INSPECT TAB ───────────────────────────────────────────────────────────
+    // ── INSPECT TAB (Enhanced Technical Visual Style) ─────────────────────────
+
+    // ── INSPECT TAB (Enhanced Technical Visual Style with Full Tooltips) ─────
 
     private void renderInspectTab(GuiGraphics g, int mx, int my) {
-        int x = 12, y = 50, w = this.width - 24;
+        int leftCol = 24;
+        int leftColWidth = 120;
+        int rightCol = 160;
+        int maxRightWidth = this.width - rightCol - 24;
+        int y = 55;
 
         if (inspectedWorldPos == null) {
             g.drawCenteredString(font, "Click a block in the Shopping tab to inspect it.",
@@ -316,68 +323,124 @@ public class PhantasiaBlockFilterScreen extends Screen {
             return;
         }
 
-        // Block name
-        g.drawString(font, "Block:", x, y, C_DIM, false);
-        y += 12;
-        g.drawString(font, trunc(state.getBlock().getName().getString(), w), x, y, C_TEXT, false);
-        y += 14;
+        net.minecraft.world.item.ItemStack itemStack = new net.minecraft.world.item.ItemStack(
+                state.getBlock().asItem());
 
-        // Registry key
+        // --- LEFT COLUMN: IDENTITY & STRUCTURAL DATA ---
+        // Render large Block Icon
+        g.pose().pushPose();
+        g.pose().translate(leftCol, y, 100);
+        g.pose().scale(4.0f, 4.0f, 1.0f);
+        g.renderFakeItem(new net.minecraft.world.item.ItemStack(state.getBlock()), 0, 0);
+        g.pose().popPose();
+
+        y += 75;
+
+        // Wrapped Block Name
+        String name = state.getBlock().getName().getString();
+        for (net.minecraft.util.FormattedCharSequence seq : font.split(Component.literal(name), leftColWidth)) {
+            g.drawString(font, seq, leftCol, y, 0xFFFFFFFF, false);
+            y += 10;
+        }
+        y += 4;
+
+        // Wrapped Registry ID
         ResourceLocation rl = ForgeRegistries.BLOCKS.getKey(state.getBlock());
         if (rl != null) {
-            g.drawString(font, "ID: " + trunc(rl.toString(), w - 30), x, y, C_DIM, false);
+            for (net.minecraft.util.FormattedCharSequence seq : font.split(
+                    Component.literal(rl.toString()).withStyle(net.minecraft.ChatFormatting.ITALIC), leftColWidth)) {
+                g.drawString(font, seq, leftCol, y, C_DIM, false);
+                y += 10;
+            }
+        }
+
+        y += 16;
+        g.drawString(font, "COORDINATES", leftCol, y, C_ACCENT, false);
+        y += 12;
+        g.drawString(font, "X: " + inspectedWorldPos.getX(), leftCol, y, C_TEXT, false);
+        g.drawString(font, "Y: " + inspectedWorldPos.getY(), leftCol + 40, y, C_TEXT, false);
+        g.drawString(font, "Z: " + inspectedWorldPos.getZ(), leftCol + 80, y, C_TEXT, false);
+
+        // --- RIGHT COLUMN: ATTRIBUTES, TOOLTIPS, & EMI ACTION ---
+        y = 60;
+        g.drawString(font, "SPECIFICATIONS & UTILITY", rightCol, y - 15, C_ACCENT, false);
+
+        // Dynamic Tag/Role Badges
+        if (pattern.hasBlockEntity(inspectedWorldPos)) {
+            g.drawString(font, "\u26A1 Has Block Entity", rightCol, y, C_WARN, false);
+            y += 12;
+        }
+        if (inspectedWorldPos.equals(pattern.controllerWorldPos)) {
+            g.drawString(font, "\u2605 Multiblock Controller", rightCol, y, C_ACCENT, false);
+            y += 12;
+        }
+        if (hatchBusSet.contains(inspectedWorldPos)) {
+            g.drawString(font, "\uD83D\uDD17 Component: Hatch / Bus", rightCol, y, C_GREEN, false);
+            y += 12;
+        }
+        if (energySet.contains(inspectedWorldPos)) {
+            g.drawString(font, "\u26A1 System: Energy I/O", rightCol, y, C_WARN, false);
             y += 12;
         }
 
-        // World position
-        g.drawString(font, "Pos: " + inspectedWorldPos.toShortString(), x, y, C_DIM, false);
+        y += 6;
+
+        // Dynamic Tooltip Lines Extraction
+        if (!itemStack.isEmpty()) {
+            List<Component> tooltips = itemStack.getTooltipLines(Minecraft.getInstance().player,
+                    net.minecraft.world.item.TooltipFlag.Default.NORMAL);
+            for (Component line : tooltips) {
+                for (net.minecraft.util.FormattedCharSequence sequence : font.split(line, maxRightWidth)) {
+                    g.drawString(font, sequence, rightCol, y, C_TEXT, false);
+                    y += 10;
+                }
+                y += 2;
+                if (y > this.height - 85) break;
+            }
+        }
+
+        y += 8;
+
+        // BlockState Property Grid
+        if (!state.getProperties().isEmpty()) {
+            g.fill(rightCol, y, rightCol + 120, y + 1, 0x22FFFFFF);
+            y += 8;
+            g.drawString(font, "BLOCKSTATE PROPERTIES", rightCol, y, C_DIM, false);
+            y += 12;
+
+            for (Property<?> prop : state.getProperties()) {
+                Comparable<?> val = state.getValue(prop);
+                String line = prop.getName() + " = " + getPropName(prop, val);
+                for (net.minecraft.util.FormattedCharSequence seq : font.split(Component.literal(line),
+                        maxRightWidth)) {
+                    g.drawString(font, seq, rightCol, y, C_TEXT, false);
+                    y += 10;
+                }
+                if (y > this.height - 75) break;
+            }
+        }
+
         y += 14;
 
-        // Block state properties
-        g.drawString(font, "Properties:", x, y, C_DIM, false);
-        y += 12;
-        for (Property<?> prop : state.getProperties()) {
-            Comparable<?> val = state.getValue(prop);
-            String line = "  " + prop.getName() + " = " + getPropName(prop, val);
-            g.drawString(font, trunc(line, w), x, y, C_TEXT, false);
-            y += 10;
-            if (y > this.height - 60) break;
+        // --- ACTION BUTTONS (EMI RECIPES & CLEAR) ---
+        if (!itemStack.isEmpty()) {
+            boolean emiHov = isOver(mx, my, rightCol, y, 90, 16);
+            g.fill(rightCol, y, rightCol + 90, y + 16, emiHov ? C_BTN_HOV : C_BTN);
+            if (emiHov) g.fill(rightCol, y, rightCol + 90, y + 1, C_ACCENT);
+            g.drawString(font, "EMI Recipes", rightCol + (90 - font.width("EMI Recipes")) / 2, y + 4,
+                    emiHov ? C_ACCENT : C_TEXT, false);
+
+            boolean clrHov = isOver(mx, my, rightCol + 96, y, 60, 16);
+            g.fill(rightCol + 96, y, rightCol + 156, y + 16, clrHov ? C_BTN_HOV : C_BTN);
+            g.drawString(font, "Clear", rightCol + 96 + (60 - font.width("Clear")) / 2, y + 4,
+                    clrHov ? C_WARN : C_DIM, false);
+        } else {
+            boolean clrHov = isOver(mx, my, rightCol, y, 70, 16);
+            g.fill(rightCol, y, rightCol + 70, y + 16, clrHov ? C_BTN_HOV : C_BTN);
+            g.drawString(font, "Clear", rightCol + (70 - font.width("Clear")) / 2, y + 4,
+                    clrHov ? C_WARN : C_DIM, false);
         }
-
-        y += 4;
-        // Block entity indicator
-        if (pattern.hasBlockEntity(inspectedWorldPos)) {
-            g.fill(x, y, x + w, y + 1, 0x33FFFFFF);
-            y += 6;
-            g.drawString(font, "\u26A1 Has Block Entity", x, y, C_WARN, false);
-            y += 12;
-        }
-
-        // Controller check
-        if (inspectedWorldPos.equals(pattern.controllerWorldPos)) {
-            g.drawString(font, "\u2605 Controller Block", x, y, C_ACCENT, false);
-            y += 12;
-        }
-
-        // Hatch / bus
-        if (hatchBusSet.contains(inspectedWorldPos)) {
-            g.drawString(font, "\uD83D\uDD17 Hatch / Bus", x, y, C_GREEN, false);
-            y += 12;
-        }
-
-        if (energySet.contains(inspectedWorldPos)) {
-            g.drawString(font, "\u26A1 Energy I/O", x, y, C_WARN, false);
-            y += 12;
-        }
-
-        y += 4;
-        boolean ch = isOver(mx, my, x, y, 80, 14);
-        g.fill(x, y, x + 80, y + 14, ch ? C_BTN_HOV : C_BTN);
-        g.drawString(font, "Clear", x + (80 - font.width("Clear")) / 2, y + 3,
-                ch ? C_ACCENT : C_TEXT, false);
-    }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
+    }    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
@@ -471,31 +534,67 @@ public class PhantasiaBlockFilterScreen extends Screen {
             }
 
             case INSPECT -> {
-                // Clear button — approximate y based on content rendered
-                if (inspectedWorldPos != null) {
-                    // Find the Clear button: it's rendered near the bottom of the inspect content
-                    // We hit-test by checking if any click in the left half at the lower half of
-                    // the screen would match — the content auto-positions, so we check using the
-                    // same rolling y as renderInspectTab would produce
-                    int x = 12, y = 50;
-                    if (PhantasiaSceneScreen.SHARED_LEVEL != null) {
-                        try {
-                            BlockState state = PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(inspectedWorldPos);
-                            if (!state.isAir()) {
-                                y += 12 + 14 + 12 + 14; // block name, id, pos
-                                y += state.getProperties().size() * 10 + 12 + 4;
-                                if (pattern.hasBlockEntity(inspectedWorldPos)) y += 18;
-                                if (inspectedWorldPos.equals(pattern.controllerWorldPos)) y += 12;
-                                if (hatchBusSet.contains(inspectedWorldPos)) y += 12;
-                                if (energySet.contains(inspectedWorldPos)) y += 12;
-                                y += 4;
-                                if (isOver((int) mx, (int) my, x, y, 80, 14)) {
+                if (inspectedWorldPos != null && PhantasiaSceneScreen.SHARED_LEVEL != null) {
+                    try {
+                        BlockState state = PhantasiaSceneScreen.SHARED_LEVEL.getBlockState(inspectedWorldPos);
+                        if (!state.isAir()) {
+                            int rightCol = 160;
+                            int maxRightWidth = this.width - rightCol - 24;
+                            int y = 55;
+
+                            if (pattern.hasBlockEntity(inspectedWorldPos)) y += 12;
+                            if (inspectedWorldPos.equals(pattern.controllerWorldPos)) y += 12;
+                            if (hatchBusSet.contains(inspectedWorldPos)) y += 12;
+                            if (energySet.contains(inspectedWorldPos)) y += 12;
+                            y += 6;
+
+                            net.minecraft.world.item.ItemStack itemStack = new net.minecraft.world.item.ItemStack(
+                                    state.getBlock().asItem());
+                            if (!itemStack.isEmpty()) {
+                                List<Component> tooltips = itemStack.getTooltipLines(Minecraft.getInstance().player,
+                                        net.minecraft.world.item.TooltipFlag.Default.NORMAL);
+                                for (Component line : tooltips) {
+                                    int lines = font.split(line, maxRightWidth).size();
+                                    y += (lines * 10) + 2;
+                                    if (y > this.height - 85) break;
+                                }
+                            }
+
+                            y += 8;
+
+                            if (!state.getProperties().isEmpty()) {
+                                y += 20;
+                                for (Property<?> prop : state.getProperties()) {
+                                    int lines = font.split(
+                                            Component.literal(
+                                                    prop.getName() + " = " + getPropName(prop, state.getValue(prop))),
+                                            maxRightWidth).size();
+                                    y += lines * 10;
+                                    if (y > this.height - 75) break;
+                                }
+                            }
+                            y += 14;
+
+                            if (!itemStack.isEmpty()) {
+                                if (isOver((int) mx, (int) my, rightCol, y, 90, 16)) {
+                                    if (dev.emi.emi.api.EmiApi.getRecipeManager() != null) {
+                                        dev.emi.emi.api.EmiApi
+                                                .displayRecipes(dev.emi.emi.api.stack.EmiStack.of(itemStack));
+                                    }
+                                    return true;
+                                }
+                                if (isOver((int) mx, (int) my, rightCol + 96, y, 60, 16)) {
+                                    inspectedWorldPos = null;
+                                    return true;
+                                }
+                            } else {
+                                if (isOver((int) mx, (int) my, rightCol, y, 70, 16)) {
                                     inspectedWorldPos = null;
                                     return true;
                                 }
                             }
-                        } catch (Exception ignored) {}
-                    }
+                        }
+                    } catch (Exception ignored) {}
                 }
             }
         }

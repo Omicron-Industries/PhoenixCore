@@ -185,48 +185,42 @@ public class PhoenixMachines {
         return builder.register();
     }
 
+    public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
+            "refined_multiblock_source_tank",
+            "Refined Multiblock Source Tank",
+            50000 * 1000,
+            SOURCE_FIBER_MACHINE_CASING,
+            100,
+            (builder, overlay) -> builder
+                    .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
+                            overlay));
 
-      public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
-      "refined_multiblock_source_tank",
-      "Refined Multiblock Source Tank",
-      50000 * 1000,
-      SOURCE_FIBER_MACHINE_CASING,
-      100,
-      (builder, overlay) -> builder
-      .workableCasingModel(PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),
-     overlay));
+    public static final PartAbility SOUND_DISC = new PartAbility("sound_disc");
+    public static final PartAbility SOUND_LIBRARY = new PartAbility("sound_library");
+    public static final PartAbility SOUND_STREAM = new PartAbility("sound_stream");
 
+    public static final MachineDefinition[] DISC_HATCH = registerSoundHatch(
+            "disc_hatch", "Disc Reader Hatch", SoundHatchPartMachine.SoundHatchType.DISC, SOUND_DISC);
 
+    public static final MachineDefinition[] LIBRARY_HATCH = registerSoundHatch(
+            "library_hatch", "Sound Library Hatch", SoundHatchPartMachine.SoundHatchType.LIBRARY, SOUND_LIBRARY);
 
+    public static final MachineDefinition[] STREAM_HATCH = registerSoundHatch(
+            "stream_hatch", "Web Stream Hatch", SoundHatchPartMachine.SoundHatchType.STREAM, SOUND_STREAM);
 
-      public static final PartAbility SOUND_DISC = new PartAbility("sound_disc");
-      public static final PartAbility SOUND_LIBRARY = new PartAbility("sound_library");
-      public static final PartAbility SOUND_STREAM = new PartAbility("sound_stream");
-
-      public static final MachineDefinition[] DISC_HATCH = registerSoundHatch(
-      "disc_hatch", "Disc Reader Hatch", SoundHatchPartMachine.SoundHatchType.DISC, SOUND_DISC);
-
-      public static final MachineDefinition[] LIBRARY_HATCH = registerSoundHatch(
-      "library_hatch", "Sound Library Hatch", SoundHatchPartMachine.SoundHatchType.LIBRARY, SOUND_LIBRARY);
-
-      public static final MachineDefinition[] STREAM_HATCH = registerSoundHatch(
-      "stream_hatch", "Web Stream Hatch", SoundHatchPartMachine.SoundHatchType.STREAM, SOUND_STREAM);
-
-      private static MachineDefinition[] registerSoundHatch(String name, String displayName,
-      SoundHatchPartMachine.SoundHatchType type,
-      PartAbility ability) {
-      return registerTieredMachines(name,
-      (holder, tier) -> new SoundHatchPartMachine(holder, tier, type), // Clean constructor
-      (tier, builder) -> builder
-      .langValue(GTValues.VNF[tier] + ' ' + displayName)
-      .abilities(ability)
-      .rotationState(RotationState.ALL)
-      .overlayTieredHullModel("source_hatch")
-      .register(),
-      ELECTRIC_TIERS);
-      }
-
-
+    private static MachineDefinition[] registerSoundHatch(String name, String displayName,
+                                                          SoundHatchPartMachine.SoundHatchType type,
+                                                          PartAbility ability) {
+        return registerTieredMachines(name,
+                (holder, tier) -> new SoundHatchPartMachine(holder, tier, type), // Clean constructor
+                (tier, builder) -> builder
+                        .langValue(GTValues.VNF[tier] + ' ' + displayName)
+                        .abilities(ability)
+                        .rotationState(RotationState.ALL)
+                        .overlayTieredHullModel("source_hatch")
+                        .register(),
+                ELECTRIC_TIERS);
+    }
 
     public static final MachineDefinition[] SOURCE_IMPORT_HATCH = registerSourceHatch(
             "source_input_hatch", "Source Input Hatch",
@@ -1592,38 +1586,35 @@ public class PhoenixMachines {
             .tooltipBuilder(AETHERIAL_FABRICATOR_TOOLTIPS)
             .register();
 
-
-     public static final MultiblockMachineDefinition JUKEBLOCK = REGISTRATE
-      .multiblock("jukeblock", ResonantJukeboxMachine::new)
-      .rotationState(RotationState.ALL)
-      .recipeTypes(PhoenixRecipeTypes.JUKEBLOCK)
-      .langValue("Jukeblock ")
-      .noRecipeModifier()
-      .appearanceBlock(GTBlocks.CASING_STAINLESS_CLEAN)
-      .pattern(definition -> {
-      return FactoryBlockPattern.start()
-      .aisle("aafaa", "bbcbb", "bdcdb", "bdcdb", "dbbbd")
-      .aisle("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
-      .aisle("aaaaa", "ceeec", "cdddc", "cdddc", "bdddb")
-     .aisle("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
-      .aisle("aaaaa", "bbcbb", "bdcdb", "bdcdd", "dbbbd")
-      .where("a", Predicates.blocks(CASING_STEEL_SOLID.get())
-     .or(PhoenixPredicates.soundHatches())
-      .or(Predicates.abilities(PartAbility.INPUT_ENERGY)))
-     .where("b", Predicates.blocks(ChemicalHelper.getBlock(frameGt, AURUM_STEEL)))
-     .where("c", Predicates.blocks(CASING_TEMPERED_GLASS.get()))
-     .where("d", air())
-      .where("e", PhoenixPredicates.tieredSpeakers())
-     .where("f", Predicates.controller(Predicates.blocks(definition.get())))
-      .build();
-      })
-      .workableCasingModel(
-      GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
-      new ResourceLocation("minecraft", "block/note_block") // Wrap the string here
-      )
-      .register();
-
-
+    public static final MultiblockMachineDefinition JUKEBLOCK = REGISTRATE
+            .multiblock("jukeblock", ResonantJukeboxMachine::new)
+            .rotationState(RotationState.ALL)
+            .recipeTypes(PhoenixRecipeTypes.JUKEBLOCK)
+            .langValue("Jukeblock ")
+            .noRecipeModifier()
+            .appearanceBlock(GTBlocks.CASING_STAINLESS_CLEAN)
+            .pattern(definition -> {
+                return FactoryBlockPattern.start()
+                        .aisle("aafaa", "bbcbb", "bdcdb", "bdcdb", "dbbbd")
+                        .aisle("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
+                        .aisle("aaaaa", "ceeec", "cdddc", "cdddc", "bdddb")
+                        .aisle("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
+                        .aisle("aaaaa", "bbcbb", "bdcdb", "bdcdd", "dbbbd")
+                        .where("a", Predicates.blocks(CASING_STEEL_SOLID.get())
+                                .or(PhoenixPredicates.soundHatches())
+                                .or(Predicates.abilities(PartAbility.INPUT_ENERGY)))
+                        .where("b", Predicates.blocks(ChemicalHelper.getBlock(frameGt, AURUM_STEEL)))
+                        .where("c", Predicates.blocks(CASING_TEMPERED_GLASS.get()))
+                        .where("d", air())
+                        .where("e", PhoenixPredicates.tieredSpeakers())
+                        .where("f", Predicates.controller(Predicates.blocks(definition.get())))
+                        .build();
+            })
+            .workableCasingModel(
+                    GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
+                    new ResourceLocation("minecraft", "block/note_block") // Wrap the string here
+            )
+            .register();
 
     public static void init() {}
 }

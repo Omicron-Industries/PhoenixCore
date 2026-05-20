@@ -11,22 +11,16 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.common.machine.PhoenixMachines;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionBlanketType;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionCoolerType;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionFuelRodType;
-import net.phoenix.core.integration.phoenix_fission.api.block.IFissionModeratorType;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionBlanketBlock;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionCoolerBlock;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionFuelRodBlock;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.FissionModeratorBlock;
+import net.phoenix.core.integration.phoenix_fission.api.block.*;
+import net.phoenix.core.integration.phoenix_fission.common.data.block.*;
 import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine;
-
-import com.tterrag.registrate.util.entry.BlockEntry;
 import net.phoenix.core.integration.vocal_resonance.ISpeakerType;
 import net.phoenix.core.integration.vocal_resonance.SoundHatchPartMachine;
 import net.phoenix.core.integration.vocal_resonance.SpeakerBlock;
+
+import com.tterrag.registrate.util.entry.BlockEntry;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -206,78 +200,106 @@ public class PhoenixPredicates {
                 .addTooltips(Component.translatable("phoenix.multiblock.pattern.info.multiple_moderators"));
     }
 
+    // Add to PhoenixPredicates.java
 
-      public static TraceabilityPredicate soundHatches() {
-      return new TraceabilityPredicate(
-      state -> {
-      var level = state.getWorld();
-      var pos = state.getPos();
-      if (level == null || pos == null) return false;
+    public static TraceabilityPredicate msrCoreLiner() {
+        return new TraceabilityPredicate(blockWorldState -> {
+            BlockState state = blockWorldState.getBlockState();
 
-     var blockEntity = level.getBlockEntity(pos);
-      if (blockEntity instanceof IMachineBlockEntity machineEntity &&
-      machineEntity.getMetaMachine() instanceof SoundHatchPartMachine machinePart) {
+            // Match against your brand-new custom block class
+            if (state.getBlock() instanceof MSRCoreLinerBlock linerBlock) {
+                int tier = linerBlock.getLinerType().getTier();
 
-      var context = state.getMatchContext();
-      List<SoundHatchPartMachine> hatches = context.getOrCreate("SoundHatches", ArrayList::new);
-      if (!hatches.contains(machinePart)) {
-      hatches.add(machinePart);
-      }
-      return true;
-      }
-      return false;
-      },
-      // FIX: Tell the multiblock which blocks are valid candidates
-      () -> {
-      List<BlockInfo> candidates = new ArrayList<>();
-      // Add all tiers of your 3 hatch types to the candidate list
-      for (var machine : PhoenixMachines.DISC_HATCH) {
-      if (machine != null) {
-      candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
-      }
-      }
-      for (var machine : PhoenixMachines.LIBRARY_HATCH) {
-     if (machine != null) {
-     candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
-      }
-      }
-      for (var machine : PhoenixMachines.STREAM_HATCH) {
-      if (machine != null) {
-      candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
-      }
-      }
-      return candidates.toArray(new BlockInfo[0]);
-      });
-      }
+                // Track total parallels (1 parallel count per core liner block placed)
+                blockWorldState.getMatchContext().increment("MSRLinerCount", 1);
 
-      public static TraceabilityPredicate tieredSpeakers() {
-      return new TraceabilityPredicate(blockWorldState -> {
-      BlockState state = blockWorldState.getBlockState();
-      if (state.getBlock() instanceof SpeakerBlock speakerBlock) {
-      ISpeakerType type = speakerBlock.getSpeakerType();
+                // Track bottlenecks: Core operates at the tier level of its weakest block
+                int currentMinTier = blockWorldState.getMatchContext().getOrDefault("MSRMinTier", Integer.MAX_VALUE);
+                blockWorldState.getMatchContext().set("MSRMinTier", Math.min(currentMinTier, tier));
 
-      // Increment range bonus
-      blockWorldState.getMatchContext().increment("TotalSpeakerRange", type.getRangeBonus());
+                return true;
+            }
+            return false;
+        },
+                // Automatically fetch your enum types to construct the multiblock structure ghost-view preview
+                () -> Arrays.stream(MSRCoreLinerBlock.MSRLinerTypes.values())
+                        .map(type -> {
+                            // This generates preview info if your blocks are directly registered or instantiated
+                            // Fallback to empty if registration references require complex object supplier getters
+                            return BlockInfo.EMPTY;
+                        })
+                        .toArray(BlockInfo[]::new));
+    }
 
-     // Resonance logic (increment works with integers)
-     int resonanceInt = (int) (type.getResonanceAmplifier() * 100);
-     blockWorldState.getMatchContext().increment("ResonancePower", resonanceInt);
+    public static TraceabilityPredicate soundHatches() {
+        return new TraceabilityPredicate(
+                state -> {
+                    var level = state.getWorld();
+                    var pos = state.getPos();
+                    if (level == null || pos == null) return false;
 
-      return true;
-      }
-     return false;
-      },
-      // CANDIDATES FIX: Provide all registered speaker blocks
-      () -> net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get() != null ?
-      new BlockInfo[] {
-      BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get()
-      .defaultBlockState()),
-     BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_MV.get()
-     .defaultBlockState()),
-      BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_HV.get()
-      .defaultBlockState())
-      } : new BlockInfo[0]);
-      }
+                    var blockEntity = level.getBlockEntity(pos);
+                    if (blockEntity instanceof IMachineBlockEntity machineEntity &&
+                            machineEntity.getMetaMachine() instanceof SoundHatchPartMachine machinePart) {
 
+                        var context = state.getMatchContext();
+                        List<SoundHatchPartMachine> hatches = context.getOrCreate("SoundHatches", ArrayList::new);
+                        if (!hatches.contains(machinePart)) {
+                            hatches.add(machinePart);
+                        }
+                        return true;
+                    }
+                    return false;
+                },
+                // FIX: Tell the multiblock which blocks are valid candidates
+                () -> {
+                    List<BlockInfo> candidates = new ArrayList<>();
+                    // Add all tiers of your 3 hatch types to the candidate list
+                    for (var machine : PhoenixMachines.DISC_HATCH) {
+                        if (machine != null) {
+                            candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
+                        }
+                    }
+                    for (var machine : PhoenixMachines.LIBRARY_HATCH) {
+                        if (machine != null) {
+                            candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
+                        }
+                    }
+                    for (var machine : PhoenixMachines.STREAM_HATCH) {
+                        if (machine != null) {
+                            candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
+                        }
+                    }
+                    return candidates.toArray(new BlockInfo[0]);
+                });
+    }
 
+    public static TraceabilityPredicate tieredSpeakers() {
+        return new TraceabilityPredicate(blockWorldState -> {
+            BlockState state = blockWorldState.getBlockState();
+            if (state.getBlock() instanceof SpeakerBlock speakerBlock) {
+                ISpeakerType type = speakerBlock.getSpeakerType();
+
+                // Increment range bonus
+                blockWorldState.getMatchContext().increment("TotalSpeakerRange", type.getRangeBonus());
+
+                // Resonance logic (increment works with integers)
+                int resonanceInt = (int) (type.getResonanceAmplifier() * 100);
+                blockWorldState.getMatchContext().increment("ResonancePower", resonanceInt);
+
+                return true;
+            }
+            return false;
+        },
+                // CANDIDATES FIX: Provide all registered speaker blocks
+                () -> net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get() != null ?
+                        new BlockInfo[] {
+                                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get()
+                                        .defaultBlockState()),
+                                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_MV.get()
+                                        .defaultBlockState()),
+                                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_HV.get()
+                                        .defaultBlockState())
+                        } : new BlockInfo[0]);
+    }
 }

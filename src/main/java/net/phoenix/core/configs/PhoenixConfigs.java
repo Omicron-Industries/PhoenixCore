@@ -57,6 +57,16 @@ public class PhoenixConfigs {
         @Configurable.Comment("Ticks required to hold the key to open the menu (20 ticks = 1 second).")
         public int activationTicks = 20;
 
+        @Configurable
+        @Configurable.Comment({
+                "Visual theme for the Phantasia scene viewer.",
+                "COBALT   - Default. Deep navy with sky-blue accents.",
+                "RAINBOW  - Hue-cycling accent on a neutral dark base.",
+                "AMETHYST - Soft purple with gold progress bars.",
+                "MINECRAFT - Classic vanilla inventory look (stone grey, gold accent)."
+        })
+        public String theme = "COBALT";
+
         public enum DisplayMode {
             TOOLTIP_ONLY,
             JADE_ONLY,

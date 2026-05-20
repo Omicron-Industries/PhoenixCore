@@ -21,7 +21,6 @@ public class PhoenixNetwork {
     private static int id = 0;
 
     public static void init() {
-
         // ── Existing packets ──────────────────────────────────────────────────
         CHANNEL.registerMessage(id++,
                 SelectColorPacket.class,
