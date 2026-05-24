@@ -38,21 +38,28 @@ public class PhantasiaScript {
      * camera block was declared in the JSON.
      */
     public record Step(
-                       int tickOffset,
-                       String caption,
-                       Predicate<BlockPos> filter,
-                       boolean working,
-                       int forceShape,
-                       int forceCoil,
-                       float yaw,
-                       float pitch,
-                       float zoom,
-                       boolean useCam,
-                       LerpType lerpType,
-                       int lerpTicks) {
+            int tickOffset,
+            String caption,
+            Predicate<BlockPos> filter,
+            boolean working,
+            int forceShape,
+            int forceCoil,
+            float yaw,
+            float pitch,
+            float zoom,
+            boolean useCam,
+            LerpType lerpType,
+            int lerpTicks,
+            @Nullable String fakeRecipeId) {
 
         public boolean hasCamera() {
             return useCam;
+        }
+
+        // Force an explicit compilation bridge method to satisfy the compiler
+        @Nullable
+        public String fakeRecipeId() {
+            return this.fakeRecipeId;
         }
     }
 
@@ -162,7 +169,8 @@ public class PhantasiaScript {
 
         return new Step(sd.tick, sd.caption, filter,
                 sd.working, /* forceShape */ -1, /* forceCoil */ -1,
-                yaw, pitch, zoom, useCam, lerpType, lerpTicks);
+                yaw, pitch, zoom, useCam, lerpType, lerpTicks,
+                sd.fakeRecipeId);
     }
 
     // ── Show predicate ────────────────────────────────────────────────────────
@@ -324,6 +332,19 @@ public class PhantasiaScript {
 
         public Builder working(boolean w) {
             step().working = w;
+            return this;
+        }
+
+        /**
+         * Sets a fake recipe to inject into the controller's RecipeLogic while
+         * this step is active, so recipe-dependent renders (fusion plasma colour,
+         * laser arc, etc.) display correctly.
+         *
+         * @param recipeId full resource-location string, e.g.
+         *                 {@code "gtceu:fusion/make_helium_plasma_luv"}
+         */
+        public Builder fakeRecipe(String recipeId) {
+            step().fakeRecipeId = recipeId;
             return this;
         }
 

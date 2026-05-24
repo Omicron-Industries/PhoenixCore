@@ -167,7 +167,7 @@ public class PhantasiaSceneScreen extends Screen {
 
     // Dynamically retrieve all registered coil blocks sorted by their temperature/tier
     private static final List<BlockInfo> COIL_TIERS = java.util.stream.Stream.of(
-            com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
+                    com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
             .map(coil -> {
                 // Fetch the block associated with the coil material from the registry
                 var block = com.gregtechceu.gtceu.api.GTCEuAPI.HEATING_COILS.get(coil);
@@ -223,7 +223,7 @@ public class PhantasiaSceneScreen extends Screen {
         super.init();
 
         this.coilTiers = java.util.stream.Stream.of(
-                com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
+                        com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
                 .map(coil -> {
                     var block = com.gregtechceu.gtceu.api.GTCEuAPI.HEATING_COILS.get(coil);
                     return new BlockInfo(block.get().defaultBlockState());
@@ -247,7 +247,10 @@ public class PhantasiaSceneScreen extends Screen {
         // ── Renderer ──────────────────────────────────────────────────────────
         if (renderer == null) {
             renderer = new PhantasiaWorldRenderer(SHARED_LEVEL);
-            if (pattern != null) renderer.setBaseplatePositions(pattern.baseplatePositions);
+            if (pattern != null) {
+                renderer.setBaseplatePositions(pattern.baseplatePositions);
+                renderer.setControllerWorldPos(pattern.controllerWorldPos);
+            }
         }
 
         // ── Camera ────────────────────────────────────────────────────────────
@@ -676,12 +679,51 @@ public class PhantasiaSceneScreen extends Screen {
             RecipeLogic logic = w.getRecipeLogic();
             if ((logic.getStatus() == RecipeLogic.Status.WORKING) != working)
                 logic.setStatus(working ? RecipeLogic.Status.WORKING : RecipeLogic.Status.IDLE);
+
+            // Inject a fake recipe so recipe-dependent renders (fusion plasma colour,
+            // laser colour, etc.) have something to read.
+            String rid = (step != null && working) ? step.fakeRecipeId() : null;
+            if (rid != null && !rid.isBlank()) {
+                injectFakeRecipe(logic, rid.trim());
+            } else if (!working && logic.getLastRecipe() != null) {
+                // Using the native cleanup method ensures everything handles cleanly
+                logic.resetRecipeLogic();
+            }
         }
         var rs = pattern.controller.getRenderState();
         var ap = com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties.IS_ACTIVE;
         if (rs.hasProperty(ap) && rs.getValue(ap) != working)
             pattern.controller.setRenderState(rs.setValue(ap, working));
     }
+
+    private void injectFakeRecipe(RecipeLogic logic, String rid) {
+        try {
+            var rl = new net.minecraft.resources.ResourceLocation(rid);
+
+            // Safely access the client-side global Minecraft recipe manager
+            if (net.minecraft.client.Minecraft.getInstance().getConnection() == null) return;
+
+            var optionalRecipe = net.minecraft.client.Minecraft.getInstance()
+                    .getConnection()
+                    .getRecipeManager()
+                    .byKey(rl);
+
+            // Check if the recipe exists and belongs to GregTech (GTRecipe)
+            if (optionalRecipe.isPresent() && optionalRecipe.get() instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe gtRecipe) {
+                if (logic.getLastRecipe() != gtRecipe) {
+                    // Initialize the recipe inside the machine logic loop safely
+                    logic.setupRecipe(gtRecipe);
+
+                    // Set progress to mid-recipe so duration-dependent renders show a stable state.
+                    logic.setProgress(gtRecipe.duration / 2);
+                }
+            }
+        } catch (Exception ignored) {
+            // Bad resource location or missing recipe — leave last-recipe unchanged.
+        }
+    }
+
+
 
     private void updateCoilType() {
         if (pattern == null || pattern.blockMap == null || coilTiers.isEmpty()) return;
@@ -881,18 +923,9 @@ public class PhantasiaSceneScreen extends Screen {
         g.fill(px, 0, this.width, this.height, C_PANEL());
         g.fill(px, 0, px + 1, this.height, C_ACCENT());
 
-        // ── Collapse / expand toggle (always visible) ─────────────────────────
-        // The arrow button sits at the very top of the panel, flush against the
-        // left edge (which is also the panel's accent border line).
-        String collapseIcon = sidePanelCollapsed ? "▶" : "◀";
-        regBtn(g, mx, my, px + 1, 4, 16, 14, collapseIcon,
-                () -> sidePanelCollapsed = !sidePanelCollapsed);
-
         int y = 10;
-        if (!sidePanelCollapsed) {
-            g.drawString(font, trunc(definition.getLangValue(), pw - 40),
-                    px + 20, y, C_ACCENT(), false);
-        }
+        g.drawString(font, trunc(definition.getLangValue(), pw - 20),
+                px + 10, y, C_ACCENT(), false);
         y += 20;
         if (sidePanelCollapsed) return;
 
