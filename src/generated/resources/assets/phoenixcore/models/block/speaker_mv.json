@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "phoenixcore:block/casings/speakers/side",
+    "side": "phoenixcore:block/casings/speakers/mv_front"
+  }
+}
