@@ -703,8 +703,8 @@ public final class PhantasiaWorldRenderer {
      *
      * GT multiblock renderer entities are spawned by the controller's IRenderer/renderTick
      * machinery but their position is often left at (0,0,0) because the dummy world's
-     * BlockInfo path constructs the BE without calling setPos().  An entity at world-origin
-     * ends up ~50 blocks below the baseplate from the camera's perspective.  We detect this
+     * BlockInfo path constructs the BE without calling setPos(). An entity at world-origin
+     * ends up ~50 blocks below the baseplate from the camera's perspective. We detect this
      * and snap such entities to the controller's world position before rendering.
      */
     private void drawEntities(MultiBufferSource.BufferSource buffers, float partial,
@@ -720,8 +720,7 @@ public final class PhantasiaWorldRenderer {
                 double ez = entity.getZ();
 
                 // Handle GT's unpositioned rendering entities
-                if (controllerWorldPos != null
-                        && Math.abs(ex) < 1.0 && Math.abs(ey) < 1.0 && Math.abs(ez) < 1.0) {
+                if (controllerWorldPos != null && Math.abs(ex) < 1.0 && Math.abs(ey) < 1.0 && Math.abs(ez) < 1.0) {
                     ex = controllerWorldPos.getX() + 0.5;
                     ey = controllerWorldPos.getY();
                     ez = controllerWorldPos.getZ() + 0.5;
@@ -736,8 +735,7 @@ public final class PhantasiaWorldRenderer {
                 // 2. Pass the absolute position to the dispatcher, which applies the positive translation
                 erd.render(entity, ex, ey, ez, entity.getYRot(), partial, ps, buffers, light);
 
-            } catch (Exception ignored) {
-            } finally {
+            } catch (Exception ignored) {} finally {
                 ps.popPose();
             }
         }

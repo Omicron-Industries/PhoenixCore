@@ -167,7 +167,7 @@ public class PhantasiaSceneScreen extends Screen {
 
     // Dynamically retrieve all registered coil blocks sorted by their temperature/tier
     private static final List<BlockInfo> COIL_TIERS = java.util.stream.Stream.of(
-                    com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
+            com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
             .map(coil -> {
                 // Fetch the block associated with the coil material from the registry
                 var block = com.gregtechceu.gtceu.api.GTCEuAPI.HEATING_COILS.get(coil);
@@ -223,7 +223,7 @@ public class PhantasiaSceneScreen extends Screen {
         super.init();
 
         this.coilTiers = java.util.stream.Stream.of(
-                        com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
+                com.gregtechceu.gtceu.api.block.ICoilType.ALL_COILS_TEMPERATURE_SORTED.get())
                 .map(coil -> {
                     var block = com.gregtechceu.gtceu.api.GTCEuAPI.HEATING_COILS.get(coil);
                     return new BlockInfo(block.get().defaultBlockState());
@@ -709,7 +709,8 @@ public class PhantasiaSceneScreen extends Screen {
                     .byKey(rl);
 
             // Check if the recipe exists and belongs to GregTech (GTRecipe)
-            if (optionalRecipe.isPresent() && optionalRecipe.get() instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe gtRecipe) {
+            if (optionalRecipe.isPresent() &&
+                    optionalRecipe.get() instanceof com.gregtechceu.gtceu.api.recipe.GTRecipe gtRecipe) {
                 if (logic.getLastRecipe() != gtRecipe) {
                     // Initialize the recipe inside the machine logic loop safely
                     logic.setupRecipe(gtRecipe);
@@ -722,8 +723,6 @@ public class PhantasiaSceneScreen extends Screen {
             // Bad resource location or missing recipe — leave last-recipe unchanged.
         }
     }
-
-
 
     private void updateCoilType() {
         if (pattern == null || pattern.blockMap == null || coilTiers.isEmpty()) return;

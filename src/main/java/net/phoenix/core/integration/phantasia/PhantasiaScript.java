@@ -38,19 +38,19 @@ public class PhantasiaScript {
      * camera block was declared in the JSON.
      */
     public record Step(
-            int tickOffset,
-            String caption,
-            Predicate<BlockPos> filter,
-            boolean working,
-            int forceShape,
-            int forceCoil,
-            float yaw,
-            float pitch,
-            float zoom,
-            boolean useCam,
-            LerpType lerpType,
-            int lerpTicks,
-            @Nullable String fakeRecipeId) {
+                       int tickOffset,
+                       String caption,
+                       Predicate<BlockPos> filter,
+                       boolean working,
+                       int forceShape,
+                       int forceCoil,
+                       float yaw,
+                       float pitch,
+                       float zoom,
+                       boolean useCam,
+                       LerpType lerpType,
+                       int lerpTicks,
+                       @Nullable String fakeRecipeId) {
 
         public boolean hasCamera() {
             return useCam;

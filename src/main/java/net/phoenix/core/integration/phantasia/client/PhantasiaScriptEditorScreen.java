@@ -915,7 +915,10 @@ public class PhantasiaScriptEditorScreen extends Screen {
             for (PhantasiaScriptData.StepData s : data.getSteps()) {
                 float t = total > 0 ? (float) s.tick / total : 0f;
                 int dotX = margin + (int) (t * trackW);
-                if (Math.abs(mx - dotX) < 14) { nearDot = true; break; }
+                if (Math.abs(mx - dotX) < 14) {
+                    nearDot = true;
+                    break;
+                }
             }
             if (!nearDot) {
                 timelineGhostX = mx;
@@ -968,9 +971,7 @@ public class PhantasiaScriptEditorScreen extends Screen {
             }
 
             // Tick label below dot (full detail for selected/dragging, just step# otherwise)
-            String lbl = (sel || dragging)
-                    ? "#" + (i + 1) + "  t=" + s.tick + "  [" + s.show + "]"
-                    : "#" + (i + 1);
+            String lbl = (sel || dragging) ? "#" + (i + 1) + "  t=" + s.tick + "  [" + s.show + "]" : "#" + (i + 1);
             int lx = Mth.clamp(dotX - font.width(lbl) / 2, margin, margin + trackW - font.width(lbl));
             g.drawString(font, lbl, lx, midY + 9, sel || dragging ? C_ACCENT : C_DIM, false);
 
@@ -1054,11 +1055,13 @@ public class PhantasiaScriptEditorScreen extends Screen {
                     for (PhantasiaScriptData.StepData s : data.getSteps()) {
                         float t = total > 0 ? (float) s.tick / total : 0f;
                         int dotX = margin + (int) (t * trackW);
-                        if (Math.abs(mx - dotX) < 14) { nearDot = true; break; }
+                        if (Math.abs(mx - dotX) < 14) {
+                            nearDot = true;
+                            break;
+                        }
                     }
                     if (!nearDot) {
-                        int newTick = total > 0
-                                ? Math.round((float) (mx - margin) / trackW * total) : 0;
+                        int newTick = total > 0 ? Math.round((float) (mx - margin) / trackW * total) : 0;
                         addStepAtTick(newTick);
                         return true;
                     }
@@ -1406,7 +1409,10 @@ public class PhantasiaScriptEditorScreen extends Screen {
         // Insert in sorted position
         int insertAt = data.getSteps().size();
         for (int i = 0; i < data.getSteps().size(); i++) {
-            if (data.getSteps().get(i).tick > tick) { insertAt = i; break; }
+            if (data.getSteps().get(i).tick > tick) {
+                insertAt = i;
+                break;
+            }
         }
         data.getSteps().add(insertAt, s);
         selectStep(insertAt);
