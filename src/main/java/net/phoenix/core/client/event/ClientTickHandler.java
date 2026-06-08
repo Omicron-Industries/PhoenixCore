@@ -1,6 +1,7 @@
 package net.phoenix.core.client.event;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -22,6 +23,7 @@ import net.phoenix.core.common.item.ChameleonSprayCanItem;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
+import net.phoenix.core.network.packet.C2STeslaDischargePacket;
 import net.phoenix.core.network.packet.SelectColorPacket;
 
 @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -51,12 +53,36 @@ public class ClientTickHandler {
         // ── Recipe Builder Logic ──────────────────────────────────────────
         while (PhoenixKeybinds.OPEN_RECIPE_BUILDER.consumeClick()) {
             if (mc.screen == null) {
-                // Since it's a ContainerScreen, we must create the Menu first
                 RecipeBuilderMenu menu = new RecipeBuilderMenu(0, mc.player.getInventory());
-
-                // Now pass the menu, inventory, and a title to the Screen
                 mc.setScreen(
                         new RecipeBuilderScreen(menu, mc.player.getInventory(), Component.literal("Recipe Builder")));
+            }
+        }
+
+        // ── Tesla Mode Keybind Handling ─────────────────────────────────────
+        while (PhoenixKeybinds.TESLA_MODE.consumeClick()) {
+            ItemStack chestItem = mc.player.getItemBySlot(EquipmentSlot.CHEST);
+            if (!chestItem.isEmpty() &&
+                    chestItem.getItem() instanceof net.phoenix.core.common.data.item.PhoenixArmorItem) {
+                PhoenixNetwork.CHANNEL.sendToServer(new net.phoenix.core.network.packet.C2SToggleTeslaModePacket());
+            }
+        }
+
+        // ── Tesla Discharge Keybind Handling ───────────────────────────────
+        // ── Tesla Discharge Keybind Handling ───────────────────────────────
+        while (PhoenixKeybinds.TESLA_DISCHARGE.consumeClick()) {
+            ItemStack bootsItem = mc.player.getItemBySlot(EquipmentSlot.FEET);
+
+            // This uses your working pattern: verify the stack isn't empty,
+            // and make sure the item belongs to your mod's armor base class.
+            if (!bootsItem.isEmpty() &&
+                    bootsItem.getItem() instanceof net.phoenix.core.common.data.item.PhoenixArmorItem) {
+                CompoundTag nbt = bootsItem.getOrCreateTag();
+
+                // Client-side quick check on the cooldown before sending the packet
+                if (nbt.getInt("dischargeCooldown") == 0) {
+                    PhoenixNetwork.CHANNEL.sendToServer(new C2STeslaDischargePacket());
+                }
             }
         }
     }
@@ -64,36 +90,24 @@ public class ClientTickHandler {
     @SubscribeEvent
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
         Minecraft mc = Minecraft.getInstance();
-
-        // 1. Only run if the player exists and NO GUI is open
         if (mc.player == null || mc.screen != null) return;
 
         if (mc.options.keyShift.isDown()) {
-            // 2. Check if holding the Chameleon Spray Can
             ItemStack stack = mc.player.getMainHandItem();
             if (stack.getItem() instanceof ChameleonSprayCanItem) {
                 double scrollDelta = event.getScrollDelta();
-
-                // 3. Cancel the default hotbar switching
                 event.setCanceled(true);
 
-                // 4. Calculate new color
-                // -1 = Solvent, 0-15 = DyeColors
                 int currentColor = stack.getOrCreateTag().getInt("color");
                 if (!stack.getOrCreateTag().contains("color")) currentColor = -1;
 
                 int direction = scrollDelta > 0 ? 1 : -1;
                 int nextColor = currentColor + direction;
 
-                // Wrap around logic: 16 total DyeColors (0-15) + Solvent (-1) = 17 states
                 if (nextColor < -1) nextColor = 15;
                 if (nextColor > 15) nextColor = -1;
 
-                // 5. Sync to server
-                // We use the same packet you just redesigned!
                 PhoenixNetwork.CHANNEL.sendToServer(new SelectColorPacket(InteractionHand.MAIN_HAND, nextColor));
-
-                // 6. Optional: Visual/Audio feedback
                 mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.1f, 1.5f + (nextColor * 0.05f));
             }
         }
@@ -104,16 +118,14 @@ public class ClientTickHandler {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // Only care about right-click with spray can in main hand
         if (!event.isUseItem()) return;
         ItemStack stack = mc.player.getMainHandItem();
         if (!(stack.getItem() instanceof ChameleonSprayCanItem)) return;
 
-        // Only on shift + air
         if (!mc.player.isShiftKeyDown()) return;
         if (mc.hitResult == null || mc.hitResult.getType() != HitResult.Type.MISS) return;
 
-        event.setCanceled(true); // prevent GregTech from eating it
+        event.setCanceled(true);
         mc.setScreen(new ColorRadialMenuScreen(InteractionHand.MAIN_HAND));
     }
 
@@ -121,8 +133,7 @@ public class ClientTickHandler {
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ItemStack stack = event.getItemStack();
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
-            // Manually trigger the behavior logic here
-            // Then event.setCanceled(true) to stop the Wolf from sitting!
+            // Logic implementation context hook
         }
     }
 }

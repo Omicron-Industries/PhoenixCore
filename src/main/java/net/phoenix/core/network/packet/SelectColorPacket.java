@@ -21,18 +21,15 @@ public class SelectColorPacket {
         this.selectedIndex = selectedIndex;
     }
 
-    // Encoder
     public void encode(FriendlyByteBuf buf) {
         buf.writeEnum(hand);
         buf.writeVarInt(selectedIndex);
     }
 
-    // Decoder (Static factory)
     public static SelectColorPacket decode(FriendlyByteBuf buf) {
         return new SelectColorPacket(buf.readEnum(InteractionHand.class), buf.readVarInt());
     }
 
-    // Logic Handler
     public static void handle(SelectColorPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
@@ -40,10 +37,14 @@ public class SelectColorPacket {
 
             ItemStack stack = player.getItemInHand(msg.hand);
             if (stack.getItem() instanceof ChameleonSprayCanItem) {
+                // Wipe out the chromatic string tag so your custom HUD can see it's gone
+                if (stack.hasTag()) {
+                    stack.getTag().remove("chromatic_code");
+                }
+
                 DyeColor[] colors = DyeColor.values();
                 DyeColor selectedColor = null;
 
-                // If index is -1, selectedColor stays null (Solvent mode)
                 if (msg.selectedIndex >= 0 && msg.selectedIndex < colors.length) {
                     selectedColor = colors[msg.selectedIndex];
                 }

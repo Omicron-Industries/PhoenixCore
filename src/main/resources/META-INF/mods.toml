@@ -44,3 +44,9 @@ mandatory = false   # Set to false so the mod still runs without EMI
 versionRange = "[1.1.0,)" # Supports EMI 1.1.0 and newer
 ordering = "AFTER"
 side = "BOTH"
+[[dependencies.phoenixcore]]
+modId = "ars_nouveau"
+mandatory = true
+versionRange = "[0,)" # Or use a static range like "[4.0.0,)" depending on your gradle.properties variables
+ordering = "AFTER"
+side = "BOTH"

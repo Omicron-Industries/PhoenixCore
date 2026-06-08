@@ -20,6 +20,7 @@ public class WingFlightScreen extends Screen {
     private String flightMode;
     private int flightSpeed;
     private int flightDrift;
+    private int walkSpeed;
 
     private static final int W = 200;
     private static final int H = 220;

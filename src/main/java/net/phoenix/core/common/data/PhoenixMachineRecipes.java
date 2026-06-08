@@ -8,9 +8,13 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.PhoenixBeeMaterials;
@@ -161,6 +165,7 @@ public class PhoenixMachineRecipes {
          */
         PhoenixRecipeTypes.PHOENIXWARE_FUSION_MK1.recipeBuilder("carbon_and_helium_3_to_oxygen_plasma")
                 .inputFluids(GTMaterials.Carbon.getFluid(16))
+                .inputItems(GTMachines.MIXER[LV])
                 .inputFluids(GTMaterials.Helium3.getFluid(125))
                 .outputFluids(GTMaterials.Oxygen.getFluid(FluidStorageKeys.PLASMA, 125))
                 .duration(32)
@@ -282,7 +287,8 @@ public class PhoenixMachineRecipes {
                 .EUt(24576)
                 .save(provider);
 
-        CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder("electronic_circuit_mv_universal").EUt(VA[LV]).duration(300)
+        CIRCUIT_ASSEMBLER_RECIPES.recipeBuilder(PhoenixCore.id("electronic_circuit_mv_universal")).EUt(VA[LV])
+                .duration(300)
                 .inputItems(GOOD_CIRCUIT_BOARD)
                 .inputItems(CustomTags.LV_CIRCUITS, 2)
                 .inputItems(CustomTags.DIODES, 2)
@@ -312,7 +318,7 @@ public class PhoenixMachineRecipes {
                 .save(provider);
         PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("source_gem")
                 .inputItems(gem, Amethyst, 1)
-                .input(SourceRecipeCapability.CAP, new SourceIngredient(200))
+                .input(SourceRecipeCapability.CAP, new SourceIngredient(150))
                 .duration(40)
                 .EUt(GTValues.VA[GTValues.HV] / 2)
                 .outputItems(SOURCE_GEM, 2)
@@ -321,6 +327,7 @@ public class PhoenixMachineRecipes {
                 .inputItems(lens, Amethyst, 1)
                 .inputItems(ring, Gold, 2)
                 .inputItems(PhoenixItems.SOURCE_FIBER_MESH)
+                .inputItemsRanged(ring, Gold, UniformInt.of(2, 4))
                 .input(SourceRecipeCapability.CAP, new SourceIngredient(400))
                 .duration(400)
                 .EUt(GTValues.VA[GTValues.HV] / 2)
@@ -379,7 +386,7 @@ public class PhoenixMachineRecipes {
                 .save(provider);
         PhoenixRecipeTypes.SOURCE_EXTRACTION_RECIPES.recipeBuilder("source_from_charcoal")
                 .inputItems(gem, Charcoal, 2)
-                .output(SourceRecipeCapability.CAP, new SourceIngredient(120))
+                .output(SourceRecipeCapability.CAP, new SourceIngredient(130))
                 .duration(230)
                 .EUt(GTValues.VA[GTValues.HV])
                 .save(provider);
@@ -502,10 +509,18 @@ public class PhoenixMachineRecipes {
                 .save(provider);
         BIO_ENGINE_RECIPES.recipeBuilder("eighty_five_percent_pure_nevonian_steel_dust")
                 .notConsumable(SOURCE_FIBERS)
-                .input(SourceRecipeCapability.CAP, new SourceIngredient(200))
+                .input(SourceRecipeCapability.CAP, new SourceIngredient(450))
                 .outputFluids(FROST.getFluid(20))
                 .duration(140)
-                .EUt(-VA[HV] * 2L)
+                .EUt(-VA[EV])
+                .save(provider);
+
+        ROCK_BREAKER_RECIPES.recipeBuilder("deepslate")
+                .notConsumable(Blocks.COBBLED_DEEPSLATE.asItem())
+                .outputItems(Blocks.COBBLED_DEEPSLATE.asItem())
+                .adjacentFluids(FluidTags.LAVA, FluidTags.WATER)
+                .duration(16)
+                .EUt(VHA[EV])
                 .save(provider);
 
         SOURCE_REACTOR_RECIPES.recipeBuilder("source_titanium_filament_alloy")

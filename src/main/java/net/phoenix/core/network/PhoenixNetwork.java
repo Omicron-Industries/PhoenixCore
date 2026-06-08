@@ -4,6 +4,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import net.phoenix.core.integration.phoenix_chronicles.network.packet.C2SClaimQuestRewardPacket;
+import net.phoenix.core.integration.phoenix_chronicles.network.packet.S2CSyncQuestsPacket;
 import net.phoenix.core.network.packet.*;
 
 import java.util.Optional;
@@ -28,6 +30,21 @@ public class PhoenixNetwork {
                 SelectColorPacket::decode,
                 SelectColorPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        CHANNEL.registerMessage(id++,
+                C2STeslaDischargePacket.class,
+                C2STeslaDischargePacket::encode,
+                C2STeslaDischargePacket::new,
+                C2STeslaDischargePacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        // Append this registration right inside the bottom of your existing init() method:
+        CHANNEL.registerMessage(id++,
+                S2CSyncQuestsPacket.class,
+                S2CSyncQuestsPacket::encode,
+                S2CSyncQuestsPacket::new,
+                S2CSyncQuestsPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
         CHANNEL.registerMessage(id++,
                 UpdateWingSettingsPacket.class,
@@ -106,5 +123,20 @@ public class PhoenixNetwork {
                 S2CPlayStreamPacket::new,
                 S2CPlayStreamPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+
+        // ── Tesla Mode Toggling ───────────────────────────────────────────────
+        CHANNEL.registerMessage(id++,
+                C2SToggleTeslaModePacket.class,
+                C2SToggleTeslaModePacket::encode,
+                C2SToggleTeslaModePacket::new, // Reuses the FriendlyByteBuf constructor
+                C2SToggleTeslaModePacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        CHANNEL.registerMessage(id++,
+                C2SClaimQuestRewardPacket.class,
+                C2SClaimQuestRewardPacket::encode,
+                C2SClaimQuestRewardPacket::new, // Decodes via the FriendlyByteBuf constructor
+                C2SClaimQuestRewardPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 }

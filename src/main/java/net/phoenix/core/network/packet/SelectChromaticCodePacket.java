@@ -34,7 +34,6 @@ public class SelectChromaticCodePacket {
             ServerPlayer player = ctx.get().getSender();
             if (player != null) {
                 ItemStack stack = player.getItemInHand(msg.hand);
-                // Ensure we are actually holding the spray can before modifying NBT
                 if (stack.getItem() instanceof ChameleonSprayCanItem) {
                     ChameleonSprayCanBehaviour.setChromaticCode(stack, msg.code);
                 }

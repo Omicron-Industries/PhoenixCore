@@ -102,7 +102,6 @@ public class PhoenixLangHandler {
         provider.add("config.jade.plugin_phoenixcore.source_tank_info", "Source Tank Info");
 
         // Keybinds
-
         provider.add("key.categories.phoenixcore", "PhoenixCore");
         provider.add("key.phoenixcore.wing_flight_gui", "Wing Flight Settings");
         provider.add("key.phoenixcore.tesla_mode", "Enable Tesla Mode");
@@ -112,20 +111,27 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.phantasia_menu", "Open Phantasia Menu");
         provider.add("key.phoenixcore.recipe_builder", "Open Recipe Builder");
         provider.add("key.phoenixcore.spray_can_menu", "Open Spray Can Menu");
-        // Chameleon Spray Can
+
+        // Chameleon Spray Can & Materials
         provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
+        provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint"); // Registers the material fluid name
         provider.add("gui.phoenixcore.color_select.title", "Select Color");
         provider.add("behaviour.paintspray.chameleon.status.color", "§7Mode: §f%s");
         provider.add("behaviour.paintspray.chameleon.status.solvent", "§7Mode: §dSolvent");
         provider.add("behaviour.paintspray.chameleon.tooltip.current_color", "Current Color: %s");
         provider.add("behaviour.paintspray.chameleon.tooltip.solvent", "Current: Solvent");
         provider.add("behaviour.paintspray.chameleon.tooltip.info", "Scroll or use the Keybind to change color.");
+        provider.add("behaviour.paintspray.chameleon.tooltip.fluid", "§7Paint: %s / %s mB"); // Formats: current / max
+                                                                                             // fluid units
+        provider.add("behaviour.paintspray.chameleon.message.out_of_paint", "§cOut of Prismatic Paint!");
         provider.add("behaviour.paintspray.solvent.short", "Solvent");
 
         // Tesla Binder Item
         provider.add("item.phoenixcore.tesla_binder.linked", "§aLinked to: §f%s");
         provider.add("item.phoenixcore.tesla_binder.unlinked", "§cNot Linked");
         provider.add("item.phoenixcore.tesla_binder.frequency", "§7Frequency: §b%s");
+
+        provider.add("item.phoenixcore.chameleon_spray_can.with_color", "%s (%s)");
 
         // Placeholder/System Info
         multiLang(provider, "gtceu.placeholder_info.shieldStability",

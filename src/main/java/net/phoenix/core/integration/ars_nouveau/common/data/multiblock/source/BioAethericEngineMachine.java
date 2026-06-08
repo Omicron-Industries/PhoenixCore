@@ -115,8 +115,8 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
     }
 
     private float getFloraBoost(BlockState state) {
-        if (state.is(PTags.SOUL_FLOWERS)) return 0.01f;
-        if (state.is(BlockTags.FLOWERS)) return 0.005f;
+        if (state.is(PTags.SOUL_FLOWERS)) return 0.05f;
+        if (state.is(BlockTags.FLOWERS)) return 0.01f;
         return 0.0f;
     }
 

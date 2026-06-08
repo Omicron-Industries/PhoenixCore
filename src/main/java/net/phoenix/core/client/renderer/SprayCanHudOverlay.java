@@ -1,4 +1,4 @@
-package net.phoenix.core.client.render;
+package net.phoenix.core.client.renderer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -21,14 +21,23 @@ public class SprayCanHudOverlay {
         }
 
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
-            DyeColor color = ChameleonSprayCanBehaviour.getColor(stack);
             Component text;
 
-            if (color != null) {
-                Component colorName = Component.translatable("color.minecraft." + color.getSerializedName());
-                text = Component.translatable("behaviour.paintspray.chameleon.status.color", colorName);
+            // 1. Check if a special chromatic compatibility code is active first
+            String chromCode = ChameleonSprayCanBehaviour.getChromaticCode(stack);
+            if (chromCode != null && !chromCode.isEmpty()) {
+                // Formats with the formatting code prefix directly into the literal component.
+                // Using § + the code triggers the pulsing/waving text effects flawlessly on the HUD!
+                text = Component.literal("Mode: §" + chromCode + "Chromatic (" + chromCode + ")");
             } else {
-                text = Component.translatable("behaviour.paintspray.chameleon.status.solvent");
+                // 2. Fallback to standard color tracking if no custom code tag exists
+                DyeColor color = ChameleonSprayCanBehaviour.getColor(stack);
+                if (color != null) {
+                    Component colorName = Component.translatable("color.minecraft." + color.getSerializedName());
+                    text = Component.translatable("behaviour.paintspray.chameleon.status.color", colorName);
+                } else {
+                    text = Component.translatable("behaviour.paintspray.chameleon.status.solvent");
+                }
             }
 
             int x = width / 2;

@@ -18,6 +18,7 @@ However for the code involving cleanroom and hpca componet parts, these are an e
 - Thanks to NegaNote of Gtm Utils for code to learn from and use of the SterileCleaningMaintence Hatch texture [GTM Utils Github] (https://github.com/NegaNote/GregTech-Modern-Utilities)
 - Thans to Ravemaker, Ensign Evident, and Qwerty from the Sky of Grind/Phoenix Forge Technologies discords for advice.
 - Thanks to Monifactory for some of the textures [MoniFactory Github] (https://github.com/ThePansmith/Monifactory)
+- Thanks to DiggyPT for some textures (crystal rose, fission componenet blocks)
 - Thanks to the GregTech Modern team for use of code such as HPCAMachine and the HPCAComponet classes [GTM Github] (https://github.com/GregTechCEu/GregTech-Modern)
 - Thanks to Jurrejelle of the Gregtech Modern team for code help and advice(He's fixed a lot of bug's that impacted PFT and PhoenixCore devlopment so huge thanks) (https://github.com/jurrejelle)
 

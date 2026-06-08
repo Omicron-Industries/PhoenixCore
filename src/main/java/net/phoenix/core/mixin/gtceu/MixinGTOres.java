@@ -15,6 +15,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.common.data.materials.PhoenixMaterialFlags;
+import net.phoenix.core.common.data.worldgen.CrystalRoseIndicatorGenerator;
 import net.phoenix.core.mixin.accessor.GTOresAccessor;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -80,15 +81,14 @@ public abstract class MixinGTOres {
                 def.indicatorGenerators().clear();
 
                 SurfaceIndicatorGenerator.IndicatorPlacement placement;
-
                 if (def.layer() == WorldGenLayers.NETHERRACK) {
                     placement = SurfaceIndicatorGenerator.IndicatorPlacement.BELOW;
                 } else {
-
                     placement = SurfaceIndicatorGenerator.IndicatorPlacement.ABOVE;
                 }
 
-                def.indicatorGenerators().add(new SurfaceIndicatorGenerator(def)
+                // Using your custom indicator generator instead!
+                def.indicatorGenerators().add(new CrystalRoseIndicatorGenerator(def)
                         .state(phoenixCore$getCrystalRoseState(primaryMat))
                         .placement(placement)
                         .radius(3)

@@ -200,6 +200,18 @@ public class PhoenixConfigs {
 
     public static class FeatureConfigs {
 
+        @Configurable
+        @Configurable.Comment("The maximum Prismatic Paint capacity of the Chameleon Spray Can (in mB).")
+        public int chameleonSprayCanCapacity = 8000;
+
+        @Configurable
+        @Configurable.Comment("The amount of Prismatic Paint consumed per block/entity recolored (in mB).")
+        public int chameleonSprayCanCostPerOperation = 50;
+
+        @Configurable
+        @Configurable.Comment("The fluid consumption multiplier applied when chain-painting/bulk-painting blocks (e.g. 0.85 equals a 15% discount). Set to 1.0 to disable discounts.")
+        public double chameleonSprayCanBulkMultiplier = 0.85;
+
         @Configurable.Comment({ "Whether the ME Tag Input Bus and Hatch are enabled" })
         public boolean tagInputsEnabled = true;
 

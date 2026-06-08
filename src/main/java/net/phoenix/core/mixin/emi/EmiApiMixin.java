@@ -55,7 +55,12 @@ public abstract class EmiApiMixin {
                     fluid = gto$getFluid(fluidName);
                 }
             }
-            return fluid == Fluids.EMPTY ? stack : EmiStack.of(fluid);
+
+            if (fluid == Fluids.EMPTY || gto$isLiquidConcrete(fluid)) {
+                return stack;
+            }
+
+            return EmiStack.of(fluid);
         }
         return stack;
     }
@@ -64,5 +69,13 @@ public abstract class EmiApiMixin {
     private static Fluid gto$getFluid(String location) {
         var fluid = ForgeRegistries.FLUIDS.getValue(ResourceLocation.parse(location));
         return fluid == null ? Fluids.EMPTY : fluid;
+    }
+
+    @Unique
+    private static boolean gto$isLiquidConcrete(Fluid fluid) {
+        ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
+        if (id == null) return false;
+
+        return id.getNamespace().equals("gtceu") && id.getPath().equals("concrete");
     }
 }

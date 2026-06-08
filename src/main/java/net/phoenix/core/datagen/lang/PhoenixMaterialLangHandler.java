@@ -122,6 +122,7 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.phoenixite", "Phoenixite");
         provider.add("material.phoenixcore.akashic_bismuthite", "Akashic Bismuthite");
         provider.add("material.phoenixcore.starnite", "Starnite");
+        provider.add("material.phoenixcore.prismatic_paint", "Prismatic Paint");
         provider.add("material.phoenixcore.entropy_rich_ore", "Entropy-Rich Ore");
         provider.add("material.phoenixcore.fractaline_core", "Fractaline Core");
         provider.add("material.phoenixcore.voltanite_ore", "Voltanite");

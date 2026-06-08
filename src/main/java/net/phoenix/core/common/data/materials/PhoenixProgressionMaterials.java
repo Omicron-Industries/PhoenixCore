@@ -47,9 +47,15 @@ public class PhoenixProgressionMaterials {
     public static Material DARK_NEBULA_INFUSED_IRIDIUM, ELDRITCH_VOIDSTEEL, AKASHIC_CHRONO_METAL,
             ABSOLUTE_ZERO_ZERONIUM;
     public static Material MULTIVERSAL_HYPERALLOY, GLITCHED_CORRUPTION_SUBSTRATE, EVENT_HORIZON_MATTER, ANTIMATTER,
-            RESONANT_ENDER;
+            RESONANT_ENDER, PRISMATIC_PAINT;
 
     public static void register() {
+        PRISMATIC_PAINT = new Material.Builder(PhoenixCore.id("prismatic_paint"))
+                .fluid()
+                .color(0x00FFFF)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
         RESONANT_ENDER = new Material.Builder(PhoenixCore.id("resonant_ender"))
                 .ingot()
                 .fluid()

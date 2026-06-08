@@ -38,10 +38,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
-import net.phoenix.core.client.keybind.PhoenixKeybinds;
 import net.phoenix.core.configs.PhoenixConfigs;
 import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.mixin.accessor.AbilitiesAccessor;
+import net.phoenix.core.utils.TeamUtils;
 
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
@@ -90,29 +90,28 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         if (item == null) return;
 
         CompoundTag data = itemStack.getOrCreateTag();
-        UUID teamID = player.getUUID();
+        UUID teamID = net.phoenix.core.utils.TeamUtils.getTeamIdOrPlayerFallback(player.getUUID());
+        if (teamID == null) {
+            teamID = player.getUUID();
+        }
 
         ServerLevel serverLevel = !world.isClientSide && world instanceof ServerLevel sl ? sl : null;
         TeslaTeamEnergyData teslaData = serverLevel != null ? TeslaTeamEnergyData.get(serverLevel) : null;
-        boolean networkOnline = teslaData != null && teslaData.isOnline(teamID);
-        boolean containerOpen = !world.isClientSide && player.containerMenu != player.inventoryMenu;
 
-        boolean currentTeslaMode = data.getBoolean("teslaMode");
-        boolean teslaKeyDown = world.isClientSide && PhoenixKeybinds.TESLA_MODE.isDown();
-        if (teslaKeyDown) {
-            long lastToggle = data.getLong("lastToggleTime");
-            if (world.getGameTime() - lastToggle > 10) {
-                currentTeslaMode = !currentTeslaMode;
-                data.putBoolean("teslaMode", currentTeslaMode);
-                data.putLong("lastToggleTime", world.getGameTime());
-                world.playSound(null, player.blockPosition(),
-                        currentTeslaMode ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE,
-                        SoundSource.PLAYERS, 1.0F, 2.0F);
-                // if (currentTeslaMode && player instanceof ServerPlayer sp) {
-                // TriggerRegistry.fire(sp, "suit_event", "neural_link_established");
-                // }
-            }
+        // ── FIX: Synchronize network state via NBT ────────────────────────
+        boolean networkOnline;
+        if (serverLevel != null) {
+            // Server computes the actual truth from SavedData
+            networkOnline = teslaData != null && teslaData.isOnline(teamID);
+            data.putBoolean("TeslaNetworkOnline", networkOnline);
+        } else {
+            // Client safely reads what the server synced down
+            networkOnline = data.getBoolean("TeslaNetworkOnline");
         }
+        // ──────────────────────────────────────────────────────────────────
+
+        boolean containerOpen = !world.isClientSide && player.containerMenu != player.inventoryMenu;
+        boolean currentTeslaMode = data.getBoolean("teslaMode");
 
         if (!containerOpen && serverLevel != null && networkOnline && currentTeslaMode) {
             long room = item.getMaxCharge() - item.getCharge();
@@ -130,7 +129,6 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                     }
                 }
             }
-
         }
 
         if (type == ArmorItem.Type.CHESTPLATE) {
@@ -162,8 +160,12 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         boolean sprinting = SyncedKeyMappings.VANILLA_FORWARD.isKeyDown(player) && player.isSprinting();
         if (item.canUse(energyPerUse / 100) && sprinting && player.onGround()) {
-            float speed = player.isInWater() ? 0.1F : 0.25F;
-            player.moveRelative(speed, new Vec3(0, 0, 1));
+
+            // 1. Use a much smaller acceleration multiplier (e.g., your LEGGING_ACCEL = 0.085D)
+            // 2. Scale it by the player's existing forward movement efficiency
+            float speedModifier = player.isInWater() ? 0.02F : (float) LEGGING_ACCEL;
+
+            player.moveRelative(speedModifier, new Vec3(0, 0, 1));
 
             if (player.level().getGameTime() % 10 == 0) {
                 item.discharge(energyPerUse / 100, item.getTier(), true, false, false);
@@ -250,19 +252,16 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
     private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel,
                                   boolean isClientSide) {
-        boolean jumping = SyncedKeyMappings.VANILLA_JUMP.isKeyDown(player);
-        boolean sneaking = SyncedKeyMappings.VANILLA_SNEAK.isKeyDown(player);
+        // Keep your vanilla state checks for movement
+        boolean jumping = player.getDeltaMovement().y > 0 && !player.onGround();
+        boolean sneaking = player.isShiftKeyDown();
         boolean boostedJump = data.getBoolean("boostedJump");
         boolean stepAssist = data.getBoolean("stepAssist");
         int toggleBootsTimer = data.getInt("toggleBootsTimer");
 
+        // Cooldown tracking is fine to leave on the server tick
         if (serverLevel != null) {
             int dischargeCooldown = data.getInt("dischargeCooldown");
-
-            if (isClientSide && PhoenixKeybinds.TESLA_DISCHARGE.isDown() && dischargeCooldown == 0) {
-                doTeslaDischarge(serverLevel, player, item);
-                data.putInt("dischargeCooldown", 100);
-            }
             if (dischargeCooldown > 0) data.putInt("dischargeCooldown", dischargeCooldown - 1);
         }
 
@@ -286,13 +285,14 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         if (toggleBootsTimer > 0) data.putInt("toggleBootsTimer", toggleBootsTimer - 1);
 
         if (boostedJump) {
-            if (serverLevel == null) {
+            if (serverLevel == null) { // Client Side Physics
                 if (item.canUse(energyPerUse / 100) && player.onGround()) {
                     this.charge = 1.0F;
                 }
                 Vec3 delta = player.getDeltaMovement();
+                // Use player vertical velocity to check jumping safely
                 if (delta.y >= 0.0D && this.charge > 0.0F && !player.isInWater()) {
-                    if (jumping) {
+                    if (player.getDeltaMovement().y > 0.05 /* Replaces vanilla jump key mapping check */) {
                         if (this.charge == 1.0F) player.setDeltaMovement(delta.x * 3.6D, delta.y, delta.z * 3.6D);
                         player.addDeltaMovement(new Vec3(0.0, this.charge * 0.32, 0.0));
                         this.charge *= 0.7F;
@@ -300,7 +300,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                         this.charge = 0.0F;
                     }
                 }
-            } else {
+            } else { // Server Side Energy Draw
                 boolean prevOnGround = data.getBoolean("onGround");
                 if (prevOnGround && !player.onGround() && jumping && !sneaking) {
                     item.discharge(energyPerUse / 100, item.getTier(), true, false, false);
@@ -435,8 +435,12 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             player.onUpdateAbilities();
         }
 
-        if (!player.onGround() && !player.isFallFlying() && SyncedKeyMappings.VANILLA_JUMP.isKeyDown(player)) {
-            player.startFallFlying();
+        if (!player.onGround() && !player.isFallFlying() && world.isClientSide) {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            // Use the vanilla key mapping directly to consume the discrete second tap
+            if (mc.options.keyJump.consumeClick() && player.getDeltaMovement().y < 0.0) {
+                player.startFallFlying();
+            }
         }
 
         if (player.isFallFlying()) {
@@ -520,10 +524,14 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             return;
         }
 
+        // Replace the old SyncedKeyMappings.VANILLA_JUMP check with this:
         if (flightMode.equals("creative+wings")) {
-            if (!player.getAbilities().flying && !player.isFallFlying() && !player.onGround() &&
-                    SyncedKeyMappings.VANILLA_JUMP.isKeyDown(player)) {
-                player.startFallFlying();
+            if (!player.getAbilities().flying && !player.isFallFlying() && !player.onGround() && world.isClientSide) {
+                net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                // Use the vanilla key mapping directly to consume the discrete second tap
+                if (mc.options.keyJump.consumeClick() && player.getDeltaMovement().y < 0.0) {
+                    player.startFallFlying();
+                }
             }
 
             if (player.isFallFlying()) {
@@ -713,7 +721,10 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             return;
         }
 
+        // Flight mode fallback fix
         String fMode = nbt.getString("FlightMode");
+        if (fMode.isEmpty()) fMode = "basic";
+
         int speed = nbt.getInt("FlightSpeed");
         int drift = nbt.getInt("FlightDrift");
 
@@ -739,66 +750,77 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             this.HUD.newString(Component.literal("❤ REBIRTH: READY").withStyle(ChatFormatting.GREEN));
         }
 
-        String storedStr = nbt.getString("netStored");
-        String capacityStr = nbt.getString("netCapacity");
+        // ── FIX: Read the authoritative server-synchronized network state ──
+        boolean networkIsOnline = nbt.getBoolean("TeslaNetworkOnline");
 
-        if (storedStr.isEmpty() || capacityStr.isEmpty()) {
+        if (!networkIsOnline) {
+            // Explicitly display Offline if the server calculated that the team network isn't linked
             this.HUD.newString(
-                    Component.literal("⚡ Syncing Network...").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+                    Component.literal("⚡ NETWORK: OFFLINE").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         } else {
-            try {
-                java.math.BigInteger storedBI = new java.math.BigInteger(storedStr);
-                java.math.BigInteger capacityBI = new java.math.BigInteger(capacityStr);
-                long netLoad = nbt.getLong("netDrain");
+            String storedStr = nbt.getString("netStored");
+            String capacityStr = nbt.getString("netCapacity");
 
-                var cfg = PhoenixConfigs.wingFlight;
-                float speedPercent = (Math.max(1, speed) - 1) / 9.0f;
+            if (storedStr.isEmpty() || capacityStr.isEmpty()) {
+                this.HUD.newString(
+                        Component.literal("⚡ Syncing Network...").withStyle(ChatFormatting.GRAY,
+                                ChatFormatting.ITALIC));
+            } else {
+                try {
+                    java.math.BigInteger storedBI = new java.math.BigInteger(storedStr);
+                    java.math.BigInteger capacityBI = new java.math.BigInteger(capacityStr);
+                    long netLoad = nbt.getLong("netDrain");
 
-                long baseFlightDrain = 0;
-                if (fMode.equals("powered")) {
-                    baseFlightDrain = cfg.poweredFlightEUt;
-                } else if (fMode.startsWith("creative")) {
-                    baseFlightDrain = cfg.creativeFlightEUt;
-                } else {
-                    baseFlightDrain = 0;
-                }
+                    var cfg = PhoenixConfigs.wingFlight;
+                    float speedPercent = (Math.max(1, speed) - 1) / 9.0f;
 
-                long currentFlightCost = 0;
-
-                if (baseFlightDrain > 0) {
-                    if (mc.player.getAbilities().flying || mc.player.isFallFlying()) {
-                        currentFlightCost = (long) (baseFlightDrain * (0.5 + (speedPercent * 1.5)));
+                    long baseFlightDrain = 0;
+                    if (fMode.equals("powered")) {
+                        baseFlightDrain = cfg.poweredFlightEUt;
+                    } else if (fMode.startsWith("creative")) {
+                        baseFlightDrain = cfg.creativeFlightEUt;
+                    } else {
+                        baseFlightDrain = 0;
                     }
-                }
 
-                long totalSuitLoad = currentFlightCost + nbt.getLong("chargingDrain");
+                    long currentFlightCost = 0;
 
-                int x = 2;
-                int y = guiGraphics.guiHeight() - 20;
+                    if (baseFlightDrain > 0) {
+                        if (mc.player.getAbilities().flying || mc.player.isFallFlying()) {
+                            currentFlightCost = (long) (baseFlightDrain * (0.5 + (speedPercent * 1.5)));
+                        }
+                    }
 
-                if (totalSuitLoad > 0) {
+                    long totalSuitLoad = currentFlightCost + nbt.getLong("chargingDrain");
+
+                    int x = 2;
+                    int y = guiGraphics.guiHeight() - 20;
+
+                    if (totalSuitLoad > 0) {
+                        guiGraphics.drawString(mc.font,
+                                "§c-" + formatTeslaEnergy(java.math.BigInteger.valueOf(totalSuitLoad)) + " EU/t (Suit)",
+                                x + 1, y - 27, 0xFFFFFFFF, false);
+                    }
+                    if (netLoad > 0) {
+                        guiGraphics.drawString(mc.font,
+                                "§4-" + formatTeslaEnergy(java.math.BigInteger.valueOf(netLoad)) + " EU/t (Net)", x + 1,
+                                y - 18, 0xFFFFFFFF, false);
+                    }
+
                     guiGraphics.drawString(mc.font,
-                            "§c-" + formatTeslaEnergy(java.math.BigInteger.valueOf(totalSuitLoad)) + " EU/t (Suit)",
-                            x + 1, y - 27, 0xFFFFFFFF, false);
-                }
-                if (netLoad > 0) {
-                    guiGraphics.drawString(mc.font,
-                            "§4-" + formatTeslaEnergy(java.math.BigInteger.valueOf(netLoad)) + " EU/t (Net)", x + 1,
-                            y - 18, 0xFFFFFFFF, false);
-                }
+                            "⚡ " + formatTeslaEnergy(storedBI) + " / " + formatTeslaEnergy(capacityBI), x + 1, y - 9,
+                            0xFFAAAAAA, false);
 
-                guiGraphics.drawString(mc.font,
-                        "⚡ " + formatTeslaEnergy(storedBI) + " / " + formatTeslaEnergy(capacityBI), x + 1, y - 9,
-                        0xFFAAAAAA, false);
+                    float fill = capacityBI.signum() > 0 ? new java.math.BigDecimal(storedBI)
+                            .divide(new java.math.BigDecimal(capacityBI), 4, java.math.RoundingMode.HALF_UP)
+                            .floatValue() :
+                            0f;
+                    fill = Math.max(0f, Math.min(1f, fill));
 
-                float fill = capacityBI.signum() > 0 ? new java.math.BigDecimal(storedBI)
-                        .divide(new java.math.BigDecimal(capacityBI), 4, java.math.RoundingMode.HALF_UP).floatValue() :
-                        0f;
-                fill = Math.max(0f, Math.min(1f, fill));
+                    renderEnergyBar(guiGraphics, x, y, 80, fill);
 
-                renderEnergyBar(guiGraphics, x, y, 80, fill);
-
-            } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {}
+            }
         }
 
         this.HUD.draw(guiGraphics);
@@ -838,7 +860,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         }
     }
 
-    private void doTeslaDischarge(ServerLevel level, Player player, IElectricItem armorItem) {
+    public void doTeslaDischarge(ServerLevel level, Player player, IElectricItem armorItem) {
         java.math.BigInteger networkCost = BigInteger.valueOf(5000);
         long armorCost = 5000L;
 
@@ -948,7 +970,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                 player.level() instanceof ServerLevel serverLevel) {
 
             TeslaTeamEnergyData data = TeslaTeamEnergyData.get(serverLevel);
-            UUID teamID = player.getUUID();
+            UUID teamID = net.phoenix.core.utils.TeamUtils.getTeamIdOrPlayerFallback(player.getUUID());
 
             if (data.isOnline(teamID)) {
                 CompoundTag nbt = itemStack.getOrCreateTag();

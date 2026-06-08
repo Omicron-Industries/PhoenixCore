@@ -15,7 +15,6 @@
     "ae2.MixinCutterHook",
     "ars.DominionWandMixin",
     "emi.EmiApiMixin",
-    "gtceu.ColorSprayBehaviourMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
     "gtceu.MixinGTOres",
     "gtceu.WorkableMultiblockMachineMixin",
@@ -25,9 +24,6 @@
   "client": [
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
-    "gtceu.AccessorWorldSceneRenderer",
-    "gtceu.MixinSceneWidget",
-    "gtceu.MixinWorldSceneRenderer",
     "minecraft.ChannelMixin",
     "minecraft.GameRendererMixin",
     "minecraft.GuiGraphicsCountSuffixMixin",

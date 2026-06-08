@@ -9,24 +9,29 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 public class TooltipItem extends Item {
 
-    private final String[] tooltipKeys;
+    private final Supplier<Component>[] tooltipBuilders;
 
-    public TooltipItem(Properties properties, String... tooltipKeys) {
+    @SafeVarargs
+    public TooltipItem(Properties properties, Supplier<Component>... tooltipBuilders) {
         super(properties);
-        this.tooltipKeys = tooltipKeys;
+        this.tooltipBuilders = tooltipBuilders;
     }
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level,
                                 @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
-        for (String line : tooltipKeys) {
-            tooltipComponents.add(Component.literal(line));
+        for (Supplier<Component> builder : tooltipBuilders) {
+            if (builder != null) {
+                tooltipComponents.add(builder.get());
+            }
         }
+
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
     }
 }

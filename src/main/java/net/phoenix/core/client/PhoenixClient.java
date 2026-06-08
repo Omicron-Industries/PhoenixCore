@@ -25,10 +25,6 @@ import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.client.particle.PhoenixParticles;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
-import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchScreen;
-import net.phoenix.core.integration.phantasia.PhantasiaKeybind;
-import net.phoenix.core.integration.phantasia.PhantasiaScriptLoader;
-import net.phoenix.core.integration.phantasia.client.PhantasiaSceneSelectionScreen;
 import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
 import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
@@ -45,8 +41,6 @@ public class PhoenixClient {
 
     public static void init(IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
-        MinecraftForge.EVENT_BUS.register(PhantasiaKeybind.class);
-        MinecraftForge.EVENT_BUS.register(PhantasiaClientEvents.class);
 
         // Hook VocalVibrancyClient into the client tick so LiveAcousticTracker
         // fires every tick and sends bass data to the server.
@@ -118,22 +112,16 @@ public class PhoenixClient {
 
     @SubscribeEvent
     public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("spray_can_info", net.phoenix.core.client.render.SprayCanHudOverlay.HUD_SPRAY_CAN);
+        event.registerAboveAll("spray_can_info", net.phoenix.core.client.renderer.SprayCanHudOverlay.HUD_SPRAY_CAN);
     }
 
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             MenuScreens.register(PhoenixCore.RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
-            MenuScreens.register(PhoenixCore.SOURCE_HATCH_MENU.get(), SourceHatchScreen::new);
+
             ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
             EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
-            PhantasiaScriptLoader.discoverAndLoad();
         });
-    }
-
-    private static void addPhantasiaMachine(com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition def) {
-        if (!PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.contains(def))
-            PhantasiaSceneSelectionScreen.PHANTASIA_SCENES.add(def);
     }
 }
