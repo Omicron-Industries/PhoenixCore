@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/msr_liner_liner_hastelloy"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/msr_liner_liner_hastelloy_active"
+    }
+  }
+}

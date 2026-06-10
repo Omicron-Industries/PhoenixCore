@@ -150,6 +150,7 @@ public class PhoenixMaterials {
                 toolProperty.addTypes(PhoenixToolType.SCREWDRIVER_ZPM);
             }
 
+
             if (toolProperty != null && toolProperty.hasType(GTToolType.BUZZSAW)) {
                 toolProperty.addTypes(PhoenixToolType.BUZZSAW_MV);
                 toolProperty.addTypes(PhoenixToolType.BUZZSAW_HV);
@@ -186,4 +187,7 @@ public class PhoenixMaterials {
 
         }
     }
+
+
+
 }

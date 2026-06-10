@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "phoenixcore:block/msr_liner_liner_graphite"
+    },
+    "active=true": {
+      "model": "phoenixcore:block/msr_liner_liner_graphite_active"
+    }
+  }
+}

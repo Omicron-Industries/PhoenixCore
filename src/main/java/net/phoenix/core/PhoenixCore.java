@@ -5,6 +5,9 @@ import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialEvent;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialRegistryEvent;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.PostMaterialEvent;
+import com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty;
+import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.data.chemical.material.properties.ToolProperty;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -16,14 +19,17 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -43,6 +49,7 @@ import net.phoenix.core.common.data.PhoenixRecipeTypes;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.*;
 import net.phoenix.core.common.data.recipeConditions.FluidInHatchCondition;
+import net.phoenix.core.common.data.worldgen.CrystalRoseIndicatorGenerator;
 import net.phoenix.core.common.machine.*;
 import net.phoenix.core.common.machine.multiblock.Shield;
 import net.phoenix.core.configs.PhoenixConfigs;
@@ -92,6 +99,7 @@ public class PhoenixCore {
 
     public PhoenixCore() {
         PhoenixCore.init();
+        CrystalRoseIndicatorGenerator.register();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);
@@ -205,6 +213,59 @@ public class PhoenixCore {
         PhoenixBeeMachines.init();
         PhoenixResearchMachines.init();
         PhoenixTeslaMachines.init();
+    }
+
+    @SubscribeEvent
+    public void onServerAboutToStart(ServerAboutToStartEvent event) {
+        PhoenixCore.LOGGER.info("🔥 Running Phantasia Blast Furnace & Vacuum Freezer Property Scan...");
+        int blastCount = 0;
+
+        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+            if (material.hasProperty(PropertyKey.BLAST)) {
+                BlastProperty blastProps = material.getProperty(PropertyKey.BLAST);
+
+                // 1. Core properties matching source getters
+                int blastTemp = blastProps.getBlastTemperature();
+                int durationOverride = blastProps.getDurationOverride();
+                int eutOverride = blastProps.getEUtOverride();
+                int vacuumDuration = blastProps.getVacuumDurationOverride();
+                int vacuumEUt = blastProps.getVacuumEUtOverride();
+
+                // 2. Parse Gas Tier and matching automated recipe ingredients safely
+                BlastProperty.GasTier gasTierEnum = blastProps.getGasTier();
+                String gasTierName = (gasTierEnum != null) ? gasTierEnum.name() : "NONE";
+                String requiredGasFluid = "None";
+
+                if (gasTierEnum != null) {
+                    try {
+                        // Retrieves the underlying ingredient description (e.g. "1000mB Nitrogen")
+                        var fluidIngredient = gasTierEnum.getFluid();
+                        if (fluidIngredient != null && !fluidIngredient.isEmpty()) {
+                            requiredGasFluid = fluidIngredient.toString();
+                        }
+                    } catch (Exception e) {
+                        requiredGasFluid = "Error resolving gas fluid";
+                    }
+                }
+
+                // 3. Log everything cleanly
+                PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
+                                "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
+                                "| Gas Tier: {} | Gas Input Required: {} " +
+                                "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
+                        material.getName(),
+                        blastTemp,
+                        eutOverride,
+                        durationOverride,
+                        gasTierName,
+                        requiredGasFluid,
+                        vacuumEUt,
+                        vacuumDuration
+                );
+                blastCount++;
+            }
+        }
+        PhoenixCore.LOGGER.info("🔥 Blast Scan complete. Successfully logged {} thermodynamic properties.", blastCount);
     }
 
     public static ResourceLocation id(String path) {

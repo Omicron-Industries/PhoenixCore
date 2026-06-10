@@ -178,6 +178,35 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
         return null; // Fallback failure state if it hits the sky limit
     }
 
+    @SuppressWarnings("unchecked")
+    public static void register() {
+        try {
+            // 1. Establish the ResourceKey for the custom vanilla registry used by GregTech
+            net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>>> registryKey = net.minecraft.resources.ResourceKey
+                    .createRegistryKey(new net.minecraft.resources.ResourceLocation("gtceu", "indicator_generator"));
+
+            // 2. Grab the central custom registry map from Minecraft's core built-in registry
+            net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>> registry = (net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>>) net.minecraft.core.registries.BuiltInRegistries.REGISTRY
+                    .get(registryKey.location());
+
+            if (registry != null) {
+                // 3. Register your codec directly into the system
+                net.minecraft.core.Registry.register(
+                        registry,
+                        new net.minecraft.resources.ResourceLocation("phoenix", "crystal_rose_indicator"),
+                        CODEC);
+                com.gregtechceu.gtceu.GTCEu.LOGGER
+                        .info("[Phoenix Core] Successfully registered CrystalRoseIndicatorGenerator codec.");
+            } else {
+                com.gregtechceu.gtceu.GTCEu.LOGGER
+                        .error("[Phoenix Core] Could not find 'gtceu:indicator_generator' registry wrapper!");
+            }
+        } catch (Exception e) {
+            com.gregtechceu.gtceu.GTCEu.LOGGER
+                    .error("[Phoenix Core] Critical error during Indicator Generator codec registration!", e);
+        }
+    }
+
     @Nullable
     @Override
     public Either<BlockState, Material> block() {
