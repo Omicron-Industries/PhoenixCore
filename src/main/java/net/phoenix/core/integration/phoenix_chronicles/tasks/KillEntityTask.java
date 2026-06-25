@@ -78,7 +78,7 @@ public class KillEntityTask extends QuestTask {
         });
     }
 
-    /** e.g. "7/10" — used by the task row renderer. */
+    @Override
     public String getProgressString(Player player) {
         int current = player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
                 .map(data -> data.getOrCreateTaskProgress(this.getTaskId()).getInt("current"))

@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.vocal_resonance;
 
-import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
@@ -14,10 +13,19 @@ import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
 import lombok.Getter;
 
+/**
+ * A structural multiblock part that gates which audio modes the
+ * {@link ResonantJukeboxMachine} can use (disc, library, stream).
+ *
+ * Recipe capability (SoundIngredient matching) lives on the controller itself
+ * via {@link net.phoenix.core.integration.vocal_resonance.ingredient.NotifiableSoundHandler},
+ * which is registered as a field trait on ResonantJukeboxMachine — exactly like discInventory.
+ * This hatch has no recipe handler of its own.
+ */
 public class SoundHatchPartMachine extends TieredPartMachine {
 
-    protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(SoundHatchPartMachine.class,
-            TieredPartMachine.MANAGED_FIELD_HOLDER);
+    protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
+            SoundHatchPartMachine.class, TieredPartMachine.MANAGED_FIELD_HOLDER);
 
     @Getter
     @Persisted
@@ -25,7 +33,7 @@ public class SoundHatchPartMachine extends TieredPartMachine {
     private final SoundHatchType soundType;
 
     public SoundHatchPartMachine(IMachineBlockEntity holder, int tier, SoundHatchType type) {
-        super(holder, tier); // TieredPartMachine doesn't need IO
+        super(holder, tier);
         this.soundType = type;
     }
 
@@ -36,16 +44,12 @@ public class SoundHatchPartMachine extends TieredPartMachine {
 
     @Override
     public Widget createUIWidget() {
-        // 1. Create the main group with a standard size
         WidgetGroup group = new WidgetGroup(0, 0, 176, 90);
-
-        // 2. SET THE BACKGROUND - This fixes the black screen
         group.setBackground(GuiTextures.BACKGROUND);
 
-        // 3. Add Info Widgets
         group.addWidget(new LabelWidget(10, 10, "§b" + soundType.name() + " INTERFACE"));
-        group.addWidget(
-                new LabelWidget(10, 30, "§7Hardware Tier: §f" + com.gregtechceu.gtceu.api.GTValues.VNF[getTier()]));
+        group.addWidget(new LabelWidget(10, 30,
+                "§7Hardware Tier: §f" + com.gregtechceu.gtceu.api.GTValues.VNF[getTier()]));
 
         String desc = switch (soundType) {
             case DISC -> "Local playback for standard Music Discs.";
@@ -54,7 +58,8 @@ public class SoundHatchPartMachine extends TieredPartMachine {
         };
 
         group.addWidget(new LabelWidget(10, 50, "§8" + desc));
-        group.addWidget(new LabelWidget(10, 70, "§a✔ System Operational"));
+        group.addWidget(new LabelWidget(10, 70,
+                isFormed() ? "§a✔ System Operational" : "§c✘ Not linked to controller"));
 
         return group;
     }

@@ -40,9 +40,18 @@ public class SoundRecipeCapability extends RecipeCapability<SoundIngredient> {
                             "§6Tempo: §e" + sound.requiredBPM() + " BPM §8(Sync: " + tolStr + ")"));
                 }
 
-                if (sound.targetCentroid() > 0) {
-                    String tone = sound.targetCentroid() > 0.6f ? "§dHigh Treble" : "§5Sub-Bass";
-                    group.addWidget(new LabelWidget(xOffset, yOffset.addAndGet(10), "§7Tone: " + tone));
+                // Show whichever frequency bands the recipe actually requires
+                if (sound.minBass() > 0) {
+                    group.addWidget(new LabelWidget(xOffset, yOffset.addAndGet(10),
+                            "§5Bass: §f≥" + String.format("%.2f", sound.minBass())));
+                }
+                if (sound.minMid() > 0) {
+                    group.addWidget(new LabelWidget(xOffset, yOffset.addAndGet(10),
+                            "§eMid: §f≥" + String.format("%.2f", sound.minMid())));
+                }
+                if (sound.minTreble() > 0) {
+                    group.addWidget(new LabelWidget(xOffset, yOffset.addAndGet(10),
+                            "§dTreble: §f≥" + String.format("%.2f", sound.minTreble())));
                 }
             }
         }

@@ -131,6 +131,8 @@ public class ResonanceConsoleScreen extends Screen {
                     Component.literal((isSelected ? "§b▶ " : "§7") + res.getPath()),
                     b -> {
                         machine.selectedLibrarySound = res.toString();
+                        machine.currentStreamUrl = "";
+                        urlBox.setValue("");
                         machine.syncAndGeneralUpdate();
                         updateFilteredSounds();
                     })
@@ -156,6 +158,8 @@ public class ResonanceConsoleScreen extends Screen {
         for (ResourceLocation discSound : musicDiscs) {
             Button b = Button.builder(Component.literal("§e" + discSound.getPath()), btn -> {
                 machine.selectedLibrarySound = discSound.toString();
+                machine.currentStreamUrl = "";
+                urlBox.setValue("");
                 machine.syncAndGeneralUpdate();
                 this.discDropdownOpen = false;
                 updateDiscDropdown();
@@ -192,6 +196,7 @@ public class ResonanceConsoleScreen extends Screen {
         graphics.drawCenteredString(font, "§bAUDIO REGISTRY", third / 2, 35, 0xFFFFFF);
         graphics.drawCenteredString(font, "§6QUICK SELECT", this.width / 2, 35, 0xFFFFFF);
         graphics.drawCenteredString(font, "§dREMOTE LINK", this.width - (third / 2), 35, 0xFFFFFF);
+        graphics.drawString(font, "§8Direct streams only.", (third * 2) + 20, 100, 0xFFFFFF);
 
         // Scroll position indicator
         if (!filteredSounds.isEmpty()) {
@@ -206,7 +211,12 @@ public class ResonanceConsoleScreen extends Screen {
         int boxX = (third * 2) + 20;
         graphics.fill(boxX, boxY, this.width - 20, boxY + 50, 0xAA000000);
 
-        if (!machine.selectedLibrarySound.isEmpty()) {
+        if (!machine.currentStreamUrl.isEmpty()) {
+            String displayUrl = machine.currentStreamUrl.length() > 34 ?
+                    machine.currentStreamUrl.substring(0, 31) + "..." : machine.currentStreamUrl;
+            graphics.drawString(font, "§7Stream: §f" + displayUrl, boxX + 5, boxY + 5, 0xFFFFFF);
+            graphics.drawString(font, "§7" + machine.streamTitle, boxX + 5, boxY + 20, 0xFFFFFF);
+        } else if (!machine.selectedLibrarySound.isEmpty()) {
             graphics.drawString(font, "§7Target: §f" + machine.selectedLibrarySound, boxX + 5, boxY + 5, 0xFFFFFF);
             graphics.drawString(font, "§7Status: §aTRANSMITTING", boxX + 5, boxY + 20, 0xFFFFFF);
             int barWidth = (int) (60 * machine.currentLiveBass);

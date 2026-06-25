@@ -5,40 +5,73 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.phoenix.core.integration.vocal_resonance.RadioClientAudio;
+import net.phoenix.core.integration.vocal_resonance.client.JukeblockSoundInstance;
 import net.phoenix.core.network.PhoenixNetwork;
-import net.phoenix.core.network.packet.S2CSoundMetadataPacket;
+import net.phoenix.core.network.packet.C2SSoundMetadataPacket;
 
+/**
+ * Hooks called by {@link net.phoenix.core.mixin.minecraft.SoundEngineMixin}.
+ *
+ * Only routes jukebox-owned sounds (JukeblockSoundInstance / RadioClientAudio)
+ * to the FFT pipeline. Vanilla sounds (footsteps, UI, ambient) are ignored
+ * completely so they can't pollute the analyzer or cause per-sound file reads.
+ *
+ * Sound-stop cleanup is NOT done here via a mixin hook — it's called directly
+ * from ClientSoundHandler.stopSoundAt() to avoid a race where the old instance's
+ * stop fires BEFORE the new instance's play has a chance to re-register.
+ */
 @OnlyIn(Dist.CLIENT)
 public class VibrancyEvents {
 
-    /**
-     * Called by SoundEngineMixin whenever a sound begins playing.
-     *
-     * Critical path: this fires for EVERY sound (footsteps, UI clicks, ambient…).
-     * We must exit fast for anything not near a tracked machine.
-     */
     public static void onSoundStarted(SoundInstance sound) {
-        Minecraft mc = Minecraft.getInstance();
+        // Only care about our own jukebox sound types — ignore everything else.
+        // This prevents file reads and FFT setup for footsteps, UI, ambient, etc.
+        if (!(sound instanceof JukeblockSoundInstance) && !(sound instanceof RadioClientAudio)) {
+            return;
+        }
 
-        // Guard 1: don't run on the main menu or during loading screens.
+        Minecraft mc = Minecraft.getInstance();
         if (mc.getConnection() == null || mc.level == null) return;
 
-        // Guard 2: only process sounds near a machine we're actively tracking.
-        // This prevents sending a C2S packet for every footstep in the world.
-        BlockPos pos = new BlockPos((int) sound.getX(), (int) sound.getY(), (int) sound.getZ());
-        if (!VocalVibrancyClient.isTracking(pos)) return;
+        BlockPos soundPos = new BlockPos(
+                (int) Math.floor(sound.getX()),
+                (int) Math.floor(sound.getY()),
+                (int) Math.floor(sound.getZ()));
 
-        // Duration lookup — only done for relevant sounds now, so the OGG file
-        // read is not a per-sound-event performance hit.
+        float range = estimateRange(sound);
+
+        // Fast exit: no sensor is registered near this sound's origin
+        if (!VocalVibrancyClient.hasSensorNear(soundPos, range)) return;
+
+        VocalVibrancyClient.onSoundStarted(soundPos, range);
+
+        // Read OGG duration — only safe here because we already know this is a
+        // JukeblockSoundInstance or RadioClientAudio, both of which are OGG-backed.
         int duration = OggMetadataProvider.getExactDurationTicks(
-                mc.getResourceManager(),
-                sound.getLocation());
+                mc.getResourceManager(), sound.getLocation());
 
-        // Initial bass is always 1.0 — the live FFT in MixinOggAudioStream will
-        // update it in real time via LiveAcousticTracker.
-        float initialBass = 1.0f;
+        PhoenixNetwork.CHANNEL.sendToServer(new C2SSoundMetadataPacket(
+                soundPos, range, duration, 0f, 0f, 0f, 0));
+    }
 
-        PhoenixNetwork.CHANNEL.sendToServer(
-                new S2CSoundMetadataPacket(pos, duration, initialBass));
+    /**
+     * Called directly from {@link net.phoenix.core.network.client.ClientSoundHandler#stopSoundAt}
+     * rather than via a mixin stop hook, so cleanup happens at the right moment in the
+     * stop → play sequence without a descriptor-matching risk on SoundEngine.
+     */
+    public static void onSoundStopped() {
+        VocalVibrancyClient.onSoundStopped();
+    }
+
+    private static float estimateRange(SoundInstance sound) {
+        if (sound instanceof JukeblockSoundInstance jbs) {
+            return jbs.getMaxRange();
+        }
+        if (sound instanceof RadioClientAudio rca) {
+            return rca.getMaxRange();
+        }
+        // Fallback for anything else that somehow gets here
+        return sound.getAttenuation() == SoundInstance.Attenuation.NONE ? 64f : 16f;
     }
 }

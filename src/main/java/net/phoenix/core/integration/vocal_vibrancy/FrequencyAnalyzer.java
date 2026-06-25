@@ -6,13 +6,40 @@ import java.nio.ByteOrder;
 public class FrequencyAnalyzer {
 
     public float bass, mid, treble;
-    private float[] window;
+    public int bpm = 120; // Default fallback state when silent or spinning up
+
+    // ── Beat Detection State Arrays & Properties ───────────────────────────
+    private static final int HISTORY_SIZE = 43; // ~1 second of tracking context at ~43 buffers/sec
+    private final float[] bassHistory = new float[HISTORY_SIZE];
+    private int historyIndex = 0;
+
+    private long lastBeatTimeMs = 0;
+    private float bpmBuffer = 120.0f; // Smooth tracking variable to prevent erratic reading jumping
+    private static final long DEBOUNCE_MS = 250; // Max constraint (equivalent to 240 BPM cap)
+
+    /**
+     * Resets all analysis state. Called when the last tracked machine stops
+     * so stale values don't bleed into the next session.
+     */
+    public void reset() {
+        this.bass = 0f;
+        this.mid = 0f;
+        this.treble = 0f;
+        this.bpm = 120;
+        this.bpmBuffer = 120.0f;
+        this.historyIndex = 0;
+        this.lastBeatTimeMs = 0;
+        java.util.Arrays.fill(bassHistory, 0f);
+    }
 
     public void processBuffer(ByteBuffer data, int sampleRate) {
         // 1. Convert byte buffer to float array (PCM)
         data.order(ByteOrder.LITTLE_ENDIAN);
         int samples = data.remaining() / 2; // 16-bit audio
-        int n = Integer.highestOneBit(samples); // FFT needs power of 2
+        if (samples <= 0) return;
+
+        int n = Integer.highestOneBit(samples); // FFT requires power of 2
+        if (n <= 0) return;
 
         float[] real = new float[n];
         float[] imag = new float[n];
@@ -26,8 +53,8 @@ public class FrequencyAnalyzer {
 
         // 3. Calculate magnitudes and categorize
         float b = 0, m = 0, t = 0;
-        int bassEnd = (int) (250.0 * n / sampleRate);
-        int midEnd = (int) (4000.0 * n / sampleRate);
+        int bassEnd = Math.max(1, (int) (250.0 * n / sampleRate));
+        int midEnd = Math.max(bassEnd + 1, (int) (4000.0 * n / sampleRate));
 
         for (int i = 0; i < n / 2; i++) {
             float mag = (float) Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
@@ -38,7 +65,46 @@ public class FrequencyAnalyzer {
 
         this.bass = b / bassEnd;
         this.mid = m / (midEnd - bassEnd);
-        this.treble = t / (n / 2 - midEnd);
+        this.treble = t / (Math.max(1, n / 2 - midEnd));
+
+        // 4. Track Live BPM using Dynamic Sub-Band Variance Algorithms
+        detectBeatAndCalculateBPM(this.bass);
+    }
+
+    private void detectBeatAndCalculateBPM(float currentBassEnergy) {
+        // Compute the average energy of our historical buffer context
+        float historyAverage = 0.0f;
+        for (float val : bassHistory) {
+            historyAverage += val;
+        }
+        historyAverage /= HISTORY_SIZE;
+
+        // Compute local variance to distinguish subtle modulations from heavy drops
+        float variance = 0.0f;
+        for (float val : bassHistory) {
+            variance += (float) Math.pow(val - historyAverage, 2);
+        }
+        variance /= HISTORY_SIZE;
+
+        // Dynamic threshold adjustment coefficient based on local variance
+        float dynamicC = (-0.0025714f * variance) + 1.5142857f;
+        dynamicC = Math.max(1.3f, Math.min(dynamicC, 1.65f));
+
+        long currentTimeMs = System.currentTimeMillis();
+
+        if (currentBassEnergy > (dynamicC * historyAverage)) {
+            long timeGap = currentTimeMs - lastBeatTimeMs;
+
+            if (timeGap > DEBOUNCE_MS && timeGap < 2000) {
+                float rawBpm = 60000.0f / timeGap;
+                bpmBuffer = (bpmBuffer * 0.85f) + (rawBpm * 0.15f);
+                this.bpm = Math.round(bpmBuffer);
+                this.lastBeatTimeMs = currentTimeMs;
+            }
+        }
+
+        bassHistory[historyIndex] = currentBassEnergy;
+        historyIndex = (historyIndex + 1) % HISTORY_SIZE;
     }
 
     // Classic Radix-2 FFT implementation

@@ -87,18 +87,63 @@ public class QuestFileSaver {
         tag.putInt("positionY", node.getCustomY());
         if (!iconItem.isEmpty()) tag.putString("icon_item", iconItem);
 
+        // Extended metadata
+        if (!node.getSubtitle().isEmpty()) tag.putString("subtitle", node.getSubtitle());
+        tag.putString("visibility", node.getVisibility().name());
+        if (node.getEnableIf() != null) tag.putString("enable_if", node.getEnableIf());
+        if (node.getTaskMinCount() > 0) tag.putInt("task_min_count", node.getTaskMinCount());
+        if (node.isHideDepLine()) tag.putBoolean("hide_dep_line", true);
+        if (node.isDisabledBlocksChildren()) tag.putBoolean("disabled_blocks_children", true);
+        if (node.isShared()) tag.putBoolean("shared", true);
+
         // Repeat behaviour
         tag.putString("repeat_mode", node.getRepeatMode().name());
         tag.putInt("repeat_cooldown_hours", node.getRepeatCooldownHours());
 
-        // Prerequisite gate
+        // Prerequisite gate + per-prereq flags
         tag.putBoolean("require_all_prereqs", node.getRequireAllPrerequisites());
+        if (!node.getPrerequisites().isEmpty()) {
+            net.minecraft.nbt.ListTag prereqList = new net.minecraft.nbt.ListTag();
+            for (QuestNode p : node.getPrerequisites()) {
+                CompoundTag pTag = new CompoundTag();
+                pTag.putString("id", p.getId().getPath());
+                if (node.isPrereqForbidden(p.getId())) {
+                    pTag.putBoolean("forbidden", true);
+                } else {
+                    pTag.putBoolean("required", node.isPrereqRequired(p.getId()));
+                }
+                if (node.isPrereqLink(p.getId())) pTag.putBoolean("link", true);
+                prereqList.add(pTag);
+            }
+            tag.put("prerequisites", prereqList);
+        }
+        if (node.getOptionalPrereqMinCount() != 0)
+            tag.putInt("optional_prereq_min_count", node.getOptionalPrereqMinCount());
+
+        // Tasks (fix pre-existing persistence bug: tasks were never saved)
+        if (!node.getTasks().isEmpty()) {
+            net.minecraft.nbt.ListTag taskList = new net.minecraft.nbt.ListTag();
+            for (QuestTask t : node.getTasks()) {
+                CompoundTag tTag = t.serializeNBT();
+                tTag.putString("task_id", t.getTaskId().toString());
+                tTag.putString("description",
+                        net.minecraft.network.chat.Component.Serializer.toJson(t.getDescription()));
+                tTag.putBoolean("optional", t.isOptional());
+                taskList.add(tTag);
+            }
+            tag.put("tasks", taskList);
+        }
 
         // Rewards
         if (!node.getRewards().isEmpty()) {
             net.minecraft.nbt.ListTag rewardList = new net.minecraft.nbt.ListTag();
             for (QuestReward r : node.getRewards()) rewardList.add(r.serializeNBT());
             tag.put("rewards", rewardList);
+        }
+
+        // Emergency items
+        if (!node.getEmergencyItems().isEmpty()) {
+            tag.put("emergency_items", node.serializeEmergencyItems());
         }
 
         Path snbtPath = base.resolve(id + ".snbt");

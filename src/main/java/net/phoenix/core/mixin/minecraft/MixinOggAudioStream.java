@@ -15,22 +15,18 @@ public abstract class MixinOggAudioStream {
 
     @Inject(method = "read", at = @At("RETURN"))
     private void phoenix$captureLivePCM(int size, CallbackInfoReturnable<ByteBuffer> cir) {
+        // Fast exit: skip entirely when no sensor is registered
+        if (!VocalVibrancyClient.isAnyTracking()) return;
+
         ByteBuffer data = cir.getReturnValue();
         if (data == null || !data.hasRemaining()) return;
 
-        // Duplicate gives us an independent position/limit pair safely
-        ByteBuffer copy = data.duplicate();
-        copy.rewind();
-
-        if (copy.remaining() > 0) {
-            // Defensive Safety: Catch any analysis parsing exceptions so audio processing
-            // issues inside VocalVibrancy do not crash or mute the client sound system.
-            try {
-                VocalVibrancyClient.getLiveAnalyzer().processBuffer(copy, 44100);
-            } catch (Exception e) {
-                // Log silently or handle gracefully to ensure music still plays
-                System.err.println("VocalVibrancy: Failed to analyze live PCM buffer slice");
-            }
+        try {
+            // VocalVibrancyClient fans the buffer out to whichever per-sensor analyzers
+            // are within range of the currently-playing sound's origin position.
+            VocalVibrancyClient.onPCMBuffer(data, 44100);
+        } catch (Exception e) {
+            System.err.println("VocalVibrancy: PCM analysis error: " + e.getMessage());
         }
     }
 }

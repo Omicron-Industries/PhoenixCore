@@ -89,7 +89,7 @@ public class StatTrackerTask extends QuestTask {
         }
     }
 
-    /** e.g., "450 / 1,000" — used by the UI row renderer context. */
+    @Override
     public String getProgressString(Player player) {
         if (statId == null || !(player instanceof ServerPlayer serverPlayer)) return "0/" + targetValue;
 

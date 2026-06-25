@@ -7,7 +7,6 @@ import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialRegistryEv
 import com.gregtechceu.gtceu.api.data.chemical.material.event.PostMaterialEvent;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
-import com.gregtechceu.gtceu.api.data.chemical.material.properties.ToolProperty;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -19,11 +18,9 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
 import com.lowdragmc.lowdraglib.Platform;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
@@ -39,6 +36,9 @@ import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.phoenix.core.axiom.AxiomRegistry;
+import net.phoenix.core.axiom.research.PlayerResearchCapability;
+import net.phoenix.core.axiom.research.ResearchTreeRegistry;
 import net.phoenix.core.api.PhoenixSounds;
 import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.client.PhoenixClient;
@@ -122,8 +122,15 @@ public class PhoenixCore {
 
         MENUS.register(modEventBus);
 
+        AxiomRegistry.register(modEventBus);
+        modEventBus.addListener(AxiomRegistry::registerCapabilities);
+        modEventBus.addListener(PlayerResearchCapability::register);
+
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new SourceHatchJarTransferTick());
+        MinecraftForge.EVENT_BUS.addListener(PlayerResearchCapability::onAttachCapabilities);
+        MinecraftForge.EVENT_BUS.addListener(PlayerResearchCapability::onPlayerClone);
+        MinecraftForge.EVENT_BUS.addListener(ResearchTreeRegistry::onAddReloadListeners);
     }
 
     public static void init() {
@@ -164,6 +171,7 @@ public class PhoenixCore {
     public void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             PhoenixNetwork.init();
+            net.phoenix.core.integration.phoenix_chronicles.ChroniclesTheme.loadThemes();
 
             MapIngredientTypeManager.registerMapIngredient(Shield.ShieldTypes.class, MapShieldIngredient::from);
             MapIngredientTypeManager.registerMapIngredient(
@@ -250,9 +258,9 @@ public class PhoenixCore {
 
                 // 3. Log everything cleanly
                 PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
-                                "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
-                                "| Gas Tier: {} | Gas Input Required: {} " +
-                                "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
+                        "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
+                        "| Gas Tier: {} | Gas Input Required: {} " +
+                        "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
                         material.getName(),
                         blastTemp,
                         eutOverride,
@@ -260,8 +268,7 @@ public class PhoenixCore {
                         gasTierName,
                         requiredGasFluid,
                         vacuumEUt,
-                        vacuumDuration
-                );
+                        vacuumDuration);
                 blastCount++;
             }
         }

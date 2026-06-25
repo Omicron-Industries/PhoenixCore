@@ -16,6 +16,7 @@ configurations {
 
 }
 tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
     options.compilerArgs += "-Xlint:-deprecation"
 }
 
@@ -121,6 +122,25 @@ group = maven_group
 base { archivesName = archives_base_name }
 java { sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+// jcodec and jlayer are not Forge mods so moddevgradle's classloader won't find them via
+// `implementation` alone. We extract their class files into a dedicated directory and add
+// that directory to the sourceSet output. Forge's mod classloader then sees the classes as
+// part of the mod itself — both in dev (sourceSet output) and production (jar contents).
+def extractedLibsDir = file("${buildDir}/extractedLibs")
+
+tasks.register('extractLibraries', Copy) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.jarJar.resolvedConfiguration.resolvedArtifacts.collect { zipTree(it.file) }
+    }
+    into extractedLibsDir
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/MANIFEST.MF'
+    exclude 'META-INF/maven/**', 'META-INF/LICENSE*', 'META-INF/NOTICE*', 'META-INF/license/**'
+}
+
+sourceSets.main.output.dir(extractedLibsDir, builtBy: 'extractLibraries')
+tasks.named('compileJava').configure { dependsOn 'extractLibraries' }
 
 
 legacyForge {
@@ -237,6 +257,11 @@ dependencies {
     modCompileOnly("curse.maven:jade-324717:5390389")
 
     implementation 'javazoom:jlayer:1.0.1'
+    jarJar('javazoom:jlayer:1.0.1')
+
+    implementation 'org.jcodec:jcodec:0.2.5'
+    jarJar('org.jcodec:jcodec:0.2.5')
+
 
 
    // modImplementation "curse.maven:crazy-ae2-addons-1223804:7250497"
@@ -252,8 +277,8 @@ dependencies {
     modImplementation("dev.latvian.mods:rhino-forge:${rhino_version}")
     modImplementation("dev.toma.configuration:configuration-forge-${minecraft_version}:${configuration_version}")
     modRuntimeOnly("dev.architectury:architectury-forge:${architectury_version}")
-    modImplementation("dev.ftb.mods:ftb-library-forge:${ftblibrary_version}")
-    modImplementation("dev.ftb.mods:ftb-teams-forge:${ftbteams_version}")
+    modCompileOnly("dev.ftb.mods:ftb-library-forge:${ftblibrary_version}")
+    modCompileOnly("dev.ftb.mods:ftb-teams-forge:${ftbteams_version}")
 
 // lombok
     compileOnly 'org.projectlombok:lombok:1.18.24'
@@ -294,8 +319,9 @@ tasks.named('processResources', ProcessResources).configure {
 
 tasks.named('jar', Jar).configure {
     archiveClassifier.set('slim')
-    // Existing manifest attributes...
     finalizedBy 'reobfJar'
+    dependsOn 'extractLibraries'
+    from(extractedLibsDir)
 }
 
 

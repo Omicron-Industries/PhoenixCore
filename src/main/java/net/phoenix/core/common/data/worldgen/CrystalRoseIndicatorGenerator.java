@@ -18,7 +18,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.BulkSectionAccess;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
@@ -34,10 +33,9 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
 
     // FIXED: By explicitly casting the entire Either codec codec payload to an Object-friendly variant,
     // Java can match it against the fields perfectly without breaking runtime functionality.
-    @SuppressWarnings("unchecked")
     public static final Codec<CrystalRoseIndicatorGenerator> CODEC = RecordCodecBuilder.create(instance -> instance
             .group(
-                    ((Codec<Either<BlockState, Material>>) (Codec<?>) Codec.either(
+                    ((Codec<Either<BlockState, Material>>) Codec.either(
                             BlockState.CODEC,
                             GTCEuAPI.materialManager.codec())).fieldOf("block").forGetter(ext -> ext.block),
                     IntProvider.codec(1, 32).fieldOf("radius").forGetter(ext -> ext.radius),
@@ -86,8 +84,8 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
     }
 
     @Override
-    public Map<ChunkPos, OreIndicatorPlacer> generate(WorldGenLevel level, RandomSource random,
-                                                      GeneratedVeinMetadata metadata) {
+    public @NotNull Map<ChunkPos, OreIndicatorPlacer> generate(@NotNull WorldGenLevel level, RandomSource random,
+                                                               GeneratedVeinMetadata metadata) {
         BlockState blockState = placement.stateTransformer.apply(block);
 
         int r = this.radius.sample(random);
@@ -112,13 +110,14 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
                                             BlockState blockState) {
         return (access) -> {
             for (BlockPos initialPos : positionsWithoutY) {
-                // Find the true surface by casting up from the vein center Y level
-                BlockPos pos = findTrueSurfacePos(level, access, initialPos);
+                // 1. Scan down from the open sky using the global level container
+                BlockPos pos = findTrueSurfacePos(level, initialPos);
 
                 if (pos == null || level.isOutsideBuildHeight(pos)) {
                     continue;
                 }
 
+                // 2. Safely grab the local chunk section where the rose will live
                 var section = access.getSection(pos);
                 if (section == null) continue;
 
@@ -128,11 +127,12 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
 
                 BlockState currentTargetState = section.getBlockState(sectionX, sectionY, sectionZ);
 
-                // Must be genuine surface air, not cave air or solid blocks
-                if (!currentTargetState.is(Blocks.AIR)) {
+                // 3. Double-check that we are placing into true surface air
+                if (!currentTargetState.isAir() || currentTargetState.is(Blocks.CAVE_AIR)) {
                     continue;
                 }
 
+                // 4. Ensure the block below satisfies your flower's survival rules
                 if (!blockState.canSurvive(level, pos)) {
                     continue;
                 }
@@ -142,40 +142,53 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
         };
     }
 
-    /**
-     * Starts at the vein's generation height and steps upwards.
-     * Skips underground caves and only stops when it finds air exposing a solid floor open to the sky.
-     */
-    private BlockPos findTrueSurfacePos(WorldGenLevel level, BulkSectionAccess access, BlockPos startPos) {
-        BlockPos.MutableBlockPos cursor = startPos.mutable();
-        int maxSearchHeight = level.getMaxBuildHeight() - 2;
-        boolean insideCave = false;
+    private BlockPos findDryLandAt(WorldGenLevel level, int x, int z) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(x, level.getMaxBuildHeight() - 1, z);
+        int minHeight = level.getMinBuildHeight();
 
-        while (cursor.getY() < maxSearchHeight) {
-            BlockState current = access.getBlockState(cursor);
-            BlockState below = access.getBlockState(cursor.below());
+        while (cursor.getY() > minHeight) {
+            BlockState state = level.getBlockState(cursor);
 
-            // Track if we are currently moving through an underground cave space
-            if (current.isAir() && !current.is(Blocks.AIR)) {
-                insideCave = true;
+            // If the first non-air thing we hit from the sky is liquid, this column is water
+            if (!state.getFluidState().isEmpty()) {
+                return null;
             }
 
-            // If we transitioned out of caves/solid rock and found standard surface AIR
-            if (current.is(Blocks.AIR)) {
-                // Make sure the floor beneath it is solid and NOT a cave ceiling/ ledge inside a cave
-                if (below.isSolid() && !below.isAir()) {
-                    // Quick look ahead: if the next 15 blocks are also air, this is definitely the surface world
-                    BlockState higherCheck = access.getBlockState(cursor.above(10));
-                    if (higherCheck.is(Blocks.AIR)) {
-                        return cursor.immutable(); // Found it!
+            // Hit true solid ground
+            if (!state.isAir() && !state.is(Blocks.CAVE_AIR)) {
+                return cursor.above().immutable();
+            }
+
+            cursor.move(Direction.DOWN);
+        }
+        return null;
+    }
+
+    private BlockPos findTrueSurfacePos(WorldGenLevel level, BlockPos startPos) {
+        // 1. Check the exact spot first
+        BlockPos exactPos = findDryLandAt(level, startPos.getX(), startPos.getZ());
+        if (exactPos != null) {
+            return exactPos;
+        }
+
+        // 2. Expanded real estate recovery: Search up to 10 blocks away for a shore
+        // This stays safely within chunk boundaries while covering a much wider area
+        for (int radius = 1; radius <= 10; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    // Only check the outer ring of the current radius step
+                    if (Math.abs(dx) == radius || Math.abs(dz) == radius) {
+                        BlockPos shorePos = findDryLandAt(level, startPos.getX() + dx, startPos.getZ() + dz);
+                        if (shorePos != null) {
+                            return shorePos; // Found a riverbank, beach, or island edge!
+                        }
                     }
                 }
             }
-
-            cursor.move(Direction.UP);
         }
 
-        return null; // Fallback failure state if it hits the sky limit
+        // Truly deep ocean with no land in sight—skip to preserve immersion
+        return null;
     }
 
     @SuppressWarnings("unchecked")

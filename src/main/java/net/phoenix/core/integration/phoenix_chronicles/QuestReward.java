@@ -6,7 +6,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.phoenix.core.integration.phoenix_chronicles.event.PhoenixQuestScriptRewardEvent;
 
 /**
  * A reward that can be granted to a player when they complete a quest.
@@ -35,7 +41,9 @@ public abstract class QuestReward {
     public enum RewardType {
         ITEM,
         XP,
-        COMMAND
+        COMMAND,
+        LOOT_TABLE,
+        SCRIPT_EVENT
     }
 
     public abstract RewardType getType();
@@ -60,6 +68,8 @@ public abstract class QuestReward {
             case "item" -> ItemReward.fromNBT(tag);
             case "xp" -> XPReward.fromNBT(tag);
             case "command" -> CommandReward.fromNBT(tag);
+            case "loot_table" -> LootTableReward.fromNBT(tag);
+            case "script_event" -> ScriptEventReward.fromNBT(tag);
             default -> null;
         };
     }
@@ -214,6 +224,144 @@ public abstract class QuestReward {
 
         public static CommandReward fromNBT(CompoundTag tag) {
             return new CommandReward(tag.getString("command"));
+        }
+    }
+
+    // =========================================================================
+    // Loot table reward
+    // =========================================================================
+
+    /**
+     * Rolls a named loot table and gives every resulting ItemStack to the player.
+     * Overflowing items are dropped at the player's feet.
+     *
+     * SNBT shape: { type: "loot_table", loot_table: "minecraft:chests/simple_dungeon" }
+     */
+    public static class LootTableReward extends QuestReward {
+
+        private final ResourceLocation lootTableId;
+
+        public LootTableReward(ResourceLocation lootTableId) {
+            this.lootTableId = lootTableId;
+        }
+
+        public ResourceLocation getLootTableId() {
+            return lootTableId;
+        }
+
+        @Override
+        public RewardType getType() {
+            return RewardType.LOOT_TABLE;
+        }
+
+        @Override
+        public Component getSummary() {
+            return Component.literal("Loot: " + lootTableId.getPath());
+        }
+
+        @Override
+        public void grant(ServerPlayer player) {
+            LootTable table = player.getServer().getLootData().getLootTable(lootTableId);
+            LootParams params = new LootParams.Builder(player.serverLevel())
+                    .withParameter(LootContextParams.THIS_ENTITY, player)
+                    .withParameter(LootContextParams.ORIGIN, player.position())
+                    .create(LootContextParamSets.GIFT);
+            table.getRandomItems(params).forEach(stack -> {
+                if (!player.addItem(stack)) player.drop(stack, false);
+            });
+        }
+
+        @Override
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("type", "loot_table");
+            tag.putString("loot_table", lootTableId.toString());
+            return tag;
+        }
+
+        public static LootTableReward fromNBT(CompoundTag tag) {
+            if (!tag.contains("loot_table")) return null;
+            return new LootTableReward(new ResourceLocation(tag.getString("loot_table")));
+        }
+    }
+
+    // =========================================================================
+    // Script event reward
+    // =========================================================================
+
+    /**
+     * Fires a {@link PhoenixQuestScriptRewardEvent} on the Forge event bus.
+     *
+     * Subscribe from KubeJS or Java to run arbitrary code when the quest is completed.
+     *
+     * SNBT shape:
+     * 
+     * <pre>
+     * {type: "script_event", event_id: "unlock_end"}
+     * {type: "script_event", event_id: "give_reward", data: {item: "minecraft:diamond", count: 5}}
+     * </pre>
+     *
+     * KubeJS subscription (server_scripts/quest_rewards.js):
+     * 
+     * <pre>
+     * ForgeEvents.onEvent(
+     *   'net.phoenix.core.integration.phoenix_chronicles.event.PhoenixQuestScriptRewardEvent',
+     *   event => {
+     *     if (event.eventId === 'unlock_end') {
+     *       event.player.stages.add('end_unlocked')
+     *     }
+     *   }
+     * )
+     * </pre>
+     */
+    public static class ScriptEventReward extends QuestReward {
+
+        private final String eventId;
+        private final CompoundTag data;
+
+        public ScriptEventReward(String eventId, CompoundTag data) {
+            this.eventId = eventId;
+            this.data = data != null ? data : new CompoundTag();
+        }
+
+        public String getEventId() {
+            return eventId;
+        }
+
+        public CompoundTag getData() {
+            return data;
+        }
+
+        @Override
+        public RewardType getType() {
+            return RewardType.SCRIPT_EVENT;
+        }
+
+        @Override
+        public Component getSummary() {
+            return Component.literal("Script: " + eventId);
+        }
+
+        @Override
+        public void grant(ServerPlayer player) {
+            MinecraftForge.EVENT_BUS.post(
+                    new PhoenixQuestScriptRewardEvent(player, eventId, data.copy()));
+        }
+
+        @Override
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("type", "script_event");
+            tag.putString("event_id", eventId);
+            if (!data.isEmpty()) tag.put("data", data.copy());
+            return tag;
+        }
+
+        public static ScriptEventReward fromNBT(CompoundTag tag) {
+            String id = tag.getString("event_id");
+            if (id.isBlank()) return null;
+            CompoundTag data = tag.contains("data") ? tag.getCompound("data") : new CompoundTag();
+            return new ScriptEventReward(id, data);
         }
     }
 }

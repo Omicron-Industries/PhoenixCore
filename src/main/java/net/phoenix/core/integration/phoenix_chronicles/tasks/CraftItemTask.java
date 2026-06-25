@@ -27,6 +27,11 @@ public class CraftItemTask extends QuestTask {
         return itemId;
     }
 
+    @Override
+    public ResourceLocation getDisplayItemId() {
+        return itemId;
+    }
+
     public int getRequiredCount() {
         return requiredCount;
     }
@@ -65,7 +70,7 @@ public class CraftItemTask extends QuestTask {
         });
     }
 
-    /** e.g., "2/3" — used by the task row renderer context. */
+    @Override
     public String getProgressString(Player player) {
         int currentCount = player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
                 .map(data -> data.getOrCreateTaskProgress(this.getTaskId()).getInt("current")).orElse(0);

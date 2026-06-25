@@ -1,52 +1,80 @@
 package net.phoenix.core.network.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.phoenix.core.PhoenixCore;
+import net.phoenix.core.integration.vocal_resonance.RadioClientAudio;
+import net.phoenix.core.integration.vocal_resonance.client.JukeblockSoundInstance;
+import net.phoenix.core.integration.vocal_vibrancy.VibrancyEvents;
+import net.phoenix.core.integration.vocal_vibrancy.VocalVibrancyClient;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSoundHandler {
 
-    /**
-     * Handles live URL streaming initialization on the client side.
-     */
-    public static void playStream(String url, BlockPos pos, float range) {
+    private static final Map<BlockPos, SoundInstance> ACTIVE_SOUNDS = new HashMap<>();
+
+    public static void tickActiveStreams(net.minecraft.world.entity.player.Player player) {
+        for (var entry : ACTIVE_SOUNDS.entrySet()) {
+            if (entry.getValue() instanceof RadioClientAudio radio) {
+                radio.updateVolume(player);
+            }
+        }
+    }
+
+    public static void stopSoundAt(BlockPos pos) {
+        SoundInstance old = ACTIVE_SOUNDS.remove(pos);
+        if (old instanceof RadioClientAudio radio) {
+            // SourceDataLine lives outside Minecraft's sound engine — must call stopStreaming()
+            // directly; getSoundManager().stop() only silences the silent dummy instance.
+            radio.stopStreaming();
+        } else if (old != null) {
+            Minecraft.getInstance().getSoundManager().stop(old);
+        }
+        VibrancyEvents.onSoundStopped();
+        VocalVibrancyClient.stopTracking(pos);
+    }
+
+    public static void playStream(String url, BlockPos pos, float range, float volume) {
+        PhoenixCore.LOGGER.info("VR playStream: url='{}' pos={} range={} volume={}", url, pos, range, volume);
         var mc = Minecraft.getInstance();
         var player = mc.player;
-        if (player == null || url == null || url.isEmpty()) return;
+        if (player == null || url == null || url.isEmpty()) {
+            PhoenixCore.LOGGER.warn("VR playStream: early exit — player={} urlBlank={}", player,
+                    url == null || url.isEmpty());
+            return;
+        }
 
-        // 1. Initial distance check before spinning up network buffers
         double dx = player.getX() - (pos.getX() + 0.5);
         double dy = player.getY() - (pos.getY() + 0.5);
         double dz = player.getZ() - (pos.getZ() + 0.5);
         double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        PhoenixCore.LOGGER.info("VR playStream: distance={} range={}", distance, range);
+        if (distance > range) {
+            PhoenixCore.LOGGER.warn("VR playStream: player out of range, skipping");
+            return;
+        }
 
-        if (distance > range) return;
+        stopSoundAt(pos);
 
-        // 2. Instantiate your custom streaming tickable sound wrapper.
-        // Make sure your RadioClientAudio class has a constructor that accepts
-        // the stream url, its physical world block pos, and its maximum speaker range!
-        // Inside its tick() loop, it can use the exact same math to update its volume.
-        //
-        // Example instantiation (adjust class name/constructor signatures to match yours):
-        // RadioClientAudio streamInstance = new RadioClientAudio(url, pos, range);
-
-        // 3. Play the stream using the SoundManager
-        // mc.getSoundManager().play(streamInstance);
-
-        System.out
-                .println("VocalResonance Client: Starting stream from " + url + " at " + pos + " with range " + range);
+        PhoenixCore.LOGGER.info("VR playStream: constructing RadioClientAudio");
+        RadioClientAudio streamInstance;
+        try {
+            streamInstance = new RadioClientAudio(url, pos, range, volume);
+        } catch (Throwable t) {
+            PhoenixCore.LOGGER.error("VR playStream: RadioClientAudio constructor threw", t);
+            return;
+        }
+        VocalVibrancyClient.startTracking(pos);
+        mc.getSoundManager().play(streamInstance);
+        ACTIVE_SOUNDS.put(pos, streamInstance);
+        PhoenixCore.LOGGER.info("VR playStream: RadioClientAudio started for url='{}'", url);
     }
 
     public static void playSound(BlockPos pos, ResourceLocation soundLoc, float baseVolume, float pitch, float range) {
@@ -54,56 +82,34 @@ public class ClientSoundHandler {
         var player = mc.player;
         if (player == null) return;
 
-        // 1. Compute exact distance from player to center of the Jukeblock
+        // volume == 0 is the kill signal from killAllMachineAudio()
+        if (baseVolume <= 0.0f) {
+            stopSoundAt(pos);
+            return;
+        }
+
         double dx = player.getX() - (pos.getX() + 0.5);
         double dy = player.getY() - (pos.getY() + 0.5);
         double dz = player.getZ() - (pos.getZ() + 0.5);
         double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-        // 2. Hard absolute cutoff check
         if (distance > range) return;
 
-        // 3. Mathematical linear volume drop-off: Max volume at center, 0.0f at exact boundary limit
-        float distanceFactor = (float) (1.0 - (distance / range));
-        distanceFactor = Math.max(0.0f, Math.min(1.0f, distanceFactor)); // Clamp check
-
+        float distanceFactor = Math.max(0.0f, Math.min(1.0f, (float) (1.0 - (distance / range))));
         float finalVolume = baseVolume * distanceFactor;
         if (finalVolume <= 0.0f) return;
 
-        // 4. Safe Sound Event resolution
-        Holder<SoundEvent> holder;
-        if (BuiltInRegistries.SOUND_EVENT.containsKey(soundLoc)) {
-            holder = BuiltInRegistries.SOUND_EVENT.getHolderOrThrow(
-                    ResourceKey.create(Registries.SOUND_EVENT, soundLoc));
-        } else {
-            holder = Holder.direct(SoundEvent.createVariableRangeEvent(soundLoc));
-        }
+        stopSoundAt(pos);
 
-        // 5. Build an inline anonymous override instance to completely bypass hidden constructors
-        SimpleSoundInstance customSoundInstance = new SimpleSoundInstance(
-                holder.value().getLocation(),
-                SoundSource.RECORDS,
-                finalVolume,
-                pitch,
-                RandomSource.create(),
-                false,
-                0,
-                // Instead of using a giant constructor payload, we use the basic public
-                // convenience constructor and override the physical properties inline:
-                SoundInstance.Attenuation.NONE,
-                pos.getX() + 0.5D,
-                pos.getY() + 0.5D,
-                pos.getZ() + 0.5D,
-                false) {
+        // Pass the ResourceLocation directly — JukeblockSoundInstance uses the RL
+        // constructor of AbstractSoundInstance, deferring sound resolution to play time.
+        // This avoids the EMPTY_SOUND fallback that happens when resolving a SoundEvent
+        // that isn't yet in the SoundManager's registered map.
+        var instance = new JukeblockSoundInstance(soundLoc, pos, baseVolume, pitch, range);
 
-            // Force our custom manual attenuation profiles over the engine defaults
-            @Override
-            public SoundInstance.Attenuation getAttenuation() {
-                return SoundInstance.Attenuation.NONE;
-            }
-        };
-
-        // 6. Play the sound instance natively
-        mc.getSoundManager().play(customSoundInstance);
+        // startTracking BEFORE play() so SoundEngineMixin.onSoundStarted fires
+        // with an already-registered sensor and hasSensorNear() returns true.
+        VocalVibrancyClient.startTracking(pos);
+        mc.getSoundManager().play(instance);
+        ACTIVE_SOUNDS.put(pos, instance);
     }
 }

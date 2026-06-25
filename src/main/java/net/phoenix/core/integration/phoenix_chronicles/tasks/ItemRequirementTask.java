@@ -9,11 +9,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ItemRequirementTask extends QuestTask {
 
     private Item item;
     private int requiredCount;
-    private boolean consume; // NEW: Toggle rule variable
+    private boolean consume;
+    /**
+     * Optional NBT filter: if non-null, each stack must contain ALL keys from this tag
+     * (subset match — extra NBT on the stack is allowed).
+     * Null means match any stack of the right item type.
+     */
+    private CompoundTag nbtFilter = null;
 
     public ItemRequirementTask(ResourceLocation taskId, Component description, Item item, int requiredCount,
                                boolean consume) {
@@ -35,13 +44,46 @@ public class ItemRequirementTask extends QuestTask {
         return consume;
     }
 
+    public CompoundTag getNbtFilter() {
+        return nbtFilter;
+    }
+
+    public void setNbtFilter(CompoundTag filter) {
+        this.nbtFilter = filter;
+    }
+
+    @Override
+    public ResourceLocation getDisplayItemId() {
+        return item == null ? null : ForgeRegistries.ITEMS.getKey(item);
+    }
+
+    private boolean stackMatches(ItemStack stack) {
+        if (stack.isEmpty() || stack.getItem() != item) return false;
+        if (nbtFilter == null || nbtFilter.isEmpty()) return true;
+        CompoundTag stackTag = stack.getTag();
+        if (stackTag == null) return false;
+        // Subset match: every key in nbtFilter must be present and equal in stackTag
+        for (String key : nbtFilter.getAllKeys()) {
+            if (!stackTag.contains(key)) return false;
+            if (!stackTag.get(key).equals(nbtFilter.get(key))) return false;
+        }
+        return true;
+    }
+
+    /** All slots we scan: main inventory + offhand + armour. */
+    private Iterable<ItemStack> allSlots(Player player) {
+        List<ItemStack> all = new ArrayList<>(player.getInventory().items);
+        all.addAll(player.getInventory().offhand);
+        all.addAll(player.getInventory().armor);
+        return all;
+    }
+
     @Override
     public boolean isCompletedFor(Player player) {
         if (item == null || requiredCount <= 0) return false;
-
         int found = 0;
-        for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && stack.getItem() == item) {
+        for (ItemStack stack : allSlots(player)) {
+            if (stackMatches(stack)) {
                 found += stack.getCount();
                 if (found >= requiredCount) return true;
             }
@@ -49,16 +91,12 @@ public class ItemRequirementTask extends QuestTask {
         return false;
     }
 
-    /**
-     * Call this when claiming rewards. It explicitly respects the 'consume' config toggle.
-     */
     public void tryConsume(Player player) {
-        if (item == null || !consume) return; // Skip completely if consume is false
-
+        if (item == null || !consume) return;
         int remaining = requiredCount;
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.isEmpty() || stack.getItem() != item) continue;
-
+        // Consume from main inventory first, then offhand, then armour
+        for (ItemStack stack : allSlots(player)) {
+            if (!stackMatches(stack)) continue;
             int take = Math.min(remaining, stack.getCount());
             stack.shrink(take);
             remaining -= take;
@@ -67,12 +105,12 @@ public class ItemRequirementTask extends QuestTask {
         player.getInventory().setChanged();
     }
 
+    @Override
     public String getProgressString(Player player) {
         if (item == null) return "0/" + requiredCount;
-
         int found = 0;
-        for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && stack.getItem() == item) found += stack.getCount();
+        for (ItemStack stack : allSlots(player)) {
+            if (stackMatches(stack)) found += stack.getCount();
         }
         return Math.min(found, requiredCount) + "/" + requiredCount;
     }
@@ -84,16 +122,17 @@ public class ItemRequirementTask extends QuestTask {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
         tag.putString("item_id", id != null ? id.toString() : "minecraft:air");
         tag.putInt("count", requiredCount);
-        tag.putBoolean("consume", consume); // Save parameter config
+        tag.putBoolean("consume", consume);
+        if (nbtFilter != null && !nbtFilter.isEmpty()) tag.put("nbt_filter", nbtFilter);
         return tag;
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        if (nbt.contains("item_id")) {
+        if (nbt.contains("item_id"))
             this.item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(nbt.getString("item_id")));
-        }
-        this.requiredCount = nbt.getInt("count");
-        this.consume = nbt.getBoolean("consume"); // Load parameter config
+        this.requiredCount = nbt.contains("count") ? nbt.getInt("count") : nbt.getInt("amount");
+        this.consume = nbt.getBoolean("consume");
+        if (nbt.contains("nbt_filter")) this.nbtFilter = nbt.getCompound("nbt_filter");
     }
 }

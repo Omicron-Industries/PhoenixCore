@@ -126,7 +126,7 @@ public class TerminalScreen extends Screen {
 
     private void executeTerminalDirective(String command) {
         // Format ampersands to standard format markers automatically
-        String formattedCmd = command.replace('&', '§');
+        String formattedCmd = command.replace("&", "§");
 
         // Push raw input string into historical display cache lists
         consoleHistory.add("§7$ " + formattedCmd);
@@ -171,7 +171,7 @@ public class TerminalScreen extends Screen {
         int currentLineY = termY + 10;
 
         for (int i = startLineIdx; i < consoleHistory.size(); i++) {
-            String logLine = consoleHistory.get(i).replace('&', '§');
+            String logLine = consoleHistory.get(i).replace("&", "§");
             graphics.drawString(this.font, logLine, termX + 12, currentLineY, 0xFFFFFF);
             currentLineY += 12;
         }
@@ -182,7 +182,7 @@ public class TerminalScreen extends Screen {
         graphics.renderOutline(termX + 5, inputLineY - 3, termW - 10, 14, 0xFF225522);
 
         // Auto-convert color identifiers live while writing
-        String renderText = inputBuffer.replace('&', '§');
+        String renderText = inputBuffer.replace("&", "§");
         String fixedPrompt = "§aroot@phoenix:~# §f" + renderText;
         graphics.drawString(this.font, fixedPrompt, termX + 10, inputLineY, 0xFFFFFF);
 

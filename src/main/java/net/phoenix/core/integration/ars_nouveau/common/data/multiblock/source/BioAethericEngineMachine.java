@@ -23,7 +23,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.api.recipe.PhoenixRecipeModifier;
-import net.phoenix.core.common.data.PTags;
 import net.phoenix.core.saveddata.SoulSavedData;
 
 import lombok.Getter;
@@ -105,19 +104,31 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
 
                             boost += getFloraBoost(state);
 
-                            if (boost >= 5.0f) return 5.0f;
+                            if (boost >= 6.0f) return 6.0f;
                         }
                     }
                 }
             }
         }
-        return Math.min(boost, 5.0f);
+        return Math.min(boost, 6.0f);
     }
 
     private float getFloraBoost(BlockState state) {
-        if (state.is(PTags.SOUL_FLOWERS)) return 0.05f;
-        if (state.is(BlockTags.FLOWERS)) return 0.01f;
-        return 0.0f;
+        String registryName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
+
+        switch (registryName) {
+            case "ars_nouveau:whirlisprig_flower":
+                return 0.18f;
+            case "ars_nouveau:magebloom_crop":
+                return 0.5f;
+            case "ars_nouveau:sourceberry_bush":
+                return 0.05f;
+            default:
+                if (state.is(net.minecraft.tags.BlockTags.FLOWERS)) {
+                    return 0.01f;
+                }
+                return 0.0f;
+        }
     }
 
     public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {

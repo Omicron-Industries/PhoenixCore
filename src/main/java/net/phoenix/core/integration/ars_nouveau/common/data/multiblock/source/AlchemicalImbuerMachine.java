@@ -16,7 +16,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.api.recipe.PhoenixRecipeModifier;
-import net.phoenix.core.common.data.PTags;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
 import net.phoenix.core.saveddata.SoulSavedData;
 
@@ -96,19 +95,33 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
                             if (state.isAir()) continue;
 
                             boost += getBlockBoost(state);
-                            if (boost >= 3.0f) return 3.0f;
+                            if (boost >= 6.0f) return 6.0f;
                         }
                     }
                 }
             }
         }
-        return Math.min(boost, 3.0f);
+        return Math.min(boost, 6.0f);
     }
 
     private float getBlockBoost(BlockState state) {
-        if (state.is(PTags.SOUL_FLOWERS)) return 0.01f;
-        if (state.is(BlockTags.FLOWERS)) return 0.005f;
-        return 0.0f;
+        String registryName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
+
+        // Assign specific values per block type
+        switch (registryName) {
+            case "ars_nouveau:whirlisprig_flower":
+                return 0.20f; // Highest boost
+            case "ars_nouveau:magebloom_crop":
+                return 0.05f; // Standard magical boost
+            case "ars_nouveau:sourceberry_bush":
+                return 0.01f; // Lower boost (common bush)
+            default:
+                // Fallback to vanilla/other flowers tag
+                if (state.is(net.minecraft.tags.BlockTags.FLOWERS)) {
+                    return 0.002f;
+                }
+                return 0.0f;
+        }
     }
 
     public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {

@@ -23,6 +23,7 @@ import net.phoenix.core.common.item.ChameleonSprayCanItem;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.network.PhoenixNetwork;
+import net.phoenix.core.network.client.ClientSoundHandler;
 import net.phoenix.core.network.packet.C2STeslaDischargePacket;
 import net.phoenix.core.network.packet.SelectColorPacket;
 
@@ -35,6 +36,8 @@ public class ClientTickHandler {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
+
+        ClientSoundHandler.tickActiveStreams(mc.player);
 
         // ── Wing GUI Logic ────────────────────────────────────────────────
         while (PhoenixKeybinds.OPEN_WING_GUI.consumeClick()) {
@@ -57,6 +60,12 @@ public class ClientTickHandler {
                 mc.setScreen(
                         new RecipeBuilderScreen(menu, mc.player.getInventory(), Component.literal("Recipe Builder")));
             }
+        }
+
+        // ── Guilds GUI ────────────────────────────────────────────────────
+        while (PhoenixKeybinds.OPEN_GUILDS.consumeClick()) {
+            if (mc.screen == null)
+                mc.setScreen(new net.phoenix.core.integration.phoenix_guilds.client.GuildScreen());
         }
 
         // ── Tesla Mode Keybind Handling ─────────────────────────────────────

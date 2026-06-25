@@ -98,6 +98,7 @@ public class FluidRequirementTask extends QuestTask {
         player.getInventory().setChanged();
     }
 
+    @Override
     public String getProgressString(Player player) {
         int found = Math.min(getTotalFluidInInventory(player), requiredAmount);
         return String.format("%,d / %,d mB", found, requiredAmount);

@@ -12,11 +12,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SoundEngine.class)
 public class SoundEngineMixin {
 
-    // CHANGED: Injected at HEAD to register the tracking state BEFORE the audio stream initializes
     @Inject(method = "play", at = @At("HEAD"))
     private void phoenix$onSoundPlay(SoundInstance sound, CallbackInfo ci) {
         if (sound != null) {
             VibrancyEvents.onSoundStarted(sound);
         }
     }
+
+    // NOTE: No stop() hook here. Stopping the old instance triggers the SoundEngine
+    // internally and we don't need to intercept it — VocalVibrancyClient.onSoundStopped()
+    // is called directly from ClientSoundHandler.stopSoundAt() instead, which avoids
+    // both the method descriptor ambiguity and the re-entrant clear-then-play race.
 }

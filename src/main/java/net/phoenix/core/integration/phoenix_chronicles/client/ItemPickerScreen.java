@@ -305,7 +305,7 @@ public class ItemPickerScreen extends Screen {
 
         // ── Item grid ─────────────────────────────────────────────────────────
         int gridTop = panelTop + HEADER_H + (activeTab == SourceTab.INVENTORY ? 16 : 34);
-        int gridBottom = footerY - 2;
+        int gridBottom = footerY - (selectedStack != null ? 20 : 2);
         int visibleRows = Math.max(1, (gridBottom - gridTop) / SLOT_SIZE);
 
         g.enableScissor(panelLeft, gridTop, panelLeft + PANEL_W, gridBottom);
@@ -355,12 +355,16 @@ public class ItemPickerScreen extends Screen {
             g.renderTooltip(font, hoveredStack, mx, my);
         }
 
-        // ── Selection preview ─────────────────────────────────────────────────
+        // ── Selection preview (rendered above footer, never overlapping buttons) ──
         if (selectedStack != null) {
-            g.renderItem(selectedStack, panelLeft + PANEL_W - 110, footerY + 3);
+            int prevY = footerY - 18;
+            g.fill(panelLeft, prevY - 1, panelLeft + PANEL_W, prevY, COL_BORDER);
+            g.fill(panelLeft, prevY, panelLeft + PANEL_W, footerY, COL_PANEL_DARK);
+            g.renderItem(selectedStack, panelLeft + 4, prevY + 1);
             String selName = selectedStack.getHoverName().getString();
-            if (font.width(selName) > 80) selName = font.plainSubstrByWidth(selName, 76) + "…";
-            g.drawString(font, "§f" + selName, panelLeft + PANEL_W - 90, footerY + 7, COL_TEXT);
+            int maxW = PANEL_W - 30;
+            if (font.width(selName) > maxW) selName = font.plainSubstrByWidth(selName, maxW - 6) + "…";
+            g.drawString(font, "§f" + selName, panelLeft + 22, prevY + 5, COL_TEXT);
         }
     }
 
@@ -382,7 +386,7 @@ public class ItemPickerScreen extends Screen {
     public boolean mouseScrolled(double mx, double my, double delta) {
         int maxRows = (int) Math.ceil(displayItems.size() / (double) SLOTS_PER_ROW);
         int gridTop = panelTop + HEADER_H + (activeTab == SourceTab.INVENTORY ? 16 : 34);
-        int gridBottom = panelTop + PANEL_H - FOOTER_H - 2;
+        int gridBottom = panelTop + PANEL_H - FOOTER_H - (selectedStack != null ? 20 : 2);
         int visibleRows = Math.max(1, (gridBottom - gridTop) / SLOT_SIZE);
 
         scrollOffset = Math.max(0, Math.min(scrollOffset - (int) Math.signum(delta), maxRows - visibleRows));

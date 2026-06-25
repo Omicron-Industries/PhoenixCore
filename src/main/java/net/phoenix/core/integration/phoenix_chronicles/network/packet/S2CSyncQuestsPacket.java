@@ -10,7 +10,6 @@ import net.minecraftforge.network.NetworkEvent;
 import net.phoenix.core.integration.phoenix_chronicles.QuestNode;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTreeRegistry;
-import net.phoenix.core.integration.phoenix_chronicles.tasks.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,13 +76,28 @@ public class S2CSyncQuestsPacket {
             int customX = buf.readInt();
             int customY = buf.readInt();
 
+            String subtitle = buf.readUtf();
+            String visibility = buf.readUtf();
+            String enableIf = buf.readUtf();
+            int taskMinCount = buf.readInt();
+            boolean requireAllPrerequisites = buf.readBoolean();
+
             int childCount = buf.readInt();
             List<ResourceLocation> childIds = new ArrayList<>(childCount);
             for (int c = 0; c < childCount; c++) childIds.add(buf.readResourceLocation());
 
             int prereqCount = buf.readInt();
             List<ResourceLocation> prereqIds = new ArrayList<>(prereqCount);
-            for (int p = 0; p < prereqCount; p++) prereqIds.add(buf.readResourceLocation());
+            List<Boolean> prereqRequired = new ArrayList<>(prereqCount);
+            List<Boolean> prereqForbidden = new ArrayList<>(prereqCount);
+            List<Boolean> prereqLink = new ArrayList<>(prereqCount);
+            for (int p = 0; p < prereqCount; p++) {
+                prereqIds.add(buf.readResourceLocation());
+                prereqRequired.add(buf.readBoolean());
+                prereqForbidden.add(buf.readBoolean());
+                prereqLink.add(buf.readBoolean());
+            }
+            int optionalPrereqMinCount = buf.readInt();
 
             int taskCount = buf.readInt();
             List<CompoundTag> tasksNbt = new ArrayList<>(taskCount);
@@ -91,7 +105,9 @@ public class S2CSyncQuestsPacket {
 
             snapshotMap.put(id, new QuestSnapshot(
                     id, title, description, category, shapeType, iconItemId,
-                    customX, customY, childIds, prereqIds, tasksNbt));
+                    customX, customY, subtitle, visibility, enableIf, taskMinCount, requireAllPrerequisites,
+                    childIds, prereqIds, prereqRequired, prereqForbidden, prereqLink,
+                    optionalPrereqMinCount, tasksNbt));
         }
     }
 
@@ -108,12 +124,23 @@ public class S2CSyncQuestsPacket {
             buf.writeUtf(snap.iconItemId);
             buf.writeInt(snap.customX);
             buf.writeInt(snap.customY);
+            buf.writeUtf(snap.subtitle);
+            buf.writeUtf(snap.visibility);
+            buf.writeUtf(snap.enableIf);
+            buf.writeInt(snap.taskMinCount);
+            buf.writeBoolean(snap.requireAllPrerequisites);
 
             buf.writeInt(snap.childIds.size());
             for (ResourceLocation cId : snap.childIds) buf.writeResourceLocation(cId);
 
             buf.writeInt(snap.prereqIds.size());
-            for (ResourceLocation pId : snap.prereqIds) buf.writeResourceLocation(pId);
+            for (int pi = 0; pi < snap.prereqIds.size(); pi++) {
+                buf.writeResourceLocation(snap.prereqIds.get(pi));
+                buf.writeBoolean(pi < snap.prereqRequired.size() && snap.prereqRequired.get(pi));
+                buf.writeBoolean(pi < snap.prereqForbidden.size() && snap.prereqForbidden.get(pi));
+                buf.writeBoolean(pi < snap.prereqLink.size() && snap.prereqLink.get(pi));
+            }
+            buf.writeInt(snap.optionalPrereqMinCount);
 
             buf.writeInt(snap.tasksNbt.size());
             for (CompoundTag tag : snap.tasksNbt) buf.writeNbt(tag);
@@ -140,9 +167,22 @@ public class S2CSyncQuestsPacket {
         final String iconItemId;
         final int customX;
         final int customY;
+        // Extended metadata
+        final String subtitle;
+        final String visibility;   // enum name
+        final String enableIf;     // flag expression, empty string = none
+        final int taskMinCount;
+        final boolean requireAllPrerequisites;
         final List<ResourceLocation> childIds;
         final List<ResourceLocation> prereqIds;
-        final List<CompoundTag> tasksNbt;
+        /** parallel to prereqIds: true = required, false = optional */
+        final List<Boolean> prereqRequired;
+        /** parallel to prereqIds: true = forbidden (must NOT be completed) */
+        final List<Boolean> prereqForbidden;
+        /** parallel to prereqIds: true = alt+drag link edge */
+        final List<Boolean> prereqLink;
+        final int optionalPrereqMinCount;
+        final List<CompoundTag> tasksNbt;  // each tag has "optional" boolean injected
 
         /** Server-side: capture everything from a live QuestNode. */
         QuestSnapshot(QuestNode node) {
@@ -151,21 +191,30 @@ public class S2CSyncQuestsPacket {
             this.description = node.getDescription();
             this.category = node.getCategory() != null ? node.getCategory() : "MAIN";
             this.shapeType = node.getShapeType() != null ? node.getShapeType() : "SQUARE";
-            this.iconItemId = node.getIconItemId(); // "" if no icon
+            this.iconItemId = node.getIconItemId();
             this.customX = node.getCustomX();
             this.customY = node.getCustomY();
+            this.subtitle = node.getSubtitle() != null ? node.getSubtitle() : "";
+            this.visibility = node.getVisibility().name();
+            this.enableIf = node.getEnableIf() != null ? node.getEnableIf() : "";
+            this.taskMinCount = node.getTaskMinCount();
+            this.requireAllPrerequisites = node.getRequireAllPrerequisites();
+            this.optionalPrereqMinCount = node.getOptionalPrereqMinCount();
 
             this.childIds = new ArrayList<>();
-            for (QuestNode child : node.getChildren())
-                childIds.add(child.getId());
+            for (QuestNode child : node.getChildren()) childIds.add(child.getId());
 
             this.prereqIds = new ArrayList<>();
-            for (QuestNode req : node.getPrerequisites())
+            this.prereqRequired = new ArrayList<>();
+            this.prereqForbidden = new ArrayList<>();
+            this.prereqLink = new ArrayList<>();
+            for (QuestNode req : node.getPrerequisites()) {
                 prereqIds.add(req.getId());
+                prereqRequired.add(node.isPrereqRequired(req.getId()));
+                prereqForbidden.add(node.isPrereqForbidden(req.getId()));
+                prereqLink.add(node.isPrereqLink(req.getId()));
+            }
 
-            // Build each task tag from serializeNBT(), then inject identity keys
-            // (task_id + description) so the client can reconstruct the instance
-            // without a separate factory registry.
             this.tasksNbt = new ArrayList<>();
             for (QuestTask task : node.getTasks()) {
                 CompoundTag tag = task.serializeNBT();
@@ -173,6 +222,7 @@ public class S2CSyncQuestsPacket {
                     tag.putString("task_id", task.getTaskId().toString());
                 if (!tag.contains("description"))
                     tag.putString("description", Component.Serializer.toJson(task.getDescription()));
+                tag.putBoolean("optional", task.isOptional());
                 tasksNbt.add(tag);
             }
         }
@@ -181,7 +231,11 @@ public class S2CSyncQuestsPacket {
         QuestSnapshot(ResourceLocation id, Component title, Component description,
                       String category, String shapeType, String iconItemId,
                       int customX, int customY,
+                      String subtitle, String visibility, String enableIf, int taskMinCount,
+                      boolean requireAllPrerequisites,
                       List<ResourceLocation> childIds, List<ResourceLocation> prereqIds,
+                      List<Boolean> prereqRequired, List<Boolean> prereqForbidden, List<Boolean> prereqLink,
+                      int optionalPrereqMinCount,
                       List<CompoundTag> tasksNbt) {
             this.id = id;
             this.title = title;
@@ -191,8 +245,17 @@ public class S2CSyncQuestsPacket {
             this.iconItemId = iconItemId;
             this.customX = customX;
             this.customY = customY;
+            this.subtitle = subtitle;
+            this.visibility = visibility;
+            this.enableIf = enableIf;
+            this.taskMinCount = taskMinCount;
+            this.requireAllPrerequisites = requireAllPrerequisites;
             this.childIds = childIds;
             this.prereqIds = prereqIds;
+            this.prereqRequired = prereqRequired;
+            this.prereqForbidden = prereqForbidden;
+            this.prereqLink = prereqLink;
+            this.optionalPrereqMinCount = optionalPrereqMinCount;
             this.tasksNbt = tasksNbt;
         }
     }
@@ -215,6 +278,14 @@ public class S2CSyncQuestsPacket {
                 node.setShapeType(snap.shapeType);
                 node.setCustomX(snap.customX);
                 node.setCustomY(snap.customY);
+                node.setSubtitle(snap.subtitle);
+                node.setTaskMinCount(snap.taskMinCount);
+                node.setRequireAllPrerequisites(snap.requireAllPrerequisites);
+                node.setOptionalPrereqMinCount(snap.optionalPrereqMinCount);
+                try {
+                    node.setVisibility(QuestNode.Visibility.valueOf(snap.visibility));
+                } catch (Exception ignored) {}
+                node.setEnableIf(snap.enableIf.isEmpty() ? null : snap.enableIf);
 
                 if (!snap.iconItemId.isEmpty()) {
                     node.setIconItemById(snap.iconItemId);
@@ -222,7 +293,10 @@ public class S2CSyncQuestsPacket {
 
                 for (CompoundTag tag : snap.tasksNbt) {
                     QuestTask task = deserializeTask(tag);
-                    if (task != null) node.addTask(task);
+                    if (task != null) {
+                        if (tag.contains("optional")) task.setOptional(tag.getBoolean("optional"));
+                        node.addTask(task);
+                    }
                 }
 
                 // Bare registration — only ALL_QUESTS for now; ROOT_NODES populated in Phase 2
@@ -244,9 +318,21 @@ public class S2CSyncQuestsPacket {
                     if (child != null) node.addChild(child);
                 }
 
-                for (ResourceLocation reqId : snap.prereqIds) {
-                    QuestNode req = QuestTreeRegistry.getQuest(reqId);
-                    if (req != null) node.addPrerequisite(req);
+                for (int pi = 0; pi < snap.prereqIds.size(); pi++) {
+                    QuestNode req = QuestTreeRegistry.getQuest(snap.prereqIds.get(pi));
+                    if (req != null) {
+                        node.addPrerequisite(req);
+                        boolean forbidden = pi < snap.prereqForbidden.size() && snap.prereqForbidden.get(pi);
+                        if (forbidden) {
+                            node.setPrereqForbidden(req.getId(), true);
+                        } else {
+                            boolean required = pi < snap.prereqRequired.size() && snap.prereqRequired.get(pi);
+                            node.setPrereqRequired(req.getId(), required);
+                        }
+                        if (pi < snap.prereqLink.size() && snap.prereqLink.get(pi)) {
+                            node.setPrereqLink(req.getId(), true);
+                        }
+                    }
                 }
 
                 // Register as root so the canvas can find it via getRootChapters()
@@ -268,61 +354,11 @@ public class S2CSyncQuestsPacket {
          */
         private static QuestTask deserializeTask(CompoundTag tag) {
             if (!tag.contains("type") || !tag.contains("task_id")) return null;
-
-            ResourceLocation taskId;
-            try {
-                taskId = new ResourceLocation(tag.getString("task_id"));
-            } catch (Exception e) {
-                return null;
+            QuestTask task = net.phoenix.core.integration.phoenix_chronicles.PhoenixTaskRegistry.deserialize(tag);
+            if (task == null) {
+                System.err.println("[Phoenix Chronicles] Unknown task type in sync packet: '" +
+                        tag.getString("type") + "' — skipping.");
             }
-
-            Component desc;
-            try {
-                desc = Component.Serializer.fromJson(tag.getString("description"));
-                if (desc == null) throw new IllegalArgumentException("null component");
-            } catch (Exception e) {
-                desc = Component.literal(tag.getString("type"));
-            }
-
-            // Stubs use the cheapest valid placeholder; deserializeNBT overwrites everything
-            QuestTask task = switch (tag.getString("type")) {
-                case "kill_entity" -> new KillEntityTask(taskId, desc,
-                        new ResourceLocation("minecraft", "pig"), 1, false);
-                case "item_check" -> new ItemRequirementTask(taskId, desc,
-                        net.minecraft.world.item.Items.DIRT, 1, false);
-                case "craft_item" -> new CraftItemTask(taskId, desc,
-                        new ResourceLocation("minecraft", "dirt"), 1);
-                case "experience" -> new ExperienceTask(taskId, desc, 1);
-                case "location_terminal" -> new LocationOrTerminalTask(taskId, desc,
-                        new ResourceLocation("minecraft", "air"), false);
-                case "advancement" -> new AdvancementTask(taskId, desc,
-                        new ResourceLocation("minecraft", "story/root"));
-                case "block_interact" -> new BlockInteractTask(taskId, desc,
-                        net.minecraft.world.level.block.Blocks.STONE, "PLACE");
-                case "fluid_check" -> new FluidRequirementTask(taskId, desc,
-                        new ResourceLocation("minecraft", "water"), 1000, false);
-                case "stat" -> new StatTrackerTask(taskId, desc,
-                        new ResourceLocation("minecraft", "jump"), 1, false);
-                case "dimension" -> new DimensionTask(taskId, desc,
-                        net.minecraft.resources.ResourceKey.create(
-                                net.minecraft.core.registries.Registries.DIMENSION,
-                                new ResourceLocation("minecraft", "overworld")));
-                default -> {
-                    System.err.println("[Phoenix Chronicles] Unknown task type in sync packet: '" +
-                            tag.getString("type") + "' — skipping.");
-                    yield null;
-                }
-            };
-
-            if (task != null) {
-                try {
-                    task.deserializeNBT(tag);
-                } catch (Exception e) {
-                    System.err.println("[Phoenix Chronicles] deserializeNBT failed for task '" + taskId + "' (type=" +
-                            tag.getString("type") + "): " + e.getMessage());
-                }
-            }
-
             return task;
         }
     }

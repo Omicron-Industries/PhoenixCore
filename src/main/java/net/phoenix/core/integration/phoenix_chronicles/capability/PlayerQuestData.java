@@ -62,12 +62,25 @@ public class PlayerQuestData {
         claimedRewards.add(questId);
     }
 
+    public void clearClaimedRewards(ResourceLocation questId) {
+        claimedRewards.remove(questId);
+    }
+
     public int getChosenRewardIndex(ResourceLocation questId) {
         return chosenRewardIndex.getOrDefault(questId, -1);
     }
 
     public void setChosenRewardIndex(ResourceLocation questId, int index) {
         chosenRewardIndex.put(questId, index);
+    }
+
+    public void clearChosenRewardIndex(ResourceLocation questId) {
+        chosenRewardIndex.remove(questId);
+    }
+
+    /** Wipes all accumulated task progress for a single task (used on repeat reset). */
+    public void clearTaskProgress(ResourceLocation taskId) {
+        taskProgress.remove(taskId);
     }
 
     // ── Pinned quest ──────────────────────────────────────────────────────────

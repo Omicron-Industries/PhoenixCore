@@ -19,5 +19,5 @@ public class PTags {
     public static final TagKey<Item> PLANKS = TagKey.create(Registries.ITEM,
             new ResourceLocation("minecraft", "planks"));
     public static final TagKey<Block> SOUL_FLOWERS = BlockTags.create(
-            new ResourceLocation("phoenix", "soul_flowers"));
+            new ResourceLocation("phoenixcore", "soul_flowers"));
 }

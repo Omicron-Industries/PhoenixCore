@@ -44,16 +44,15 @@ public class C2SSelectSoundPacket {
 
             if (msg.soundLoc.length() > 256 || msg.streamUrl.length() > 512) return;
 
-            // 1. Update the values on the server
+            // If the audio track changed, flush out old telemetry immediately
+            if (!jukebox.selectedLibrarySound.equals(msg.soundLoc) || !jukebox.currentStreamUrl.equals(msg.streamUrl)) {
+                jukebox.resetAcousticData();
+            }
+
             jukebox.selectedLibrarySound = msg.soundLoc;
             jukebox.currentStreamUrl = msg.streamUrl;
 
-            // 2. CRITICAL FIXES: Mark dirty and synchronize block updates
-            // This marks the BlockEntity as modified so Minecraft marks it for a disk save
             mbe.setChanged();
-
-            // This forces Minecraft to send an S2C block update packet to all tracking clients,
-            // which syncs the underlying machine NBT data dynamically.
             var state = level.getBlockState(msg.pos);
             level.sendBlockUpdated(msg.pos, state, state, 3);
         });
