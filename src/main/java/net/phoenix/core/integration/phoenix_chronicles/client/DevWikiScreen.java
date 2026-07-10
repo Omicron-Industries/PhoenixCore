@@ -23,11 +23,11 @@ public class DevWikiScreen extends Screen {
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_TEXT_DIM, C_TEXT_FAINT, C_DONE, C_ACTIVE;
 
     // ── Layout ────────────────────────────────────────────────────────────────
-    private static final int HEADER_H  = 28;
-    private static final int FOOTER_H  = 28;
+    private static final int HEADER_H = 28;
+    private static final int FOOTER_H = 28;
     private static final int SIDEBAR_W = 96;
-    private static final int MARGIN    = 10;
-    private static final int LINE_H    = 12;
+    private static final int MARGIN = 10;
+    private static final int LINE_H = 12;
 
     // ── Pages ─────────────────────────────────────────────────────────────────
     private static final String[] PAGE_NAMES = {
@@ -45,18 +45,51 @@ public class DevWikiScreen extends Screen {
     private final List<String> copyBtnTexts = new ArrayList<>();
 
     // ── Content line model ────────────────────────────────────────────────────
-    private enum LT { HEADING, SUBHEADING, KV, TEXT, INDENT, DIVIDER, SPACER, CODE }
+    private enum LT {
+        HEADING,
+        SUBHEADING,
+        KV,
+        TEXT,
+        INDENT,
+        DIVIDER,
+        SPACER,
+        CODE
+    }
 
     private record WLine(LT type, String a, String b) {
-        static WLine h(String s)            { return new WLine(LT.HEADING,    s, ""); }
-        static WLine sh(String s)           { return new WLine(LT.SUBHEADING, s, ""); }
-        static WLine kv(String k, String v) { return new WLine(LT.KV,         k, v); }
-        static WLine t(String s)            { return new WLine(LT.TEXT,       s, ""); }
-        static WLine in(String s)           { return new WLine(LT.INDENT,     s, ""); }
-        static WLine div()                  { return new WLine(LT.DIVIDER,    "", ""); }
-        static WLine sp()                   { return new WLine(LT.SPACER,     "", ""); }
+
+        static WLine h(String s) {
+            return new WLine(LT.HEADING, s, "");
+        }
+
+        static WLine sh(String s) {
+            return new WLine(LT.SUBHEADING, s, "");
+        }
+
+        static WLine kv(String k, String v) {
+            return new WLine(LT.KV, k, v);
+        }
+
+        static WLine t(String s) {
+            return new WLine(LT.TEXT, s, "");
+        }
+
+        static WLine in(String s) {
+            return new WLine(LT.INDENT, s, "");
+        }
+
+        static WLine div() {
+            return new WLine(LT.DIVIDER, "", "");
+        }
+
+        static WLine sp() {
+            return new WLine(LT.SPACER, "", "");
+        }
+
         /** Monospace-style code line with a copy button. */
-        static WLine code(String s)         { return new WLine(LT.CODE,       s, ""); }
+        static WLine code(String s) {
+            return new WLine(LT.CODE, s, "");
+        }
     }
 
     // ── Constructor ───────────────────────────────────────────────────────────
@@ -71,16 +104,16 @@ public class DevWikiScreen extends Screen {
     @Override
     protected void init() {
         ChroniclesTheme t = ChroniclesTheme.current();
-        C_BG         = t.bg.getColor();
-        C_PANEL      = t.panel.getColor();
-        C_HEADER     = t.header.getColor();
-        C_BORDER     = t.border.getColor();
-        C_ACCENT     = t.accent.getColor();
-        C_TEXT       = t.text.getColor();
-        C_TEXT_DIM   = t.textDim.getColor();
+        C_BG = t.bg.getColor();
+        C_PANEL = t.panel.getColor();
+        C_HEADER = t.header.getColor();
+        C_BORDER = t.border.getColor();
+        C_ACCENT = t.accent.getColor();
+        C_TEXT = t.text.getColor();
+        C_TEXT_DIM = t.textDim.getColor();
         C_TEXT_FAINT = t.textFaint.getColor();
-        C_DONE       = t.done.getColor();
-        C_ACTIVE     = t.activeColor.getColor();
+        C_DONE = t.done.getColor();
+        C_ACTIVE = t.activeColor.getColor();
 
         clearWidgets();
 
@@ -91,18 +124,27 @@ public class DevWikiScreen extends Screen {
             boolean sel = i == activePage;
             addRenderableWidget(Button.builder(
                     Component.literal((sel ? "§f" : "§8") + PAGE_NAMES[i]),
-                    b -> { activePage = idx; scrollY = 0; rebuildWidgets(); })
+                    b -> {
+                        activePage = idx;
+                        scrollY = 0;
+                        rebuildWidgets();
+                    })
                     .bounds(2, tabY, SIDEBAR_W - 4, 14).build());
             tabY += 16;
         }
 
         // Close button
         addRenderableWidget(Button.builder(Component.literal("§7✕ Close"),
-                b -> { if (minecraft != null) minecraft.setScreen(parent); })
+                b -> {
+                    if (minecraft != null) minecraft.setScreen(parent);
+                })
                 .bounds(width / 2 - 36, height - FOOTER_H + 6, 72, 16).build());
     }
 
-    protected void rebuildWidgets() { clearWidgets(); init(); }
+    protected void rebuildWidgets() {
+        clearWidgets();
+        init();
+    }
 
     // ── Render ────────────────────────────────────────────────────────────────
 
@@ -210,7 +252,9 @@ public class DevWikiScreen extends Screen {
                     g.fill(x, y + 3, x + w, y + 4, C_BORDER);
                 return y + 8;
             }
-            case SPACER -> { return y + 6; }
+            case SPACER -> {
+                return y + 6;
+            }
             case CODE -> {
                 int lh = LINE_H + 4;
                 if (y + lh >= top) {
@@ -228,11 +272,10 @@ public class DevWikiScreen extends Screen {
                     // code text (clipped before copy btn)
                     String code = line.a();
                     int maxCW = btnX - x - 6;
-                    String display = font.width(code) <= maxCW ? code
-                            : font.plainSubstrByWidth(code, maxCW - 4) + "…";
+                    String display = font.width(code) <= maxCW ? code : font.plainSubstrByWidth(code, maxCW - 4) + "…";
                     g.drawString(font, display, x + 4, y + 3, C_TEXT, false);
                     // register copy btn
-                    copyBtnBounds.add(new int[]{btnX, btnY2, btnX + btnW, btnY2 + btnH2});
+                    copyBtnBounds.add(new int[] { btnX, btnY2, btnX + btnW, btnY2 + btnH2 });
                     copyBtnTexts.add(line.a());
                 }
                 return y + lh + 1;
@@ -243,12 +286,12 @@ public class DevWikiScreen extends Screen {
 
     private int lineHeight(WLine line) {
         return switch (line.type()) {
-            case HEADING    -> LINE_H + 6;
+            case HEADING -> LINE_H + 6;
             case SUBHEADING -> LINE_H + 4;
             case KV, TEXT, INDENT -> LINE_H + 1;
-            case DIVIDER    -> 8;
-            case SPACER     -> 6;
-            case CODE       -> LINE_H + 5;
+            case DIVIDER -> 8;
+            case SPACER -> 6;
+            case CODE -> LINE_H + 5;
         };
     }
 
@@ -269,8 +312,8 @@ public class DevWikiScreen extends Screen {
     }
 
     private List<WLine> pageOverview() {
-        int total  = QuestTreeRegistry.getAllQuests().size();
-        int cats   = QuestTreeRegistry.getRootChapters().values().stream()
+        int total = QuestTreeRegistry.getAllQuests().size();
+        int cats = QuestTreeRegistry.getRootChapters().values().stream()
                 .map(QuestNode::getCategory).distinct().mapToInt(c -> 1).sum();
         // count more accurately
         Set<String> catSet = new HashSet<>();
@@ -288,12 +331,12 @@ public class DevWikiScreen extends Screen {
         lines.add(WLine.sp());
         lines.add(WLine.div());
         lines.add(WLine.sh("Quick navigation"));
-        lines.add(WLine.kv("Canvas",       "Pan, zoom, right-click, Alt+drag dep lines"));
+        lines.add(WLine.kv("Canvas", "Pan, zoom, right-click, Alt+drag dep lines"));
         lines.add(WLine.kv("Quest Fields", "All SNBT keys and their meanings"));
-        lines.add(WLine.kv("Tasks",        "Every task type with expected fields"));
-        lines.add(WLine.kv("Rewards",      "All reward types and their parameters"));
-        lines.add(WLine.kv("SNBT Format",  "Full file format reference"));
-        lines.add(WLine.kv("Live Stats",   "Per-category quest counts and type breakdown"));
+        lines.add(WLine.kv("Tasks", "Every task type with expected fields"));
+        lines.add(WLine.kv("Rewards", "All reward types and their parameters"));
+        lines.add(WLine.kv("SNBT Format", "Full file format reference"));
+        lines.add(WLine.kv("Live Stats", "Per-category quest counts and type breakdown"));
         lines.add(WLine.sp());
         lines.add(WLine.div());
         lines.add(WLine.sh("Tutorial quests"));
@@ -308,34 +351,34 @@ public class DevWikiScreen extends Screen {
         var lines = new ArrayList<WLine>();
         lines.add(WLine.h("Canvas Controls"));
         lines.add(WLine.sh("Mouse"));
-        lines.add(WLine.kv("Left drag",      "Pan the canvas"));
-        lines.add(WLine.kv("Scroll wheel",   "Zoom in / out"));
-        lines.add(WLine.kv("Left click node","Select / open quest detail"));
-        lines.add(WLine.kv("Right click node","Context menu (Edit, Delete, Move category…)"));
-        lines.add(WLine.kv("Right click canvas","Open dep-line settings (or unlock path for players)"));
+        lines.add(WLine.kv("Left drag", "Pan the canvas"));
+        lines.add(WLine.kv("Scroll wheel", "Zoom in / out"));
+        lines.add(WLine.kv("Left click node", "Select / open quest detail"));
+        lines.add(WLine.kv("Right click node", "Context menu (Edit, Delete, Move category…)"));
+        lines.add(WLine.kv("Right click canvas", "Open dep-line settings (or unlock path for players)"));
         lines.add(WLine.kv("Alt + drag node", "Draw dependency line to another node"));
-        lines.add(WLine.kv("Middle click",   "Reset pan offset"));
+        lines.add(WLine.kv("Middle click", "Reset pan offset"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Keyboard"));
-        lines.add(WLine.kv("F",       "Fit all nodes to view"));
-        lines.add(WLine.kv("Ctrl+F",  "Open quest search overlay"));
-        lines.add(WLine.kv("Ctrl+Z",  "Undo last node move or dep-line change"));
-        lines.add(WLine.kv("Ctrl+Y",  "Redo"));
-        lines.add(WLine.kv("L",       "Toggle line style (Spline ↔ Straight)"));
-        lines.add(WLine.kv("V",       "Toggle validation panel (dev)"));
-        lines.add(WLine.kv("I",       "Run FTB import (dev)"));
-        lines.add(WLine.kv("?",       "Open this wiki"));
-        lines.add(WLine.kv("ESC",     "Close menus / deselect"));
+        lines.add(WLine.kv("F", "Fit all nodes to view"));
+        lines.add(WLine.kv("Ctrl+F", "Open quest search overlay"));
+        lines.add(WLine.kv("Ctrl+Z", "Undo last node move or dep-line change"));
+        lines.add(WLine.kv("Ctrl+Y", "Redo"));
+        lines.add(WLine.kv("L", "Toggle line style (Spline ↔ Straight)"));
+        lines.add(WLine.kv("V", "Toggle validation panel (dev)"));
+        lines.add(WLine.kv("I", "Run FTB import (dev)"));
+        lines.add(WLine.kv("?", "Open this wiki"));
+        lines.add(WLine.kv("ESC", "Close menus / deselect"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Multi-select (dev mode)"));
         lines.add(WLine.kv("Shift+click", "Add node to selection"));
-        lines.add(WLine.kv("Ctrl+drag",  "Box-select nodes"));
-        lines.add(WLine.kv("Ctrl+G",     "Group selected nodes"));
-        lines.add(WLine.kv("Del",         "Delete selected nodes"));
+        lines.add(WLine.kv("Ctrl+drag", "Box-select nodes"));
+        lines.add(WLine.kv("Ctrl+G", "Group selected nodes"));
+        lines.add(WLine.kv("Del", "Delete selected nodes"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Zoom"));
-        lines.add(WLine.kv("Range",  "35% – 250%  (scroll or pinch)"));
-        lines.add(WLine.kv("Step",   "12% per scroll tick"));
+        lines.add(WLine.kv("Range", "35% – 250%  (scroll or pinch)"));
+        lines.add(WLine.kv("Step", "12% per scroll tick"));
         return lines;
     }
 
@@ -345,40 +388,41 @@ public class DevWikiScreen extends Screen {
         lines.add(WLine.t("All fields are optional except id and title."));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Identity"));
-        lines.add(WLine.kv("id",          "Path portion only — e.g. \"my_quest\" → phoenixcore:my_quest"));
-        lines.add(WLine.kv("title",        "Display name shown in quest headers and search"));
-        lines.add(WLine.kv("description",  "Lore / body text"));
-        lines.add(WLine.kv("subtitle",     "Smaller text below the title on the detail card"));
+        lines.add(WLine.kv("id", "Path portion only — e.g. \"my_quest\" → phoenixcore:my_quest"));
+        lines.add(WLine.kv("title", "Display name shown in quest headers and search"));
+        lines.add(WLine.kv("description", "Lore / body text"));
+        lines.add(WLine.kv("subtitle", "Smaller text below the title on the detail card"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Appearance"));
-        lines.add(WLine.kv("category",    "Chapter tab name — e.g. MAIN, MAGIC, COMBAT"));
-        lines.add(WLine.kv("shape",       "SQUARE · CIRCLE · DIAMOND · HEXAGON · TRIANGLE · STAR · PENTAGON · SHIELD · CROSS"));
-        lines.add(WLine.kv("icon_item",   "Item id for the node icon — e.g. minecraft:diamond"));
-        lines.add(WLine.kv("positionX",   "Canvas X coordinate (pixels from left edge)"));
-        lines.add(WLine.kv("positionY",   "Canvas Y coordinate (pixels from top edge)"));
+        lines.add(WLine.kv("category", "Chapter tab name — e.g. MAIN, MAGIC, COMBAT"));
+        lines.add(
+                WLine.kv("shape", "SQUARE · CIRCLE · DIAMOND · HEXAGON · TRIANGLE · STAR · PENTAGON · SHIELD · CROSS"));
+        lines.add(WLine.kv("icon_item", "Item id for the node icon — e.g. minecraft:diamond"));
+        lines.add(WLine.kv("positionX", "Canvas X coordinate (pixels from left edge)"));
+        lines.add(WLine.kv("positionY", "Canvas Y coordinate (pixels from top edge)"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Visibility"));
-        lines.add(WLine.kv("visibility",  "NORMAL · HIDDEN · MYSTERY · DISABLED"));
-        lines.add(WLine.kv("enable_if",   "Flag expression — quest hidden+disabled when false"));
-        lines.add(WLine.kv("hide_dep_line","true / false — hides all dep lines on the canvas"));
-        lines.add(WLine.kv("disabled_blocks_children","true → DISABLED quest still gates children"));
+        lines.add(WLine.kv("visibility", "NORMAL · HIDDEN · MYSTERY · DISABLED"));
+        lines.add(WLine.kv("enable_if", "Flag expression — quest hidden+disabled when false"));
+        lines.add(WLine.kv("hide_dep_line", "true / false — hides all dep lines on the canvas"));
+        lines.add(WLine.kv("disabled_blocks_children", "true → DISABLED quest still gates children"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Completion"));
-        lines.add(WLine.kv("task_min_count","0 = all tasks required; N = complete any N tasks"));
+        lines.add(WLine.kv("task_min_count", "0 = all tasks required; N = complete any N tasks"));
         lines.add(WLine.kv("repeat_mode", "NONE · DAILY · COOLDOWN · INFINITE"));
-        lines.add(WLine.kv("repeat_cooldown_hours","Hours between repeats (COOLDOWN mode only)"));
+        lines.add(WLine.kv("repeat_cooldown_hours", "Hours between repeats (COOLDOWN mode only)"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Prerequisites"));
-        lines.add(WLine.kv("parent",               "Single primary parent quest id path, or \"none\""));
-        lines.add(WLine.kv("require_all_prereqs",  "true = AND gate; false = OR gate (legacy)"));
-        lines.add(WLine.kv("prerequisites",        "List of {id, required, forbidden, link} tags"));
-        lines.add(WLine.kv("optional_prereq_min_count","Min optional prereqs needed (0 = all)"));
+        lines.add(WLine.kv("parent", "Single primary parent quest id path, or \"none\""));
+        lines.add(WLine.kv("require_all_prereqs", "true = AND gate; false = OR gate (legacy)"));
+        lines.add(WLine.kv("prerequisites", "List of {id, required, forbidden, link} tags"));
+        lines.add(WLine.kv("optional_prereq_min_count", "Min optional prereqs needed (0 = all)"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Tutorial"));
-        lines.add(WLine.kv("tutorial_steps","List of {text, highlight} tags — see Overview page"));
+        lines.add(WLine.kv("tutorial_steps", "List of {text, highlight} tags — see Overview page"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("Multiplayer / Teams"));
-        lines.add(WLine.kv("shared",        "true → completing this quest cascades to all online teammates"));
+        lines.add(WLine.kv("shared", "true → completing this quest cascades to all online teammates"));
         lines.add(WLine.t("Uses Minecraft's built-in scoreboard teams (/team add, /team join)."));
         lines.add(WLine.t("Task progress remains per-player; only the final COMPLETED state is shared."));
         return lines;
@@ -391,23 +435,24 @@ public class DevWikiScreen extends Screen {
         // Built-in types
         lines.add(WLine.sh("Built-in"));
         String[][] builtins = {
-                {"kill_entity",       "Kill mobs",                   "target: entity_id, count, consume"},
-                {"item_check",        "Have item(s) in inventory",   "target: item_id, count, consume"},
-                {"craft_item",        "Craft an item",               "target: item_id, count"},
-                {"experience",        "Reach an XP level",           "count: level"},
-                {"location_terminal", "Interact with a terminal",    "target: terminal_id, consume"},
-                {"advancement",       "Earn an advancement",         "target: advancement_id"},
-                {"block_interact",    "Place / right-click a block", "target: block_id, secondary: PLACE|RIGHT_CLICK"},
-                {"fluid_check",       "Have fluid in inventory",     "target: fluid_id, count: mB, consume"},
-                {"stat",              "Reach a stat value",          "target: stat_id (e.g. minecraft:jump), count"},
-                {"dimension",         "Enter a dimension",           "secondary: dimension_id"},
-                {"biome",             "Visit a biome",               "target: biome_id"},
-                {"structure",         "Enter a structure",           "target: structure_id"},
-                {"checkmark",         "Manual checkbox",             "(no fields)"},
-                {"tag_item",          "Have item matching tag",      "target: tag (e.g. c:ores/iron), count"},
-                {"info",              "Display-only text panel",     "target: body text"},
-                {"external_trigger",  "Fired by QuestAPI.fireExternalEvent()", "target: trigger_id, count: times"},
-                {"energy_check",      "Have stored energy",         "target: FE|EU|ANY, secondary: INVENTORY|HELD|BLOCK, count: FE"},
+                { "kill_entity", "Kill mobs", "target: entity_id, count, consume" },
+                { "item_check", "Have item(s) in inventory", "target: item_id, count, consume" },
+                { "craft_item", "Craft an item", "target: item_id, count" },
+                { "experience", "Reach an XP level", "count: level" },
+                { "location_terminal", "Interact with a terminal", "target: terminal_id, consume" },
+                { "advancement", "Earn an advancement", "target: advancement_id" },
+                { "block_interact", "Place / right-click a block", "target: block_id, secondary: PLACE|RIGHT_CLICK" },
+                { "fluid_check", "Have fluid in inventory", "target: fluid_id, count: mB, consume" },
+                { "stat", "Reach a stat value", "target: stat_id (e.g. minecraft:jump), count" },
+                { "dimension", "Enter a dimension", "secondary: dimension_id" },
+                { "biome", "Visit a biome", "target: biome_id" },
+                { "structure", "Enter a structure", "target: structure_id" },
+                { "checkmark", "Manual checkbox", "(no fields)" },
+                { "tag_item", "Have item matching tag", "target: tag (e.g. c:ores/iron), count" },
+                { "info", "Display-only text panel", "target: body text" },
+                { "external_trigger", "Fired by QuestAPI.fireExternalEvent()", "target: trigger_id, count: times" },
+                { "energy_check", "Have stored energy",
+                        "target: FE|EU|ANY, secondary: INVENTORY|HELD|BLOCK, count: FE" },
         };
         for (String[] row : builtins) {
             lines.add(WLine.kv(row[0], row[1]));
@@ -423,7 +468,8 @@ public class DevWikiScreen extends Screen {
             for (String[] b : builtins) builtinIds.add(b[0]);
             for (PhoenixTaskRegistry.TaskEntry entry : PhoenixTaskRegistry.getEditorTypes()) {
                 if (!builtinIds.contains(entry.typeId())) {
-                    lines.add(WLine.kv(entry.typeId(), entry.editorLabel() != null ? entry.editorLabel() : entry.typeId()));
+                    lines.add(WLine.kv(entry.typeId(),
+                            entry.editorLabel() != null ? entry.editorLabel() : entry.typeId()));
                     if (entry.editorTooltip() != null)
                         lines.add(WLine.in(entry.editorTooltip().split("\n")[0]));
                 }
@@ -442,16 +488,16 @@ public class DevWikiScreen extends Screen {
         var lines = new ArrayList<WLine>();
         lines.add(WLine.h("Reward Types"));
         lines.add(WLine.sp());
-        lines.add(WLine.kv("item",         "Give item(s) to the player"));
+        lines.add(WLine.kv("item", "Give item(s) to the player"));
         lines.add(WLine.in("Fields: type, item (item_id), count"));
         lines.add(WLine.sp());
-        lines.add(WLine.kv("xp",           "Award experience levels"));
+        lines.add(WLine.kv("xp", "Award experience levels"));
         lines.add(WLine.in("Fields: type, levels (integer)"));
         lines.add(WLine.sp());
-        lines.add(WLine.kv("command",      "Run a server command as console"));
+        lines.add(WLine.kv("command", "Run a server command as console"));
         lines.add(WLine.in("Fields: type, command  (%player% replaced with player name)"));
         lines.add(WLine.sp());
-        lines.add(WLine.kv("loot_table",   "Roll a loot table, give all resulting items"));
+        lines.add(WLine.kv("loot_table", "Roll a loot table, give all resulting items"));
         lines.add(WLine.in("Fields: type, loot_table (resource location)"));
         lines.add(WLine.sp());
         lines.add(WLine.kv("script_event", "Fire PhoenixQuestScriptRewardEvent on the Forge bus"));
@@ -511,10 +557,10 @@ public class DevWikiScreen extends Screen {
         lines.add(WLine.t("]"));
         lines.add(WLine.sp());
         lines.add(WLine.sh("File locations"));
-        lines.add(WLine.kv("Quest SNBT",     "config/phoenix_chronicles/*.snbt  (any depth)"));
+        lines.add(WLine.kv("Quest SNBT", "config/phoenix_chronicles/*.snbt  (any depth)"));
         lines.add(WLine.kv("Quest markdown", "config/phoenix_chronicles/quests/{id}.md"));
-        lines.add(WLine.kv("Groups",         "config/phoenix_chronicles/quest_groups.json"));
-        lines.add(WLine.kv("Settings",       "config/phoenix_chronicles/settings.json"));
+        lines.add(WLine.kv("Groups", "config/phoenix_chronicles/quest_groups.json"));
+        lines.add(WLine.kv("Settings", "config/phoenix_chronicles/settings.json"));
         lines.add(WLine.kv("Tutorial prog.", "config/phoenix_chronicles/tutorial_progress.dat"));
         return lines;
     }
@@ -539,8 +585,8 @@ public class DevWikiScreen extends Screen {
                 .forEach(e -> {
                     long repeatable = e.getValue().stream().filter(QuestNode::isRepeatable).count();
                     long hasTutorial = e.getValue().stream().filter(n -> !n.getTutorialSteps().isEmpty()).count();
-                    String suffix = (repeatable > 0 ? "  " + repeatable + " repeatable" : "")
-                            + (hasTutorial > 0 ? "  " + hasTutorial + " tutorial" : "");
+                    String suffix = (repeatable > 0 ? "  " + repeatable + " repeatable" : "") +
+                            (hasTutorial > 0 ? "  " + hasTutorial + " tutorial" : "");
                     lines.add(WLine.kv(e.getKey() + ":", e.getValue().size() + " quests" + suffix));
                 });
 
@@ -677,13 +723,13 @@ public class DevWikiScreen extends Screen {
         L.add(WLine.sp());
         L.add(WLine.div());
         L.add(WLine.sh("In-game commands"));
-        L.add(WLine.kv("/chronicles status <id>",    "Any player — check your own quest state"));
+        L.add(WLine.kv("/chronicles status <id>", "Any player — check your own quest state"));
         L.add(WLine.kv("/chronicles emergency <id>", "Any player — get emergency items for active quest"));
-        L.add(WLine.kv("/chronicles complete <id>",  "Op — force-complete a quest"));
-        L.add(WLine.kv("/chronicles unlock <id>",    "Op — bypass prerequisites"));
-        L.add(WLine.kv("/chronicles reset <id>",     "Op — reset quest to LOCKED"));
-        L.add(WLine.kv("/chronicles active <id>",    "Op — force-start a quest"));
-        L.add(WLine.kv("/chronicles validate",       "Op — report load errors and config issues"));
+        L.add(WLine.kv("/chronicles complete <id>", "Op — force-complete a quest"));
+        L.add(WLine.kv("/chronicles unlock <id>", "Op — bypass prerequisites"));
+        L.add(WLine.kv("/chronicles reset <id>", "Op — reset quest to LOCKED"));
+        L.add(WLine.kv("/chronicles active <id>", "Op — force-start a quest"));
+        L.add(WLine.kv("/chronicles validate", "Op — report load errors and config issues"));
 
         return L;
     }
@@ -728,5 +774,7 @@ public class DevWikiScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

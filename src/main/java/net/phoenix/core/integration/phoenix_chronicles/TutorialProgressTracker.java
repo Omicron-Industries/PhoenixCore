@@ -12,14 +12,16 @@ import java.util.Map;
 /**
  * Client-side store for per-quest tutorial step progress.
  *
- * <p>Step index semantics:
+ * <p>
+ * Step index semantics:
  * <ul>
- *   <li>0 (default) = not yet started / at first step
- *   <li>N           = currently on step N
- *   <li>-1          = dismissed or all steps completed
+ * <li>0 (default) = not yet started / at first step
+ * <li>N = currently on step N
+ * <li>-1 = dismissed or all steps completed
  * </ul>
  *
- * <p>Progress is persisted to {@code config/phoenix_chronicles/tutorial_progress.dat}
+ * <p>
+ * Progress is persisted to {@code config/phoenix_chronicles/tutorial_progress.dat}
  * (binary NBT) so it survives restarts without any server-side plumbing.
  */
 public class TutorialProgressTracker {
@@ -36,7 +38,9 @@ public class TutorialProgressTracker {
         initialized = true;
     }
 
-    public static boolean isInitialized() { return initialized; }
+    public static boolean isInitialized() {
+        return initialized;
+    }
 
     // ── Accessors ─────────────────────────────────────────────────────────────
 

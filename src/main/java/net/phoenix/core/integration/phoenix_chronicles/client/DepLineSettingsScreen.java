@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Full dependency-line settings screen.
  * Global controls: line shape (SPLINE/STRAIGHT) and visual style (THIN/NORMAL/THICK/GLOW)
- * with a live preview.  Per-quest section: hide/show dep lines per quest node.
+ * with a live preview. Per-quest section: hide/show dep lines per quest node.
  */
 public class DepLineSettingsScreen extends Screen {
 
@@ -22,26 +22,26 @@ public class DepLineSettingsScreen extends Screen {
 
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_TEXT_DIM, C_TEXT_FAINT, C_DONE, C_ACTIVE;
 
-    private static final int MARGIN     = 8;
-    private static final int HEADER_H   = 28;
-    private static final int SEARCH_H   = 22;   // sticky search bar below header
-    private static final int FOOTER_H   = 28;
-    private static final int ROW_H      = 22;
-    private static final int ROW_GAP    = 3;
-    private static final int ARROW_W    = 16;
+    private static final int MARGIN = 8;
+    private static final int HEADER_H = 28;
+    private static final int SEARCH_H = 22;   // sticky search bar below header
+    private static final int FOOTER_H = 28;
+    private static final int ROW_H = 22;
+    private static final int ROW_GAP = 3;
+    private static final int ARROW_W = 16;
 
     private LineStyle lineShape;
     private LineVisualStyle lineVisual;
     private QuestChroniclesSettings.LineAnimSpeed lineAnimSpeed;
 
     private EditBox searchBox;
-    private String  searchQuery = "";
+    private String searchQuery = "";
 
     private int scrollY = 0;
 
     public DepLineSettingsScreen(ChronicleOverviewScreen parent, String category) {
         super(Component.literal("Dependency Line Settings"));
-        this.parent   = parent;
+        this.parent = parent;
         this.category = category;
     }
 
@@ -49,27 +49,30 @@ public class DepLineSettingsScreen extends Screen {
     protected void init() {
         super.init();
         ChroniclesTheme t = ChroniclesTheme.current();
-        C_BG        = t.bg.getColor();
-        C_PANEL     = t.panel.getColor();
-        C_HEADER    = t.header.getColor();
-        C_BORDER    = t.border.getColor();
-        C_ACCENT    = t.accent.getColor();
-        C_TEXT      = t.text.getColor();
-        C_TEXT_DIM  = t.textDim.getColor();
+        C_BG = t.bg.getColor();
+        C_PANEL = t.panel.getColor();
+        C_HEADER = t.header.getColor();
+        C_BORDER = t.border.getColor();
+        C_ACCENT = t.accent.getColor();
+        C_TEXT = t.text.getColor();
+        C_TEXT_DIM = t.textDim.getColor();
         C_TEXT_FAINT = t.textFaint.getColor();
-        C_DONE      = t.done.getColor();
-        C_ACTIVE    = t.activeColor.getColor();
+        C_DONE = t.done.getColor();
+        C_ACTIVE = t.activeColor.getColor();
 
         QuestChroniclesSettings s = QuestChroniclesSettings.get();
-        lineShape      = s.getLineStyle();
-        lineVisual     = s.getLineVisualStyle();
-        lineAnimSpeed  = s.getLineAnimSpeed();
+        lineShape = s.getLineStyle();
+        lineVisual = s.getLineVisualStyle();
+        lineAnimSpeed = s.getLineAnimSpeed();
 
         searchBox = new EditBox(font, MARGIN, HEADER_H + 3, width - MARGIN * 2, SEARCH_H - 6, Component.empty());
         searchBox.setHint(Component.literal("§8Filter quests…"));
         searchBox.setMaxLength(64);
         searchBox.setValue(searchQuery);
-        searchBox.setResponder(v -> { searchQuery = v.toLowerCase().trim(); scrollY = 0; });
+        searchBox.setResponder(v -> {
+            searchQuery = v.toLowerCase().trim();
+            scrollY = 0;
+        });
         addRenderableWidget(searchBox);
     }
 
@@ -77,11 +80,11 @@ public class DepLineSettingsScreen extends Screen {
 
     /** Computes how many pixels from contentTop each section starts (scrollY not applied). */
     private static final int GLOBAL_SECTION_LABEL_H = 10 + ROW_GAP;
-    private static final int GLOBAL_ROW_COUNT        = 3;
-    private static final int PREVIEW_H               = 40;
-    private static final int PREVIEW_GAP             = 8;
-    private static final int DIVIDER_H               = 6;
-    private static final int PER_QUEST_LABEL_H       = 10 + ROW_GAP;
+    private static final int GLOBAL_ROW_COUNT = 3;
+    private static final int PREVIEW_H = 40;
+    private static final int PREVIEW_GAP = 8;
+    private static final int DIVIDER_H = 6;
+    private static final int PER_QUEST_LABEL_H = 10 + ROW_GAP;
 
     private int globalEnd() {
         return GLOBAL_SECTION_LABEL_H + GLOBAL_ROW_COUNT * (ROW_H + ROW_GAP) + 4 + PREVIEW_H + PREVIEW_GAP;
@@ -107,7 +110,7 @@ public class DepLineSettingsScreen extends Screen {
         g.fill(0, HEADER_H + SEARCH_H - 1, width, HEADER_H + SEARCH_H, C_BORDER);
 
         int contentTop = HEADER_H + SEARCH_H + MARGIN;
-        int contentH   = height - HEADER_H - SEARCH_H - MARGIN - FOOTER_H - MARGIN;
+        int contentH = height - HEADER_H - SEARCH_H - MARGIN - FOOTER_H - MARGIN;
         int x = MARGIN, w = width - MARGIN * 2;
 
         g.enableScissor(0, contentTop, width, contentTop + contentH);
@@ -117,14 +120,14 @@ public class DepLineSettingsScreen extends Screen {
         g.drawString(font, "§8GLOBAL APPEARANCE:", x, y, C_TEXT_FAINT, false);
         y += GLOBAL_SECTION_LABEL_H;
 
-        y = renderCycleRow(g, x, y, w, "§fLine Shape",  lineShape.name(),      mx, my) + ROW_GAP;
-        y = renderCycleRow(g, x, y, w, "§fLine Style",  lineVisual.name(),     mx, my) + ROW_GAP;
-        y = renderCycleRow(g, x, y, w, "§fDot Speed",   lineAnimSpeed.name(),  mx, my) + ROW_GAP;
+        y = renderCycleRow(g, x, y, w, "§fLine Shape", lineShape.name(), mx, my) + ROW_GAP;
+        y = renderCycleRow(g, x, y, w, "§fLine Style", lineVisual.name(), mx, my) + ROW_GAP;
+        y = renderCycleRow(g, x, y, w, "§fDot Speed", lineAnimSpeed.name(), mx, my) + ROW_GAP;
 
         // Preview box
         y += 4;
         g.fill(x, y, x + w, y + PREVIEW_H, C_PANEL);
-        g.fill(x, y,             x + w, y + 1,          C_BORDER);
+        g.fill(x, y, x + w, y + 1, C_BORDER);
         g.fill(x, y + PREVIEW_H - 1, x + w, y + PREVIEW_H, C_BORDER);
         g.fill(x, y, x + 1, y + PREVIEW_H, C_BORDER);
         g.fill(x + w - 1, y, x + w, y + PREVIEW_H, C_BORDER);
@@ -138,14 +141,13 @@ public class DepLineSettingsScreen extends Screen {
 
         List<QuestNode> quests = QuestTreeRegistry.getAllQuests().values().stream()
                 .filter(n -> category.equals(n.getCategory()))
-                .filter(n -> searchQuery.isEmpty()
-                        || n.getTitle().getString().toLowerCase().contains(searchQuery)
-                        || n.getId().getPath().toLowerCase().contains(searchQuery))
+                .filter(n -> searchQuery.isEmpty() || n.getTitle().getString().toLowerCase().contains(searchQuery) ||
+                        n.getId().getPath().toLowerCase().contains(searchQuery))
                 .sorted(Comparator.comparing(n -> n.getTitle().getString()))
                 .toList();
 
-        String countHint = searchQuery.isEmpty() ? "(" + category + ")"
-                : "(" + quests.size() + " match" + (quests.size() == 1 ? "" : "es") + " in " + category + ")";
+        String countHint = searchQuery.isEmpty() ? "(" + category + ")" :
+                "(" + quests.size() + " match" + (quests.size() == 1 ? "" : "es") + " in " + category + ")";
         g.drawString(font, "§8PER-QUEST  §7" + countHint, x, y, C_TEXT_FAINT, false);
         y += PER_QUEST_LABEL_H;
 
@@ -172,8 +174,8 @@ public class DepLineSettingsScreen extends Screen {
         }
 
         if (quests.isEmpty()) {
-            String emptyMsg = searchQuery.isEmpty() ? "§8(no quests in this category)"
-                    : "§8No quests match \"" + searchQuery + "\"";
+            String emptyMsg = searchQuery.isEmpty() ? "§8(no quests in this category)" :
+                    "§8No quests match \"" + searchQuery + "\"";
             g.drawString(font, emptyMsg, x + 4, y, C_TEXT_FAINT, false);
         }
 
@@ -185,15 +187,15 @@ public class DepLineSettingsScreen extends Screen {
         g.fill(0, footerY, width, footerY + 1, C_BORDER);
 
         int fbtnW = 80, fbtnGap = 8, fbtnY = footerY + 5;
-        int saveX  = width / 2 - fbtnW - fbtnGap / 2;
+        int saveX = width / 2 - fbtnW - fbtnGap / 2;
         int closeX = width / 2 + fbtnGap / 2;
 
-        boolean saveHov  = mx >= saveX  && mx < saveX  + fbtnW && my >= fbtnY && my < fbtnY + 18;
+        boolean saveHov = mx >= saveX && mx < saveX + fbtnW && my >= fbtnY && my < fbtnY + 18;
         boolean closeHov = mx >= closeX && mx < closeX + fbtnW && my >= fbtnY && my < fbtnY + 18;
 
-        g.fill(saveX,  fbtnY, saveX  + fbtnW, fbtnY + 18, saveHov  ? 0xFF2A4A2A : 0xFF1A2A1A);
-        if (saveHov)  g.fill(saveX,  fbtnY, saveX  + fbtnW, fbtnY + 1, C_DONE);
-        g.drawCenteredString(font, "§a✓ Save",  saveX  + fbtnW / 2, fbtnY + 6, saveHov  ? C_DONE : C_TEXT);
+        g.fill(saveX, fbtnY, saveX + fbtnW, fbtnY + 18, saveHov ? 0xFF2A4A2A : 0xFF1A2A1A);
+        if (saveHov) g.fill(saveX, fbtnY, saveX + fbtnW, fbtnY + 1, C_DONE);
+        g.drawCenteredString(font, "§a✓ Save", saveX + fbtnW / 2, fbtnY + 6, saveHov ? C_DONE : C_TEXT);
 
         g.fill(closeX, fbtnY, closeX + fbtnW, fbtnY + 18, closeHov ? 0xFF3A3A3A : 0xFF2A2A2A);
         if (closeHov) g.fill(closeX, fbtnY, closeX + fbtnW, fbtnY + 1, 0xFF888898);
@@ -205,11 +207,11 @@ public class DepLineSettingsScreen extends Screen {
     private void drawPreviewLines(GuiGraphics g, int x, int y, int w, int h) {
         boolean spline = lineShape == LineStyle.SPLINE;
         int midX = x + w / 2;
-        int ty   = y + h / 4;
-        int by   = y + 3 * h / 4;
+        int ty = y + h / 4;
+        int by = y + 3 * h / 4;
 
         // Stagger control points to show spline curve
-        drawPreviewLine(g, x,    ty, midX, by, 0xFF00CC66, spline);
+        drawPreviewLine(g, x, ty, midX, by, 0xFF00CC66, spline);
         drawPreviewLine(g, midX, by, x + w, ty, 0xFFFFAA00, spline);
 
         g.drawString(font, "§8" + lineShape.name() + "  ·  " + lineVisual.name(),
@@ -222,20 +224,20 @@ public class DepLineSettingsScreen extends Screen {
         int cx1 = x1 + dx / 3, cy1 = y1;
         int cx2 = x2 - dx / 3, cy2 = y2;
         for (int i = 0; i <= steps; i++) {
-            float t  = (float) i / steps;
+            float t = (float) i / steps;
             int px, py;
             if (spline) {
                 float u = 1 - t;
-                px = (int) (u*u*u*x1 + 3*u*u*t*cx1 + 3*u*t*t*cx2 + t*t*t*x2);
-                py = (int) (u*u*u*y1 + 3*u*u*t*cy1 + 3*u*t*t*cy2 + t*t*t*y2);
+                px = (int) (u * u * u * x1 + 3 * u * u * t * cx1 + 3 * u * t * t * cx2 + t * t * t * x2);
+                py = (int) (u * u * u * y1 + 3 * u * u * t * cy1 + 3 * u * t * t * cy2 + t * t * t * y2);
             } else {
                 px = x1 + (int) (t * dx);
                 py = y1 + (int) (t * dy);
             }
             int rgb = col & 0x00FFFFFF;
             switch (lineVisual) {
-                case THIN  -> g.fill(px, py, px + 1, py + 1, col);
-                case BOLD  -> {
+                case THIN -> g.fill(px, py, px + 1, py + 1, col);
+                case BOLD -> {
                     g.fill(px - 2, py - 2, px + 3, py + 3, col);
                     g.fill(px - 3, py - 2, px - 2, py + 3, rgb | 0x33000000);
                     g.fill(px + 3, py - 2, px + 4, py + 3, rgb | 0x33000000);
@@ -248,19 +250,19 @@ public class DepLineSettingsScreen extends Screen {
                     g.fill(px - 3, py - 3, px + 4, py + 4, col);
                     g.fill(px - 1, py - 1, px + 2, py + 2, rgb | 0xFF000000);
                 }
-                case WIDE  -> {
+                case WIDE -> {
                     g.fill(px - 6, py - 6, px + 7, py + 7, rgb | 0x0F000000);
                     g.fill(px - 5, py - 5, px + 6, py + 6, rgb | 0x1E000000);
                     g.fill(px - 4, py - 4, px + 5, py + 5, rgb | 0x32000000);
                     g.fill(px - 4, py - 4, px + 5, py + 5, col);
                     g.fill(px - 2, py - 2, px + 3, py + 3, rgb | 0xFF000000);
                 }
-                case GLOW  -> {
+                case GLOW -> {
                     g.fill(px - 3, py - 3, px + 4, py + 4, rgb | 0x44000000);
                     g.fill(px - 2, py - 2, px + 3, py + 3, rgb | 0xAA000000);
                     g.fill(px - 1, py - 1, px + 2, py + 2, col);
                 }
-                default    -> {  // NORMAL
+                default -> {  // NORMAL
                     g.fill(px - 1, py - 1, px + 2, py + 2, col);
                     g.fill(px - 2, py - 1, px - 1, py + 2, rgb | 0x33000000);
                     g.fill(px + 2, py - 1, px + 3, py + 2, rgb | 0x33000000);
@@ -272,15 +274,15 @@ public class DepLineSettingsScreen extends Screen {
     // ── Cycle row ──────────────────────────────────────────────────────────────
 
     private int renderCycleRow(GuiGraphics g, int x, int y, int w, String label, String value, int mx, int my) {
-        int textY     = y + (ROW_H - 8) / 2;
-        int rArrowX   = x + w - ARROW_W;
-        int lArrowX   = rArrowX - 2 - ARROW_W;
+        int textY = y + (ROW_H - 8) / 2;
+        int rArrowX = x + w - ARROW_W;
+        int lArrowX = rArrowX - 2 - ARROW_W;
         boolean leftH = mx >= lArrowX && mx < lArrowX + ARROW_W && my >= y && my < y + ROW_H;
         boolean rightH = mx >= rArrowX && mx < rArrowX + ARROW_W && my >= y && my < y + ROW_H;
 
-        if (leftH)  g.fill(lArrowX, y, lArrowX + ARROW_W, y + ROW_H, 0x33FFFFFF);
+        if (leftH) g.fill(lArrowX, y, lArrowX + ARROW_W, y + ROW_H, 0x33FFFFFF);
         if (rightH) g.fill(rArrowX, y, rArrowX + ARROW_W, y + ROW_H, 0x33FFFFFF);
-        g.drawCenteredString(font, "§7<", lArrowX + ARROW_W / 2, textY, leftH  ? C_ACCENT : C_TEXT_FAINT);
+        g.drawCenteredString(font, "§7<", lArrowX + ARROW_W / 2, textY, leftH ? C_ACCENT : C_TEXT_FAINT);
         g.drawCenteredString(font, "§7>", rArrowX + ARROW_W / 2, textY, rightH ? C_ACCENT : C_TEXT_FAINT);
 
         g.drawString(font, label, x + 4, textY, C_TEXT, false);
@@ -298,7 +300,7 @@ public class DepLineSettingsScreen extends Screen {
 
         int footerY = height - FOOTER_H;
         int fbtnW = 80, fbtnGap = 8, fbtnY = footerY + 5;
-        int saveX  = width / 2 - fbtnW - fbtnGap / 2;
+        int saveX = width / 2 - fbtnW - fbtnGap / 2;
         int closeX = width / 2 + fbtnGap / 2;
 
         if (mx >= saveX && mx < saveX + fbtnW && my >= fbtnY && my < fbtnY + 18) {
@@ -311,7 +313,7 @@ public class DepLineSettingsScreen extends Screen {
         }
 
         int contentTop = HEADER_H + SEARCH_H + MARGIN;
-        int contentH   = height - HEADER_H - SEARCH_H - MARGIN - FOOTER_H - MARGIN;
+        int contentH = height - HEADER_H - SEARCH_H - MARGIN - FOOTER_H - MARGIN;
         if (my < contentTop || my >= contentTop + contentH) return super.mouseClicked(mx, my, btn);
 
         int x = MARGIN, w = width - MARGIN * 2;
@@ -352,9 +354,8 @@ public class DepLineSettingsScreen extends Screen {
         // Per-quest toggle buttons (same filter as render)
         List<QuestNode> quests = QuestTreeRegistry.getAllQuests().values().stream()
                 .filter(n -> category.equals(n.getCategory()))
-                .filter(n -> searchQuery.isEmpty()
-                        || n.getTitle().getString().toLowerCase().contains(searchQuery)
-                        || n.getId().getPath().toLowerCase().contains(searchQuery))
+                .filter(n -> searchQuery.isEmpty() || n.getTitle().getString().toLowerCase().contains(searchQuery) ||
+                        n.getId().getPath().toLowerCase().contains(searchQuery))
                 .sorted(Comparator.comparing(n -> n.getTitle().getString()))
                 .toList();
 
@@ -416,5 +417,7 @@ public class DepLineSettingsScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

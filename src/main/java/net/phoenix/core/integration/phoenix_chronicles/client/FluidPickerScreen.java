@@ -4,7 +4,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
@@ -24,25 +23,25 @@ import java.util.function.Consumer;
  */
 public class FluidPickerScreen extends Screen {
 
-    private static final int COL_BG         = 0xFF0F0F13;
-    private static final int COL_PANEL      = 0xFF16161C;
+    private static final int COL_BG = 0xFF0F0F13;
+    private static final int COL_PANEL = 0xFF16161C;
     private static final int COL_PANEL_DARK = 0xFF111115;
-    private static final int COL_HEADER     = 0xFF0C0C10;
-    private static final int COL_BORDER     = 0xFF2A2A36;
+    private static final int COL_HEADER = 0xFF0C0C10;
+    private static final int COL_BORDER = 0xFF2A2A36;
     private static final int COL_BORDER_LIT = 0xFF3A3A4C;
-    private static final int COL_SEL        = 0xFF0D1A2E;
+    private static final int COL_SEL = 0xFF0D1A2E;
     private static final int COL_SEL_BORDER = 0xFF0088FF;
-    private static final int COL_HOVER      = 0xFF1E1E2A;
-    private static final int COL_TEXT       = 0xFFDDDDE8;
-    private static final int COL_TEXT_DIM   = 0xFF888898;
+    private static final int COL_HOVER = 0xFF1E1E2A;
+    private static final int COL_TEXT = 0xFFDDDDE8;
+    private static final int COL_TEXT_DIM = 0xFF888898;
     private static final int COL_TEXT_FAINT = 0xFF4A4A5A;
 
-    private static final int PANEL_W      = 260;
-    private static final int PANEL_H      = 200;
-    private static final int HEADER_H     = 22;
-    private static final int SEARCH_H     = 16;
-    private static final int FOOTER_H     = 22;
-    private static final int ROW_H        = 20;
+    private static final int PANEL_W = 260;
+    private static final int PANEL_H = 200;
+    private static final int HEADER_H = 22;
+    private static final int SEARCH_H = 16;
+    private static final int FOOTER_H = 22;
+    private static final int ROW_H = 20;
 
     private final Screen parent;
     private final Consumer<String> onPick; // receives fluid registry id
@@ -67,14 +66,18 @@ public class FluidPickerScreen extends Screen {
     protected void init() {
         clearWidgets();
         panelLeft = (width - PANEL_W) / 2;
-        panelTop  = (height - PANEL_H) / 2;
+        panelTop = (height - PANEL_H) / 2;
 
         int searchY = panelTop + HEADER_H + 2;
         searchBox = new EditBox(font, panelLeft + 4, searchY, PANEL_W - 8, SEARCH_H, Component.empty());
         searchBox.setMaxLength(64);
         searchBox.setHint(Component.literal("§8Search fluids…"));
         searchBox.setValue(searchQuery);
-        searchBox.setResponder(q -> { searchQuery = q; scrollOffset = 0; rebuildList(); });
+        searchBox.setResponder(q -> {
+            searchQuery = q;
+            scrollOffset = 0;
+            rebuildList();
+        });
         addRenderableWidget(searchBox);
 
         addRenderableWidget(Button.builder(Component.literal("§aSelect"), b -> confirm())
@@ -96,7 +99,8 @@ public class FluidPickerScreen extends Screen {
             // Only show "source" fluids, skip flowing variants
             if (id.getPath().contains("flowing")) continue;
             if (!q.isEmpty() && !id.toString().contains(q) &&
-                    !fluid.getFluidType().getDescription().getString().toLowerCase().contains(q)) continue;
+                    !fluid.getFluidType().getDescription().getString().toLowerCase().contains(q))
+                continue;
             displayFluids.add(fluid);
         }
     }
@@ -120,9 +124,9 @@ public class FluidPickerScreen extends Screen {
         super.render(g, mx, my, partial);
 
         // Fluid list
-        int listTop    = panelTop + HEADER_H + SEARCH_H + 4;
+        int listTop = panelTop + HEADER_H + SEARCH_H + 4;
         int listBottom = footerY - (selectedFluid != null ? 20 : 2);
-        int visRows    = Math.max(1, (listBottom - listTop) / ROW_H);
+        int visRows = Math.max(1, (listBottom - listTop) / ROW_H);
 
         g.enableScissor(panelLeft, listTop, panelLeft + PANEL_W, listBottom);
         hoveredFluid = null;
@@ -150,11 +154,11 @@ public class FluidPickerScreen extends Screen {
             drawBorder(g, panelLeft + 4, ry + 2, 16, ROW_H - 4, 0xFF444455);
 
             // Label: fluid description + registry id
-            String name  = fluid.getFluidType().getDescription().getString();
+            String name = fluid.getFluidType().getDescription().getString();
             ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
             String idStr = id != null ? "§8" + id : "";
             int labelX = panelLeft + 24;
-            int maxW   = PANEL_W - 28;
+            int maxW = PANEL_W - 28;
             if (font.width(name) > maxW) name = font.plainSubstrByWidth(name, maxW - 4) + "…";
             g.drawString(font, (sel ? "§f" : "§7") + name, labelX, ry + 3, COL_TEXT_DIM);
             if (font.width(idStr) <= maxW)
@@ -189,10 +193,10 @@ public class FluidPickerScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        int footerY  = panelTop + PANEL_H - FOOTER_H;
-        int listTop  = panelTop + HEADER_H + SEARCH_H + 4;
+        int footerY = panelTop + PANEL_H - FOOTER_H;
+        int listTop = panelTop + HEADER_H + SEARCH_H + 4;
         int listBottom = footerY - (selectedFluid != null ? 20 : 2);
-        int visRows  = Math.max(1, (listBottom - listTop) / ROW_H);
+        int visRows = Math.max(1, (listBottom - listTop) / ROW_H);
         int maxScroll = Math.max(0, displayFluids.size() - visRows);
         scrollOffset = Math.max(0, Math.min(scrollOffset - (int) Math.signum(delta), maxScroll));
         return true;

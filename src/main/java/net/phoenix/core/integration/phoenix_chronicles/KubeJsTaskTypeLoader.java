@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.phoenix_chronicles;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.integration.phoenix_chronicles.PhoenixTaskRegistry.FieldDef;
@@ -27,6 +26,7 @@ import java.util.List;
  * compile-time KubeJS dependency on the Java side.
  *
  * ── KubeJS startup_scripts/phoenix_tasks.js ─────────────────────────────────
+ * 
  * <pre>
  * // Define custom task types visible in the in-game editor
  * const taskTypes = [
@@ -51,6 +51,7 @@ import java.util.List;
  * </pre>
  *
  * ── How KubeJS handles completion ────────────────────────────────────────────
+ * 
  * <pre>
  * // server_scripts/quest_triggers.js
  * const QuestAPI = Java.loadClass('net.phoenix.core.integration.phoenix_chronicles.QuestAPI')
@@ -63,6 +64,7 @@ import java.util.List;
  * </pre>
  *
  * The task in quest SNBT is just an {@code external_trigger} task:
+ * 
  * <pre>
  * tasks: [{type: "external_trigger", trigger_id: "mypack:sun_eaten", required: 1,
  *          task_id: "mypack:eat_sun_task", description: '"Eat the Sun"'}]
@@ -101,7 +103,8 @@ public final class KubeJsTaskTypeLoader {
                 String label = obj.has("label") ? obj.get("label").getAsString() : typeId;
                 String icon = obj.has("icon") ? obj.get("icon").getAsString() : "§7◆";
                 String tooltip = obj.has("tooltip") ? obj.get("tooltip").getAsString() : label;
-                String defaultTriggerId = obj.has("default_trigger_id") ? obj.get("default_trigger_id").getAsString() : typeId;
+                String defaultTriggerId = obj.has("default_trigger_id") ? obj.get("default_trigger_id").getAsString() :
+                        typeId;
 
                 // Build field defs
                 List<FieldDef> fields = new ArrayList<>();
@@ -132,11 +135,17 @@ public final class KubeJsTaskTypeLoader {
                     String trigger = tag.contains("trigger_id") ? tag.getString("trigger_id") : tid;
                     int required = tag.contains("required") ? tag.getInt("required") : 1;
                     ResourceLocation taskId;
-                    try { taskId = new ResourceLocation(tag.getString("task_id")); }
-                    catch (Exception ex) { taskId = new ResourceLocation("phoenixcore", "kjs_task"); }
+                    try {
+                        taskId = new ResourceLocation(tag.getString("task_id"));
+                    } catch (Exception ex) {
+                        taskId = new ResourceLocation("phoenixcore", "kjs_task");
+                    }
                     Component desc;
-                    try { desc = Component.Serializer.fromJson(tag.getString("description")); }
-                    catch (Exception ex) { desc = Component.literal(label); }
+                    try {
+                        desc = Component.Serializer.fromJson(tag.getString("description"));
+                    } catch (Exception ex) {
+                        desc = Component.literal(label);
+                    }
                     if (desc == null) desc = Component.literal(label);
                     ExternalTriggerTask t = new ExternalTriggerTask(taskId, desc, trigger, required);
                     // Store the original typeId so serializeNBT writes the right type string

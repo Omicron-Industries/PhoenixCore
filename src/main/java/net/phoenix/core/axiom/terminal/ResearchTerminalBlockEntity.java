@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.phoenix.core.axiom.AxiomDataType;
 import net.phoenix.core.axiom.pipe.AxiomMultiHandlerCapability;
 import net.phoenix.core.axiom.pipe.IAxiomMultiHandler;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,32 +41,47 @@ public class ResearchTerminalBlockEntity extends BlockEntity {
 
     private IAxiomMultiHandler buildHandler() {
         return new IAxiomMultiHandler() {
+
             @Override
             public long insert(AxiomDataType type, long amount) {
-                long have     = stored.getOrDefault(type, 0L);
+                long have = stored.getOrDefault(type, 0L);
                 long accepted = Math.min(amount, CAPACITY_PER_TYPE - have);
                 if (accepted <= 0) return 0;
                 stored.put(type, have + accepted);
                 setChanged();
                 return accepted;
             }
+
             @Override
             public long extract(AxiomDataType type, long amount) {
-                long have  = stored.getOrDefault(type, 0L);
+                long have = stored.getOrDefault(type, 0L);
                 long given = Math.min(amount, have);
                 stored.put(type, have - given);
                 setChanged();
                 return given;
             }
-            @Override public long getStored(AxiomDataType type)   { return stored.getOrDefault(type, 0L); }
-            @Override public long getCapacity(AxiomDataType type) { return CAPACITY_PER_TYPE; }
+
+            @Override
+            public long getStored(AxiomDataType type) {
+                return stored.getOrDefault(type, 0L);
+            }
+
+            @Override
+            public long getCapacity(AxiomDataType type) {
+                return CAPACITY_PER_TYPE;
+            }
         };
     }
 
     // ── Public accessors (used by GUI) ────────────────────────────────────────
 
-    public long getStored(AxiomDataType type)   { return stored.getOrDefault(type, 0L); }
-    public long getCapacity(AxiomDataType type) { return CAPACITY_PER_TYPE; }
+    public long getStored(AxiomDataType type) {
+        return stored.getOrDefault(type, 0L);
+    }
+
+    public long getCapacity(AxiomDataType type) {
+        return CAPACITY_PER_TYPE;
+    }
 
     /**
      * Attempt to spend the given costs from stored data.

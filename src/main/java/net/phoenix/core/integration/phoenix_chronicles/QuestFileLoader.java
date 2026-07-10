@@ -7,6 +7,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -188,8 +189,8 @@ public class QuestFileLoader {
             for (QuestTask task : node.getTasks()) {
                 ResourceLocation tid = task.getTaskId();
                 if (taskIdToQuest.containsKey(tid)) {
-                    LOAD_ERRORS.add("Duplicate task_id '" + tid + "' in quest '"
-                            + node.getId().getPath() + "' (also in '" + taskIdToQuest.get(tid) + "').");
+                    LOAD_ERRORS.add("Duplicate task_id '" + tid + "' in quest '" + node.getId().getPath() +
+                            "' (also in '" + taskIdToQuest.get(tid) + "').");
                 } else {
                     taskIdToQuest.put(tid, node.getId().getPath());
                 }
@@ -291,7 +292,8 @@ public class QuestFileLoader {
 
             String enableIf = tag.contains("enable_if") ? tag.getString("enable_if") : null;
             boolean hideDepLine = tag.contains("hide_dep_line") && tag.getBoolean("hide_dep_line");
-            boolean disabledBlocksChildren = tag.contains("disabled_blocks_children") && tag.getBoolean("disabled_blocks_children");
+            boolean disabledBlocksChildren = tag.contains("disabled_blocks_children") &&
+                    tag.getBoolean("disabled_blocks_children");
             boolean shared = tag.contains("shared") && tag.getBoolean("shared");
 
             // Tutorial steps

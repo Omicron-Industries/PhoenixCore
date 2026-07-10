@@ -87,11 +87,21 @@ public class QuestNode {
      */
     private boolean disabledBlocksChildren = false;
 
-    public boolean isHideDepLine() { return hideDepLine; }
-    public void setHideDepLine(boolean hide) { this.hideDepLine = hide; }
+    public boolean isHideDepLine() {
+        return hideDepLine;
+    }
 
-    public boolean isDisabledBlocksChildren() { return disabledBlocksChildren; }
-    public void setDisabledBlocksChildren(boolean v) { this.disabledBlocksChildren = v; }
+    public void setHideDepLine(boolean hide) {
+        this.hideDepLine = hide;
+    }
+
+    public boolean isDisabledBlocksChildren() {
+        return disabledBlocksChildren;
+    }
+
+    public void setDisabledBlocksChildren(boolean v) {
+        this.disabledBlocksChildren = v;
+    }
 
     /**
      * When true, completing this quest on any player cascades the completion to all
@@ -99,8 +109,14 @@ public class QuestNode {
      * only the final COMPLETED state is shared. Uses Minecraft's built-in /team system.
      */
     private boolean shared = false;
-    public boolean isShared() { return shared; }
-    public void setShared(boolean s) { this.shared = s; }
+
+    public boolean isShared() {
+        return shared;
+    }
+
+    public void setShared(boolean s) {
+        this.shared = s;
+    }
 
     /** 0 = all non-optional tasks required; >0 = need exactly this many tasks. */
     private int taskMinCount = 0;
@@ -171,9 +187,17 @@ public class QuestNode {
     // ── Tutorial steps ────────────────────────────────────────────────────────
     private final List<TutorialStep> tutorialSteps = new ArrayList<>();
 
-    public List<TutorialStep> getTutorialSteps() { return Collections.unmodifiableList(tutorialSteps); }
-    public void addTutorialStep(TutorialStep step) { if (step != null) tutorialSteps.add(step); }
-    public void clearTutorialSteps() { tutorialSteps.clear(); }
+    public List<TutorialStep> getTutorialSteps() {
+        return Collections.unmodifiableList(tutorialSteps);
+    }
+
+    public void addTutorialStep(TutorialStep step) {
+        if (step != null) tutorialSteps.add(step);
+    }
+
+    public void clearTutorialSteps() {
+        tutorialSteps.clear();
+    }
 
     // ── Relations ─────────────────────────────────────────────────────────────
     private final List<QuestNode> children = new ArrayList<>();

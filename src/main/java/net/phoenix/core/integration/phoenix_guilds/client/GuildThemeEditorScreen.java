@@ -23,9 +23,9 @@ public class GuildThemeEditorScreen extends Screen {
     private final Screen parent;
 
     // ── Editor fields ─────────────────────────────────────────────────────────
-    private final List<FieldEntry>      fields     = new ArrayList<>();
-    private final List<CategoryLabel>   categories = new ArrayList<>();
-    private EditBox                     nameInput;
+    private final List<FieldEntry> fields = new ArrayList<>();
+    private final List<CategoryLabel> categories = new ArrayList<>();
+    private EditBox nameInput;
 
     // ── Undo ─────────────────────────────────────────────────────────────────
     private record Snapshot(String bg, String panel, String header, String border,
@@ -34,21 +34,21 @@ public class GuildThemeEditorScreen extends Screen {
 
     private record UndoEntry(Snapshot snap, String deletedName) {}
 
-    private final Stack<UndoEntry> undoStack        = new Stack<>();
-    private Snapshot               savedSnapshot    = null;
-    private String                 lastThemeName    = null;
-    private boolean                isUndoing        = false;
+    private final Stack<UndoEntry> undoStack = new Stack<>();
+    private Snapshot savedSnapshot = null;
+    private String lastThemeName = null;
+    private boolean isUndoing = false;
 
     // ── Pending deletions (deferred to onClose) ───────────────────────────────
     private final List<String> pendingDeletions = new ArrayList<>();
 
     // ── Confirm-before-discard logic ──────────────────────────────────────────
     private boolean confirmActive = false;
-    private String  pendingAction = null;
+    private String pendingAction = null;
 
     // ── Scroll for theme list ─────────────────────────────────────────────────
-    private int scrollOffset   = 0;
-    private int lastListItemY  = 200; // synced each render so mouseClicked matches
+    private int scrollOffset = 0;
+    private int lastListItemY = 200; // synced each render so mouseClicked matches
 
     public GuildThemeEditorScreen(Screen parent) {
         super(Component.literal("Guild Theme Editor"));
@@ -61,36 +61,49 @@ public class GuildThemeEditorScreen extends Screen {
         fields.clear();
         categories.clear();
 
-        GuildTheme active      = GuildTheme.current();
-        String     currentName = GuildTheme.getActiveName();
+        GuildTheme active = GuildTheme.current();
+        String currentName = GuildTheme.getActiveName();
 
         if (!currentName.equals(lastThemeName)) {
-            lastThemeName    = currentName;
-            savedSnapshot    = snap(active, currentName);
+            lastThemeName = currentName;
+            savedSnapshot = snap(active, currentName);
             undoStack.clear();
             pendingDeletions.clear();
-            confirmActive = false; pendingAction = null;
+            confirmActive = false;
+            pendingAction = null;
         }
 
-        int sideW  = Math.max(175, width / 4);
+        int sideW = Math.max(175, width / 4);
         int startX = width - sideW + 5;
-        int y      = 38;
-        int rowH   = height > 360 ? 20 : 17;
+        int y = 38;
+        int rowH = height > 360 ? 20 : 17;
 
-        cat("■ Structure", startX + 5, y); y += 12;
-        field("BG",     active.bg,     startX, y, sideW); y += rowH;
-        field("Panel",  active.panel,  startX, y, sideW); y += rowH;
-        field("Header", active.header, startX, y, sideW); y += rowH;
-        field("Border", active.border, startX, y, sideW); y += rowH + 6;
+        cat("■ Structure", startX + 5, y);
+        y += 12;
+        field("BG", active.bg, startX, y, sideW);
+        y += rowH;
+        field("Panel", active.panel, startX, y, sideW);
+        y += rowH;
+        field("Header", active.header, startX, y, sideW);
+        y += rowH;
+        field("Border", active.border, startX, y, sideW);
+        y += rowH + 6;
 
-        cat("■ Typography", startX + 5, y); y += 12;
-        field("Text", active.text, startX, y, sideW); y += rowH;
-        field("Dim",  active.dim,  startX, y, sideW); y += rowH;
-        field("Faint",active.faint,startX, y, sideW); y += rowH + 6;
+        cat("■ Typography", startX + 5, y);
+        y += 12;
+        field("Text", active.text, startX, y, sideW);
+        y += rowH;
+        field("Dim", active.dim, startX, y, sideW);
+        y += rowH;
+        field("Faint", active.faint, startX, y, sideW);
+        y += rowH + 6;
 
-        cat("■ Highlights", startX + 5, y); y += 12;
-        field("Accent", active.accent, startX, y, sideW); y += rowH;
-        field("Ally",   active.ally,   startX, y, sideW); y += rowH;
+        cat("■ Highlights", startX + 5, y);
+        y += 12;
+        field("Accent", active.accent, startX, y, sideW);
+        y += rowH;
+        field("Ally", active.ally, startX, y, sideW);
+        y += rowH;
 
         int ctrlY = Math.max(y + 22, height - 65);
         nameInput = new EditBox(font, width - sideW + 10, ctrlY, sideW - 20, 16, Component.literal("Theme ID"));
@@ -105,7 +118,9 @@ public class GuildThemeEditorScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("Exit"), b -> {
             if (hasChanges()) {
                 if (!confirmActive || !"EXIT".equals(pendingAction)) {
-                    confirmActive = true; pendingAction = "EXIT"; return;
+                    confirmActive = true;
+                    pendingAction = "EXIT";
+                    return;
                 }
                 restore(savedSnapshot);
             }
@@ -113,13 +128,19 @@ public class GuildThemeEditorScreen extends Screen {
         }).bounds(btnX, ctrlY + 40, btnW, 18).build());
     }
 
-    private void cat(String title, int x, int y) { categories.add(new CategoryLabel(title, x, y)); }
+    private void cat(String title, int x, int y) {
+        categories.add(new CategoryLabel(title, x, y));
+    }
 
     private void field(String label, GuildTheme.ThemeColor target, int x, int y, int sideW) {
         EditBox box = new EditBox(font, x + 65, y, sideW - 75, 16, Component.literal(label));
         box.setMaxLength(16);
         box.setValue(target.getHex());
-        box.setResponder(s -> { if (!isUndoing) pushSnap(); target.set(s); confirmActive = false; });
+        box.setResponder(s -> {
+            if (!isUndoing) pushSnap();
+            target.set(s);
+            confirmActive = false;
+        });
         addWidget(box);
         fields.add(new FieldEntry(label, box));
     }
@@ -135,7 +156,7 @@ public class GuildThemeEditorScreen extends Screen {
         String id = nameInput.getValue().trim().toUpperCase(Locale.ROOT);
         if (id.isEmpty()) return;
         GuildTheme active = GuildTheme.current();
-        GuildTheme saved  = new GuildTheme(
+        GuildTheme saved = new GuildTheme(
                 fieldVal("BG", active.bg.hex), fieldVal("Panel", active.panel.hex),
                 fieldVal("Header", active.header.hex), fieldVal("Border", active.border.hex),
                 fieldVal("Accent", active.accent.hex), fieldVal("Ally", active.ally.hex),
@@ -145,14 +166,16 @@ public class GuildThemeEditorScreen extends Screen {
         GuildTheme.saveCustomTheme(id, saved);
         GuildTheme.setCurrent(id);
         savedSnapshot = snap(GuildTheme.current(), id);
-        confirmActive = false; pendingAction = null;
+        confirmActive = false;
+        pendingAction = null;
         init();
     }
 
     // ── Undo ─────────────────────────────────────────────────────────────────
 
     private void pushSnap() {
-        Snapshot cur = snap(GuildTheme.current(), nameInput != null ? nameInput.getValue() : GuildTheme.getActiveName());
+        Snapshot cur = snap(GuildTheme.current(),
+                nameInput != null ? nameInput.getValue() : GuildTheme.getActiveName());
         if (undoStack.isEmpty() || !undoStack.peek().snap().equals(cur)) {
             undoStack.push(new UndoEntry(cur, null));
             if (undoStack.size() > 50) undoStack.remove(0);
@@ -171,15 +194,15 @@ public class GuildThemeEditorScreen extends Screen {
             restore(s);
             for (FieldEntry f : fields) {
                 switch (f.label) {
-                    case "BG"     -> f.box.setValue(s.bg());
-                    case "Panel"  -> f.box.setValue(s.panel());
+                    case "BG" -> f.box.setValue(s.bg());
+                    case "Panel" -> f.box.setValue(s.panel());
                     case "Header" -> f.box.setValue(s.header());
                     case "Border" -> f.box.setValue(s.border());
                     case "Accent" -> f.box.setValue(s.accent());
-                    case "Ally"   -> f.box.setValue(s.ally());
-                    case "Text"   -> f.box.setValue(s.text());
-                    case "Dim"    -> f.box.setValue(s.dim());
-                    case "Faint"  -> f.box.setValue(s.faint());
+                    case "Ally" -> f.box.setValue(s.ally());
+                    case "Text" -> f.box.setValue(s.text());
+                    case "Dim" -> f.box.setValue(s.dim());
+                    case "Faint" -> f.box.setValue(s.faint());
                 }
             }
             if (nameInput != null) nameInput.setValue(s.name());
@@ -190,7 +213,8 @@ public class GuildThemeEditorScreen extends Screen {
 
     private boolean hasChanges() {
         if (savedSnapshot == null) return false;
-        return !savedSnapshot.equals(snap(GuildTheme.current(), nameInput != null ? nameInput.getValue() : GuildTheme.getActiveName()));
+        return !savedSnapshot.equals(
+                snap(GuildTheme.current(), nameInput != null ? nameInput.getValue() : GuildTheme.getActiveName()));
     }
 
     private Snapshot snap(GuildTheme t, String name) {
@@ -200,8 +224,15 @@ public class GuildThemeEditorScreen extends Screen {
 
     private void restore(Snapshot s) {
         GuildTheme t = GuildTheme.current();
-        t.bg.set(s.bg()); t.panel.set(s.panel()); t.header.set(s.header()); t.border.set(s.border());
-        t.accent.set(s.accent()); t.ally.set(s.ally()); t.text.set(s.text()); t.dim.set(s.dim()); t.faint.set(s.faint());
+        t.bg.set(s.bg());
+        t.panel.set(s.panel());
+        t.header.set(s.header());
+        t.border.set(s.border());
+        t.accent.set(s.accent());
+        t.ally.set(s.ally());
+        t.text.set(s.text());
+        t.dim.set(s.dim());
+        t.faint.set(s.faint());
     }
 
     // ── Render ────────────────────────────────────────────────────────────────
@@ -239,7 +270,8 @@ public class GuildThemeEditorScreen extends Screen {
         int leftW = width - sideW - 10;
 
         // Mini guild panel mockup
-        int pTop = 12; int pH = height > 360 ? 80 : 60;
+        int pTop = 12;
+        int pH = height > 360 ? 80 : 60;
         g.fill(15, pTop, leftW, pTop + pH, C_PANEL());
         g.fill(15, pTop, leftW, pTop + 20, C_HEADER());
         g.fill(15, pTop, leftW, pTop + 1, C_BORDER());
@@ -265,7 +297,7 @@ public class GuildThemeEditorScreen extends Screen {
 
         // Tab bar mockup
         int tabY = pTop + pH + 10;
-        String[] tabs = {"Guild", "Allies", "Browse", "Log", "Wiki"};
+        String[] tabs = { "Guild", "Allies", "Browse", "Log", "Wiki" };
         int tabW = (leftW - 15) / tabs.length;
         for (int i = 0; i < tabs.length; i++) {
             int tx = 15 + i * tabW;
@@ -281,14 +313,14 @@ public class GuildThemeEditorScreen extends Screen {
         int itemY = listTitleY + 14;
         lastListItemY = itemY;
         List<String> visible = getVisible();
-        int maxVis    = Math.max(1, (height - itemY - 15) / 16);
+        int maxVis = Math.max(1, (height - itemY - 15) / 16);
         int maxScroll = Math.max(0, visible.size() - maxVis);
-        scrollOffset  = Mth.clamp(scrollOffset, 0, maxScroll);
+        scrollOffset = Mth.clamp(scrollOffset, 0, maxScroll);
 
         for (int i = scrollOffset; i < visible.size() && itemY < height - 15; i++) {
-            String name    = visible.get(i);
-            boolean sel    = name.equals(GuildTheme.getActiveName());
-            boolean hov    = mx >= 15 && mx < leftW && my >= itemY && my <= itemY + 14;
+            String name = visible.get(i);
+            boolean sel = name.equals(GuildTheme.getActiveName());
+            boolean hov = mx >= 15 && mx < leftW && my >= itemY && my <= itemY + 14;
             g.fill(15, itemY, leftW, itemY + 14,
                     sel ? 0xFF1A1A3A : hov ? C_HEADER() : C_PANEL());
             g.fill(15, itemY, leftW, itemY + 1, C_BORDER());
@@ -308,8 +340,14 @@ public class GuildThemeEditorScreen extends Screen {
     @Override
     public boolean keyPressed(int kc, int sc, int mod) {
         if (Screen.hasControlDown()) {
-            if (kc == 90) { tryUndo(); return true; }
-            if (kc == 83) { save(); return true; }
+            if (kc == 90) {
+                tryUndo();
+                return true;
+            }
+            if (kc == 83) {
+                save();
+                return true;
+            }
         }
         return super.keyPressed(kc, sc, mod);
     }
@@ -333,20 +371,26 @@ public class GuildThemeEditorScreen extends Screen {
                         undoStack.push(new UndoEntry(null, name));
                         if (name.equalsIgnoreCase(GuildTheme.getActiveName()))
                             GuildTheme.setCurrent("DARK");
-                        confirmActive = false; pendingAction = null;
-                        init(); return true;
+                        confirmActive = false;
+                        pendingAction = null;
+                        init();
+                        return true;
                     }
                 }
                 if (mx >= 15 && mx < leftW - 16) {
                     if (hasChanges()) {
                         if (!confirmActive || !name.equals(pendingAction)) {
-                            confirmActive = true; pendingAction = name; return true;
+                            confirmActive = true;
+                            pendingAction = name;
+                            return true;
                         }
                         restore(savedSnapshot);
                     }
                     GuildTheme.setCurrent(name);
-                    confirmActive = false; pendingAction = null;
-                    init(); return true;
+                    confirmActive = false;
+                    pendingAction = null;
+                    init();
+                    return true;
                 }
             }
             itemY += 16;
@@ -358,9 +402,9 @@ public class GuildThemeEditorScreen extends Screen {
     public boolean mouseScrolled(double mx, double my, double delta) {
         int sideW = Math.max(175, width / 4);
         if (mx < width - sideW - 5) {
-            int maxVis    = Math.max(1, (height - lastListItemY - 15) / 16);
+            int maxVis = Math.max(1, (height - lastListItemY - 15) / 16);
             int maxScroll = Math.max(0, getVisible().size() - maxVis);
-            scrollOffset  = Mth.clamp(scrollOffset - (int) delta, 0, maxScroll);
+            scrollOffset = Mth.clamp(scrollOffset - (int) delta, 0, maxScroll);
             return true;
         }
         return super.mouseScrolled(mx, my, delta);
@@ -383,5 +427,6 @@ public class GuildThemeEditorScreen extends Screen {
     }
 
     private record FieldEntry(String label, EditBox box) {}
+
     private record CategoryLabel(String title, int x, int y) {}
 }

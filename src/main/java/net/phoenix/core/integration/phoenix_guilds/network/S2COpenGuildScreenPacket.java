@@ -12,7 +12,9 @@ import java.util.function.Supplier;
 public class S2COpenGuildScreenPacket {
 
     public S2COpenGuildScreenPacket() {}
+
     public S2COpenGuildScreenPacket(FriendlyByteBuf buf) {}
+
     public void encode(FriendlyByteBuf buf) {}
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {

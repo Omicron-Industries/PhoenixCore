@@ -20,10 +20,10 @@ import javax.annotation.Nullable;
  * ── Expression syntax ────────────────────────────────────────────────────────
  *
  * enable_if: "expression"
- * enable_if: "expr1,expr2"   (AND — all must be true)
- * enable_if: "expr1|expr2"   (OR  — any must be true)
- * enable_if: "!expr"         (NOT)
- * enable_if: "a,b|c,d"       (= (a AND b) OR (c AND d)  — | splits AND-groups)
+ * enable_if: "expr1,expr2" (AND — all must be true)
+ * enable_if: "expr1|expr2" (OR — any must be true)
+ * enable_if: "!expr" (NOT)
+ * enable_if: "a,b|c,d" (= (a AND b) OR (c AND d) — | splits AND-groups)
  *
  * Each expression is either a plain flag name (no prefix) or:
  *
@@ -154,12 +154,12 @@ public final class PhoenixQuestFlags {
      * Evaluates a flag expression with optional server context.
      *
      * Syntax (highest to lowest precedence):
-     *   !term          — NOT
-     *   a,b            — AND  (all must be true)
-     *   a|b            — OR   (any must be true)
+     * !term — NOT
+     * a,b — AND (all must be true)
+     * a|b — OR (any must be true)
      *
      * Example: "kjs:expert_mode|kjs:hardcore,mod:refinedstorage"
-     *   → (expert_mode OR hardcore) AND refinedstorage loaded
+     * → (expert_mode OR hardcore) AND refinedstorage loaded
      *
      * Null or blank always returns true (no condition = always enabled).
      */

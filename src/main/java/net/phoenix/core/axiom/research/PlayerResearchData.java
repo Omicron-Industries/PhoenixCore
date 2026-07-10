@@ -5,14 +5,10 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.phoenix.core.axiom.AxiomDataType;
 import net.phoenix.core.axiom.terminal.ResearchTerminalBlockEntity;
 
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,19 +19,32 @@ import java.util.Set;
  */
 public class PlayerResearchData {
 
-    private final Set<ResourceLocation> unlocked  = new HashSet<>();
+    private final Set<ResourceLocation> unlocked = new HashSet<>();
     private final Set<ResourceLocation> lockedOut = new HashSet<>();
     /** String flags granted by "flag" unlock entries. Queryable by external systems. */
-    private final Set<String>           flags     = new HashSet<>();
+    private final Set<String> flags = new HashSet<>();
 
     // ── Queries ───────────────────────────────────────────────────────────────
 
-    public boolean isUnlocked(ResourceLocation nodeId)  { return unlocked.contains(nodeId); }
-    public boolean isLockedOut(ResourceLocation nodeId) { return lockedOut.contains(nodeId); }
-    public boolean hasFlag(String flag)                  { return flags.contains(flag); }
+    public boolean isUnlocked(ResourceLocation nodeId) {
+        return unlocked.contains(nodeId);
+    }
 
-    public Set<ResourceLocation> getUnlocked()  { return Collections.unmodifiableSet(unlocked); }
-    public Set<ResourceLocation> getLockedOut() { return Collections.unmodifiableSet(lockedOut); }
+    public boolean isLockedOut(ResourceLocation nodeId) {
+        return lockedOut.contains(nodeId);
+    }
+
+    public boolean hasFlag(String flag) {
+        return flags.contains(flag);
+    }
+
+    public Set<ResourceLocation> getUnlocked() {
+        return Collections.unmodifiableSet(unlocked);
+    }
+
+    public Set<ResourceLocation> getLockedOut() {
+        return Collections.unmodifiableSet(lockedOut);
+    }
 
     public boolean canUnlock(ResearchNode node) {
         return node.canUnlock(unlocked, lockedOut);
@@ -131,8 +140,11 @@ public class PlayerResearchData {
 
     /** Copies state from another instance (used when syncing server→client). */
     public void copyFrom(PlayerResearchData other) {
-        unlocked.clear();  unlocked.addAll(other.unlocked);
-        lockedOut.clear(); lockedOut.addAll(other.lockedOut);
-        flags.clear();     flags.addAll(other.flags);
+        unlocked.clear();
+        unlocked.addAll(other.unlocked);
+        lockedOut.clear();
+        lockedOut.addAll(other.lockedOut);
+        flags.clear();
+        flags.addAll(other.flags);
     }
 }

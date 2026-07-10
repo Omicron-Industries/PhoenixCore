@@ -1,7 +1,8 @@
 package net.phoenix.core.axiom.research;
 
-import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
+
+import com.google.gson.JsonObject;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -16,6 +17,7 @@ import java.util.Optional;
  * Multiple trees can coexist (e.g. one per AxiomDataType, or cross-discipline trees).
  *
  * JSON schema:
+ * 
  * <pre>
  * {
  *   "title": "Material Science",
@@ -33,8 +35,8 @@ public class ResearchTree {
     private final Map<ResourceLocation, ResearchNode> nodes = new LinkedHashMap<>();
 
     public ResearchTree(ResourceLocation id, String title, String description, List<ResearchNode> nodeList) {
-        this.id          = id;
-        this.title       = title;
+        this.id = id;
+        this.title = title;
         this.description = description;
         nodeList.forEach(n -> nodes.put(n.id, n));
     }
@@ -45,7 +47,9 @@ public class ResearchTree {
         return Optional.ofNullable(nodes.get(nodeId));
     }
 
-    public Collection<ResearchNode> getNodes() { return nodes.values(); }
+    public Collection<ResearchNode> getNodes() {
+        return nodes.values();
+    }
 
     public List<ResearchNode> getRoots() {
         return nodes.values().stream().filter(ResearchNode::isRoot).toList();
@@ -54,14 +58,12 @@ public class ResearchTree {
     // ── JSON ──────────────────────────────────────────────────────────────────
 
     public static ResearchTree fromJson(ResourceLocation id, JsonObject obj) {
-        String title       = obj.has("title")       ? obj.get("title").getAsString()       : id.getPath();
+        String title = obj.has("title") ? obj.get("title").getAsString() : id.getPath();
         String description = obj.has("description") ? obj.get("description").getAsString() : "";
 
-        List<ResearchNode> nodes = obj.has("nodes")
-                ? obj.getAsJsonArray("nodes").asList().stream()
-                        .map(e -> ResearchNode.fromJson(e.getAsJsonObject()))
-                        .toList()
-                : List.of();
+        List<ResearchNode> nodes = obj.has("nodes") ? obj.getAsJsonArray("nodes").asList().stream()
+                .map(e -> ResearchNode.fromJson(e.getAsJsonObject()))
+                .toList() : List.of();
 
         return new ResearchTree(id, title, description, nodes);
     }

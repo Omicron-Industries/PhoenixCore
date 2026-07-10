@@ -14,16 +14,15 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.phoenix.core.PhoenixCore;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class PlayerResearchCapability {
 
-    public static final Capability<PlayerResearchData> RESEARCH =
-            CapabilityManager.get(new CapabilityToken<>() {});
+    public static final Capability<PlayerResearchData> RESEARCH = CapabilityManager.get(new CapabilityToken<>() {});
 
-    public static final ResourceLocation ID =
-            new ResourceLocation(PhoenixCore.MOD_ID, "axiom_research");
+    public static final ResourceLocation ID = new ResourceLocation(PhoenixCore.MOD_ID, "axiom_research");
 
     private PlayerResearchCapability() {}
 
@@ -34,7 +33,8 @@ public final class PlayerResearchCapability {
     /** Retrieves the research data for a player, or throws if absent (should never happen). */
     public static PlayerResearchData get(Player player) {
         return player.getCapability(RESEARCH).orElseThrow(
-                () -> new IllegalStateException("Player missing AxiomResearch capability: " + player.getName().getString()));
+                () -> new IllegalStateException(
+                        "Player missing AxiomResearch capability: " + player.getName().getString()));
     }
 
     // ── Forge event handlers ──────────────────────────────────────────────────
@@ -48,7 +48,7 @@ public final class PlayerResearchCapability {
     public static void onPlayerClone(PlayerEvent.Clone event) {
         if (event.getOriginal().isDeadOrDying() || event.isWasDeath()) {
             PlayerResearchData original = get(event.getOriginal());
-            PlayerResearchData clone    = get(event.getEntity());
+            PlayerResearchData clone = get(event.getEntity());
             clone.copyFrom(original);
         }
     }
@@ -65,7 +65,14 @@ public final class PlayerResearchCapability {
             return cap == RESEARCH ? opt.cast() : LazyOptional.empty();
         }
 
-        @Override public CompoundTag serializeNBT()              { return data.serializeNBT(); }
-        @Override public void deserializeNBT(CompoundTag tag)    { data.deserializeNBT(tag); }
+        @Override
+        public CompoundTag serializeNBT() {
+            return data.serializeNBT();
+        }
+
+        @Override
+        public void deserializeNBT(CompoundTag tag) {
+            data.deserializeNBT(tag);
+        }
     }
 }

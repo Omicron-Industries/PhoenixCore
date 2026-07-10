@@ -7,8 +7,7 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 
 public final class AxiomDataCapability {
 
-    public static final Capability<IAxiomDataHandler> DATA =
-            CapabilityManager.get(new CapabilityToken<>() {});
+    public static final Capability<IAxiomDataHandler> DATA = CapabilityManager.get(new CapabilityToken<>() {});
 
     private AxiomDataCapability() {}
 

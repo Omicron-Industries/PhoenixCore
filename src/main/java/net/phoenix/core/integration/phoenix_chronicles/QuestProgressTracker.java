@@ -120,14 +120,14 @@ public class QuestProgressTracker {
 
     private static void propagateSharedCompletion(net.minecraft.server.level.ServerPlayer source, QuestNode node) {
         // Try Phoenix Guilds first (lightweight built-in teams)
-        net.phoenix.core.integration.phoenix_guilds.GuildManager guildMgr =
-                net.phoenix.core.integration.phoenix_guilds.GuildManager.get(source.getServer().overworld());
+        net.phoenix.core.integration.phoenix_guilds.GuildManager guildMgr = net.phoenix.core.integration.phoenix_guilds.GuildManager
+                .get(source.getServer().overworld());
         var pTeam = guildMgr.getGuildFor(source.getUUID());
         if (pTeam.isPresent()) {
             for (java.util.UUID memberUUID : pTeam.get().getMembers()) {
                 if (memberUUID.equals(source.getUUID())) continue;
-                net.minecraft.server.level.ServerPlayer member =
-                        source.getServer().getPlayerList().getPlayer(memberUUID);
+                net.minecraft.server.level.ServerPlayer member = source.getServer().getPlayerList()
+                        .getPlayer(memberUUID);
                 if (member == null) continue;
                 member.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
                     if (data.getQuestState(node.getId(), QuestState.LOCKED) != QuestState.COMPLETED)

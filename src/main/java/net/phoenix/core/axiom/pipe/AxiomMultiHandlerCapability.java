@@ -7,8 +7,7 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 
 public final class AxiomMultiHandlerCapability {
 
-    public static final Capability<IAxiomMultiHandler> MULTI_DATA =
-            CapabilityManager.get(new CapabilityToken<>() {});
+    public static final Capability<IAxiomMultiHandler> MULTI_DATA = CapabilityManager.get(new CapabilityToken<>() {});
 
     private AxiomMultiHandlerCapability() {}
 

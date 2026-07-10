@@ -19,15 +19,15 @@ import java.util.Stack;
  * Full-featured theme editor for Phoenix Chronicles.
  *
  * Layout:
- *   Left canvas  — live preview of quest node states + dep line + text swatches,
- *                  then a scrollable theme list below
- *   Right sidebar — hex edit fields grouped by category, name input, Save / Exit
+ * Left canvas — live preview of quest node states + dep line + text swatches,
+ * then a scrollable theme list below
+ * Right sidebar — hex edit fields grouped by category, name input, Save / Exit
  *
  * UX parity with PhantasiaThemeEditorScreen:
- *   - Ctrl+Z undo  · Ctrl+S save
- *   - Unsaved-changes guard (click-again-to-discard pattern)
- *   - Deferred deletions — custom themes are only purged from disk on onClose()
- *   - Live preview updates as you type
+ * - Ctrl+Z undo · Ctrl+S save
+ * - Unsaved-changes guard (click-again-to-discard pattern)
+ * - Deferred deletions — custom themes are only purged from disk on onClose()
+ * - Live preview updates as you type
  */
 public class ChroniclesThemeEditorScreen extends Screen {
 
@@ -102,22 +102,36 @@ public class ChroniclesThemeEditorScreen extends Screen {
         int y = 38;
         int rh = height > 360 ? 20 : 17;
 
-        sections.add(new SectionLabel("■ Base Layers", sbX, y)); y += 12;
-        addField("BG",       t.bg,          sbX, y, boxW); y += rh;
-        addField("Panel",    t.panel,        sbX, y, boxW); y += rh;
-        addField("Header",   t.header,       sbX, y, boxW); y += rh;
-        addField("Border",   t.border,       sbX, y, boxW); y += rh + 6;
+        sections.add(new SectionLabel("■ Base Layers", sbX, y));
+        y += 12;
+        addField("BG", t.bg, sbX, y, boxW);
+        y += rh;
+        addField("Panel", t.panel, sbX, y, boxW);
+        y += rh;
+        addField("Header", t.header, sbX, y, boxW);
+        y += rh;
+        addField("Border", t.border, sbX, y, boxW);
+        y += rh + 6;
 
-        sections.add(new SectionLabel("■ Typography", sbX, y)); y += 12;
-        addField("Text",     t.text,         sbX, y, boxW); y += rh;
-        addField("Text Dim", t.textDim,      sbX, y, boxW); y += rh;
-        addField("Faint",    t.textFaint,    sbX, y, boxW); y += rh + 6;
+        sections.add(new SectionLabel("■ Typography", sbX, y));
+        y += 12;
+        addField("Text", t.text, sbX, y, boxW);
+        y += rh;
+        addField("Text Dim", t.textDim, sbX, y, boxW);
+        y += rh;
+        addField("Faint", t.textFaint, sbX, y, boxW);
+        y += rh + 6;
 
-        sections.add(new SectionLabel("■ State Colors", sbX, y)); y += 12;
-        addField("Accent",   t.accent,       sbX, y, boxW); y += rh;
-        addField("Done",     t.done,         sbX, y, boxW); y += rh;
-        addField("Active",   t.activeColor,  sbX, y, boxW); y += rh;
-        addField("Locked",   t.locked,       sbX, y, boxW); y += rh + 6;
+        sections.add(new SectionLabel("■ State Colors", sbX, y));
+        y += 12;
+        addField("Accent", t.accent, sbX, y, boxW);
+        y += rh;
+        addField("Done", t.done, sbX, y, boxW);
+        y += rh;
+        addField("Active", t.activeColor, sbX, y, boxW);
+        y += rh;
+        addField("Locked", t.locked, sbX, y, boxW);
+        y += rh + 6;
 
         // Name + buttons
         int ctrlY = Math.max(y + 4, height - 70);
@@ -161,14 +175,14 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     private void syncPalette(ChroniclesTheme t) {
-        C_BG     = t.bg.getColor();
-        C_PANEL  = t.panel.getColor();
+        C_BG = t.bg.getColor();
+        C_PANEL = t.panel.getColor();
         C_HEADER = t.header.getColor();
         C_BORDER = t.border.getColor();
         C_ACCENT = t.accent.getColor();
-        C_TEXT   = t.text.getColor();
-        C_DIM    = t.textDim.getColor();
-        C_FAINT  = t.textFaint.getColor();
+        C_TEXT = t.text.getColor();
+        C_DIM = t.textDim.getColor();
+        C_FAINT = t.textFaint.getColor();
     }
 
     // ── Render ────────────────────────────────────────────────────────────────
@@ -214,14 +228,17 @@ public class ChroniclesThemeEditorScreen extends Screen {
             int sy = f.box.getY();
             int sw = 14;
             int previewColor;
-            try { previewColor = (int) Long.parseUnsignedLong(f.box.getValue().trim().toUpperCase(Locale.ROOT), 16); }
-            catch (Exception e) { previewColor = 0xFF888888; }
+            try {
+                previewColor = (int) Long.parseUnsignedLong(f.box.getValue().trim().toUpperCase(Locale.ROOT), 16);
+            } catch (Exception e) {
+                previewColor = 0xFF888888;
+            }
             g.fill(sx, sy, sx + sw, sy + 14, previewColor);
             // swatch border
-            g.fill(sx,          sy,          sx + sw,     sy + 1,      C_BORDER);
-            g.fill(sx,          sy + 13,     sx + sw,     sy + 14,     C_BORDER);
-            g.fill(sx,          sy,          sx + 1,      sy + 14,     C_BORDER);
-            g.fill(sx + sw - 1, sy,          sx + sw,     sy + 14,     C_BORDER);
+            g.fill(sx, sy, sx + sw, sy + 1, C_BORDER);
+            g.fill(sx, sy + 13, sx + sw, sy + 14, C_BORDER);
+            g.fill(sx, sy, sx + 1, sy + 14, C_BORDER);
+            g.fill(sx + sw - 1, sy, sx + sw, sy + 14, C_BORDER);
 
             f.box.render(g, mx, my, partial);
         }
@@ -260,8 +277,8 @@ public class ChroniclesThemeEditorScreen extends Screen {
         int sideW = Math.min(52, mockW / 5);
         g.fill(mockX, mockTop + hdrH, mockX + sideW, mockTop + mockH, t.panel.getColor());
         g.fill(mockX + sideW, mockTop + hdrH, mockX + sideW + 1, mockTop + mockH, t.border.getColor());
-        g.drawString(font, "§8All",    mockX + 4, mockTop + hdrH + 4,  t.textDim.getColor(), false);
-        g.drawString(font, "§8Main",   mockX + 4, mockTop + hdrH + 15, t.textFaint.getColor(), false);
+        g.drawString(font, "§8All", mockX + 4, mockTop + hdrH + 4, t.textDim.getColor(), false);
+        g.drawString(font, "§8Main", mockX + 4, mockTop + hdrH + 15, t.textFaint.getColor(), false);
         g.drawString(font, "§8Expert", mockX + 4, mockTop + hdrH + 26, t.textFaint.getColor(), false);
 
         // Three fake quest nodes: Done · Active · Locked
@@ -269,11 +286,11 @@ public class ChroniclesThemeEditorScreen extends Screen {
         int n1x = mockX + sideW + 14;
         int n2x = n1x + sz * 2 + 14;
         int n3x = n2x + sz * 2 + 14;
-        int ny  = mockTop + hdrH + (mockH - hdrH) / 2 - sz / 2;
+        int ny = mockTop + hdrH + (mockH - hdrH) / 2 - sz / 2;
 
         // Dep lines (behind nodes)
-        drawMockLine(g, n1x + sz, ny + sz / 2, n2x,      ny + sz / 2, t.done.getColor());
-        drawMockLine(g, n2x + sz, ny + sz / 2, n3x,      ny + sz / 2,
+        drawMockLine(g, n1x + sz, ny + sz / 2, n2x, ny + sz / 2, t.done.getColor());
+        drawMockLine(g, n2x + sz, ny + sz / 2, n3x, ny + sz / 2,
                 (t.locked.getColor() & 0x00FFFFFF) | 0x66000000);
 
         // Node 1 — DONE (green)
@@ -294,7 +311,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
 
         int lblY = ny + sz + 3;
         if (lblY + 8 < mockTop + mockH) {
-            g.drawCenteredString(font, "§8Done",   n1x + sz / 2, lblY, t.textFaint.getColor());
+            g.drawCenteredString(font, "§8Done", n1x + sz / 2, lblY, t.textFaint.getColor());
             g.drawCenteredString(font, "§8Active", n2x + sz / 2, lblY, t.textFaint.getColor());
             g.drawCenteredString(font, "§8Locked", n3x + sz / 2, lblY, t.textFaint.getColor());
         }
@@ -304,8 +321,8 @@ public class ChroniclesThemeEditorScreen extends Screen {
         if (swY > mockTop + hdrH + 4) {
             int sw = Math.max(4, (mockW - sideW - 10) / 5);
             int sx = mockX + sideW + 5;
-            g.fill(sx,           swY, sx + sw,           swY + 5, t.accent.getColor());
-            g.fill(sx + sw + 2,  swY, sx + sw * 2 + 2,  swY + 5, t.text.getColor());
+            g.fill(sx, swY, sx + sw, swY + 5, t.accent.getColor());
+            g.fill(sx + sw + 2, swY, sx + sw * 2 + 2, swY + 5, t.text.getColor());
             g.fill(sx + sw * 2 + 4, swY, sx + sw * 3 + 4, swY + 5, t.textDim.getColor());
             g.fill(sx + sw * 3 + 6, swY, sx + sw * 4 + 6, swY + 5, t.textFaint.getColor());
         }
@@ -327,8 +344,8 @@ public class ChroniclesThemeEditorScreen extends Screen {
             boolean sel = name.equals(ChroniclesTheme.getActiveName());
             boolean hov = mx >= mockX && mx <= mockX + mockW && my >= listY && my < listY + itemH;
 
-            int rowBg = sel ? ((t.accent.getColor() & 0x00FFFFFF) | 0x33000000)
-                    : hov ? ((t.border.getColor() & 0x00FFFFFF) | 0x22000000) : 0;
+            int rowBg = sel ? ((t.accent.getColor() & 0x00FFFFFF) | 0x33000000) :
+                    hov ? ((t.border.getColor() & 0x00FFFFFF) | 0x22000000) : 0;
             if (rowBg != 0) g.fill(mockX, listY, mockX + mockW, listY + itemH, rowBg);
             drawBorder(g, mockX, listY, mockW, itemH, (t.border.getColor() & 0x00FFFFFF) | 0x44000000);
 
@@ -420,8 +437,14 @@ public class ChroniclesThemeEditorScreen extends Screen {
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         if (hasControlDown()) {
-            if (key == 90) { tryUndo(); return true; }  // Ctrl+Z
-            if (key == 83) { save();    return true; }  // Ctrl+S
+            if (key == 90) {
+                tryUndo();
+                return true;
+            }  // Ctrl+Z
+            if (key == 83) {
+                save();
+                return true;
+            }  // Ctrl+S
         }
         return super.keyPressed(key, scan, mods);
     }
@@ -468,18 +491,18 @@ public class ChroniclesThemeEditorScreen extends Screen {
 
     private String fieldValue(Snap s, String label) {
         return switch (label) {
-            case "BG"       -> s.bg();
-            case "Panel"    -> s.panel();
-            case "Header"   -> s.header();
-            case "Border"   -> s.border();
-            case "Accent"   -> s.accent();
-            case "Text"     -> s.text();
+            case "BG" -> s.bg();
+            case "Panel" -> s.panel();
+            case "Header" -> s.header();
+            case "Border" -> s.border();
+            case "Accent" -> s.accent();
+            case "Text" -> s.text();
             case "Text Dim" -> s.dim();
-            case "Faint"    -> s.faint();
-            case "Done"     -> s.done();
-            case "Active"   -> s.active();
-            case "Locked"   -> s.locked();
-            default         -> null;
+            case "Faint" -> s.faint();
+            case "Done" -> s.done();
+            case "Active" -> s.active();
+            case "Locked" -> s.locked();
+            default -> null;
         };
     }
 
@@ -497,11 +520,16 @@ public class ChroniclesThemeEditorScreen extends Screen {
 
     private void restore(Snap s) {
         ChroniclesTheme t = ChroniclesTheme.current();
-        t.bg.set(s.bg());           t.panel.set(s.panel());
-        t.header.set(s.header());   t.border.set(s.border());
-        t.accent.set(s.accent());   t.text.set(s.text());
-        t.textDim.set(s.dim());     t.textFaint.set(s.faint());
-        t.done.set(s.done());       t.activeColor.set(s.active());
+        t.bg.set(s.bg());
+        t.panel.set(s.panel());
+        t.header.set(s.header());
+        t.border.set(s.border());
+        t.accent.set(s.accent());
+        t.text.set(s.text());
+        t.textDim.set(s.dim());
+        t.textFaint.set(s.faint());
+        t.done.set(s.done());
+        t.activeColor.set(s.active());
         t.locked.set(s.locked());
         syncPalette(t);
     }
@@ -516,14 +544,18 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 
     @Override
     public void renderBackground(@NotNull GuiGraphics g) { /* themed canvas, not dirt */ }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private int sidebarW() { return Math.max(SIDEBAR_MIN, width / 4); }
+    private int sidebarW() {
+        return Math.max(SIDEBAR_MIN, width / 4);
+    }
 
     private List<String> visibleThemes() {
         List<String> out = new ArrayList<>();
@@ -534,10 +566,10 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     private void drawBorder(GuiGraphics g, int x, int y, int w, int h, int c) {
-        g.fill(x,         y,         x + w,     y + 1,     c);
-        g.fill(x,         y + h - 1, x + w,     y + h,     c);
-        g.fill(x,         y,         x + 1,     y + h,     c);
-        g.fill(x + w - 1, y,         x + w,     y + h,     c);
+        g.fill(x, y, x + w, y + 1, c);
+        g.fill(x, y + h - 1, x + w, y + h, c);
+        g.fill(x, y, x + 1, y + h, c);
+        g.fill(x + w - 1, y, x + w, y + h, c);
     }
 
     private void drawMockLine(GuiGraphics g, int x1, int y, int x2, int y2, int color) {
@@ -548,5 +580,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
     // ── Records ───────────────────────────────────────────────────────────────
 
     private record FieldEntry(String label, ChroniclesTheme.ThemeColor target, EditBox box) {}
+
     private record SectionLabel(String title, int x, int y) {}
 }

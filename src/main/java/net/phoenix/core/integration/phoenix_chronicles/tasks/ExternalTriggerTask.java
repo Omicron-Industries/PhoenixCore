@@ -12,6 +12,7 @@ import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilit
  * {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI#fireExternalEvent}.
  *
  * SNBT shape:
+ * 
  * <pre>
  * {type: "external_trigger", trigger_id: "mymod:sun_eaten", required: 3}
  * </pre>
@@ -21,6 +22,7 @@ import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilit
  * Defaults to {@code required: 1} (single event = done).
  *
  * ── KubeJS usage (server_scripts/quest_triggers.js) ──────────────────────────
+ * 
  * <pre>
  * // Any time a player kills a dragon, signal the quest system:
  * ForgeEvents.onEvent('net.minecraftforge.event.entity.living.LivingDeathEvent', event => {
@@ -32,6 +34,7 @@ import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilit
  * </pre>
  *
  * ── Java mod usage ────────────────────────────────────────────────────────────
+ * 
  * <pre>
  * {@literal @}SubscribeEvent
  * public static void onDragonKill(LivingDeathEvent event) {
@@ -55,9 +58,17 @@ public class ExternalTriggerTask extends QuestTask {
         this.required = Math.max(1, required);
     }
 
-    public String getTriggerId() { return triggerId; }
-    public int getRequired() { return required; }
-    public void setKjsTypeId(String id) { this.kjsTypeId = id; }
+    public String getTriggerId() {
+        return triggerId;
+    }
+
+    public int getRequired() {
+        return required;
+    }
+
+    public void setKjsTypeId(String id) {
+        this.kjsTypeId = id;
+    }
 
     @Override
     public boolean isCompletedFor(Player player) {

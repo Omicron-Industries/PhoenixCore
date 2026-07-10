@@ -13,11 +13,11 @@ import net.minecraft.network.chat.MutableComponent;
  */
 public enum AxiomDataType {
 
-    MATERIAL    ("Material",      "mat",  ChatFormatting.GOLD,          false),
-    BIOLOGICAL  ("Biological",    "bio",  ChatFormatting.GREEN,         false),
-    ENERGETIC   ("Energetic",     "nrg",  ChatFormatting.AQUA,          false),
-    COMPUTATIONAL("Computational","cpu",  ChatFormatting.LIGHT_PURPLE,  false),
-    ARCANE      ("Arcane",        "arc",  ChatFormatting.DARK_PURPLE,   true);
+    MATERIAL("Material", "mat", ChatFormatting.GOLD, false),
+    BIOLOGICAL("Biological", "bio", ChatFormatting.GREEN, false),
+    ENERGETIC("Energetic", "nrg", ChatFormatting.AQUA, false),
+    COMPUTATIONAL("Computational", "cpu", ChatFormatting.LIGHT_PURPLE, false),
+    ARCANE("Arcane", "arc", ChatFormatting.DARK_PURPLE, true);
 
     /** Human-readable display name. */
     public final String displayName;
@@ -30,9 +30,9 @@ public enum AxiomDataType {
 
     AxiomDataType(String displayName, String tag, ChatFormatting color, boolean softDep) {
         this.displayName = displayName;
-        this.tag         = tag;
-        this.color       = color;
-        this.softDep     = softDep;
+        this.tag = tag;
+        this.color = color;
+        this.softDep = softDep;
     }
 
     /**

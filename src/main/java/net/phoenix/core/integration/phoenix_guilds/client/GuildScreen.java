@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.phoenix_guilds.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -11,6 +10,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.phoenix.core.integration.phoenix_guilds.network.C2SGuildActionPacket;
 import net.phoenix.core.integration.phoenix_guilds.network.S2CGuildSyncPacket;
 import net.phoenix.core.network.PhoenixNetwork;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,11 +25,11 @@ import static net.phoenix.core.integration.phoenix_guilds.client.GuildThemeUtils
 public class GuildScreen extends Screen {
 
     // ── Layout ────────────────────────────────────────────────────────────────
-    private static final int W           = 340;
-    private static final int H           = 260;
-    private static final int HEADER      = 28;
-    private static final int TAB_H       = 20;
-    private static final int ROW_H       = 15;
+    private static final int W = 340;
+    private static final int H = 260;
+    private static final int HEADER = 28;
+    private static final int TAB_H = 20;
+    private static final int ROW_H = 15;
     private static final int CONTENT_TOP = HEADER + TAB_H + 6;
     private int px, py;
 
@@ -39,14 +40,18 @@ public class GuildScreen extends Screen {
 
     private String selectedWikiTitle = null;
 
-    private record InlineBtn(int x, int y, int w, int h, Runnable action, int colorNorm, int colorHover, String label) {}
+    private record InlineBtn(int x, int y, int w, int h, Runnable action, int colorNorm, int colorHover,
+                             String label) {}
+
     private List<InlineBtn> inlineBtns = new ArrayList<>();
 
     private EditBox primaryBox;
     private EditBox secondaryBox;
     private EditBox wikiSearchBox;
 
-    public GuildScreen() { super(Component.literal("Guilds")); }
+    public GuildScreen() {
+        super(Component.literal("Guilds"));
+    }
 
     @Override
     protected void init() {
@@ -56,7 +61,9 @@ public class GuildScreen extends Screen {
         buildWidgets();
     }
 
-    public void onDataRefreshed() { buildWidgets(); }
+    public void onDataRefreshed() {
+        buildWidgets();
+    }
 
     // ── Widget construction ───────────────────────────────────────────────────
 
@@ -85,10 +92,13 @@ public class GuildScreen extends Screen {
             primaryBox.setMaxLength(32);
             addRenderableWidget(primaryBox);
             addRenderableWidget(btn("Invite", px + W - 100, py + H - 53, 90, 16,
-                    () -> { act(C2SGuildActionPacket.Action.INVITE, primaryBox.getValue().trim()); primaryBox.setValue(""); }));
+                    () -> {
+                        act(C2SGuildActionPacket.Action.INVITE, primaryBox.getValue().trim());
+                        primaryBox.setValue("");
+                    }));
         }
         int halfW = (W - 24) / 2;
-        int btnY  = py + H - 28;
+        int btnY = py + H - 28;
         addRenderableWidget(btn("Leave Guild", px + 10, btnY,
                 ClientGuildCache.isOwner() ? halfW : W - 20, 18,
                 () -> act(C2SGuildActionPacket.Action.LEAVE, "")));
@@ -103,7 +113,10 @@ public class GuildScreen extends Screen {
         secondaryBox.setMaxLength(64);
         addRenderableWidget(secondaryBox);
         addRenderableWidget(btn("Send Request", px + W - 116, py + H - 53, 106, 16,
-                () -> { act(C2SGuildActionPacket.Action.ALLY_REQUEST, secondaryBox.getValue().trim()); secondaryBox.setValue(""); }));
+                () -> {
+                    act(C2SGuildActionPacket.Action.ALLY_REQUEST, secondaryBox.getValue().trim());
+                    secondaryBox.setValue("");
+                }));
     }
 
     private void buildBrowseWidgets() {
@@ -149,10 +162,10 @@ public class GuildScreen extends Screen {
     private void drawFrame(GuiGraphics g) {
         g.fill(px, py, px + W, py + H, C_PANEL());
         g.fill(px, py, px + W, py + HEADER, C_HEADER());
-        g.fill(px,         py,         px + W, py + 1,     C_BORDER());
-        g.fill(px,         py + H - 1, px + W, py + H,     C_BORDER());
-        g.fill(px,         py,         px + 1, py + H,     C_BORDER());
-        g.fill(px + W - 1, py,         px + W, py + H,     C_BORDER());
+        g.fill(px, py, px + W, py + 1, C_BORDER());
+        g.fill(px, py + H - 1, px + W, py + H, C_BORDER());
+        g.fill(px, py, px + 1, py + H, C_BORDER());
+        g.fill(px + W - 1, py, px + W, py + H, C_BORDER());
         String title = ClientGuildCache.isInGuild() ? "  " + ClientGuildCache.guildName : "  GUILDS";
         g.drawCenteredString(font, title, px + W / 2, py + (HEADER - 8) / 2,
                 ClientGuildCache.isInGuild() ? C_GOLD() : C_TEXT());
@@ -162,11 +175,11 @@ public class GuildScreen extends Screen {
 
     private void drawTabs(GuiGraphics g) {
         int tabW = W / TABS.length;
-        int ty   = py + HEADER;
+        int ty = py + HEADER;
         for (int i = 0; i < TABS.length; i++) {
-            int tx    = px + i * tabW;
+            int tx = px + i * tabW;
             boolean active = i == activeTab;
-            boolean alert  = i == 1 && !ClientGuildCache.pendingIncoming.isEmpty();
+            boolean alert = i == 1 && !ClientGuildCache.pendingIncoming.isEmpty();
             g.fill(tx, ty, tx + tabW, ty + TAB_H, active ? C_ACCENT() : C_HEADER());
             if (!active) g.fill(tx, ty + TAB_H - 1, tx + tabW, ty + TAB_H, C_BORDER());
             g.fill(tx + tabW - 1, ty, tx + tabW, ty + TAB_H, C_BORDER2());
@@ -202,7 +215,7 @@ public class GuildScreen extends Screen {
 
         int listTop = y;
         int listBot = py + H - (ClientGuildCache.isAtLeastOfficer() ? 62 : 34);
-        int listH   = listBot - listTop;
+        int listH = listBot - listTop;
         int maxRows = listH / ROW_H;
 
         List<S2CGuildSyncPacket.MemberEntry> members = ClientGuildCache.members;
@@ -214,9 +227,18 @@ public class GuildScreen extends Screen {
             int nameColor;
             String rankIcon;
             switch (m.rank()) {
-                case "OWNER"   -> { rankIcon = "*"; nameColor = C_GOLD(); }
-                case "OFFICER" -> { rankIcon = "^"; nameColor = C_OFFICER(); }
-                default        -> { rankIcon = "-"; nameColor = C_TEXT(); }
+                case "OWNER" -> {
+                    rankIcon = "*";
+                    nameColor = C_GOLD();
+                }
+                case "OFFICER" -> {
+                    rankIcon = "^";
+                    nameColor = C_OFFICER();
+                }
+                default -> {
+                    rankIcon = "-";
+                    nameColor = C_TEXT();
+                }
             }
             g.fill(px + 10, ry + 4, px + 14, ry + 9, m.isOnline() ? C_ONLINE() : C_OFFLINE());
             g.drawString(font, rankIcon + " " + m.name(), px + 18, ry + 3, nameColor, false);
@@ -279,7 +301,8 @@ public class GuildScreen extends Screen {
                 g.fill(px + 6, ry, px + W - 6, ry + ROW_H, 0xFF100A20);
                 g.drawString(font, req.guildName(), px + 12, ry + 3, 0xFFFFCC44, false);
                 if (ClientGuildCache.isAtLeastOfficer()) {
-                    int bw = 46; int bh = ROW_H - 2;
+                    int bw = 46;
+                    int bh = ROW_H - 2;
                     int bx = px + W - 10 - bw;
                     final String rName = req.guildName();
                     inlineBtns.add(new InlineBtn(bx, ry + 1, bw, bh,
@@ -308,7 +331,8 @@ public class GuildScreen extends Screen {
                 String cnt = a.onlineCount() + "/" + a.memberCount() + " online";
                 g.drawString(font, cnt, px + W - 10 - font.width(cnt), ry + 3, C_DIM(), false);
                 if (ClientGuildCache.isAtLeastOfficer()) {
-                    int bw = 38; int bh = ROW_H - 2;
+                    int bw = 38;
+                    int bh = ROW_H - 2;
                     int bx = px + W - 10 - font.width(cnt) - bw - 4;
                     final String aName = a.name();
                     inlineBtns.add(new InlineBtn(bx, ry + 1, bw, bh,
@@ -338,7 +362,7 @@ public class GuildScreen extends Screen {
         List<S2CGuildSyncPacket.GuildSummary> all = ClientGuildCache.allGuilds;
         int listTop = py + CONTENT_TOP + 14;
         int listBot = ClientGuildCache.isInGuild() ? py + H - 10 : py + H - 60;
-        int listH   = listBot - listTop;
+        int listH = listBot - listTop;
         int maxRows = listH / ROW_H;
 
         sectionHeader(g, "All Guilds (" + all.size() + ")", px + 10, py + CONTENT_TOP, W - 20);
@@ -369,7 +393,7 @@ public class GuildScreen extends Screen {
         List<S2CGuildSyncPacket.LogEntry> log = ClientGuildCache.logEntries;
         sectionHeader(g, "Guild Log", px + 10, py + CONTENT_TOP, W - 20);
         int listTop = py + CONTENT_TOP + 14;
-        int listH   = py + H - 10 - listTop;
+        int listH = py + H - 10 - listTop;
         int maxRows = listH / ROW_H;
 
         if (log.isEmpty()) {
@@ -403,10 +427,10 @@ public class GuildScreen extends Screen {
         List<S2CGuildSyncPacket.WikiPage> pages = ClientGuildCache.wikiPages;
         boolean officer = ClientGuildCache.isAtLeastOfficer();
 
-        int lx      = px + 4;
+        int lx = px + 4;
         int listTop = py + CONTENT_TOP + 16;
         int listBot = py + H - (officer ? 24 : 10);
-        int listH   = listBot - listTop;
+        int listH = listBot - listTop;
         int maxRows = listH / ROW_H;
 
         String query = wikiSearchBox != null ? wikiSearchBox.getValue().trim().toLowerCase() : "";
@@ -431,7 +455,8 @@ public class GuildScreen extends Screen {
         RenderSystem.disableScissor();
 
         if (filtered.isEmpty())
-            g.drawString(font, pages.isEmpty() ? "No pages yet." : "No results.", lx + 4, listTop + 3, C_FAINT(), false);
+            g.drawString(font, pages.isEmpty() ? "No pages yet." : "No results.", lx + 4, listTop + 3, C_FAINT(),
+                    false);
 
         if (officer)
             inlineBtns.add(new InlineBtn(lx, py + H - 22, WIKI_LIST_W, 14,
@@ -443,7 +468,10 @@ public class GuildScreen extends Screen {
             int ry = listTop + (i - scrollOff) * ROW_H;
             final String t = page.title();
             inlineBtns.add(new InlineBtn(lx, ry, WIKI_LIST_W, ROW_H - 1,
-                    () -> { selectedWikiTitle = t; scrollOff = 0; }, 0, 0, ""));
+                    () -> {
+                        selectedWikiTitle = t;
+                        scrollOff = 0;
+                    }, 0, 0, ""));
         }
 
         int rx = divX + 4;
@@ -459,23 +487,28 @@ public class GuildScreen extends Screen {
                 ry += 14;
                 int contentBot = py + H - (officer ? 26 : 10);
                 scissor(ry, contentBot - ry);
-                List<net.minecraft.util.FormattedCharSequence> lines =
-                        font.split(Component.literal(sel.content()), rw);
+                List<net.minecraft.util.FormattedCharSequence> lines = font.split(Component.literal(sel.content()), rw);
                 for (int i = 0; i < lines.size(); i++)
                     g.drawString(font, lines.get(i), rx, ry + i * 10, C_TEXT(), false);
                 RenderSystem.disableScissor();
                 if (officer) {
-                    final String selTitle   = sel.title();
+                    final String selTitle = sel.title();
                     final String selContent = sel.content();
-                    int bw = 46; int by = py + H - 22;
+                    int bw = 46;
+                    int by = py + H - 22;
                     inlineBtns.add(new InlineBtn(rx, by, bw, 14,
                             () -> minecraft.setScreen(new WikiEditScreen(this, selTitle, selContent)),
                             0xFF0A1A33, 0xFF10285A, "Edit"));
                     inlineBtns.add(new InlineBtn(rx + bw + 4, by, bw, 14,
-                            () -> { act(C2SGuildActionPacket.Action.WIKI_DELETE, selTitle); selectedWikiTitle = null; },
+                            () -> {
+                                act(C2SGuildActionPacket.Action.WIKI_DELETE, selTitle);
+                                selectedWikiTitle = null;
+                            },
                             0xFF330A0A, 0xFF551010, "Delete"));
                 }
-            } else { selectedWikiTitle = null; }
+            } else {
+                selectedWikiTitle = null;
+            }
         } else {
             g.drawCenteredString(font, "Select a page.", rx + rw / 2, py + CONTENT_TOP + 40, C_FAINT());
         }
@@ -490,7 +523,10 @@ public class GuildScreen extends Screen {
             for (int i = 0; i < TABS.length; i++) {
                 int tx = px + i * tabW;
                 if (mx >= tx && mx < tx + tabW) {
-                    activeTab = i; scrollOff = 0; buildWidgets(); return true;
+                    activeTab = i;
+                    scrollOff = 0;
+                    buildWidgets();
+                    return true;
                 }
             }
         }
@@ -503,7 +539,8 @@ public class GuildScreen extends Screen {
         }
         for (InlineBtn b : inlineBtns) {
             if (mx >= b.x() && mx < b.x() + b.w() && my >= b.y() && my < b.y() + b.h()) {
-                b.action().run(); return true;
+                b.action().run();
+                return true;
             }
         }
         return super.mouseClicked(mx, my, btn);
@@ -525,11 +562,9 @@ public class GuildScreen extends Screen {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void act(C2SGuildActionPacket.Action action, String arg) {
-        boolean needsArg = action != C2SGuildActionPacket.Action.LEAVE
-                        && action != C2SGuildActionPacket.Action.DISBAND
-                        && action != C2SGuildActionPacket.Action.TOGGLE_FF
-                        && action != C2SGuildActionPacket.Action.HOME
-                        && action != C2SGuildActionPacket.Action.SET_HOME;
+        boolean needsArg = action != C2SGuildActionPacket.Action.LEAVE &&
+                action != C2SGuildActionPacket.Action.DISBAND && action != C2SGuildActionPacket.Action.TOGGLE_FF &&
+                action != C2SGuildActionPacket.Action.HOME && action != C2SGuildActionPacket.Action.SET_HOME;
         if (needsArg && arg.isEmpty()) return;
         PhoenixNetwork.CHANNEL.sendToServer(new C2SGuildActionPacket(action, arg));
     }
@@ -553,13 +588,16 @@ public class GuildScreen extends Screen {
 
     private void scissor(int top, int h) {
         double scale = minecraft.getWindow().getGuiScale();
-        int    sh    = minecraft.getWindow().getGuiScaledHeight();
+        int sh = minecraft.getWindow().getGuiScaledHeight();
         RenderSystem.enableScissor(
-                (int) ((px + 1)       * scale),
+                (int) ((px + 1) * scale),
                 (int) ((sh - top - h) * scale),
-                (int) ((W - 2)        * scale),
-                (int) (h              * scale));
+                (int) ((W - 2) * scale),
+                (int) (h * scale));
     }
 
-    @Override public boolean isPauseScreen() { return false; }
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

@@ -1,9 +1,10 @@
 package net.phoenix.core.axiom.research;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.axiom.AxiomDataType;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -15,6 +16,7 @@ import java.util.Set;
  * A single node in an Axiom research tree.
  *
  * JSON schema (in data/<namespace>/axiom/research/<tree_id>.json, under "nodes"):
+ * 
  * <pre>
  * {
  *   "id": "phoenixcore:basic_alloys",
@@ -52,32 +54,32 @@ public class ResearchNode {
                         int posX, int posY, List<ResourceLocation> prerequisites,
                         String exclusionGroup, Map<AxiomDataType, Long> cost,
                         List<ResearchUnlock> unlocks) {
-        this.id             = id;
-        this.title          = title;
-        this.lore           = lore;
-        this.icon           = icon;
-        this.posX           = posX;
-        this.posY           = posY;
-        this.prerequisites  = List.copyOf(prerequisites);
+        this.id = id;
+        this.title = title;
+        this.lore = lore;
+        this.icon = icon;
+        this.posX = posX;
+        this.posY = posY;
+        this.prerequisites = List.copyOf(prerequisites);
         this.exclusionGroup = exclusionGroup;
-        this.cost           = Map.copyOf(cost);
-        this.unlocks        = List.copyOf(unlocks);
+        this.cost = Map.copyOf(cost);
+        this.unlocks = List.copyOf(unlocks);
     }
 
     // ── JSON ──────────────────────────────────────────────────────────────────
 
     public static ResearchNode fromJson(JsonObject obj) {
-        ResourceLocation id    = new ResourceLocation(obj.get("id").getAsString());
-        String title           = obj.get("title").getAsString();
-        String lore            = obj.has("lore") ? obj.get("lore").getAsString() : "";
-        String icon            = obj.has("icon") ? obj.get("icon").getAsString() : "minecraft:book";
-        int posX               = 0, posY = 0;
+        ResourceLocation id = new ResourceLocation(obj.get("id").getAsString());
+        String title = obj.get("title").getAsString();
+        String lore = obj.has("lore") ? obj.get("lore").getAsString() : "";
+        String icon = obj.has("icon") ? obj.get("icon").getAsString() : "minecraft:book";
+        int posX = 0, posY = 0;
         if (obj.has("position")) {
             JsonArray pos = obj.getAsJsonArray("position");
             posX = pos.get(0).getAsInt();
             posY = pos.get(1).getAsInt();
         }
-        String exclusionGroup  = obj.has("exclusion_group") ? obj.get("exclusion_group").getAsString() : null;
+        String exclusionGroup = obj.has("exclusion_group") ? obj.get("exclusion_group").getAsString() : null;
 
         List<ResourceLocation> prereqs = new ArrayList<>();
         if (obj.has("prerequisites")) {
@@ -107,7 +109,9 @@ public class ResearchNode {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /** True if this node has no prerequisites (i.e. it is a root node). */
-    public boolean isRoot() { return prerequisites.isEmpty(); }
+    public boolean isRoot() {
+        return prerequisites.isEmpty();
+    }
 
     /**
      * Whether a player can currently research this node given their unlocked set
@@ -115,7 +119,7 @@ public class ResearchNode {
      */
     public boolean canUnlock(Set<ResourceLocation> unlocked, Set<ResourceLocation> lockedOut) {
         if (lockedOut.contains(id)) return false;
-        if (unlocked.contains(id))  return false;
+        if (unlocked.contains(id)) return false;
         return unlocked.containsAll(prerequisites);
     }
 }

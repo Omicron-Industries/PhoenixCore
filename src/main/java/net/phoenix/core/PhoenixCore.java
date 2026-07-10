@@ -19,6 +19,7 @@ import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 import com.lowdragmc.lowdraglib.Platform;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.material.Fluid;
@@ -36,11 +37,11 @@ import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.phoenix.core.api.PhoenixSounds;
+import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.axiom.AxiomRegistry;
 import net.phoenix.core.axiom.research.PlayerResearchCapability;
 import net.phoenix.core.axiom.research.ResearchTreeRegistry;
-import net.phoenix.core.api.PhoenixSounds;
-import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.client.PhoenixClient;
 import net.phoenix.core.client.keybind.PhoenixKeybinds;
 import net.phoenix.core.client.particle.PhoenixParticles;
@@ -128,7 +129,7 @@ public class PhoenixCore {
 
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new SourceHatchJarTransferTick());
-        MinecraftForge.EVENT_BUS.addListener(PlayerResearchCapability::onAttachCapabilities);
+        MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, PlayerResearchCapability::onAttachCapabilities);
         MinecraftForge.EVENT_BUS.addListener(PlayerResearchCapability::onPlayerClone);
         MinecraftForge.EVENT_BUS.addListener(ResearchTreeRegistry::onAddReloadListeners);
     }

@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.phoenix.core.axiom.AxiomDataType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +27,7 @@ public class AxiomPipeBlockEntity extends BlockEntity {
     /** Throughput per tick, per pipe. Tune this to control network speed. */
     public static final long THROUGHPUT = 64L;
     /** How much data a single pipe segment can buffer. */
-    public static final long BUFFER     = 256L;
+    public static final long BUFFER = 256L;
 
     private long stored = 0L;
 
@@ -35,27 +36,43 @@ public class AxiomPipeBlockEntity extends BlockEntity {
 
     public AxiomPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, AxiomDataType dataType) {
         super(type, pos, state);
-        this.dataType   = dataType;
+        this.dataType = dataType;
         this.handlerOpt = LazyOptional.of(this::buildHandler);
     }
 
     private IAxiomDataHandler buildHandler() {
         return new IAxiomDataHandler() {
-            @Override public AxiomDataType getDataType() { return dataType; }
-            @Override public long insert(long amount) {
+
+            @Override
+            public AxiomDataType getDataType() {
+                return dataType;
+            }
+
+            @Override
+            public long insert(long amount) {
                 long accepted = Math.min(amount, BUFFER - stored);
                 stored += accepted;
                 setChanged();
                 return accepted;
             }
-            @Override public long extract(long amount) {
+
+            @Override
+            public long extract(long amount) {
                 long given = Math.min(amount, stored);
                 stored -= given;
                 setChanged();
                 return given;
             }
-            @Override public long getStored()   { return stored; }
-            @Override public long getCapacity() { return BUFFER; }
+
+            @Override
+            public long getStored() {
+                return stored;
+            }
+
+            @Override
+            public long getCapacity() {
+                return BUFFER;
+            }
         };
     }
 
@@ -81,15 +98,24 @@ public class AxiomPipeBlockEntity extends BlockEntity {
                 IAxiomDataHandler handler = single.orElseThrow(IllegalStateException::new);
                 if (handler.getDataType() != dataType) continue;
                 long accepted = handler.insert(budget);
-                if (accepted > 0) { stored -= accepted; budget -= accepted; setChanged(); }
+                if (accepted > 0) {
+                    stored -= accepted;
+                    budget -= accepted;
+                    setChanged();
+                }
                 continue;
             }
 
             // Multi-type neighbour (terminal, machine)
-            LazyOptional<IAxiomMultiHandler> multi = be.getCapability(AxiomMultiHandlerCapability.MULTI_DATA, dir.getOpposite());
+            LazyOptional<IAxiomMultiHandler> multi = be.getCapability(AxiomMultiHandlerCapability.MULTI_DATA,
+                    dir.getOpposite());
             if (multi.isPresent()) {
                 long accepted = multi.orElseThrow(IllegalStateException::new).insert(dataType, budget);
-                if (accepted > 0) { stored -= accepted; budget -= accepted; setChanged(); }
+                if (accepted > 0) {
+                    stored -= accepted;
+                    budget -= accepted;
+                    setChanged();
+                }
             }
         }
     }
@@ -122,6 +148,11 @@ public class AxiomPipeBlockEntity extends BlockEntity {
         stored = tag.getLong("stored");
     }
 
-    public AxiomDataType getDataType() { return dataType; }
-    public long getStored()            { return stored; }
+    public AxiomDataType getDataType() {
+        return dataType;
+    }
+
+    public long getStored() {
+        return stored;
+    }
 }

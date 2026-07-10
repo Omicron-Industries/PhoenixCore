@@ -1,27 +1,25 @@
 package net.phoenix.core.integration.phoenix_chronicles.event;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 import net.phoenix.core.integration.phoenix_chronicles.QuestNode;
 import net.phoenix.core.integration.phoenix_chronicles.QuestState;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-
 /**
  * Parent event class for all Chronicle quest-system updates.
  * Registered on the main MinecraftForge.EVENT_BUS.
  *
  * ── Outbound (quest system → world) ──────────────────────────────────────────
- *   QuestEvent.StateChanged  — quest state transition (LOCKED→UNLOCKED→COMPLETED)
- *   QuestEvent.RewardClaimed — player just claimed rewards for a completed quest
- *   QuestEvent.PlayerTick    — (cancelable) suppress default task evaluation for one quest/player
+ * QuestEvent.StateChanged — quest state transition (LOCKED→UNLOCKED→COMPLETED)
+ * QuestEvent.RewardClaimed — player just claimed rewards for a completed quest
+ * QuestEvent.PlayerTick — (cancelable) suppress default task evaluation for one quest/player
  *
  * ── Inbound (world → quest system) ───────────────────────────────────────────
- *   Use {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI#fireExternalEvent}
- *   to signal that a custom event occurred; any ExternalTriggerTask listening for that
- *   trigger_id will advance its progress.
+ * Use {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI#fireExternalEvent}
+ * to signal that a custom event occurred; any ExternalTriggerTask listening for that
+ * trigger_id will advance its progress.
  */
 public class QuestEvent extends Event {
 
@@ -81,7 +79,9 @@ public class QuestEvent extends Event {
      * Fired after all rewards for a completed quest have been granted to the player.
      * Cancelable — cancel to prevent the reward grant (e.g. inventory full guard).
      *
-     * <p>Example (KubeJS server_scripts):
+     * <p>
+     * Example (KubeJS server_scripts):
+     * 
      * <pre>{@code
      * ForgeEvents.onEvent('net.phoenix.core.integration.phoenix_chronicles.event.QuestEvent$RewardClaimed',
      *   event => {
@@ -105,10 +105,12 @@ public class QuestEvent extends Event {
     }
 
     /**
-     * Fired when an external event is signalled via {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI#fireExternalEvent}.
+     * Fired when an external event is signalled via
+     * {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI#fireExternalEvent}.
      * Mods can subscribe to inspect or cancel the signal before the quest system processes it.
      *
-     * <p>Cancelable — cancel to suppress this external event from reaching any tasks.
+     * <p>
+     * Cancelable — cancel to suppress this external event from reaching any tasks.
      */
     @Cancelable
     public static class ExternalEvent extends QuestEvent {
@@ -123,9 +125,13 @@ public class QuestEvent extends Event {
         }
 
         /** The trigger ID string passed to {@code QuestAPI.fireExternalEvent()}. */
-        public String getTriggerId() { return triggerId; }
+        public String getTriggerId() {
+            return triggerId;
+        }
 
         /** Arbitrary data passed alongside the event. Empty tag if none provided. */
-        public net.minecraft.nbt.CompoundTag getData() { return data; }
+        public net.minecraft.nbt.CompoundTag getData() {
+            return data;
+        }
     }
 }

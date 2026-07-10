@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
  * to push information into the quest system. Call these methods server-side.
  *
  * ── KubeJS server_scripts usage ───────────────────────────────────────────────
+ * 
  * <pre>
  * const QuestAPI = Java.loadClass('net.phoenix.core.integration.phoenix_chronicles.QuestAPI')
  *
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
  * </pre>
  *
  * ── Java mod usage ────────────────────────────────────────────────────────────
+ * 
  * <pre>
  * // In your Forge event handler:
  * QuestAPI.fireExternalEvent(serverPlayer, "mymod:sun_eaten", null);
@@ -48,7 +50,8 @@ public final class QuestAPI {
     /**
      * Signals that a custom external event occurred for a player.
      *
-     * <p>The quest system will check all active quests the player has for any
+     * <p>
+     * The quest system will check all active quests the player has for any
      * {@link ExternalTriggerTask} with a matching {@code trigger_id} and advance
      * their progress. A {@link QuestEvent.ExternalEvent} is also fired on the
      * Forge event bus so other mods can observe or cancel the signal.

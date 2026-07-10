@@ -16,8 +16,8 @@ public class GuildManager extends SavedData {
 
     private static final String SAVE_KEY = "phoenix_guilds";
 
-    private final Map<UUID, Guild> guilds      = new LinkedHashMap<>();
-    private final Map<UUID, UUID>  memberIndex = new LinkedHashMap<>();
+    private final Map<UUID, Guild> guilds = new LinkedHashMap<>();
+    private final Map<UUID, UUID> memberIndex = new LinkedHashMap<>();
 
     // ── SavedData factory ─────────────────────────────────────────────────────
 
@@ -60,8 +60,13 @@ public class GuildManager extends SavedData {
         return guilds.values().stream().filter(g -> g.getName().equalsIgnoreCase(name)).findFirst();
     }
 
-    public Collection<Guild> getAllGuilds()          { return guilds.values(); }
-    public boolean isInGuild(UUID playerUUID)        { return memberIndex.containsKey(playerUUID); }
+    public Collection<Guild> getAllGuilds() {
+        return guilds.values();
+    }
+
+    public boolean isInGuild(UUID playerUUID) {
+        return memberIndex.containsKey(playerUUID);
+    }
 
     // ── Member mutations ──────────────────────────────────────────────────────
 

@@ -14,13 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * ── Config file ───────────────────────────────────────────────────────────────
  *
- *   config/phoenix_chronicles/category_flags.snbt
+ * config/phoenix_chronicles/category_flags.snbt
  *
- *   {
- *     EXPERT_MODE: "kjs:difficulty_expert",
- *     NORMAL_MODE: "!kjs:difficulty_expert",
- *     SKYBLOCK:    "kjs:mode_skyblock"
- *   }
+ * {
+ * EXPERT_MODE: "kjs:difficulty_expert",
+ * NORMAL_MODE: "!kjs:difficulty_expert",
+ * SKYBLOCK: "kjs:mode_skyblock"
+ * }
  *
  * Categories not listed are always enabled.
  * Expressions use the same syntax as per-quest enable_if (including ! negation,

@@ -16,12 +16,14 @@ public interface IAxiomDataHandler {
 
     /**
      * Insert up to {@code amount} units of data.
+     * 
      * @return the amount actually accepted (may be less if near capacity).
      */
     long insert(long amount);
 
     /**
      * Extract up to {@code amount} units of data.
+     * 
      * @return the amount actually extracted.
      */
     long extract(long amount);
@@ -32,7 +34,15 @@ public interface IAxiomDataHandler {
     /** Maximum this handler can hold. */
     long getCapacity();
 
-    default boolean canInsert() { return getStored() < getCapacity(); }
-    default boolean isEmpty()   { return getStored() == 0; }
-    default boolean isFull()    { return getStored() >= getCapacity(); }
+    default boolean canInsert() {
+        return getStored() < getCapacity();
+    }
+
+    default boolean isEmpty() {
+        return getStored() == 0;
+    }
+
+    default boolean isFull() {
+        return getStored() >= getCapacity();
+    }
 }

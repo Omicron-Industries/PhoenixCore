@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.phoenix_guilds;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.registries.Registries;
@@ -11,7 +10,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -23,11 +21,12 @@ import net.phoenix.core.integration.phoenix_guilds.network.S2CGuildSyncPacket;
 import net.phoenix.core.integration.phoenix_guilds.network.S2COpenGuildScreenPacket;
 import net.phoenix.core.network.PhoenixNetwork;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -66,9 +65,8 @@ public class GuildEvents {
         Optional<Guild> aGuild = mgr.getGuildFor(attacker.getUUID());
 
         // Cancel if same guild and friendly fire is off
-        if (vGuild.isPresent() && aGuild.isPresent()
-                && vGuild.get().getId().equals(aGuild.get().getId())
-                && !vGuild.get().isFriendlyFire()) {
+        if (vGuild.isPresent() && aGuild.isPresent() && vGuild.get().getId().equals(aGuild.get().getId()) &&
+                !vGuild.get().isFriendlyFire()) {
             event.setCanceled(true);
         }
     }
@@ -81,79 +79,182 @@ public class GuildEvents {
 
         // /guilds
         d.register(Commands.literal("guilds")
-            .executes(ctx -> openGui(ctx.getSource().getPlayerOrException()))
-            .then(Commands.literal("gui").executes(ctx -> openGui(ctx.getSource().getPlayerOrException())))
-            .then(Commands.literal("create")
-                .then(Commands.argument("name", StringArgumentType.word())
-                    .executes(ctx -> { handleCreate(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "name")); return 1; })))
-            .then(Commands.literal("invite")
-                .then(Commands.argument("player", EntityArgument.player())
-                    .executes(ctx -> { handleInvite(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), EntityArgument.getPlayer(ctx, "player").getName().getString()); return 1; })))
-            .then(Commands.literal("remove")
-                .then(Commands.argument("player", EntityArgument.player())
-                    .executes(ctx -> { handleRemove(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), EntityArgument.getPlayer(ctx, "player").getName().getString()); return 1; })))
-            .then(Commands.literal("leave")
-                .executes(ctx -> { handleLeave(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("disband")
-                .executes(ctx -> { handleDisband(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("promote")
-                .then(Commands.argument("player", EntityArgument.player())
-                    .executes(ctx -> { handlePromote(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), EntityArgument.getPlayer(ctx, "player").getName().getString()); return 1; })))
-            .then(Commands.literal("demote")
-                .then(Commands.argument("player", EntityArgument.player())
-                    .executes(ctx -> { handleDemote(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), EntityArgument.getPlayer(ctx, "player").getName().getString()); return 1; })))
-            .then(Commands.literal("transfer")
-                .then(Commands.argument("player", EntityArgument.player())
-                    .executes(ctx -> { handleTransfer(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), EntityArgument.getPlayer(ctx, "player").getName().getString()); return 1; })))
-            .then(Commands.literal("motd")
-                .then(Commands.argument("text", StringArgumentType.greedyString())
-                    .executes(ctx -> { handleSetMotd(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "text")); return 1; })))
-            .then(Commands.literal("desc")
-                .then(Commands.argument("text", StringArgumentType.greedyString())
-                    .executes(ctx -> { handleSetDesc(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "text")); return 1; })))
-            .then(Commands.literal("friendlyfire")
-                .executes(ctx -> { handleToggleFF(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("sethome")
-                .executes(ctx -> { handleSetHome(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("home")
-                .executes(ctx -> { handleHome(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("info")
-                .executes(ctx -> { cmdInfo(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("list")
-                .executes(ctx -> { cmdList(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("log")
-                .executes(ctx -> { cmdLog(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException())); return 1; }))
-            .then(Commands.literal("wiki")
                 .executes(ctx -> openGui(ctx.getSource().getPlayerOrException()))
-                .then(Commands.literal("delete")
-                    .then(Commands.argument("title", StringArgumentType.greedyString())
-                        .executes(ctx -> { handleWikiDelete(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "title")); return 1; }))))
-            .then(Commands.literal("ally")
-                .then(Commands.literal("request")
-                    .then(Commands.argument("guild", StringArgumentType.word())
-                        .executes(ctx -> { handleAllyRequest(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "guild")); return 1; })))
-                .then(Commands.literal("accept")
-                    .then(Commands.argument("guild", StringArgumentType.word())
-                        .executes(ctx -> { handleAllyAccept(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "guild")); return 1; })))
-                .then(Commands.literal("decline")
-                    .then(Commands.argument("guild", StringArgumentType.word())
-                        .executes(ctx -> { handleAllyDecline(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "guild")); return 1; })))
-                .then(Commands.literal("break")
-                    .then(Commands.argument("guild", StringArgumentType.word())
-                        .executes(ctx -> { handleAllyBreak(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "guild")); return 1; }))))
-        );
+                .then(Commands.literal("gui").executes(ctx -> openGui(ctx.getSource().getPlayerOrException())))
+                .then(Commands.literal("create")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .executes(ctx -> {
+                                    handleCreate(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            StringArgumentType.getString(ctx, "name"));
+                                    return 1;
+                                })))
+                .then(Commands.literal("invite")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    handleInvite(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            EntityArgument.getPlayer(ctx, "player").getName().getString());
+                                    return 1;
+                                })))
+                .then(Commands.literal("remove")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    handleRemove(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            EntityArgument.getPlayer(ctx, "player").getName().getString());
+                                    return 1;
+                                })))
+                .then(Commands.literal("leave")
+                        .executes(ctx -> {
+                            handleLeave(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("disband")
+                        .executes(ctx -> {
+                            handleDisband(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("promote")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    handlePromote(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            EntityArgument.getPlayer(ctx, "player").getName().getString());
+                                    return 1;
+                                })))
+                .then(Commands.literal("demote")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    handleDemote(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            EntityArgument.getPlayer(ctx, "player").getName().getString());
+                                    return 1;
+                                })))
+                .then(Commands.literal("transfer")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    handleTransfer(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            EntityArgument.getPlayer(ctx, "player").getName().getString());
+                                    return 1;
+                                })))
+                .then(Commands.literal("motd")
+                        .then(Commands.argument("text", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    handleSetMotd(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            StringArgumentType.getString(ctx, "text"));
+                                    return 1;
+                                })))
+                .then(Commands.literal("desc")
+                        .then(Commands.argument("text", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    handleSetDesc(ctx.getSource().getPlayerOrException(),
+                                            get(ctx.getSource().getPlayerOrException()),
+                                            StringArgumentType.getString(ctx, "text"));
+                                    return 1;
+                                })))
+                .then(Commands.literal("friendlyfire")
+                        .executes(ctx -> {
+                            handleToggleFF(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("sethome")
+                        .executes(ctx -> {
+                            handleSetHome(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("home")
+                        .executes(ctx -> {
+                            handleHome(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("info")
+                        .executes(ctx -> {
+                            cmdInfo(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("list")
+                        .executes(ctx -> {
+                            cmdList(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("log")
+                        .executes(ctx -> {
+                            cmdLog(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()));
+                            return 1;
+                        }))
+                .then(Commands.literal("wiki")
+                        .executes(ctx -> openGui(ctx.getSource().getPlayerOrException()))
+                        .then(Commands.literal("delete")
+                                .then(Commands.argument("title", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            handleWikiDelete(ctx.getSource().getPlayerOrException(),
+                                                    get(ctx.getSource().getPlayerOrException()),
+                                                    StringArgumentType.getString(ctx, "title"));
+                                            return 1;
+                                        }))))
+                .then(Commands.literal("ally")
+                        .then(Commands.literal("request")
+                                .then(Commands.argument("guild", StringArgumentType.word())
+                                        .executes(ctx -> {
+                                            handleAllyRequest(ctx.getSource().getPlayerOrException(),
+                                                    get(ctx.getSource().getPlayerOrException()),
+                                                    StringArgumentType.getString(ctx, "guild"));
+                                            return 1;
+                                        })))
+                        .then(Commands.literal("accept")
+                                .then(Commands.argument("guild", StringArgumentType.word())
+                                        .executes(ctx -> {
+                                            handleAllyAccept(ctx.getSource().getPlayerOrException(),
+                                                    get(ctx.getSource().getPlayerOrException()),
+                                                    StringArgumentType.getString(ctx, "guild"));
+                                            return 1;
+                                        })))
+                        .then(Commands.literal("decline")
+                                .then(Commands.argument("guild", StringArgumentType.word())
+                                        .executes(ctx -> {
+                                            handleAllyDecline(ctx.getSource().getPlayerOrException(),
+                                                    get(ctx.getSource().getPlayerOrException()),
+                                                    StringArgumentType.getString(ctx, "guild"));
+                                            return 1;
+                                        })))
+                        .then(Commands.literal("break")
+                                .then(Commands.argument("guild", StringArgumentType.word())
+                                        .executes(ctx -> {
+                                            handleAllyBreak(ctx.getSource().getPlayerOrException(),
+                                                    get(ctx.getSource().getPlayerOrException()),
+                                                    StringArgumentType.getString(ctx, "guild"));
+                                            return 1;
+                                        })))));
 
         // /gc — guild chat
         d.register(Commands.literal("gc")
-            .then(Commands.argument("message", StringArgumentType.greedyString())
-                .executes(ctx -> { handleGuildChat(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "message")); return 1; }))
-        );
+                .then(Commands.argument("message", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            handleGuildChat(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()),
+                                    StringArgumentType.getString(ctx, "message"));
+                            return 1;
+                        })));
 
         // /ac — ally chat
         d.register(Commands.literal("ac")
-            .then(Commands.argument("message", StringArgumentType.greedyString())
-                .executes(ctx -> { handleAllyChat(ctx.getSource().getPlayerOrException(), get(ctx.getSource().getPlayerOrException()), StringArgumentType.getString(ctx, "message")); return 1; }))
-        );
+                .then(Commands.argument("message", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            handleAllyChat(ctx.getSource().getPlayerOrException(),
+                                    get(ctx.getSource().getPlayerOrException()),
+                                    StringArgumentType.getString(ctx, "message"));
+                            return 1;
+                        })));
     }
 
     // ── Sync helpers ──────────────────────────────────────────────────────────
@@ -161,21 +262,27 @@ public class GuildEvents {
     public static S2CGuildSyncPacket buildPacketFor(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
 
-        String guildName = null; UUID ownerUUID = null;
-        String motd = ""; String description = "";
-        boolean ff = false; boolean homeSet = false;
-        List<S2CGuildSyncPacket.MemberEntry>  members         = List.of();
-        List<S2CGuildSyncPacket.AllyEntry>    allies          = List.of();
+        String guildName = null;
+        UUID ownerUUID = null;
+        String motd = "";
+        String description = "";
+        boolean ff = false;
+        boolean homeSet = false;
+        List<S2CGuildSyncPacket.MemberEntry> members = List.of();
+        List<S2CGuildSyncPacket.AllyEntry> allies = List.of();
         List<S2CGuildSyncPacket.PendingEntry> pendingOutgoing = List.of();
         List<S2CGuildSyncPacket.PendingEntry> pendingIncoming = List.of();
-        List<S2CGuildSyncPacket.LogEntry>     logEntries      = List.of();
-        List<S2CGuildSyncPacket.WikiPage>     wikiPageList    = List.of();
+        List<S2CGuildSyncPacket.LogEntry> logEntries = List.of();
+        List<S2CGuildSyncPacket.WikiPage> wikiPageList = List.of();
 
         if (opt.isPresent()) {
             Guild g = opt.get();
-            guildName = g.getName(); ownerUUID = g.getOwner();
-            motd = g.getMotd(); description = g.getDescription();
-            ff = g.isFriendlyFire(); homeSet = g.isHomeSet();
+            guildName = g.getName();
+            ownerUUID = g.getOwner();
+            motd = g.getMotd();
+            description = g.getDescription();
+            ff = g.isFriendlyFire();
+            homeSet = g.isHomeSet();
 
             List<S2CGuildSyncPacket.MemberEntry> ml = new ArrayList<>();
             for (UUID uuid : g.getMembers()) {
@@ -188,7 +295,8 @@ public class GuildEvents {
             List<S2CGuildSyncPacket.AllyEntry> al = new ArrayList<>();
             for (UUID allyId : g.getAllies()) {
                 mgr.getGuildById(allyId).ifPresent(ally -> {
-                    long online = ally.getMembers().stream().filter(u -> player.getServer().getPlayerList().getPlayer(u) != null).count();
+                    long online = ally.getMembers().stream()
+                            .filter(u -> player.getServer().getPlayerList().getPlayer(u) != null).count();
                     al.add(new S2CGuildSyncPacket.AllyEntry(ally.getName(), ally.getMembers().size(), (int) online));
                 });
             }
@@ -217,8 +325,10 @@ public class GuildEvents {
 
         List<S2CGuildSyncPacket.GuildSummary> all = new ArrayList<>();
         for (Guild g : mgr.getAllGuilds()) {
-            long online = g.getMembers().stream().filter(u -> player.getServer().getPlayerList().getPlayer(u) != null).count();
-            all.add(new S2CGuildSyncPacket.GuildSummary(g.getName(), g.getMembers().size(), (int) online, g.getDescription()));
+            long online = g.getMembers().stream().filter(u -> player.getServer().getPlayerList().getPlayer(u) != null)
+                    .count();
+            all.add(new S2CGuildSyncPacket.GuildSummary(g.getName(), g.getMembers().size(), (int) online,
+                    g.getDescription()));
         }
 
         return new S2CGuildSyncPacket(guildName, ownerUUID, motd, description, ff, homeSet,
@@ -244,9 +354,18 @@ public class GuildEvents {
     // ── Member handlers (called by both commands and C2S packet) ──────────────
 
     public static void handleCreate(ServerPlayer player, GuildManager mgr, String name) {
-        if (name.isBlank())                          { send(player, "§cGuild name cannot be empty."); return; }
-        if (mgr.isInGuild(player.getUUID()))         { send(player, "§cYou are already in a guild."); return; }
-        if (mgr.getGuildByName(name).isPresent())    { send(player, "§cA guild named '§f" + name + "§c' already exists."); return; }
+        if (name.isBlank()) {
+            send(player, "§cGuild name cannot be empty.");
+            return;
+        }
+        if (mgr.isInGuild(player.getUUID())) {
+            send(player, "§cYou are already in a guild.");
+            return;
+        }
+        if (mgr.getGuildByName(name).isPresent()) {
+            send(player, "§cA guild named '§f" + name + "§c' already exists.");
+            return;
+        }
         Guild g = mgr.createGuild(name, player.getUUID());
         send(player, "§aCreated guild §f" + g.getName() + "§a.");
         syncToPlayer(player, mgr);
@@ -255,29 +374,57 @@ public class GuildEvents {
 
     public static void handleInvite(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) { send(player, "§cOfficers and above can invite players."); return; }
+        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) {
+            send(player, "§cOfficers and above can invite players.");
+            return;
+        }
         ServerPlayer target = player.getServer().getPlayerList().getPlayerByName(targetName);
-        if (target == null)                    { send(player, "§cPlayer '§f" + targetName + "§c' is not online."); return; }
-        if (mgr.isInGuild(target.getUUID()))   { send(player, "§c" + targetName + " is already in a guild."); return; }
-        if (g.isFull())                        { send(player, "§cYour guild is full (§f" + Guild.MAX_MEMBERS + "§c members max)."); return; }
+        if (target == null) {
+            send(player, "§cPlayer '§f" + targetName + "§c' is not online.");
+            return;
+        }
+        if (mgr.isInGuild(target.getUUID())) {
+            send(player, "§c" + targetName + " is already in a guild.");
+            return;
+        }
+        if (g.isFull()) {
+            send(player, "§cYour guild is full (§f" + Guild.MAX_MEMBERS + "§c members max).");
+            return;
+        }
         mgr.addMember(g.getId(), target.getUUID());
         g.addLog(player.getName().getString() + " invited " + targetName + ".");
         send(player, "§aAdded §f" + targetName + " §ato §f" + g.getName() + "§a.");
-        target.sendSystemMessage(Component.literal("§aYou were added to guild §f" + g.getName() + " §aby §f" + player.getName().getString() + "§a."));
+        target.sendSystemMessage(Component.literal(
+                "§aYou were added to guild §f" + g.getName() + " §aby §f" + player.getName().getString() + "§a."));
         syncToGuild(g, player.getServer(), mgr);
         broadcastAllGuildList(player.getServer(), mgr);
     }
 
     public static void handleRemove(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) { send(player, "§cOfficers and above can remove players."); return; }
+        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) {
+            send(player, "§cOfficers and above can remove players.");
+            return;
+        }
         ServerPlayer target = player.getServer().getPlayerList().getPlayerByName(targetName);
-        if (target == null || !g.isMember(target.getUUID())) { send(player, "§c" + targetName + " is not in your guild or is not online."); return; }
-        if (g.getRank(target.getUUID()).ordinal() >= g.getRank(player.getUUID()).ordinal()) { send(player, "§cYou cannot remove someone of equal or higher rank."); return; }
+        if (target == null || !g.isMember(target.getUUID())) {
+            send(player, "§c" + targetName + " is not in your guild or is not online.");
+            return;
+        }
+        if (g.getRank(target.getUUID()).ordinal() >= g.getRank(player.getUUID()).ordinal()) {
+            send(player, "§cYou cannot remove someone of equal or higher rank.");
+            return;
+        }
         mgr.removeMember(g.getId(), target.getUUID());
         g.addLog(player.getName().getString() + " removed " + targetName + ".");
         send(player, "§cRemoved §f" + targetName + " §cfrom §f" + g.getName() + "§c.");
@@ -289,8 +436,13 @@ public class GuildEvents {
 
     public static void handleLeave(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
-        Guild g = opt.get(); String name = g.getName(); UUID gid = g.getId();
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
+        Guild g = opt.get();
+        String name = g.getName();
+        UUID gid = g.getId();
         g.addLog(player.getName().getString() + " left the guild.");
         mgr.removeMember(gid, player.getUUID());
         send(player, "§cLeft guild §f" + name + "§c.");
@@ -301,9 +453,15 @@ public class GuildEvents {
 
     public static void handleDisband(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.getOwner().equals(player.getUUID())) { send(player, "§cOnly the owner can disband the guild."); return; }
+        if (!g.getOwner().equals(player.getUUID())) {
+            send(player, "§cOnly the owner can disband the guild.");
+            return;
+        }
         String name = g.getName();
         List<ServerPlayer> allOnline = onlineMembers(g, player.getServer());
         for (ServerPlayer m : allOnline)
@@ -319,52 +477,71 @@ public class GuildEvents {
 
     public static void handlePromote(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         ServerPlayer target = player.getServer().getPlayerList().getPlayerByName(targetName);
-        if (target == null || !g.isMember(target.getUUID())) { send(player, "§c" + targetName + " is not in your guild or is not online."); return; }
+        if (target == null || !g.isMember(target.getUUID())) {
+            send(player, "§c" + targetName + " is not in your guild or is not online.");
+            return;
+        }
         String result = mgr.promotePlayer(g.getId(), player.getUUID(), target.getUUID());
         switch (result) {
-            case "ok"           -> {
+            case "ok" -> {
                 GuildRank newRank = g.getRank(target.getUUID());
                 g.addLog(player.getName().getString() + " promoted " + targetName + " to " + newRank.label() + ".");
                 send(player, "§aPromoted §f" + targetName + " §ato §f" + newRank.label() + "§a.");
-                target.sendSystemMessage(Component.literal("§aYou were promoted to §f" + newRank.label() + " §ain §f" + g.getName() + "§a."));
+                target.sendSystemMessage(Component
+                        .literal("§aYou were promoted to §f" + newRank.label() + " §ain §f" + g.getName() + "§a."));
                 syncToGuild(g, player.getServer(), mgr);
             }
-            case "no_permission"  -> send(player, "§cOnly the guild owner can promote players.");
-            case "already_owner"  -> send(player, "§cUse /guilds transfer to make them owner.");
-            default               -> send(player, "§cCould not promote: " + result);
+            case "no_permission" -> send(player, "§cOnly the guild owner can promote players.");
+            case "already_owner" -> send(player, "§cUse /guilds transfer to make them owner.");
+            default -> send(player, "§cCould not promote: " + result);
         }
     }
 
     public static void handleDemote(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         ServerPlayer target = player.getServer().getPlayerList().getPlayerByName(targetName);
-        if (target == null || !g.isMember(target.getUUID())) { send(player, "§c" + targetName + " is not in your guild or is not online."); return; }
+        if (target == null || !g.isMember(target.getUUID())) {
+            send(player, "§c" + targetName + " is not in your guild or is not online.");
+            return;
+        }
         String result = mgr.demotePlayer(g.getId(), player.getUUID(), target.getUUID());
         switch (result) {
-            case "ok"               -> {
+            case "ok" -> {
                 g.addLog(player.getName().getString() + " demoted " + targetName + " to Member.");
                 send(player, "§7Demoted §f" + targetName + " §7to Member.");
                 target.sendSystemMessage(Component.literal("§7You were demoted to Member in §f" + g.getName() + "§7."));
                 syncToGuild(g, player.getServer(), mgr);
             }
-            case "no_permission"    -> send(player, "§cOnly the guild owner can demote players.");
-            case "cant_demote_owner"-> send(player, "§cCannot demote the owner.");
-            case "already_member"   -> send(player, "§c" + targetName + " is already a Member.");
-            default                 -> send(player, "§cCould not demote: " + result);
+            case "no_permission" -> send(player, "§cOnly the guild owner can demote players.");
+            case "cant_demote_owner" -> send(player, "§cCannot demote the owner.");
+            case "already_member" -> send(player, "§c" + targetName + " is already a Member.");
+            default -> send(player, "§cCould not demote: " + result);
         }
     }
 
     public static void handleTransfer(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         ServerPlayer target = player.getServer().getPlayerList().getPlayerByName(targetName);
-        if (target == null || !g.isMember(target.getUUID())) { send(player, "§c" + targetName + " is not in your guild or is not online."); return; }
+        if (target == null || !g.isMember(target.getUUID())) {
+            send(player, "§c" + targetName + " is not in your guild or is not online.");
+            return;
+        }
         String result = mgr.transferOwnership(g.getId(), player.getUUID(), target.getUUID());
         if ("ok".equals(result)) {
             g.addLog(player.getName().getString() + " transferred ownership to " + targetName + ".");
@@ -380,9 +557,15 @@ public class GuildEvents {
 
     public static void handleSetMotd(ServerPlayer player, GuildManager mgr, String text) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!mgr.setMotd(g.getId(), player.getUUID(), text)) { send(player, "§cOfficers and above can set the MOTD."); return; }
+        if (!mgr.setMotd(g.getId(), player.getUUID(), text)) {
+            send(player, "§cOfficers and above can set the MOTD.");
+            return;
+        }
         g.addLog(player.getName().getString() + " updated the MOTD.");
         send(player, "§aGuild MOTD updated.");
         syncToGuild(g, player.getServer(), mgr);
@@ -391,9 +574,15 @@ public class GuildEvents {
 
     public static void handleSetDesc(ServerPlayer player, GuildManager mgr, String text) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!mgr.setDescription(g.getId(), player.getUUID(), text)) { send(player, "§cOfficers and above can set the description."); return; }
+        if (!mgr.setDescription(g.getId(), player.getUUID(), text)) {
+            send(player, "§cOfficers and above can set the description.");
+            return;
+        }
         send(player, "§aGuild description updated.");
         syncToGuild(g, player.getServer(), mgr);
         broadcastAllGuildList(player.getServer(), mgr);
@@ -401,9 +590,15 @@ public class GuildEvents {
 
     public static void handleToggleFF(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!mgr.toggleFriendlyFire(g.getId(), player.getUUID())) { send(player, "§cOnly the guild owner can toggle friendly fire."); return; }
+        if (!mgr.toggleFriendlyFire(g.getId(), player.getUUID())) {
+            send(player, "§cOnly the guild owner can toggle friendly fire.");
+            return;
+        }
         boolean nowOn = g.isFriendlyFire();
         g.addLog(player.getName().getString() + " turned friendly fire " + (nowOn ? "ON" : "OFF") + ".");
         send(player, "§aFriendly fire is now §f" + (nowOn ? "§aON" : "§cOFF") + "§a.");
@@ -412,13 +607,19 @@ public class GuildEvents {
 
     public static void handleSetHome(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         ResourceLocation dim = player.level().dimension().location();
         boolean ok = mgr.setHome(g.getId(), player.getUUID(), dim,
                 player.getX(), player.getY(), player.getZ(),
                 player.getYRot(), player.getXRot());
-        if (!ok) { send(player, "§cOfficers and above can set the guild home."); return; }
+        if (!ok) {
+            send(player, "§cOfficers and above can set the guild home.");
+            return;
+        }
         g.addLog(player.getName().getString() + " set guild home.");
         send(player, "§aGuild home set to your current location.");
         syncToGuild(g, player.getServer(), mgr);
@@ -426,9 +627,15 @@ public class GuildEvents {
 
     public static void handleHome(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.isHomeSet()) { send(player, "§cGuild home has not been set yet."); return; }
+        if (!g.isHomeSet()) {
+            send(player, "§cGuild home has not been set yet.");
+            return;
+        }
         // Cooldown check
         long now = System.currentTimeMillis();
         Long expires = HOME_COOLDOWNS.get(player.getUUID());
@@ -441,7 +648,10 @@ public class GuildEvents {
         // Teleport
         ServerLevel targetLevel = player.getServer().getLevel(
                 ResourceKey.create(Registries.DIMENSION, g.getHomeDimension()));
-        if (targetLevel == null) { send(player, "§cGuild home dimension is no longer loaded."); return; }
+        if (targetLevel == null) {
+            send(player, "§cGuild home dimension is no longer loaded.");
+            return;
+        }
         if (player.level() == targetLevel) {
             player.connection.teleport(g.getHomeX(), g.getHomeY(), g.getHomeZ(), g.getHomeYaw(), g.getHomePitch());
         } else {
@@ -454,7 +664,10 @@ public class GuildEvents {
 
     public static void handleGuildChat(ServerPlayer player, GuildManager mgr, String message) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         String formatted = "§2[Guild] §a" + player.getName().getString() + "§7: §f" + message;
         Component msg = Component.literal(formatted);
@@ -466,7 +679,10 @@ public class GuildEvents {
 
     public static void handleAllyChat(ServerPlayer player, GuildManager mgr, String message) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         String formatted = "§3[Ally] §b" + player.getName().getString() + " §7[" + g.getName() + "]§7: §f" + message;
         Component msg = Component.literal(formatted);
@@ -490,16 +706,23 @@ public class GuildEvents {
 
     public static void handleAllyRequest(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) { send(player, "§cOfficers and above can send alliance requests."); return; }
+        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) {
+            send(player, "§cOfficers and above can send alliance requests.");
+            return;
+        }
         String result = mgr.sendAllyRequest(g.getId(), targetName);
         switch (result) {
-            case "sent"     -> {
+            case "sent" -> {
                 send(player, "§aAlliance request sent to §f" + targetName + "§a.");
                 mgr.getGuildByName(targetName).ifPresent(target -> {
                     ServerPlayer to = player.getServer().getPlayerList().getPlayer(target.getOwner());
-                    if (to != null) to.sendSystemMessage(Component.literal("§6[Guild] §f" + g.getName() + " §6has sent your guild an alliance request. Use §e/guilds ally accept " + g.getName()));
+                    if (to != null) to.sendSystemMessage(Component.literal("§6[Guild] §f" + g.getName() +
+                            " §6has sent your guild an alliance request. Use §e/guilds ally accept " + g.getName()));
                     syncToGuild(target, player.getServer(), mgr);
                 });
                 syncToGuild(g, player.getServer(), mgr);
@@ -509,56 +732,88 @@ public class GuildEvents {
                 mgr.getGuildByName(targetName).ifPresent(t -> syncToGuild(t, player.getServer(), mgr));
                 syncToGuild(g, player.getServer(), mgr);
             }
-            case "already_ally"  -> send(player, "§cAlready allied with §f" + targetName + "§c.");
-            case "already_sent"  -> send(player, "§cRequest already pending.");
-            case "self"          -> send(player, "§cYou can't ally with your own guild.");
+            case "already_ally" -> send(player, "§cAlready allied with §f" + targetName + "§c.");
+            case "already_sent" -> send(player, "§cRequest already pending.");
+            case "self" -> send(player, "§cYou can't ally with your own guild.");
             case "guild_not_found" -> send(player, "§cGuild '§f" + targetName + "§c' not found.");
         }
     }
 
     public static void handleAllyAccept(ServerPlayer player, GuildManager mgr, String senderName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) { send(player, "§cOfficers and above can accept alliance requests."); return; }
+        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) {
+            send(player, "§cOfficers and above can accept alliance requests.");
+            return;
+        }
         String result = mgr.acceptAllyRequest(g.getId(), senderName);
         switch (result) {
-            case "accepted"    -> {
+            case "accepted" -> {
                 send(player, "§aAlliance formed with §f" + senderName + "§a!");
-                mgr.getGuildByName(senderName).ifPresent(s -> { syncToGuild(s, player.getServer(), mgr); ServerPlayer so = player.getServer().getPlayerList().getPlayer(s.getOwner()); if (so != null) so.sendSystemMessage(Component.literal("§a[Guild] §f" + g.getName() + " §aaccepted your alliance request!")); });
+                mgr.getGuildByName(senderName).ifPresent(s -> {
+                    syncToGuild(s, player.getServer(), mgr);
+                    ServerPlayer so = player.getServer().getPlayerList().getPlayer(s.getOwner());
+                    if (so != null) so.sendSystemMessage(
+                            Component.literal("§a[Guild] §f" + g.getName() + " §aaccepted your alliance request!"));
+                });
                 syncToGuild(g, player.getServer(), mgr);
             }
-            case "no_request"  -> send(player, "§cNo pending request from §f" + senderName + "§c.");
+            case "no_request" -> send(player, "§cNo pending request from §f" + senderName + "§c.");
             case "guild_not_found" -> send(player, "§cGuild '§f" + senderName + "§c' not found.");
         }
     }
 
     public static void handleAllyDecline(ServerPlayer player, GuildManager mgr, String senderName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) { send(player, "§cOfficers and above can decline alliance requests."); return; }
+        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) {
+            send(player, "§cOfficers and above can decline alliance requests.");
+            return;
+        }
         String result = mgr.declineAllyRequest(g.getId(), senderName);
         switch (result) {
-            case "declined"    -> { send(player, "§7Declined request from §f" + senderName + "§7."); mgr.getGuildByName(senderName).ifPresent(s -> syncToGuild(s, player.getServer(), mgr)); syncToGuild(g, player.getServer(), mgr); }
-            case "no_request"  -> send(player, "§cNo pending request from §f" + senderName + "§c.");
+            case "declined" -> {
+                send(player, "§7Declined request from §f" + senderName + "§7.");
+                mgr.getGuildByName(senderName).ifPresent(s -> syncToGuild(s, player.getServer(), mgr));
+                syncToGuild(g, player.getServer(), mgr);
+            }
+            case "no_request" -> send(player, "§cNo pending request from §f" + senderName + "§c.");
             case "guild_not_found" -> send(player, "§cGuild '§f" + senderName + "§c' not found.");
         }
     }
 
     public static void handleAllyBreak(ServerPlayer player, GuildManager mgr, String targetName) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) { send(player, "§cOfficers and above can break alliances."); return; }
+        if (!g.hasRank(player.getUUID(), GuildRank.OFFICER)) {
+            send(player, "§cOfficers and above can break alliances.");
+            return;
+        }
         String result = mgr.breakAlliance(g.getId(), targetName);
         switch (result) {
-            case "broken"    -> {
+            case "broken" -> {
                 send(player, "§cBroke alliance with §f" + targetName + "§c.");
-                mgr.getGuildByName(targetName).ifPresent(t -> { syncToGuild(t, player.getServer(), mgr); ServerPlayer to = player.getServer().getPlayerList().getPlayer(t.getOwner()); if (to != null) to.sendSystemMessage(Component.literal("§c[Guild] §f" + g.getName() + " §cbroke the alliance.")); });
+                mgr.getGuildByName(targetName).ifPresent(t -> {
+                    syncToGuild(t, player.getServer(), mgr);
+                    ServerPlayer to = player.getServer().getPlayerList().getPlayer(t.getOwner());
+                    if (to != null) to.sendSystemMessage(
+                            Component.literal("§c[Guild] §f" + g.getName() + " §cbroke the alliance."));
+                });
                 syncToGuild(g, player.getServer(), mgr);
             }
-            case "not_ally"  -> send(player, "§cNot allied with §f" + targetName + "§c.");
+            case "not_ally" -> send(player, "§cNot allied with §f" + targetName + "§c.");
             case "guild_not_found" -> send(player, "§cGuild '§f" + targetName + "§c' not found.");
         }
     }
@@ -567,28 +822,45 @@ public class GuildEvents {
 
     public static void handleWikiSet(ServerPlayer player, GuildManager mgr, String arg) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         int sep = arg.indexOf('');
-        if (sep < 0) { send(player, "§cInvalid wiki data."); return; }
-        String title   = arg.substring(0, sep).trim();
+        if (sep < 0) {
+            send(player, "§cInvalid wiki data.");
+            return;
+        }
+        String title = arg.substring(0, sep).trim();
         String content = arg.substring(sep + 1);
-        String result  = mgr.setWikiPage(opt.get().getId(), player.getUUID(), title, content);
+        String result = mgr.setWikiPage(opt.get().getId(), player.getUUID(), title, content);
         switch (result) {
-            case "ok"           -> { send(player, "§aWiki page '§f" + title + "§a' saved."); opt.get().addLog(player.getName().getString() + " updated wiki page \"" + title + "\"."); syncToGuild(opt.get(), player.getServer(), mgr); }
-            case "no_permission"-> send(player, "§cOfficers and above can edit the wiki.");
-            case "wiki_full"    -> send(player, "§cWiki is full (20 pages max). Delete a page first.");
-            case "empty_title"  -> send(player, "§cPage title cannot be empty.");
+            case "ok" -> {
+                send(player, "§aWiki page '§f" + title + "§a' saved.");
+                opt.get().addLog(player.getName().getString() + " updated wiki page \"" + title + "\".");
+                syncToGuild(opt.get(), player.getServer(), mgr);
+            }
+            case "no_permission" -> send(player, "§cOfficers and above can edit the wiki.");
+            case "wiki_full" -> send(player, "§cWiki is full (20 pages max). Delete a page first.");
+            case "empty_title" -> send(player, "§cPage title cannot be empty.");
         }
     }
 
     public static void handleWikiDelete(ServerPlayer player, GuildManager mgr, String title) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         String result = mgr.deleteWikiPage(opt.get().getId(), player.getUUID(), title);
         switch (result) {
-            case "ok"           -> { send(player, "§7Deleted wiki page '§f" + title + "§7'."); opt.get().addLog(player.getName().getString() + " deleted wiki page \"" + title + "\"."); syncToGuild(opt.get(), player.getServer(), mgr); }
-            case "no_permission"-> send(player, "§cOfficers and above can delete wiki pages.");
-            case "not_found"    -> send(player, "§cNo wiki page named '§f" + title + "§c'.");
+            case "ok" -> {
+                send(player, "§7Deleted wiki page '§f" + title + "§7'.");
+                opt.get().addLog(player.getName().getString() + " deleted wiki page \"" + title + "\".");
+                syncToGuild(opt.get(), player.getServer(), mgr);
+            }
+            case "no_permission" -> send(player, "§cOfficers and above can delete wiki pages.");
+            case "not_found" -> send(player, "§cNo wiki page named '§f" + title + "§c'.");
         }
     }
 
@@ -596,7 +868,10 @@ public class GuildEvents {
 
     private static void cmdInfo(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
         StringBuilder sb = new StringBuilder("§6[Guild] §f" + g.getName());
         if (!g.getDescription().isBlank()) sb.append("\n§7").append(g.getDescription());
@@ -608,28 +883,39 @@ public class GuildEvents {
             ServerPlayer on = player.getServer().getPlayerList().getPlayer(m);
             String nm = on != null ? on.getName().getString() : m.toString().substring(0, 8) + "…";
             sb.append("\n  ").append(g.getRank(m).display()).append(" §f").append(nm)
-              .append(on != null ? " §a(online)" : " §8(offline)");
+                    .append(on != null ? " §a(online)" : " §8(offline)");
         }
         if (!g.getAllies().isEmpty()) {
             sb.append("\n§7Allies:");
-            for (UUID aid : g.getAllies()) mgr.getGuildById(aid).ifPresent(a -> sb.append("\n  §b⚑ §f").append(a.getName()));
+            for (UUID aid : g.getAllies())
+                mgr.getGuildById(aid).ifPresent(a -> sb.append("\n  §b⚑ §f").append(a.getName()));
         }
         player.sendSystemMessage(Component.literal(sb.toString()));
     }
 
     private static void cmdList(ServerPlayer player, GuildManager mgr) {
         var all = mgr.getAllGuilds();
-        if (all.isEmpty()) { send(player, "§7No guilds exist yet."); return; }
+        if (all.isEmpty()) {
+            send(player, "§7No guilds exist yet.");
+            return;
+        }
         StringBuilder sb = new StringBuilder("§6[Guilds]");
-        for (Guild g : all) sb.append("\n  §f").append(g.getName()).append(" §7(").append(g.getMembers().size()).append(" members)");
+        for (Guild g : all)
+            sb.append("\n  §f").append(g.getName()).append(" §7(").append(g.getMembers().size()).append(" members)");
         player.sendSystemMessage(Component.literal(sb.toString()));
     }
 
     private static void cmdLog(ServerPlayer player, GuildManager mgr) {
         Optional<Guild> opt = mgr.getGuildFor(player.getUUID());
-        if (opt.isEmpty()) { send(player, "§cYou are not in a guild."); return; }
+        if (opt.isEmpty()) {
+            send(player, "§cYou are not in a guild.");
+            return;
+        }
         Guild g = opt.get();
-        if (g.getLog().isEmpty()) { send(player, "§7No events logged yet."); return; }
+        if (g.getLog().isEmpty()) {
+            send(player, "§7No events logged yet.");
+            return;
+        }
         StringBuilder sb = new StringBuilder("§6[Guild Log] §f" + g.getName());
         for (Guild.LogEntry e : g.getLog()) {
             String time = new java.text.SimpleDateFormat("MM/dd HH:mm").format(new java.util.Date(e.timestamp()));

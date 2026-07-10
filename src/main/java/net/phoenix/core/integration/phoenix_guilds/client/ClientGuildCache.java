@@ -11,39 +11,48 @@ public final class ClientGuildCache {
 
     private ClientGuildCache() {}
 
-    public static String  guildName    = null;
-    public static UUID    ownerUUID    = null;
-    public static String  motd         = "";
-    public static String  description  = "";
+    public static String guildName = null;
+    public static UUID ownerUUID = null;
+    public static String motd = "";
+    public static String description = "";
     public static boolean friendlyFire = false;
-    public static boolean homeSet      = false;
+    public static boolean homeSet = false;
 
-    public static List<S2CGuildSyncPacket.MemberEntry>  members         = List.of();
-    public static List<S2CGuildSyncPacket.AllyEntry>    allies          = List.of();
+    public static List<S2CGuildSyncPacket.MemberEntry> members = List.of();
+    public static List<S2CGuildSyncPacket.AllyEntry> allies = List.of();
     public static List<S2CGuildSyncPacket.PendingEntry> pendingOutgoing = List.of();
     public static List<S2CGuildSyncPacket.PendingEntry> pendingIncoming = List.of();
-    public static List<S2CGuildSyncPacket.LogEntry>     logEntries      = List.of();
-    public static List<S2CGuildSyncPacket.WikiPage>     wikiPages       = List.of();
-    public static List<S2CGuildSyncPacket.GuildSummary> allGuilds       = List.of();
+    public static List<S2CGuildSyncPacket.LogEntry> logEntries = List.of();
+    public static List<S2CGuildSyncPacket.WikiPage> wikiPages = List.of();
+    public static List<S2CGuildSyncPacket.GuildSummary> allGuilds = List.of();
 
     public static void update(String name, UUID owner, String motdVal, String descVal,
                               boolean ff, boolean hs,
-                              List<S2CGuildSyncPacket.MemberEntry>  memberList,
-                              List<S2CGuildSyncPacket.AllyEntry>    allyList,
+                              List<S2CGuildSyncPacket.MemberEntry> memberList,
+                              List<S2CGuildSyncPacket.AllyEntry> allyList,
                               List<S2CGuildSyncPacket.PendingEntry> outgoing,
                               List<S2CGuildSyncPacket.PendingEntry> incoming,
-                              List<S2CGuildSyncPacket.LogEntry>     log,
-                              List<S2CGuildSyncPacket.WikiPage>     wiki,
+                              List<S2CGuildSyncPacket.LogEntry> log,
+                              List<S2CGuildSyncPacket.WikiPage> wiki,
                               List<S2CGuildSyncPacket.GuildSummary> allList) {
-        guildName    = name;    ownerUUID    = owner;
-        motd         = motdVal; description  = descVal;
-        friendlyFire = ff;      homeSet      = hs;
-        members      = memberList; allies      = allyList;
-        pendingOutgoing = outgoing; pendingIncoming = incoming;
-        logEntries   = log;     wikiPages    = wiki;    allGuilds    = allList;
+        guildName = name;
+        ownerUUID = owner;
+        motd = motdVal;
+        description = descVal;
+        friendlyFire = ff;
+        homeSet = hs;
+        members = memberList;
+        allies = allyList;
+        pendingOutgoing = outgoing;
+        pendingIncoming = incoming;
+        logEntries = log;
+        wikiPages = wiki;
+        allGuilds = allList;
     }
 
-    public static boolean isInGuild() { return guildName != null; }
+    public static boolean isInGuild() {
+        return guildName != null;
+    }
 
     public static boolean isOwner() {
         Minecraft mc = Minecraft.getInstance();
@@ -65,10 +74,18 @@ public final class ClientGuildCache {
     }
 
     public static void clear() {
-        guildName = null; ownerUUID = null; motd = ""; description = "";
-        friendlyFire = false; homeSet = false;
-        members = List.of(); allies = List.of();
-        pendingOutgoing = List.of(); pendingIncoming = List.of();
-        logEntries = List.of(); wikiPages = List.of(); allGuilds = List.of();
+        guildName = null;
+        ownerUUID = null;
+        motd = "";
+        description = "";
+        friendlyFire = false;
+        homeSet = false;
+        members = List.of();
+        allies = List.of();
+        pendingOutgoing = List.of();
+        pendingIncoming = List.of();
+        logEntries = List.of();
+        wikiPages = List.of();
+        allGuilds = List.of();
     }
 }

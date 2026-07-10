@@ -49,16 +49,16 @@ public class ChronicleOverviewScreen extends Screen {
     private static final int C_LINE_DONE = 0x9900CC66;
     private static final int C_LINE_ACTIVE = 0x88FFAA00;
     // Node fill/border — instance fields so they update when the theme changes
-    private int C_NODE_LOCKED   = 0xFF1A1A24;
+    private int C_NODE_LOCKED = 0xFF1A1A24;
     private int C_NODE_UNLOCKED = 0xFF1E1E2C;
-    private int C_NODE_ACTIVE   = 0xFF221C00;
-    private int C_NODE_DONE     = 0xFF081A0E;
-    private int C_NBORD_LOCKED  = 0xFF2E2E40;
-    private int C_NBORD_UNLOCKED= 0xFF4A4A60;
-    private int C_NBORD_ACTIVE  = 0xFFCC9900;
-    private int C_NBORD_DONE    = 0xFF00BB66;
+    private int C_NODE_ACTIVE = 0xFF221C00;
+    private int C_NODE_DONE = 0xFF081A0E;
+    private int C_NBORD_LOCKED = 0xFF2E2E40;
+    private int C_NBORD_UNLOCKED = 0xFF4A4A60;
+    private int C_NBORD_ACTIVE = 0xFFCC9900;
+    private int C_NBORD_DONE = 0xFF00BB66;
     private static final int C_NBORD_SEL = 0xFF6688FF;
-    private int C_NBORD_DEV     = 0xFF8844AA;
+    private int C_NBORD_DEV = 0xFF8844AA;
     private int C_TEXT = 0xFFD8D8E4;
     private int C_TEXT_DIM = 0xFF7A7A8A;
     private int C_TEXT_FAINT = 0xFF404050;
@@ -140,9 +140,9 @@ public class ChronicleOverviewScreen extends Screen {
 
     // ── Tutorial overlay ──────────────────────────────────────────────────────
     // Button hit-boxes computed each frame in renderTutorialOverlay, used in mouseClicked
-    private int[] tutPrevBtn  = null;
-    private int[] tutNextBtn  = null;
-    private int[] tutSkipBtn  = null;
+    private int[] tutPrevBtn = null;
+    private int[] tutNextBtn = null;
+    private int[] tutSkipBtn = null;
 
     // ── Canvas caches ─────────────────────────────────────────────────────────
     private final Map<ResourceLocation, int[]> nodeScreenPos = new LinkedHashMap<>();
@@ -283,16 +283,16 @@ public class ChronicleOverviewScreen extends Screen {
 
         // Node fills — bg tinted toward each state color
         int bg = t.bg.getColor();
-        C_NODE_LOCKED   = blendColor(bg, t.locked.getColor(),      0.18f);
-        C_NODE_UNLOCKED = blendColor(bg, t.border.getColor(),      0.35f);
-        C_NODE_ACTIVE   = blendColor(bg, t.activeColor.getColor(), 0.22f);
-        C_NODE_DONE     = blendColor(bg, t.done.getColor(),        0.18f);
+        C_NODE_LOCKED = blendColor(bg, t.locked.getColor(), 0.18f);
+        C_NODE_UNLOCKED = blendColor(bg, t.border.getColor(), 0.35f);
+        C_NODE_ACTIVE = blendColor(bg, t.activeColor.getColor(), 0.22f);
+        C_NODE_DONE = blendColor(bg, t.done.getColor(), 0.18f);
         // Node borders — straight from theme palette
-        C_NBORD_LOCKED   = blendColor(t.locked.getColor(),      0xFF000000, 0.25f);
-        C_NBORD_UNLOCKED = blendColor(t.border.getColor(),      0xFFFFFFFF, 0.15f);
-        C_NBORD_ACTIVE   = t.activeColor.getColor();
-        C_NBORD_DONE     = t.done.getColor();
-        C_NBORD_DEV      = blendColor(t.accent.getColor(),      0xFFCC44FF, 0.5f);
+        C_NBORD_LOCKED = blendColor(t.locked.getColor(), 0xFF000000, 0.25f);
+        C_NBORD_UNLOCKED = blendColor(t.border.getColor(), 0xFFFFFFFF, 0.15f);
+        C_NBORD_ACTIVE = t.activeColor.getColor();
+        C_NBORD_DONE = t.done.getColor();
+        C_NBORD_DEV = blendColor(t.accent.getColor(), 0xFFCC44FF, 0.5f);
 
         QuestGroupManager.invalidate(); // force reload from disk each time the screen opens
         openTimeMs = System.currentTimeMillis();
@@ -529,7 +529,7 @@ public class ChronicleOverviewScreen extends Screen {
 
     /**
      * Panning fast-path: shifts all existing node buttons by (dx,dy) without
-     * tearing down and recreating every widget.  Much cheaper than rebuild().
+     * tearing down and recreating every widget. Much cheaper than rebuild().
      */
     private void panCanvas(int dx, int dy) {
         int cl = SIDEBAR_W, cr = width;
@@ -541,7 +541,10 @@ public class ChronicleOverviewScreen extends Screen {
             btn.setX(nx);
             btn.setY(ny);
             int[] pos = nodeScreenPos.get(e.getKey());
-            if (pos != null) { pos[0] = nx; pos[1] = ny; }
+            if (pos != null) {
+                pos[0] = nx;
+                pos[1] = ny;
+            }
             btn.visible = nx + sz > cl && nx < cr && ny + sz > HEADER_H && ny < height;
         }
         buildLineCache();
@@ -563,8 +566,8 @@ public class ChronicleOverviewScreen extends Screen {
         if (key == 76 && !ctrl) {
             QuestChroniclesSettings s = QuestChroniclesSettings.get();
             boolean nowSpline = s.isSplineLines();
-            s.setLineStyle(nowSpline ? QuestChroniclesSettings.LineStyle.STRAIGHT
-                    : QuestChroniclesSettings.LineStyle.SPLINE);
+            s.setLineStyle(
+                    nowSpline ? QuestChroniclesSettings.LineStyle.STRAIGHT : QuestChroniclesSettings.LineStyle.SPLINE);
             s.save();
             setFeedback("Line style: " + (nowSpline ? "Straight" : "Spline"));
             return true;
@@ -1928,15 +1931,15 @@ public class ChronicleOverviewScreen extends Screen {
 
         // Drop shadow — shape-matched so it doesn't bleed outside non-square nodes
         switch (shape) {
-            case "CIRCLE"   -> fillCircle  (g, x + 2, y + 2, sz, 0x44000000);
-            case "DIAMOND"  -> fillDiamond (g, x + 2, y + 2, sz, 0x44000000);
-            case "HEXAGON"  -> fillHexagon (g, x + 2, y + 2, sz, 0x44000000);
+            case "CIRCLE" -> fillCircle(g, x + 2, y + 2, sz, 0x44000000);
+            case "DIAMOND" -> fillDiamond(g, x + 2, y + 2, sz, 0x44000000);
+            case "HEXAGON" -> fillHexagon(g, x + 2, y + 2, sz, 0x44000000);
             case "TRIANGLE" -> fillTriangle(g, x + 2, y + 2, sz, 0x44000000);
-            case "STAR"     -> fillStar    (g, x + 2, y + 2, sz, 0x44000000);
+            case "STAR" -> fillStar(g, x + 2, y + 2, sz, 0x44000000);
             case "PENTAGON" -> fillPentagon(g, x + 2, y + 2, sz, 0x44000000);
-            case "SHIELD"   -> fillShield  (g, x + 2, y + 2, sz, 0x44000000);
-            case "CROSS"    -> fillCross   (g, x + 2, y + 2, sz, 0x44000000);
-            default         -> g.fill(x + 2, y + 2, x + sz + 2, y + sz + 2, 0x44000000);
+            case "SHIELD" -> fillShield(g, x + 2, y + 2, sz, 0x44000000);
+            case "CROSS" -> fillCross(g, x + 2, y + 2, sz, 0x44000000);
+            default -> g.fill(x + 2, y + 2, x + sz + 2, y + sz + 2, 0x44000000);
         }
 
         switch (shape) {
@@ -2001,7 +2004,6 @@ public class ChronicleOverviewScreen extends Screen {
         if (!searchQuery.isEmpty() && !matchesSearch(node)) {
             g.fill(x - 1, y - 1, x + sz + 1, y + sz + 1, 0xCC0B0B0F);
         }
-
 
         // LOCKED: diagonal hatch overlay to make inaccessible nodes visually distinct
         if (st == QuestState.LOCKED && !isDevMode) {
@@ -2182,8 +2184,10 @@ public class ChronicleOverviewScreen extends Screen {
         float cp1x, cp1y, cp2x, cp2y;
         if (!spline) {
             // Straight: degenerate bezier with control points at endpoints
-            cp1x = px1; cp1y = py1;
-            cp2x = px2; cp2y = py2;
+            cp1x = px1;
+            cp1y = py1;
+            cp2x = px2;
+            cp2y = py2;
         } else if (adx >= ady) {
             // Mostly horizontal: control points split at x-midpoint, keep each y endpoint
             float mx = (px1 + px2) / 2f;
@@ -3206,7 +3210,9 @@ public class ChronicleOverviewScreen extends Screen {
     }
 
     /** Called by DepLineSettingsScreen to trigger a line-cache rebuild after per-quest hide toggles. */
-    void rebuildFromExternal() { rebuild(); }
+    void rebuildFromExternal() {
+        rebuild();
+    }
 
     /** Saves the hide_dep_line flag for a single quest node to its SNBT file. */
     void saveNodeHideDepLineToDisk(QuestNode node) {
@@ -3379,8 +3385,8 @@ public class ChronicleOverviewScreen extends Screen {
 
         String linkLabel = isLink ? "§7Unmark as link" : "§dMark as link";
         boolean childHidesLines = childNode.isHideDepLine();
-        String hideLabel = childHidesLines ? "§aShow dep lines: " + childNode.getTitle().getString()
-                : "§8Hide dep lines: " + childNode.getTitle().getString();
+        String hideLabel = childHidesLines ? "§aShow dep lines: " + childNode.getTitle().getString() :
+                "§8Hide dep lines: " + childNode.getTitle().getString();
 
         String[] labels = {
                 "§cRemove connection",
@@ -3468,9 +3474,8 @@ public class ChronicleOverviewScreen extends Screen {
             childNode.setHideDepLine(!childNode.isHideDepLine());
             saveNodeHideDepLineToDisk(childNode);
             rebuild();
-            setFeedback(childNode.isHideDepLine()
-                    ? "Dep lines hidden: " + childNode.getTitle().getString()
-                    : "Dep lines shown: " + childNode.getTitle().getString());
+            setFeedback(childNode.isHideDepLine() ? "Dep lines hidden: " + childNode.getTitle().getString() :
+                    "Dep lines shown: " + childNode.getTitle().getString());
         } else if (idx == 4) {
             // Open dep line settings screen
             final String cat = selectedCategory;
@@ -3576,7 +3581,9 @@ public class ChronicleOverviewScreen extends Screen {
     }
 
     private void renderTutorialOverlay(GuiGraphics g, int mx, int my) {
-        tutPrevBtn = null; tutNextBtn = null; tutSkipBtn = null;
+        tutPrevBtn = null;
+        tutNextBtn = null;
+        tutSkipBtn = null;
 
         QuestNode tutQuest = findActiveTutorialQuest();
         if (tutQuest == null) return;
@@ -3593,11 +3600,20 @@ public class ChronicleOverviewScreen extends Screen {
         int hx = 0, hy = 0, hw = 0, hh = 0;
         if (step.hasHighlight()) {
             if (TutorialStep.HL_SIDEBAR.equals(step.highlight())) {
-                hx = 0; hy = 0; hw = SIDEBAR_W; hh = height;
+                hx = 0;
+                hy = 0;
+                hw = SIDEBAR_W;
+                hh = height;
             } else if (TutorialStep.HL_CANVAS.equals(step.highlight())) {
-                hx = cl; hy = HEADER_H; hw = cr - cl; hh = height - HEADER_H;
+                hx = cl;
+                hy = HEADER_H;
+                hw = cr - cl;
+                hh = height - HEADER_H;
             } else if (TutorialStep.HL_TOOLBAR.equals(step.highlight())) {
-                hx = 0; hy = TOOLBAR_Y; hw = width; hh = TOOLBAR_H;
+                hx = 0;
+                hy = TOOLBAR_Y;
+                hw = width;
+                hh = TOOLBAR_H;
             } else if (step.isNodeHighlight()) {
                 String nid = step.nodeHighlightId();
                 if (nid != null) {
@@ -3605,7 +3621,10 @@ public class ChronicleOverviewScreen extends Screen {
                     int[] pos = nodeScreenPos.get(rid);
                     if (pos != null) {
                         int sz = scaledNodeSize();
-                        hx = pos[0] - 4; hy = pos[1] - 4; hw = sz + 8; hh = sz + 8;
+                        hx = pos[0] - 4;
+                        hy = pos[1] - 4;
+                        hw = sz + 8;
+                        hh = sz + 8;
                     }
                 }
             }
@@ -3636,7 +3655,10 @@ public class ChronicleOverviewScreen extends Screen {
         String remaining = step.text();
         int maxLineW = boxW - 20;
         while (!remaining.isEmpty()) {
-            if (font.width(remaining) <= maxLineW) { wrappedLines.add(remaining); break; }
+            if (font.width(remaining) <= maxLineW) {
+                wrappedLines.add(remaining);
+                break;
+            }
             String sub = font.plainSubstrByWidth(remaining, maxLineW);
             int sp = sub.lastIndexOf(' ');
             String lineOut = sp > 0 ? sub.substring(0, sp) : sub;
@@ -3648,9 +3670,7 @@ public class ChronicleOverviewScreen extends Screen {
         int btnRowH = 18;
         int boxH = 14 + textH + 8 + btnRowH + 8;
         // Position above highlight if it's in the lower half, else below
-        int boxY = (hw > 0 && hy + hh > height * 2 / 3)
-                ? hy - boxH - 10
-                : (hw > 0 ? hy + hh + 10 : height - boxH - 20);
+        int boxY = (hw > 0 && hy + hh > height * 2 / 3) ? hy - boxH - 10 : (hw > 0 ? hy + hh + 10 : height - boxH - 20);
         boxY = Math.max(HEADER_H + 4, Math.min(boxY, height - boxH - 4));
 
         g.fill(boxX, boxY, boxX + boxW, boxY + boxH, 0xFF0E0E18);
@@ -3680,7 +3700,7 @@ public class ChronicleOverviewScreen extends Screen {
         // Skip (right-aligned)
         int skipW = font.width("Skip") + 12;
         int skipX = boxX + boxW - skipW - 6;
-        tutSkipBtn = new int[]{skipX, btnY, skipX + skipW, btnY + btnH};
+        tutSkipBtn = new int[] { skipX, btnY, skipX + skipW, btnY + btnH };
         boolean skipHov = mx >= skipX && mx < skipX + skipW && my >= btnY && my < btnY + btnH;
         g.fill(skipX, btnY, skipX + skipW, btnY + btnH, skipHov ? 0x33FFFFFF : 0x1AFFFFFF);
         g.drawCenteredString(font, "§8Skip", skipX + skipW / 2, btnY + 4, skipHov ? C_TEXT_DIM : C_TEXT_FAINT);
@@ -3690,7 +3710,7 @@ public class ChronicleOverviewScreen extends Screen {
         String nextLabel = isLast ? "§aFinish" : "§fNext →";
         int nextW = font.width(isLast ? "Finish" : "Next →") + 16;
         int nextX = skipX - nextW - 4;
-        tutNextBtn = new int[]{nextX, btnY, nextX + nextW, btnY + btnH};
+        tutNextBtn = new int[] { nextX, btnY, nextX + nextW, btnY + btnH };
         boolean nextHov = mx >= nextX && mx < nextX + nextW && my >= btnY && my < btnY + btnH;
         g.fill(nextX, btnY, nextX + nextW, btnY + btnH, nextHov ? 0x55006633 : 0x2A006633);
         g.fill(nextX, btnY, nextX + nextW, btnY + 1, nextHov ? C_NBORD_DONE : 0xFF004422);
@@ -3700,7 +3720,7 @@ public class ChronicleOverviewScreen extends Screen {
         if (stepIdx > 0) {
             int prevW = font.width("← Prev") + 12;
             int prevX = boxX + 6;
-            tutPrevBtn = new int[]{prevX, btnY, prevX + prevW, btnY + btnH};
+            tutPrevBtn = new int[] { prevX, btnY, prevX + prevW, btnY + btnH };
             boolean prevHov = mx >= prevX && mx < prevX + prevW && my >= btnY && my < btnY + btnH;
             g.fill(prevX, btnY, prevX + prevW, btnY + btnH, prevHov ? 0x33FFFFFF : 0x1AFFFFFF);
             g.drawCenteredString(font, "§8← Prev", prevX + prevW / 2, btnY + 4, prevHov ? C_TEXT_DIM : C_TEXT_FAINT);
@@ -3715,18 +3735,18 @@ public class ChronicleOverviewScreen extends Screen {
         if (tutQuest == null) return false;
         String qid = tutQuest.getId().getPath();
 
-        if (tutNextBtn != null && mx >= tutNextBtn[0] && mx < tutNextBtn[2]
-                && my >= tutNextBtn[1] && my < tutNextBtn[3]) {
+        if (tutNextBtn != null && mx >= tutNextBtn[0] && mx < tutNextBtn[2] && my >= tutNextBtn[1] &&
+                my < tutNextBtn[3]) {
             TutorialProgressTracker.advance(qid, tutQuest.getTutorialSteps().size());
             return true;
         }
-        if (tutPrevBtn != null && mx >= tutPrevBtn[0] && mx < tutPrevBtn[2]
-                && my >= tutPrevBtn[1] && my < tutPrevBtn[3]) {
+        if (tutPrevBtn != null && mx >= tutPrevBtn[0] && mx < tutPrevBtn[2] && my >= tutPrevBtn[1] &&
+                my < tutPrevBtn[3]) {
             TutorialProgressTracker.back(qid);
             return true;
         }
-        if (tutSkipBtn != null && mx >= tutSkipBtn[0] && mx < tutSkipBtn[2]
-                && my >= tutSkipBtn[1] && my < tutSkipBtn[3]) {
+        if (tutSkipBtn != null && mx >= tutSkipBtn[0] && mx < tutSkipBtn[2] && my >= tutSkipBtn[1] &&
+                my < tutSkipBtn[3]) {
             TutorialProgressTracker.dismiss(qid);
             return true;
         }

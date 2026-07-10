@@ -39,5 +39,8 @@ public class ResearchTerminalScreen extends Screen {
         }
     }
 
-    @Override public boolean isPauseScreen() { return false; }
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

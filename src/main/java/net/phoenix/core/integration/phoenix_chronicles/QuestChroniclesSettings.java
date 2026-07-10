@@ -49,6 +49,7 @@ public class QuestChroniclesSettings {
     }
 
     public enum LineAnimSpeed {
+
         SLOWEST(120L),
         SLOW(70L),
         NORMAL(35L),
@@ -56,7 +57,10 @@ public class QuestChroniclesSettings {
         VERY_FAST(7L);
 
         public final long divisor;
-        LineAnimSpeed(long d) { this.divisor = d; }
+
+        LineAnimSpeed(long d) {
+            this.divisor = d;
+        }
     }
 
     private TextScale textScale = TextScale.NORMAL;

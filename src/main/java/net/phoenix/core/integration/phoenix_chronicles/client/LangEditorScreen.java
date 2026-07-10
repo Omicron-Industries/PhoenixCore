@@ -615,8 +615,10 @@ public class LangEditorScreen extends Screen {
         return "---\ntitle: \"" + title.replace("\"", "\\\"") + "\"\n---\n\n" + body;
     }
 
-    /** Writes config/phoenix_chronicles/lang/en_us.json from the full registry,
-     *  then back-fills any missing keys in sibling lang files with the English value. */
+    /**
+     * Writes config/phoenix_chronicles/lang/en_us.json from the full registry,
+     * then back-fills any missing keys in sibling lang files with the English value.
+     */
     static void writeEnUsJson(Path base) {
         Map<String, String> lang = new LinkedHashMap<>();
         for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
@@ -648,32 +650,32 @@ public class LangEditorScreen extends Screen {
     @SuppressWarnings("unchecked")
     private static void syncOtherLangFiles(Path langDir, Map<String, String> enUs, Gson gson) {
         try (java.util.stream.Stream<Path> files = Files.list(langDir)) {
-            files.filter(p -> p.getFileName().toString().endsWith(".json")
-                            && !p.getFileName().toString().equals("en_us.json"))
-                 .forEach(langFile -> {
-                     try {
-                         Map<String, String> existing;
-                         if (Files.exists(langFile)) {
-                             String raw = Files.readString(langFile, java.nio.charset.StandardCharsets.UTF_8);
-                             existing = gson.fromJson(raw, LinkedHashMap.class);
-                             if (existing == null) existing = new LinkedHashMap<>();
-                         } else {
-                             existing = new LinkedHashMap<>();
-                         }
-                         boolean changed = false;
-                         for (Map.Entry<String, String> e : enUs.entrySet()) {
-                             if (!existing.containsKey(e.getKey())) {
-                                 existing.put(e.getKey(), e.getValue());
-                                 changed = true;
-                             }
-                         }
-                         if (changed)
-                             Files.writeString(langFile, gson.toJson(existing),
-                                     java.nio.charset.StandardCharsets.UTF_8);
-                     } catch (IOException ex) {
-                         ex.printStackTrace();
-                     }
-                 });
+            files.filter(p -> p.getFileName().toString().endsWith(".json") &&
+                    !p.getFileName().toString().equals("en_us.json"))
+                    .forEach(langFile -> {
+                        try {
+                            Map<String, String> existing;
+                            if (Files.exists(langFile)) {
+                                String raw = Files.readString(langFile, java.nio.charset.StandardCharsets.UTF_8);
+                                existing = gson.fromJson(raw, LinkedHashMap.class);
+                                if (existing == null) existing = new LinkedHashMap<>();
+                            } else {
+                                existing = new LinkedHashMap<>();
+                            }
+                            boolean changed = false;
+                            for (Map.Entry<String, String> e : enUs.entrySet()) {
+                                if (!existing.containsKey(e.getKey())) {
+                                    existing.put(e.getKey(), e.getValue());
+                                    changed = true;
+                                }
+                            }
+                            if (changed)
+                                Files.writeString(langFile, gson.toJson(existing),
+                                        java.nio.charset.StandardCharsets.UTF_8);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    });
         } catch (IOException ex) {
             ex.printStackTrace();
         }

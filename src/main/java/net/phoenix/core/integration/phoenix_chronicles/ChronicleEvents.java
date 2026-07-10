@@ -1,7 +1,5 @@
 package net.phoenix.core.integration.phoenix_chronicles;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
@@ -33,6 +31,7 @@ import net.phoenix.core.network.PhoenixNetwork;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -182,66 +181,88 @@ public class ChronicleEvents {
         // ── Player-accessible subcommands (no permission required) ────────────
         dispatcher.register(Commands.literal("chronicles")
 
-                // /chronicles status <quest>  — check your own quest state
+                // /chronicles status <quest> — check your own quest state
                 .then(Commands.literal("status")
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> {
-                                    if (!(ctx.getSource().getEntity() instanceof net.minecraft.server.level.ServerPlayer sp)) {
+                                    if (!(ctx.getSource()
+                                            .getEntity() instanceof net.minecraft.server.level.ServerPlayer sp)) {
                                         ctx.getSource().sendFailure(Component.literal("Must be run by a player."));
                                         return 0;
                                     }
-                                    String qStr = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "quest");
+                                    String qStr = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
+                                            "quest");
                                     net.minecraft.resources.ResourceLocation questId;
-                                    try { questId = new net.minecraft.resources.ResourceLocation(qStr); }
-                                    catch (Exception e) { ctx.getSource().sendFailure(Component.literal("Invalid quest id: " + qStr)); return 0; }
+                                    try {
+                                        questId = new net.minecraft.resources.ResourceLocation(qStr);
+                                    } catch (Exception e) {
+                                        ctx.getSource().sendFailure(Component.literal("Invalid quest id: " + qStr));
+                                        return 0;
+                                    }
                                     QuestNode node = QuestTreeRegistry.getQuest(questId);
-                                    if (node == null) { ctx.getSource().sendFailure(Component.literal("Quest not found: " + qStr)); return 0; }
+                                    if (node == null) {
+                                        ctx.getSource().sendFailure(Component.literal("Quest not found: " + qStr));
+                                        return 0;
+                                    }
                                     QuestState state = sp.getCapability(
                                             net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider.PLAYER_QUESTS)
                                             .map(d -> d.getQuestState(questId, QuestState.LOCKED))
                                             .orElse(QuestState.LOCKED);
                                     String stateLabel = switch (state) {
                                         case COMPLETED -> "§aCompleted";
-                                        case ACTIVE    -> "§eActive";
-                                        case UNLOCKED  -> "§bAvailable";
-                                        default        -> "§7Locked";
+                                        case ACTIVE -> "§eActive";
+                                        case UNLOCKED -> "§bAvailable";
+                                        default -> "§7Locked";
                                     };
                                     ctx.getSource().sendSuccess(() -> Component.literal(
                                             "Quest \"" + node.getTitle().getString() + "\": " + stateLabel), false);
                                     return 1;
                                 })))
 
-                // /chronicles emergency <quest>  — get emergency items for an active quest
+                // /chronicles emergency <quest> — get emergency items for an active quest
                 .then(Commands.literal("emergency")
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> {
-                                    if (!(ctx.getSource().getEntity() instanceof net.minecraft.server.level.ServerPlayer sp)) {
+                                    if (!(ctx.getSource()
+                                            .getEntity() instanceof net.minecraft.server.level.ServerPlayer sp)) {
                                         ctx.getSource().sendFailure(Component.literal("Must be run by a player."));
                                         return 0;
                                     }
-                                    String qStr = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "quest");
+                                    String qStr = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
+                                            "quest");
                                     net.minecraft.resources.ResourceLocation questId;
-                                    try { questId = new net.minecraft.resources.ResourceLocation(qStr); }
-                                    catch (Exception e) { ctx.getSource().sendFailure(Component.literal("Invalid quest id: " + qStr)); return 0; }
+                                    try {
+                                        questId = new net.minecraft.resources.ResourceLocation(qStr);
+                                    } catch (Exception e) {
+                                        ctx.getSource().sendFailure(Component.literal("Invalid quest id: " + qStr));
+                                        return 0;
+                                    }
                                     QuestNode node = QuestTreeRegistry.getQuest(questId);
-                                    if (node == null) { ctx.getSource().sendFailure(Component.literal("Quest not found: " + qStr)); return 0; }
+                                    if (node == null) {
+                                        ctx.getSource().sendFailure(Component.literal("Quest not found: " + qStr));
+                                        return 0;
+                                    }
                                     QuestState state = sp.getCapability(
                                             net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider.PLAYER_QUESTS)
                                             .map(d -> d.getQuestState(questId, QuestState.LOCKED))
                                             .orElse(QuestState.LOCKED);
                                     if (state != QuestState.ACTIVE) {
-                                        ctx.getSource().sendFailure(Component.literal("Emergency items are only available while the quest is active."));
+                                        ctx.getSource().sendFailure(Component.literal(
+                                                "Emergency items are only available while the quest is active."));
                                         return 0;
                                     }
                                     List<ItemStack> items = node.getEmergencyItems();
                                     if (items.isEmpty()) {
-                                        ctx.getSource().sendFailure(Component.literal("This quest has no emergency items configured."));
+                                        ctx.getSource().sendFailure(
+                                                Component.literal("This quest has no emergency items configured."));
                                         return 0;
                                     }
                                     for (ItemStack stack : items) {
                                         if (!sp.addItem(stack.copy())) sp.drop(stack.copy(), false);
                                     }
-                                    ctx.getSource().sendSuccess(() -> Component.literal("§aGave " + items.size() + " emergency item(s)."), false);
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("§aGave " + items.size() + " emergency item(s)."),
+                                            false);
                                     return 1;
                                 })))
 
@@ -252,38 +273,46 @@ public class ChronicleEvents {
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> devSetState(ctx, QuestState.COMPLETED, null))
-                                .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
+                                .then(Commands
+                                        .argument("player", net.minecraft.commands.arguments.EntityArgument.player())
                                         .executes(ctx -> devSetState(ctx, QuestState.COMPLETED,
-                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx, "player"))))))
+                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
+                                                        "player"))))))
 
                 // /chronicles unlock <quest> [<player>]
                 .then(Commands.literal("unlock")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> devSetState(ctx, QuestState.UNLOCKED, null))
-                                .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
+                                .then(Commands
+                                        .argument("player", net.minecraft.commands.arguments.EntityArgument.player())
                                         .executes(ctx -> devSetState(ctx, QuestState.UNLOCKED,
-                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx, "player"))))))
+                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
+                                                        "player"))))))
 
                 // /chronicles reset <quest> [<player>]
                 .then(Commands.literal("reset")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> devSetState(ctx, QuestState.LOCKED, null))
-                                .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
+                                .then(Commands
+                                        .argument("player", net.minecraft.commands.arguments.EntityArgument.player())
                                         .executes(ctx -> devSetState(ctx, QuestState.LOCKED,
-                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx, "player"))))))
+                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
+                                                        "player"))))))
 
                 // /chronicles active <quest> [<player>]
                 .then(Commands.literal("active")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> devSetState(ctx, QuestState.ACTIVE, null))
-                                .then(Commands.argument("player", net.minecraft.commands.arguments.EntityArgument.player())
+                                .then(Commands
+                                        .argument("player", net.minecraft.commands.arguments.EntityArgument.player())
                                         .executes(ctx -> devSetState(ctx, QuestState.ACTIVE,
-                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx, "player"))))))
+                                                net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
+                                                        "player"))))))
 
-                // /chronicles validate  — reports load errors + common issues
+                // /chronicles validate — reports load errors + common issues
                 .then(Commands.literal("validate")
                         .requires(src -> src.hasPermission(2))
                         .executes(ctx -> {
@@ -299,11 +328,15 @@ public class ChronicleEvents {
                                         QuestTreeRegistry.getAllQuests().size() + " quests loaded cleanly."), false);
                                 return 1;
                             }
-                            ctx.getSource().sendSuccess(() -> Component.literal("§e⚠ " + total + " issue(s) found:"), false);
+                            ctx.getSource().sendSuccess(() -> Component.literal("§e⚠ " + total + " issue(s) found:"),
+                                    false);
                             for (String err : errors)
                                 ctx.getSource().sendSuccess(() -> Component.literal("§c✗ " + err), false);
                             for (String id : noTask)
-                                ctx.getSource().sendSuccess(() -> Component.literal("§7◦ '" + id + "' has no tasks — will auto-complete on unlock."), false);
+                                ctx.getSource()
+                                        .sendSuccess(() -> Component.literal(
+                                                "§7◦ '" + id + "' has no tasks — will auto-complete on unlock."),
+                                                false);
                             return 1;
                         })));
     }
@@ -359,11 +392,9 @@ public class ChronicleEvents {
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
         event.getOriginal().reviveCaps();
-        event.getOriginal().getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(oldData ->
-            event.getEntity().getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(newData ->
-                newData.deserializeNBT(oldData.serializeNBT())
-            )
-        );
+        event.getOriginal().getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
+                .ifPresent(oldData -> event.getEntity().getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
+                        .ifPresent(newData -> newData.deserializeNBT(oldData.serializeNBT())));
         event.getOriginal().invalidateCaps();
     }
 
