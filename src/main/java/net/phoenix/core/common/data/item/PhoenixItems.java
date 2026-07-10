@@ -16,7 +16,6 @@ import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.Tags;
 import net.phoenix.core.common.item.ChameleonSprayCanItem;
 import net.phoenix.core.integration.ars_nouveau.common.data.item.SoulLensItem;
-import net.phoenix.core.integration.phoenix_chronicles.item.ChronicleBookItem;
 
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -30,12 +29,7 @@ public class PhoenixItems {
         REGISTRATE.creativeModeTab(() -> PHOENIX_CREATIVE_TAB);
     }
 
-    public static final ItemEntry<ChronicleBookItem> CHRONICLE_BOOK = REGISTRATE
-            .item("chronicle_book", ChronicleBookItem::new)
-            .lang("§dPhoenix Chronicle")
-            .properties(p -> p.stacksTo(1))
-            .model((ctx, prov) -> prov.generated(ctx, prov.modLoc("item/chronicle_book")))
-            .register();
+
 
     public static ItemEntry<ComponentItem> POWER_UNIT_LUV = REGISTRATE.item("luv_power_unit", ComponentItem::create)
             .lang("LuV Power Unit")

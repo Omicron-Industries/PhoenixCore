@@ -1,41 +1,51 @@
 package net.phoenix.core.common.machine.multiblock.electric.research;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.capability.*;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.capability.IControllable;
+import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
+import com.gregtechceu.gtceu.api.capability.IOpticalComputationProvider;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
-import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.util.TimedProgressSupplier;
-import com.gregtechceu.gtceu.api.gui.widget.ExtendedProgressWidget;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
+
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.sync_system.SyncDataHolder;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+import com.gregtechceu.gtceu.api.sync_system.managed.ISyncManaged;
 import com.gregtechceu.gtceu.api.transfer.fluid.FluidHandlerList;
+import com.gregtechceu.gtceu.common.machine.multiblock.part.MaintenanceHatchPartMachine;
+import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComponentPartMachine;
+import com.gregtechceu.gtceu.common.machine.trait.hpca.HPCAComponentTrait;
+import com.gregtechceu.gtceu.common.machine.trait.hpca.HPCAComputationProviderTrait;
+import com.gregtechceu.gtceu.common.machine.trait.hpca.HPCACoolantProviderTrait;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.common.mui.GTByteBufAdapters;
+import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
+import com.gregtechceu.gtceu.common.mui.GTMultiblockTextUtil;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTTransferUtils;
 import com.gregtechceu.gtceu.utils.GTUtil;
+import com.gregtechceu.gtceu.utils.GTStringUtils;
 
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.lowdragmc.lowdraglib.gui.texture.ProgressTexture;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.syncdata.IManaged;
-import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib.syncdata.field.FieldManagedStorage;
-import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
+import brachy.modularui.api.drawable.IDrawable;
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.screen.RichTooltip;
+import brachy.modularui.value.sync.GenericSyncValue;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Grid;
+
+import net.phoenix.core.configs.PhoenixConfigs;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -43,26 +53,26 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.phoenix.core.api.gui.PhoenixGuiTextures;
-import net.phoenix.core.configs.PhoenixConfigs;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -71,81 +81,67 @@ import static net.phoenix.core.configs.PhoenixConfigs.INSTANCE;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
-                                implements IOpticalComputationProvider, IControllable {
+        implements IOpticalComputationProvider, IControllable {
 
     private static final double IDLE_TEMPERATURE = 200;
     private static final double DAMAGE_TEMPERATURE = 1000;
 
-    private IMaintenanceMachine maintenance;
-    private IEnergyContainer energyContainer;
+    private MaintenanceHatchPartMachine maintenance;
+    private IEnergyContainer energyContainer = new EnergyContainerList(new ArrayList<>());
     private IFluidHandler coolantHandler;
-    @Persisted
-    @DescSynced
-    private final HPCAGridHandler hpcaHandler;
+    @SaveField
+    @SyncToClient
+    private final HPCAGridHandler hpcaHandler = new HPCAGridHandler(this);
 
     private boolean hasNotEnoughEnergy;
 
-    @Persisted
+    @SaveField
     private double temperature = IDLE_TEMPERATURE;
-
-    private final TimedProgressSupplier progressSupplier;
 
     @Nullable
     protected TickableSubscription tickSubs;
 
-    public PhoenixHPCAMachine(IMachineBlockEntity holder, Object... args) {
-        super(holder, args);
-        this.energyContainer = new EnergyContainerList(new ArrayList<>());
-        this.progressSupplier = new TimedProgressSupplier(200, 47, false);
-        this.hpcaHandler = new HPCAGridHandler(this);
+    public PhoenixHPCAMachine(BlockEntityCreationInfo info) {
+        super(info);
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@NotNull String substructureName) {
+        super.formStructure(substructureName);
         List<IEnergyContainer> energyContainers = new ArrayList<>();
         List<IFluidHandler> coolantContainers = new ArrayList<>();
-        List<IHPCAComponentHatch> componentHatches = new ArrayList<>();
-        Long2ObjectMap<IO> ioMap = getMultiblockState().getMatchContext().getOrCreate("ioMap",
-                Long2ObjectMaps::emptyMap);
-        for (IMultiPart part : getParts()) {
-            IO io = ioMap.getOrDefault(part.self().getPos().asLong(), IO.BOTH);
-            if (part instanceof IHPCAComponentHatch componentHatch) {
-                componentHatches.add(componentHatch);
-            }
-            if (part instanceof IMaintenanceMachine maintenanceMachine) {
+        List<HPCAComponentTrait> componentTraits = new ArrayList<>();
+
+        for (MultiblockPartMachine part : getParts()) {
+            componentTraits.addAll(part.self().getTraits(HPCAComponentTrait.TYPE));
+            if (part instanceof MaintenanceHatchPartMachine maintenanceMachine) {
                 this.maintenance = maintenanceMachine;
             }
-            if (io == IO.NONE || io == IO.OUT) continue;
-            var handlerLists = part.getRecipeHandlers();
-            for (var handlerList : handlerLists) {
-                if (!handlerList.isValid(io)) continue;
 
-                handlerList.getCapability(EURecipeCapability.CAP).stream()
+            for (var handlerList : part.getRecipeHandlers()) {
+                Stream<?> euStream = handlerList.getCapability(EURecipeCapability.CAP).stream()
                         .filter(IEnergyContainer.class::isInstance)
-                        .map(IEnergyContainer.class::cast)
-                        .forEach(energyContainers::add);
-                handlerList.getCapability(FluidRecipeCapability.CAP).stream()
+                        .map(IEnergyContainer.class::cast);
+                euStream.forEach(c -> energyContainers.add((IEnergyContainer) c));
+
+                Stream<?> fluidStream = handlerList.getCapability(FluidRecipeCapability.CAP).stream()
                         .filter(IFluidHandler.class::isInstance)
-                        .map(IFluidHandler.class::cast)
-                        .forEach(coolantContainers::add);
+                        .map(IFluidHandler.class::cast);
+                fluidStream.forEach(c -> coolantContainers.add((IFluidHandler) c));
             }
         }
+
         this.energyContainer = new EnergyContainerList(energyContainers);
         this.coolantHandler = new FluidHandlerList(coolantContainers);
-        this.hpcaHandler.onStructureForm(componentHatches);
+        this.hpcaHandler.onStructureForm(componentTraits);
 
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            serverLevel.getServer().tell(new TickTask(0, this::updateTickSubscription));
-        }
+        scheduleForNextServerTick(this::updateTickSubscription);
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            serverLevel.getServer().tell(new TickTask(0, this::updateTickSubscription));
-        }
+        scheduleForNextServerTick(this::updateTickSubscription);
     }
 
     @Override
@@ -167,8 +163,8 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     }
 
     @Override
-    public void onStructureInvalid() {
-        super.onStructureInvalid();
+    public void invalidateStructure(@NotNull String substructureName) {
+        super.invalidateStructure(substructureName);
         this.energyContainer = new EnergyContainerList(new ArrayList<>());
         this.hpcaHandler.onStructureInvalidate();
     }
@@ -242,66 +238,40 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
     }
 
-    @Override
-    public Widget createUIWidget() {
-        WidgetGroup builder = (WidgetGroup) super.createUIWidget();
-        // Create the hover grid
-        builder.addWidget(new ExtendedProgressWidget(
-                () -> hpcaHandler.getAllocatedCWUt() > 0 ? progressSupplier.getAsDouble() : 0,
-                74, 65, 47, 47, PhoenixGuiTextures.PHOENIX_HPCA_COMPONENT_OUTLINE)
-                .setServerTooltipSupplier(hpcaHandler::addInfo)
-                .setFillDirection(ProgressTexture.FillDirection.LEFT_TO_RIGHT));
-        int startX = 76;
-        int startY = 59;
-
-        // we need to know what components we have on the client
-        if (getLevel().isClientSide) {
-            if (isFormed) {
-                hpcaHandler.tryGatherClientComponents(this.getLevel(), this.getPos(), this.getFrontFacing(),
-                        this.getUpwardsFacing(), this.isFlipped);
-            } else {
-                hpcaHandler.clearClientComponents();
+    /**
+     * MUI2 multiblock display widgets. These get appended into the standard multiblock
+     * info panel rather than building a whole standalone ModularPanel ourselves.
+     */
+    public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
+        if (isRemote()) {
+            hpcaHandler.clearClientComponents();
+            if (isFormed()) {
+                hpcaHandler.tryGatherClientComponents(getLevel(), getBlockPos(), getFrontFacing(), getUpwardsFacing(), isFlipped());
             }
         }
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                final int index = i * 3 + j;
-                Supplier<IGuiTexture> textureSupplier = () -> hpcaHandler.getComponentTexture(index);
-                builder.addWidget(new ImageWidget(startX + (15 * j), startY + (15 * i), 13, 13, textureSupplier));
-            }
-        }
-        return builder;
-    }
 
-    @Override
-    public void addDisplayText(List<Component> textList) {
-        MultiblockDisplayText.builder(textList, isFormed())
-                .setWorkingStatus(true, hpcaHandler.getAllocatedCWUt() > 0) // transform into two-state system for
-                // display
-                .setWorkingStatusKeys(
-                        "gtceu.multiblock.idling",
-                        "gtceu.multiblock.idling",
-                        "gtceu.multiblock.data_bank.providing")
-                .addCustom(tl -> {
-                    if (isFormed()) {
-                        // Energy Usage
-                        tl.add(Component.translatable(
-                                "gtceu.multiblock.hpca.energy",
-                                FormattingUtil.formatNumbers(hpcaHandler.cachedEUt),
-                                FormattingUtil.formatNumbers(hpcaHandler.getMaxEUt()),
-                                GTValues.VNF[GTUtil.getTierByVoltage(hpcaHandler.getMaxEUt())])
-                                .withStyle(ChatFormatting.GRAY));
-
-                        // Provided Computation
-                        Component cwutInfo = Component.literal(
-                                hpcaHandler.cachedCWUt + " / " + hpcaHandler.getMaxCWUt() + " CWU/t")
-                                .withStyle(ChatFormatting.AQUA);
-                        tl.add(Component.translatable(
-                                "gtceu.multiblock.hpca.computation",
-                                cwutInfo).withStyle(ChatFormatting.GRAY));
-                    }
+        GenericSyncValue<Component> text = GenericSyncValue.builder(Component.class)
+                .adapter(GTByteBufAdapters.COMPONENT)
+                .getter(() -> {
+                    List<Component> list = new ArrayList<>();
+                    hpcaHandler.addErrors(list);
+                    hpcaHandler.addWarnings(list);
+                    hpcaHandler.addInfo(list);
+                    return GTStringUtils.toComponent(list);
                 })
-                .addWorkingStatusLine();
+                .build();
+        syncManager.syncValue("text", text);
+
+        List<IWidget> widgets = new ArrayList<>();
+        widgets.add(GTMultiblockTextUtil.addUnformedWarning(this, syncManager));
+        widgets.add(GTMultiblockTextUtil.addWorkingStatusLine(this, syncManager));
+        widgets.add(GTMultiblockTextUtil.addEnergyUsageExactLine(this, syncManager));
+        widgets.add(new TextWidget(Text.dynamic(text::getValue)));
+        widgets.add((IWidget) new Grid()
+                .gridOfSizeWidth(9, 3, (x, y, i) -> hpcaHandler.getComponentTexture(i).asWidget()
+                        .tooltip(hpcaHandler.getComponentTooltip(i)))
+                .horizontalCenter());
+        return widgets;
     }
 
     private ChatFormatting getDisplayTemperatureColor() {
@@ -314,48 +284,50 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     }
 
     // Handles the logic of this structure's specific HPCA component grid
-    public static class HPCAGridHandler implements IManaged {
+    public static class HPCAGridHandler implements ISyncManaged {
 
-        public static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(HPCAGridHandler.class);
-        @Getter
-        private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
+        private final SyncDataHolder syncDataHolder = new SyncDataHolder(this);
 
         @Nullable // for testing
         private final PhoenixHPCAMachine controller;
 
         // structure info
-        private final List<IHPCAComponentHatch> components = new ObjectArrayList<>();
-        private final Set<IHPCACoolantProvider> coolantProviders = new ObjectOpenHashSet<>();
-        private final Set<IHPCAComputationProvider> computationProviders = new ObjectOpenHashSet<>();
+        private final List<HPCAComponentTrait> components = new ObjectArrayList<>();
+        private final Set<HPCACoolantProviderTrait> coolantProviders = new ObjectOpenHashSet<>();
+        private final Set<HPCAComputationProviderTrait> computationProviders = new ObjectOpenHashSet<>();
         private int numBridges;
 
         // transaction info
         /** How much CWU/t is currently allocated for this tick. */
-        @Getter
         private int allocatedCWUt;
 
         // cached gui info
         // holding these values past the computation clear because GUI is too "late" to read the state in time
-        @DescSynced
+        @SyncToClient
         private long cachedEUt;
-        @DescSynced
+        @SyncToClient
         private int cachedCWUt;
 
         public HPCAGridHandler(@Nullable PhoenixHPCAMachine controller) {
             this.controller = controller;
         }
 
-        public void onStructureForm(Collection<IHPCAComponentHatch> components) {
+        @Override
+        public @Nullable ISyncManaged getParentSyncObject() {
+            return controller;
+        }
+
+        public void onStructureForm(Collection<HPCAComponentTrait> components) {
             reset();
             for (var component : components) {
                 this.components.add(component);
-                if (component instanceof IHPCACoolantProvider coolantProvider) {
+                if (component instanceof HPCACoolantProviderTrait coolantProvider) {
                     this.coolantProviders.add(coolantProvider);
                 }
-                if (component instanceof IHPCAComputationProvider computationProvider) {
+                if (component instanceof HPCAComputationProviderTrait computationProvider) {
                     this.computationProviders.add(computationProvider);
                 }
-                if (component.isBridge()) {
+                if (component.allowBridging()) {
                     this.numBridges++;
                 }
             }
@@ -380,8 +352,10 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         public void tick() {
             if (cachedCWUt != allocatedCWUt) {
                 cachedCWUt = allocatedCWUt;
+                syncDataHolder.markClientSyncFieldDirty("cachedCWUt");
             }
             cachedEUt = getCurrentEUt();
+            syncDataHolder.markClientSyncFieldDirty("cachedEUt");
             if (allocatedCWUt != 0) {
                 allocatedCWUt = 0;
             }
@@ -492,7 +466,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             // 1% chance each tick to damage a component if running too hot
             if (GTValues.RNG.nextInt(200) == 0) {
                 // randomize which component is actually damaged
-                List<IHPCAComponentHatch> candidates = new ArrayList<>();
+                List<HPCAComponentTrait> candidates = new ArrayList<>();
                 for (var component : components) {
                     if (component.canBeDamaged()) {
                         candidates.add(component);
@@ -541,7 +515,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             if (controller != null && controller.coolantHandler != null) {
                 return (int) Math.max(0, Math.round(maxCWUt * getCoolantCWUMultiplier(controller.coolantHandler)));
             }
-            return (int) Math.max(0, Math.round(maxCWUt));
+            return Math.max(0, maxCWUt);
         }
 
         /** The current EU/t this HPCA should use, considering passive drain, current computation, etc.. */
@@ -563,7 +537,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         public long getUpkeepEUt() {
             long upkeepEUt = 0;
             for (var component : components) {
-                upkeepEUt += component.getUpkeepEUt();
+                upkeepEUt += component.upkeepEUt();
             }
             return upkeepEUt;
         }
@@ -572,7 +546,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         public long getMaxEUt() {
             long maximumEUt = 0;
             for (var component : components) {
-                maximumEUt += component.getMaxEUt();
+                maximumEUt += component.maxEUt();
             }
             return maximumEUt;
         }
@@ -683,22 +657,42 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public void addErrors(List<Component> textList) {
-            if (components.stream().anyMatch(IHPCAComponentHatch::isDamaged)) {
+            if (components.stream().anyMatch(HPCAComponentTrait::isDamaged)) {
                 textList.add(
                         Component.translatable("gtceu.multiblock.hpca.error_damaged").withStyle(ChatFormatting.RED));
             }
         }
 
-        public ResourceTexture getComponentTexture(int index) {
+        /** The icon to display for the component in this slot, or a blank placeholder if the slot is unfilled. */
+        public IDrawable getComponentTexture(int index) {
             if (components.size() <= index) {
-                return GuiTextures.BLANK_TRANSPARENT;
+                return GTGuiTextures.BLANK_TRANSPARENT;
             }
-            return components.get(index).getComponentIcon();
+            MetaMachine machine = components.get(index).getMachine();
+            if (machine instanceof HPCAComponentPartMachine componentPartMachine) {
+                return componentPartMachine.getComponentIcon();
+            }
+            return GTGuiTextures.BLANK_TRANSPARENT;
+        }
+
+        /** The tooltip to display for the component in this slot, or empty if the slot is unfilled. */
+        public RichTooltip getComponentTooltip(int index) {
+            if (components.size() <= index) {
+                return new RichTooltip();
+            }
+            MetaMachine machine = components.get(index).getMachine();
+            if (machine instanceof HPCAComponentPartMachine componentPartMachine) {
+                ItemStack stack = componentPartMachine.getDefinition().asStack();
+                RichTooltip tooltip = new RichTooltip();
+                stack.getTooltipLines((Player) null, TooltipFlag.NORMAL).forEach(tooltip::addLine);
+                return tooltip;
+            }
+            return new RichTooltip();
         }
 
         public void tryGatherClientComponents(Level world, BlockPos pos, Direction frontFacing,
                                               Direction upwardsFacing, boolean flip) {
-            Direction relativeUp = RelativeDirection.UP.getRelative(frontFacing, upwardsFacing, flip);
+            Direction relativeUp = RelativeDirection.UP.getRelativeFacing(frontFacing, upwardsFacing, flip);
 
             if (components.isEmpty()) {
                 BlockPos testPos = pos
@@ -708,16 +702,14 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
                         BlockPos tempPos = testPos.relative(frontFacing, j).relative(relativeUp.getOpposite(), i);
-                        BlockEntity be = world.getBlockEntity(tempPos);
-                        if (be instanceof IHPCAComponentHatch hatch) {
-                            components.add(hatch);
-                        } else if (be instanceof IMachineBlockEntity machineBE) {
-                            MetaMachine machine = machineBE.getMetaMachine();
-                            if (machine instanceof IHPCAComponentHatch hatch) {
-                                components.add(hatch);
+                        MetaMachine machine = MetaMachine.getMachine(world, tempPos);
+                        if (machine != null) {
+                            HPCAComponentTrait trait = machine.getTrait(HPCAComponentTrait.TYPE);
+                            if (trait != null) {
+                                components.add(trait);
                             }
                         }
-                        // if here without a hatch, something went wrong, better to skip than add a null into the mix.
+                        // if here without a trait, something went wrong, better to skip than add a null into the mix.
                     }
                 }
             }
@@ -727,14 +719,12 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             components.clear();
         }
 
-        @Override
-        public ManagedFieldHolder getFieldHolder() {
-            return MANAGED_FIELD_HOLDER;
+        public SyncDataHolder getSyncDataHolder() {
+            return syncDataHolder;
         }
 
-        @Override
-        public void onChanged() {
-            controller.onChanged();
+        public int getAllocatedCWUt() {
+            return allocatedCWUt;
         }
     }
 }

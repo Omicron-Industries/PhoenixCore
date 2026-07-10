@@ -1,8 +1,8 @@
 package net.phoenix.core.mixin.ae2;
 
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
-
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.phoenix.core.api.CustomNameAccess;
 
 import com.glodblock.github.extendedae.container.ContainerRenamer;
@@ -29,25 +29,24 @@ public abstract class MixinContainerRenamer {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void phoenixcore$init(
-                                  int id,
-                                  net.minecraft.world.entity.player.Inventory inv,
-                                  Object host,
-                                  CallbackInfo ci) {
+            int id,
+            net.minecraft.world.entity.player.Inventory inv,
+            Object host,
+            CallbackInfo ci) {
         Object target = phoenixCore$resolveTarget(host, inv.player);
-        if (!(target instanceof IMachineBlockEntity holder)) {
+
+        // FIXED FOR 8.0.0: MetaMachine IS a BlockEntity now.
+        // Cast directly to MetaMachine instead of looking for an MMBE wrapper.
+        if (!(target instanceof MetaMachine machine)) {
             return;
         }
 
-        Object meta = holder.getMetaMachine();
-        if (!(meta instanceof CustomNameAccess access)) {
+        if (!(machine instanceof CustomNameAccess access)) {
             return;
         }
 
-        Consumer<String> setterFn = name -> {
-            try {
-                meta.getClass().getMethod("setCustomName", String.class).invoke(meta, name);
-            } catch (Exception ignored) {}
-        };
+        // FIXED FOR 8.0.0: Bind directly to the CustomNameAccess methods on the machine instance
+        Consumer<String> setterFn = access::phoenix$setCustomName;
 
         phoenixCore$apply(setterFn, access::phoenix$getCustomName);
     }
@@ -66,9 +65,10 @@ public abstract class MixinContainerRenamer {
         }
 
         try {
+            // FIXED FOR 8.0.0: Query the locator context using the standard BlockEntity class filter
             var locate = host.getClass()
                     .getMethod("locate", net.minecraft.world.entity.player.Player.class, Class.class);
-            Object result = locate.invoke(host, player, IMachineBlockEntity.class);
+            Object result = locate.invoke(host, player, BlockEntity.class);
             if (result == null) return host;
 
             try {

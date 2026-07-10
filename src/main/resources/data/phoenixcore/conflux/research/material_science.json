@@ -1,0 +1,111 @@
+{
+  "title": "Material Science",
+  "description": "The study of metals, alloys, and the physical properties of matter.",
+  "nodes": [
+    {
+      "id": "phoenixcore:mat_root",
+      "title": "Material Foundations",
+      "lore": "Every great discovery begins with understanding what things are made of.",
+      "icon": "minecraft:iron_ingot",
+      "position": [0, 0],
+      "prerequisites": [],
+      "cost": { "material": 200 },
+      "unlocks": [
+        { "type": "flag", "value": "mat_foundations" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_alloy_theory",
+      "title": "Alloy Theory",
+      "lore": "Two metals combined can surpass what either achieves alone.",
+      "icon": "gtceu:steel_ingot",
+      "position": [-2, 2],
+      "prerequisites": ["phoenixcore:mat_root"],
+      "cost": { "material": 500 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/basic_alloys" },
+        { "type": "flag", "value": "alloy_theory" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_casting",
+      "title": "Precision Casting",
+      "lore": "Shape is as important as composition.",
+      "icon": "gtceu:casting_mold_ingot",
+      "position": [2, 2],
+      "prerequisites": ["phoenixcore:mat_root"],
+      "cost": { "material": 500 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/casting_recipes" },
+        { "type": "flag", "value": "precision_casting" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_stainless",
+      "title": "Stainless Alloys",
+      "lore": "Resistance to corrosion is the hallmark of advanced metallurgy.",
+      "icon": "gtceu:stainless_steel_ingot",
+      "position": [-2, 4],
+      "prerequisites": ["phoenixcore:mat_alloy_theory"],
+      "cost": { "material": 1200, "energetic": 300 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/stainless_processing" },
+        { "type": "flag", "value": "stainless_alloys" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_titanium_working",
+      "title": "Titanium Working",
+      "lore": "Lightweight and incredibly strong — the metal of the future.",
+      "icon": "gtceu:titanium_ingot",
+      "position": [0, 4],
+      "prerequisites": ["phoenixcore:mat_alloy_theory", "phoenixcore:mat_casting"],
+      "cost": { "material": 1500, "energetic": 500 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/titanium_processing" },
+        { "type": "flag", "value": "titanium_working" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_exotic_path",
+      "title": "Exotic Crystalline Alloys",
+      "lore": "Some materials defy conventional understanding — embrace the anomaly.",
+      "icon": "phoenixcore:aurum_steel_ingot",
+      "position": [-4, 4],
+      "prerequisites": ["phoenixcore:mat_alloy_theory"],
+      "exclusion_group": "mat_advanced_path",
+      "cost": { "material": 2000, "arcane": 800 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/exotic_alloys" },
+        { "type": "flag", "value": "exotic_crystalline" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_conventional_path",
+      "title": "Industrial Refining",
+      "lore": "Proven processes, refined to perfection.",
+      "icon": "gtceu:tungsten_steel_ingot",
+      "position": [-4, 4],
+      "prerequisites": ["phoenixcore:mat_alloy_theory"],
+      "exclusion_group": "mat_advanced_path",
+      "cost": { "material": 2000, "computational": 400 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/industrial_refining" },
+        { "type": "flag", "value": "industrial_refining" }
+      ]
+    },
+    {
+      "id": "phoenixcore:mat_nanotech",
+      "title": "Nanoscale Fabrication",
+      "lore": "At the smallest scales, matter obeys new rules.",
+      "icon": "gtceu:quantum_alloy_ingot",
+      "position": [0, 6],
+      "prerequisites": ["phoenixcore:mat_titanium_working", "phoenixcore:mat_stainless"],
+      "cost": { "material": 4000, "computational": 1500, "energetic": 1000 },
+      "unlocks": [
+        { "type": "recipe_tag", "value": "phoenixcore:research/nanotech" },
+        { "type": "flag", "value": "nanoscale_fabrication" }
+      ]
+    }
+  ]
+}

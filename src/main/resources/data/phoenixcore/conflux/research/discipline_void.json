@@ -1,0 +1,133 @@
+{
+  "title": "The Void",
+  "description": "Before the first thing, there was the space between things. The Void was not empty — it was patient.",
+  "discipline": "void",
+  "switch_cost": { "computational": 50000, "arcane": 30000 },
+  "nodes": [
+    {
+      "id": "phoenixcore:vd_core",
+      "title": "First Silence",
+      "lore": "You notice the absence before the presence. Something is listening back.",
+      "icon": "minecraft:black_stained_glass",
+      "position": [0, 0],
+      "prerequisites": [],
+      "cost": { "arcane": 500 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_awakened" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_near_a",
+      "title": "Event Horizon",
+      "lore": "There is a boundary past which information cannot return. You have located it. You are standing on it.",
+      "icon": "minecraft:crying_obsidian",
+      "position": [-1, 1],
+      "prerequisites": ["phoenixcore:vd_core"],
+      "cost": { "arcane": 1000, "computational": 500 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_event_horizon" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_near_b",
+      "title": "Null Topology",
+      "lore": "The map is not the territory. In sufficient darkness, the map becomes the only territory that matters.",
+      "icon": "minecraft:end_stone",
+      "position": [0, 1],
+      "prerequisites": ["phoenixcore:vd_core"],
+      "cost": { "arcane": 1200 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_null_topology" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_near_c",
+      "title": "Parallax Sight",
+      "lore": "Two eyes see one world. One eye sees two. Beyond the Void's threshold, depth is a negotiation, not a fact.",
+      "icon": "minecraft:ender_eye",
+      "position": [1, 1],
+      "prerequisites": ["phoenixcore:vd_core"],
+      "cost": { "arcane": 800, "computational": 800 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_parallax" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_mid_a",
+      "title": "Gravitational Semantics",
+      "lore": "Mass bends light. Meaning bends space. You are learning to speak in curves.",
+      "icon": "minecraft:dragon_egg",
+      "position": [-1, 2],
+      "prerequisites": ["phoenixcore:vd_near_a", "phoenixcore:vd_null_topology"],
+      "cost": { "arcane": 3000, "computational": 1500 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_gravity_semantics" },
+        { "type": "recipe_tag", "value": "phoenixcore:research/vd_spatial" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_mid_b",
+      "title": "The Wrong Angle",
+      "lore": "Everything you see is slightly off. Not broken — deliberately skewed. Something on the other side prefers you to look this way.",
+      "icon": "minecraft:chorus_fruit",
+      "position": [0, 2],
+      "prerequisites": ["phoenixcore:vd_null_topology", "phoenixcore:vd_near_c"],
+      "cost": { "computational": 2500, "arcane": 1000 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_wrong_angle" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_mid_c",
+      "title": "Occlusion Memory",
+      "lore": "Behind the node is another node. Behind that, another. Objects remember what was behind them before they existed.",
+      "icon": "minecraft:obsidian",
+      "position": [1, 2],
+      "prerequisites": ["phoenixcore:vd_near_c"],
+      "cost": { "arcane": 2000, "computational": 2000 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_occlusion" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_commitment",
+      "title": "The Inversion",
+      "lore": "You step through. On the other side, the terminal is still there, and so are you, and the distance between those two facts has become a question you cannot unask.",
+      "icon": "minecraft:structure_void",
+      "position": [0, 3],
+      "prerequisites": ["phoenixcore:vd_mid_a", "phoenixcore:vd_mid_b", "phoenixcore:vd_mid_c"],
+      "commitment": true,
+      "cost": { "arcane": 20000, "computational": 10000 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_committed" },
+        { "type": "multiblock", "value": "phoenixcore:void_prism" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_apex_a",
+      "title": "Möbius Engine",
+      "lore": "The machine has no outside. You have been inside it since before you found the terminal.",
+      "icon": "gtceu:quantum_star",
+      "position": [-1, 4],
+      "prerequisites": ["phoenixcore:vd_commitment"],
+      "cost": { "arcane": 40000, "computational": 20000 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_mobius" },
+        { "type": "multiblock", "value": "phoenixcore:mobius_reactor" }
+      ]
+    },
+    {
+      "id": "phoenixcore:vd_apex_b",
+      "title": "Ontological Anchor",
+      "lore": "The last question is not 'what is the Void?' The last question is 'what is the thing that defined the Void as Void?' You are that thing now.",
+      "icon": "minecraft:beacon",
+      "position": [1, 4],
+      "prerequisites": ["phoenixcore:vd_commitment"],
+      "cost": { "arcane": 35000, "computational": 25000 },
+      "unlocks": [
+        { "type": "flag", "value": "vd_anchor" },
+        { "type": "multiblock", "value": "phoenixcore:ontological_anchor" }
+      ]
+    }
+  ]
+}

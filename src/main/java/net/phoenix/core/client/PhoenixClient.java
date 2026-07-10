@@ -13,10 +13,17 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.phoenix.core.client.worldfx.WorldFXShaders;
+import com.gregtechceu.gtceu.api.registry.registrate.provider.GTBlockstateProvider;
+import com.gregtechceu.gtceu.data.pack.event.RegisterDynamicResourcesEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.phoenix.core.conflux.ConfluxDataType;
+import net.phoenix.core.conflux.ConfluxRegistry;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -25,8 +32,15 @@ import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.client.particle.PhoenixParticles;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
-import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
-import net.phoenix.core.integration.phoenix_fission.client.NukePrimedRenderer;
+import net.phoenix.core.conflux.client.ConfluxEditorCommand;
+import net.phoenix.core.conflux.tools.capture.SpriteCaptureRegistry;
+import net.phoenix.core.conflux.tools.capture.ExportSpritesCommand;
+import net.phoenix.core.client.command.TerrainPreviewCommand;
+import net.phoenix.core.conflux.tools.capture.bakers.AxiomVoidBaker;
+import net.phoenix.core.conflux.tools.capture.bakers.AxiomPhoenixBaker;
+import net.phoenix.core.conflux.tools.capture.bakers.AxiomSculkBaker;
+import net.phoenix.core.conflux.tools.capture.bakers.AxiomSealedBaker;
+
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
 import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
@@ -41,46 +55,36 @@ public class PhoenixClient {
 
     public static void init(IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
-
-        // Hook VocalVibrancyClient into the client tick so LiveAcousticTracker
-        // fires every tick and sends bass data to the server.
-        // Without this, VocalVibrancyClient.tick() is defined but never called,
-        // meaning no S2CSoundMetadataPacket is ever sent and the machine never
-        // receives live bass data.
         MinecraftForge.EVENT_BUS.register(VocalVibrancyClientTick.class);
-
-        // GTCEu Dynamic Renders
-        DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("plasma_arc_furnace"), PlasmaArcFurnaceRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("custom_fluid"), CustomFluidRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("helical_fusion"), HelicalFusionRenderer.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("honey_chamber"), HoneyChamberDynamicRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("tesla_tower"), TeslaTowerRenderer.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
+        modBus.addListener(PhoenixClient::registerDynamicPipeModels);
+        modBus.addListener(WorldFXShaders::onRegisterShaders);
     }
 
-    // Inner static class keeps the tick handler co-located with the rest of
-    // PhoenixClient rather than scattering it into a separate file.
-    // Registered on the FORGE event bus (not MOD bus) so it fires every game tick.
-    public static class VocalVibrancyClientTick {
+    @SubscribeEvent
+    public static void registerDynamicPipeModels(RegisterDynamicResourcesEvent event) {
+        GTBlockstateProvider provider = GTBlockstateProvider.getCurrentProvider();
+        if (provider == null) return;
+        for (ConfluxDataType dt : ConfluxDataType.values()) {
+            ConfluxRegistry.PIPES.get(dt).get()
+                    .createPipeModel(provider)
+                    .dynamicModel();
+        }
+    }
 
+    public static class VocalVibrancyClientTick {
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
-            // Only tick at END to avoid running twice per tick (START + END both fire)
             if (event.phase != TickEvent.Phase.END) return;
             VocalVibrancyClient.tick();
         }
     }
 
-    // --- PARTICLE FACTORY REGISTRATION ---
     @SubscribeEvent
     public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(PhoenixParticles.TESLA_SPARK.get(), TeslaSparkProvider::new);
     }
 
     public static class TeslaSparkProvider implements ParticleProvider<SimpleParticleType> {
-
         private final SpriteSet sprites;
 
         public TeslaSparkProvider(SpriteSet sprites) {
@@ -99,7 +103,6 @@ public class PhoenixClient {
         }
     }
 
-    // --- MODEL & SETUP LOGIC ---
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(EyeOfHarmonyRender.SPACE_SHELL_MODEL_RL);
@@ -117,11 +120,34 @@ public class PhoenixClient {
 
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
+        DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("plasma_arc_furnace"), PlasmaArcFurnaceRender.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("custom_fluid"), CustomFluidRender.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("helical_fusion"), HelicalFusionRenderer.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("honey_chamber"), HoneyChamberDynamicRender.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("tesla_tower"), TeslaTowerRenderer.TYPE);
+        DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
+
         event.enqueueWork(() -> {
             MenuScreens.register(PhoenixCore.RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
-
-            ItemBlockRenderTypes.setRenderLayer(PhoenixBlocks.COIL_TRUE_HEAT_STABLE.get(), RenderType.cutoutMipped());
-            EntityRenderers.register(PhoenixFissionEntities.NUKE_PRIMED.get(), NukePrimedRenderer::new);
         });
+
+        // Register sprite bakers
+        SpriteCaptureRegistry.register(new AxiomVoidBaker());
+        SpriteCaptureRegistry.register(new AxiomPhoenixBaker());
+        SpriteCaptureRegistry.register(new AxiomSculkBaker());
+        SpriteCaptureRegistry.register(new AxiomSealedBaker());
+    }
+
+    // Nested subscriber specifically targeting Bus.FORGE for client events
+    @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+    public static class ForgeClientEvents {
+        @SubscribeEvent
+        public static void registerClientCommands(RegisterClientCommandsEvent event) {
+            ConfluxEditorCommand.register(event);
+            ExportSpritesCommand.register(event);
+            TerrainPreviewCommand.register(event);
+        }
     }
 }

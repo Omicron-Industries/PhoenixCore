@@ -1,6 +1,6 @@
 package net.phoenix.core.mixin.ae2;
 
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.MEPatternBufferPartMachine;
 
 import net.minecraft.world.InteractionHand;
@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -40,18 +41,18 @@ public class MixinCutterHook {
             return;
         }
 
-        var tile = level.getBlockEntity(hitResult.getBlockPos());
+        // FIXED FOR 8.0.0: Look up the tile block entity directly.
+        BlockEntity tile = level.getBlockEntity(hitResult.getBlockPos());
 
-        if (tile instanceof IMachineBlockEntity machineHolder) {
-            var metaMachine = machineHolder.getMetaMachine();
-
-            if (metaMachine instanceof MEPatternBufferPartMachine bufferMachine) {
-                if (!level.isClientSide) {
-                    MenuOpener.open(ContainerRenamer.TYPE, player, MenuLocators.forBlockEntity(tile));
-                }
-                cir.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide));
+        // FIXED FOR 8.0.0: Because MetaMachine implements BlockEntity natively,
+        // we check the block entity instance against our target machine directly.
+        if (tile instanceof MEPatternBufferPartMachine bufferMachine) {
+            if (!level.isClientSide) {
+                // ExtendedAE/AE2 Menu Locators expect the base Minecraft BlockEntity instance.
+                // Since bufferMachine inherits from BlockEntity, passing it directly works perfectly.
+                MenuOpener.open(ContainerRenamer.TYPE, player, MenuLocators.forBlockEntity(bufferMachine));
             }
-
+            cir.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide));
         }
     }
 }

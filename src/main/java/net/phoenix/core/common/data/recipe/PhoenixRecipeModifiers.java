@@ -5,7 +5,8 @@ import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.chance.logic.ChanceLogic;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
@@ -38,7 +39,7 @@ public class PhoenixRecipeModifiers {
         List<Fluid> recipeFluids = new ArrayList();
 
         for (var content : recipe.getInputContents(FluidRecipeCapability.CAP)) {
-            if (content.content instanceof FluidIngredient fluidIngredient) {
+            if (content.content() instanceof FluidIngredient fluidIngredient) {
                 for (var stack : fluidIngredient.getStacks()) {
                     recipeFluids.add(stack.getFluid());
                 }
@@ -64,7 +65,7 @@ public class PhoenixRecipeModifiers {
                             var inputFluids = modifiedRecipe.inputs.getOrDefault(FluidRecipeCapability.CAP,
                                     new ArrayList<>());
                             inputFluids.add(new Content(FluidIngredient.of(drained), ChanceLogic.getMaxChancedValue(),
-                                    ChanceLogic.getMaxChancedValue(), 0));
+                                    ChanceLogic.getMaxChancedValue()));
                             modifiedRecipe.inputs.put(FluidRecipeCapability.CAP, inputFluids);
                             return modifiedRecipe;
                         };

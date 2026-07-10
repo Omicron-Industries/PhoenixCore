@@ -1,5 +1,5 @@
 {
-    "ldlib": {
-        "connection": "phoenixcore:block/glitched_fusion_casing_ctm"
+    "gtceu": {
+        "connection_texture": "phoenixcore:block/glitched_fusion_casing_ctm"
     }
 }

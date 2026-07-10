@@ -1,21 +1,28 @@
 package net.phoenix.core.common.machine.multiblock.electric;
 
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
-import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -35,33 +42,30 @@ import java.util.Map;
 @SuppressWarnings("all")
 public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultiblockMachine implements ShieldedMachine {
 
-    protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
-            HighPressurePlasmaArcFurnaceMachine.class, WorkableElectricMultiblockMachine.MANAGED_FIELD_HOLDER);
-
     private static final int DECAY_TICK_RATE = 20;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     private Shield.ShieldTypes shieldType = Shield.ShieldTypes.INACTIVE;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     private int shieldHealth = 0;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     private int shieldCooldownTimer = 0;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     private int shieldDecayTimer = DECAY_TICK_RATE;
 
     private final ConditionalSubscriptionHandler shieldHandler;
 
-    @Persisted
+    @SaveField
     private final NotifiableShieldContainer shieldContainer;
 
-    @DescSynced
+    @SyncToClient
     public boolean isPlasmaBoosted = false;
 
     @Nullable
@@ -69,17 +73,14 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
 
     private int consumptionTimer = 0;
 
-    public HighPressurePlasmaArcFurnaceMachine(IMachineBlockEntity holder) {
-        super(holder);
+    public HighPressurePlasmaArcFurnaceMachine(BlockEntityCreationInfo holder) {
+        // FIXED: Pass an explicit RecipeLogic instance to the super constructor
+        super(holder, new RecipeLogic());
 
         this.shieldHandler = new ConditionalSubscriptionHandler(this, this::shieldTick, this::isFormed);
-        this.shieldContainer = new NotifiableShieldContainer(this);
-        this.getTraits().add(this.shieldContainer);
-    }
 
-    @Override
-    public @NotNull ManagedFieldHolder getFieldHolder() {
-        return MANAGED_FIELD_HOLDER;
+        // FIXED: Strip 'this' from the constructor and call attachTrait directly on it
+        this.shieldContainer = attachTrait(new NotifiableShieldContainer());
     }
 
     public Shield.ShieldTypes getShieldType() {
@@ -92,18 +93,18 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
         if (setCooldown) {
             this.shieldCooldownTimer = this.shieldType.shieldCooldownTicks;
         }
-        this.markDirty();
+        if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@org.jetbrains.annotations.NotNull String substructureName) {
+        super.formStructure(substructureName);
         shieldHandler.updateSubscription();
     }
 
     @Override
-    public void onStructureInvalid() {
-        super.onStructureInvalid();
+    public void invalidateStructure(@org.jetbrains.annotations.NotNull String substructureName) {
+        super.invalidateStructure(substructureName);
         shieldHandler.updateSubscription();
     }
 
@@ -120,9 +121,9 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
                     this.shieldType = Shield.ShieldTypes.DECAYED;
                     this.shieldHealth = 0;
                     this.shieldCooldownTimer = this.shieldType.shieldCooldownTicks;
-                    this.markDirty();
+                    if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
                 }
-                this.markDirty();
+                if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
             }
         } else {
             this.shieldDecayTimer = DECAY_TICK_RATE;
@@ -130,7 +131,7 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
 
         if (this.shieldCooldownTimer > 0) {
             this.shieldCooldownTimer--;
-            this.markDirty();
+            if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
         }
     }
 
@@ -258,33 +259,24 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
     }
 
     @Override
-    public void addDisplayText(List<Component> textList) {
-        super.addDisplayText(textList);
-
-        if (isFormed()) {
-            textList.add(Component.translatable("shield.phoenixcore.current_shield",
-                    Component.translatable(this.shieldType.langKey)));
-
-            if (this.shieldType == Shield.ShieldTypes.NORMAL) {
-                textList.add(Component.translatable("shield.phoenixcore.health", this.shieldHealth));
-            }
-
-            if (this.shieldType == Shield.ShieldTypes.DECAYED && this.shieldCooldownTimer > 0) {
-                int seconds = this.shieldCooldownTimer / 20;
-                textList.add(Component.translatable("shield.phoenixcore.cooldown", seconds));
-            }
-
-        }
-
-        textList.add(Component.literal("--------------------"));
-
-        if (this.shieldType == Shield.ShieldTypes.NORMAL) {
-            if (isPlasmaBoosted && activeBoost != null) {
-
-            } else {
-                textList.add(Component.literal("§7No Plasma Catalyst§r"));
-            }
-        }
+    public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
+        List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
+        if (!isFormed()) return widgets;
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.translatable("shield.phoenixcore.current_shield",
+                        Component.translatable(this.shieldType.langKey)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> {
+            if (this.shieldType == Shield.ShieldTypes.NORMAL)
+                return Component.translatable("shield.phoenixcore.health", this.shieldHealth);
+            if (this.shieldType == Shield.ShieldTypes.DECAYED && this.shieldCooldownTimer > 0)
+                return Component.translatable("shield.phoenixcore.cooldown", this.shieldCooldownTimer / 20);
+            return Component.literal("");
+        })));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                (this.shieldType == Shield.ShieldTypes.NORMAL && !isPlasmaBoosted)
+                        ? Component.literal("§7No Plasma Catalyst§r")
+                        : Component.literal(""))));
+        return widgets;
     }
 
     public int getShieldHealth() {

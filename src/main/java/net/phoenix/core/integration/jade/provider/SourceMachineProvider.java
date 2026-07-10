@@ -1,10 +1,11 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+// FIXED FOR 8.0.0: Removed duplicate imports. MetaMachine is now the single target block entity class.
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 
 import net.minecraft.ChatFormatting;
@@ -37,11 +38,11 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity metaBE)) return;
-        MetaMachine machine = null;
+        // FIXED FOR 8.0.0: Accessor directly yields the MetaMachine object
+        if (!(accessor.getBlockEntity() instanceof MetaMachine machine)) return;
+
+        // FIXED: Resolved the broken logical sequence where this check ran while machine was always null
         if (machine instanceof SourceMultiblockTankMachine) return;
-        machine = metaBE.getMetaMachine();
-        if (machine == null) return;
 
         if (machine instanceof IRecipeLogicMachine rlm) {
             var logic = rlm.getRecipeLogic();
@@ -79,7 +80,7 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
                 int totalStored = 0;
                 int totalCap = 0;
                 boolean found = false;
-                for (IMultiPart part : parts) {
+                for (MultiblockPartMachine part : parts) {
                     if (part instanceof ISourceProviderCapability p) {
                         ISourceTile source = p.getSource();
                         if (source != null) {
@@ -100,7 +101,8 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
     private long sumSource(List<com.gregtechceu.gtceu.api.recipe.content.Content> contents) {
         long sum = 0;
         for (var c : contents) {
-            Object inner = c.content;
+            // FIXED FOR 8.0.0: Use the public getter method instead of the private field
+            Object inner = c.content();
             if (inner != null) {
                 sum += SourceRecipeCapability.CAP.of(inner).getSource();
             }
@@ -118,7 +120,12 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         if (!config.get(UID)) return;
+
+        // FIXED FOR 8.0.0: Explicit instance check matching the data rendering framework
+        if (!(accessor.getBlockEntity() instanceof MetaMachine)) return;
+
         CompoundTag data = accessor.getServerData();
+        if (data == null || data.isEmpty()) return;
 
         if (data.contains(KEY_STORED) && data.contains(KEY_CAP)) {
             int stored = data.getInt(KEY_STORED);

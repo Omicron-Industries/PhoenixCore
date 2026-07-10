@@ -1,31 +1,30 @@
 package net.phoenix.core.integration.ae2;
 
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import com.gregtechceu.gtceu.common.machine.trait.ProgrammableCircuitSlotTrait;
+
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.value.sync.StringSyncValue;
+import brachy.modularui.widget.ParentWidget;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
+import com.gregtechceu.gtceu.common.mui.widgets.textfield.TextEditorWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
-import com.gregtechceu.gtceu.api.machine.feature.IHasCircuitSlot;
-import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.integration.ae2.machine.MEBusPartMachine;
 import com.gregtechceu.gtceu.integration.ae2.slot.ExportOnlyAEItemList;
 import com.gregtechceu.gtceu.integration.ae2.slot.ExportOnlyAEItemSlot;
 import com.gregtechceu.gtceu.utils.GTMath;
 
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
-import com.lowdragmc.lowdraglib.utils.Position;
-import com.lowdragmc.lowdraglib.utils.Size;
-
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -43,49 +42,52 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class METagInputBusPartMachine extends MEBusPartMachine
-                                      implements IDataStickInteractable, IMachineLife, IHasCircuitSlot {
-
-    protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
-            METagInputBusPartMachine.class, MEBusPartMachine.MANAGED_FIELD_HOLDER);
+public class METagInputBusPartMachine extends MEBusPartMachine implements IDataStickInteractable {
 
     protected static final int CONFIG_SIZE = 32;
 
-    @Persisted
-    @DescSynced
+    protected final ProgrammableCircuitSlotTrait circuitTrait;
+
+    @SaveField
+    @SyncToClient
     protected ExportOnlyAEItemList aeItemHandler;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     protected String whitelistExpr = "";
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     protected String blacklistExpr = "";
 
     protected int refreshTimer = 0;
 
-    @DescSynced
+    @SyncToClient
     public ItemStack[] previewStacks = new ItemStack[CONFIG_SIZE];
 
-    @DescSynced
+    @SyncToClient
     public long[] previewAmounts = new long[CONFIG_SIZE];
 
-    public METagInputBusPartMachine(IMachineBlockEntity holder, Object... args) {
-        super(holder, IO.IN, args);
+    public METagInputBusPartMachine(BlockEntityCreationInfo info, IO io) {
+        // 1. Instantiate the custom inventory directly inline to satisfy the 3 expected arguments
+        super(info, io, new ExportOnlyAEItemList(CONFIG_SIZE));
+
+        // 2. Safely grab the reference to your custom handler from the superclass storage
+        this.aeItemHandler = (ExportOnlyAEItemList) this.getInventory();
+
+        // 3. Attach your circuit slot trait configuration
+        this.circuitTrait = new ProgrammableCircuitSlotTrait();
+        this.attachPersistentTrait("programmable_circuit", this.circuitTrait);
+
         for (int i = 0; i < CONFIG_SIZE; i++) {
             previewStacks[i] = ItemStack.EMPTY;
         }
     }
 
-    @Override
-    public ManagedFieldHolder getFieldHolder() {
-        return MANAGED_FIELD_HOLDER;
-    }
+
 
     @Override
-    protected NotifiableItemStackHandler createInventory(Object... args) {
-        this.aeItemHandler = new ExportOnlyAEItemList(this, CONFIG_SIZE);
-        return this.aeItemHandler;
+    public NotifiableItemStackHandler getInventory() {
+        return this.aeItemHandler != null ? (NotifiableItemStackHandler) (Object) this.aeItemHandler : super.getInventory();
     }
 
     @Override
@@ -95,8 +97,20 @@ public class METagInputBusPartMachine extends MEBusPartMachine
     }
 
     @Override
-    public void onMachineRemoved() {
+    public void addedToController(MultiblockControllerMachine controller, String substructureName) {
+        super.addedToController(controller, substructureName);
+        if (this.circuitTrait != null) {
+            this.circuitTrait.addedToController(controller);
+        }
+    }
+
+    @Override
+    public void removedFromController(MultiblockControllerMachine controller) {
         flushInventory();
+        super.removedFromController(controller);
+        if (this.circuitTrait != null) {
+            this.circuitTrait.removedFromController(controller);
+        }
     }
 
     protected void flushInventory() {
@@ -160,15 +174,12 @@ public class METagInputBusPartMachine extends MEBusPartMachine
             GenericStack config = aeSlot.getConfig();
 
             if (stock != null && stock.what() instanceof AEItemKey itemKey) {
-
                 previewStacks[i] = itemKey.toStack(1);
                 previewAmounts[i] = stock.amount();
             } else if (config != null && config.what() instanceof AEItemKey configKey) {
-
                 previewStacks[i] = configKey.toStack(1);
                 previewAmounts[i] = 0L;
             } else {
-
                 previewStacks[i] = ItemStack.EMPTY;
                 previewAmounts[i] = 0L;
             }
@@ -177,111 +188,38 @@ public class METagInputBusPartMachine extends MEBusPartMachine
 
     protected boolean isAllowed(AEItemKey key) {
         if (whitelistExpr.isBlank() && blacklistExpr.isBlank()) return false;
-
         if (!blacklistExpr.isBlank() && TagMatcher.doesItemMatch(key, blacklistExpr)) return false;
-
         if (!whitelistExpr.isBlank()) return TagMatcher.doesItemMatch(key, whitelistExpr);
-
         return true;
     }
 
     @Override
-    public @NotNull Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(new Position(0, 0), new Size(176, 220));
-
-        group.addWidget(new LabelWidget(3, 0,
-                () -> this.isOnline ? "gtceu.gui.me_network.online" : "gtceu.gui.me_network.offline"));
-
-        group.addWidget(new ToggleButtonWidget(176 - 45, 0, 40, 16, () -> false, pressed -> {
-            whitelistExpr = "";
-            blacklistExpr = "";
+    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager, UISettings settings) {
+        StringSyncValue whitelistSync = new StringSyncValue(() -> whitelistExpr, val -> {
+            whitelistExpr = val;
             updateConfigurationFromTags();
-        }).setTexture(new GuiTextureGroup(GuiTextures.VANILLA_BUTTON, new TextTexture("Clear")),
-                new GuiTextureGroup(GuiTextures.VANILLA_BUTTON, new TextTexture("Clear"))));
+        });
+        syncManager.syncValue("whitelist", whitelistSync);
 
-        int y = 18;
-        group.addWidget(new LabelWidget(5, y, "Whitelist Tags"));
+        StringSyncValue blacklistSync = new StringSyncValue(() -> blacklistExpr, val -> {
+            blacklistExpr = val;
+            updateConfigurationFromTags();
+        });
+        syncManager.syncValue("blacklist", blacklistSync);
 
-        y += 12;
-
-        group.addWidget(new MultilineTextFieldWidget(5, y, 166, 30,
-                () -> whitelistExpr,
-                val -> {
-                    whitelistExpr = val;
-                    updateConfigurationFromTags();
-                },
-                Component.literal("...")));
-
-        y += 36;
-        group.addWidget(new LabelWidget(5, y, "Blacklist Tags"));
-
-        y += 12;
-        group.addWidget(new MultilineTextFieldWidget(5, y, 166, 30,
-                () -> blacklistExpr,
-                val -> {
-                    blacklistExpr = val;
-                    updateConfigurationFromTags();
-                },
-                Component.literal("...")));
-
-        y += 36;
-        group.addWidget(new LabelWidget(5, y, "Item Preview (Read Only)"));
-
-        y += 15;
-        for (int i = 0; i < CONFIG_SIZE; i++) {
-            int col = i % 8;
-            int row = i / 8;
-
-            group.addWidget(new LargeAmountPreviewWidget(16 + col * 18, y + row * 18, i, this));
-        }
-
-        return group;
-    }
-
-    /**
-     * Specialized widget that renders the icons from previewStacks
-     * but pulls quantity from previewAmounts (Long).
-     */
-    private static class LargeAmountPreviewWidget extends Widget {
-
-        private final int index;
-        private final METagInputBusPartMachine machine;
-
-        public LargeAmountPreviewWidget(int x, int y, int index, METagInputBusPartMachine machine) {
-            super(new Position(x, y), new Size(18, 18));
-            this.index = index;
-            this.machine = machine;
-        }
-
-        @Override
-        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            Position pos = getPosition();
-            GuiTextures.SLOT.draw(graphics, mouseX, mouseY, pos.x, pos.y, 18, 18);
-
-            ItemStack stack = machine.previewStacks[index];
-            if (stack != null && !stack.isEmpty()) {
-                com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawItemStack(graphics, stack, pos.x + 1, pos.y + 1,
-                        0xFFFFFFFF, null);
-
-                long amount = machine.previewAmounts[index];
-                if (amount > 0) {
-                    String amountStr = com.lowdragmc.lowdraglib.gui.util.TextFormattingUtil
-                            .formatLongToCompactString(amount, 4);
-                    com.lowdragmc.lowdraglib.gui.util.DrawerHelper.drawStringFixedCorner(graphics, amountStr,
-                            pos.x + 17, pos.y + 17, 0xFFFFFFFF, true, 0.5f);
-                }
-            }
-        }
-
-        @Override
-        public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            if (isMouseOverElement(mouseX, mouseY)) {
-                ItemStack stack = machine.previewStacks[index];
-                if (stack != null && !stack.isEmpty()) {
-                    graphics.renderTooltip(net.minecraft.client.Minecraft.getInstance().font, stack, mouseX, mouseY);
-                }
-            }
-        }
+        mainWidget.child(Flow.column()
+                .coverChildren()
+                .child(new TextWidget<>(Text.dynamic(() -> isOnline
+                        ? Component.translatable("gtceu.gui.me_network.online")
+                        : Component.translatable("gtceu.gui.me_network.offline"))))
+                .child(new TextWidget<>(Text.of(Component.literal("Whitelist Tags:"))))
+                .child(new TextEditorWidget<>().value(whitelistSync).size(166, 20))
+                .child(new TextWidget<>(Text.of(Component.literal("Blacklist Tags:"))))
+                .child(new TextEditorWidget<>().value(blacklistSync).size(166, 20))
+                .child(new TextWidget<>(Text.dynamic(() ->
+                        Component.literal("Matched Items: " + java.util.Arrays.stream(previewStacks)
+                                .filter(s -> s != null && !s.isEmpty()).count()))))
+        );
     }
 
     protected void updateConfigurationFromTags() {
@@ -340,10 +278,12 @@ public class METagInputBusPartMachine extends MEBusPartMachine
 
     private void notifyUpdate() {
         this.updateInventorySubscription();
-        this.markDirty();
-        if (self().getHolder() != null) {
-            self().getHolder().self().setChanged();
+
+        if (this.getSyncDataHolder() != null) {
+            this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam");
         }
+
+        this.markAsChanged();
     }
 
     @Override
@@ -370,9 +310,7 @@ public class METagInputBusPartMachine extends MEBusPartMachine
 
         if (!isRemote()) {
             readConfigFromTag(dataStick.getTag().getCompound("METagInputBus"));
-
             updateConfigurationFromTags();
-
             player.sendSystemMessage(Component.literal("Settings Pasted successfully."));
         }
         return InteractionResult.sidedSuccess(isRemote());
@@ -391,8 +329,7 @@ public class METagInputBusPartMachine extends MEBusPartMachine
         updateConfigurationFromTags();
     }
 
-    @Override
-    public @NotNull NotifiableItemStackHandler getCircuitInventory() {
-        return circuitInventory;
+    public ProgrammableCircuitSlotTrait getCircuitTrait() {
+        return this.circuitTrait;
     }
 }

@@ -3,10 +3,8 @@ package net.phoenix.core;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialEvent;
-import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialRegistryEvent;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.PostMaterialEvent;
-import com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty;
-import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIconSet;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -16,7 +14,7 @@ import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 
-import com.lowdragmc.lowdraglib.Platform;
+import net.minecraftforge.fml.loading.FMLLoader;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
@@ -26,7 +24,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,9 +33,12 @@ import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import net.phoenix.core.axiom.AxiomRegistry;
-import net.phoenix.core.axiom.research.PlayerResearchCapability;
-import net.phoenix.core.axiom.research.ResearchTreeRegistry;
+import net.phoenix.core.conflux.ConfluxRegistry;
+import net.phoenix.core.conflux.multiblock.ConfluxMultiblockRegistry;
+import net.phoenix.core.conflux.producer.ConfluxProducerMachines;
+import net.phoenix.core.conflux.network.ConfluxNetwork;
+import net.phoenix.core.conflux.research.PlayerResearchCapability;
+import net.phoenix.core.conflux.research.ResearchTreeRegistry;
 import net.phoenix.core.api.PhoenixSounds;
 import net.phoenix.core.api.recipe.lookup.MapShieldIngredient;
 import net.phoenix.core.client.PhoenixClient;
@@ -49,6 +49,7 @@ import net.phoenix.core.common.data.PhoenixRecipeTypes;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.common.data.materials.*;
 import net.phoenix.core.common.data.recipeConditions.FluidInHatchCondition;
+import net.phoenix.core.conflux.research.AxiomResearchCondition;
 import net.phoenix.core.common.data.worldgen.CrystalRoseIndicatorGenerator;
 import net.phoenix.core.common.machine.*;
 import net.phoenix.core.common.machine.multiblock.Shield;
@@ -60,8 +61,7 @@ import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.Source
 import net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons.SoulCondition;
 import net.phoenix.core.integration.ars_nouveau.common.event.SourceHatchJarTransferTick;
 import net.phoenix.core.integration.matter_manipulater.common.data.item.ManipulaterItems;
-import net.phoenix.core.integration.phoenix_fission.api.block.PhoenixFissionEntities;
-import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
+
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.PhoenixTeslaMachines;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderMenu;
 import net.phoenix.core.network.PhoenixNetwork;
@@ -82,10 +82,8 @@ public class PhoenixCore {
     public static final Logger LOGGER = LogManager.getLogger();
     public static GTRegistrate PHOENIX_REGISTRATE = GTRegistrate.create(MOD_ID);
 
-    public static final String PONDER_MOD_ID = "phoenixcore";
-    public static final Set<String> PONDER_NAMESPACES = new HashSet<>();
-    private static boolean ponderInitialized;
-
+    // CHANGED: icon now uses a fully lazy lambda execution () -> ...
+    // This stops PhoenixMachines from classloading during static class discovery.
     public static RegistryEntry<CreativeModeTab> PHOENIX_CREATIVE_TAB = REGISTRATE
             .defaultCreativeTab(PhoenixCore.MOD_ID,
                     builder -> builder
@@ -93,19 +91,26 @@ public class PhoenixCore {
                                     REGISTRATE))
                             .title(REGISTRATE.addLang("itemGroup", PhoenixCore.id("creative_tab"),
                                     "PhoenixCore (CoreMod)"))
-                            .icon(PhoenixMachines.HIGH_YIELD_PHOTON_EMISSION_REGULATOR::asStack)
+                            .icon(() -> PhoenixMachines.HIGH_YIELD_PHOTON_EMISSION_REGULATOR.asStack())
                             .build())
             .register();
 
     public PhoenixCore() {
-        PhoenixCore.init();
-        CrystalRoseIndicatorGenerator.register();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        // Safe setup logic goes here
+        PhoenixConfigs.init();
+        CrystalRoseIndicatorGenerator.register();
+
+        // Ensure Registrate hooks into the mod event bus cycle automatically
+        PHOENIX_REGISTRATE.registerEventListeners(modEventBus);
+
+        // CHANGED: We subscribe to Forge's RegisterEvent to load our classes safely
+        modEventBus.addListener(this::onRegisterBlocksAndItems);
         modEventBus.addListener(this::commonSetup);
 
         PhoenixParticles.init(modEventBus);
-        if (Platform.isClient()) {
+        if (FMLLoader.getDist().isClient()) {
             modEventBus.addListener(PhoenixKeybinds::register);
             PhoenixClient.init(modEventBus);
         }
@@ -114,34 +119,39 @@ public class PhoenixCore {
         modEventBus.addGenericListener(GTRecipeType.class, this::registerRecipeTypes);
         modEventBus.addGenericListener(SoundEntry.class, this::registerSounds);
         modEventBus.addGenericListener(MachineDefinition.class, this::registerMachines);
+        modEventBus.addGenericListener(MaterialIconSet.class, this::registerMaterialIconSets);
 
         modEventBus.addListener(this::addCreative);
-        modEventBus.addListener(this::addMaterialRegistries);
         modEventBus.addListener(this::addMaterials);
         modEventBus.addListener(this::modifyMaterials);
 
         MENUS.register(modEventBus);
 
-        AxiomRegistry.register(modEventBus);
-        modEventBus.addListener(AxiomRegistry::registerCapabilities);
+        ConfluxRegistry.register(modEventBus);
+        modEventBus.addListener(ConfluxRegistry::registerCapabilities);
+        ConfluxNetwork.register();
         modEventBus.addListener(PlayerResearchCapability::register);
 
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new SourceHatchJarTransferTick());
-        MinecraftForge.EVENT_BUS.addListener(PlayerResearchCapability::onAttachCapabilities);
+        MinecraftForge.EVENT_BUS.addGenericListener(net.minecraft.world.entity.Entity.class, PlayerResearchCapability::onAttachCapabilities);
         MinecraftForge.EVENT_BUS.addListener(PlayerResearchCapability::onPlayerClone);
         MinecraftForge.EVENT_BUS.addListener(ResearchTreeRegistry::onAddReloadListeners);
     }
 
-    public static void init() {
-        PhoenixConfigs.init();
-        REGISTRATE.registerRegistrate();
-        PhoenixFissionEntities.init();
+    /**
+     * CHANGED: This replaces your original static init() execution.
+     * This event guarantees that blocks and items load precisely when Forge prepares the registry,
+     * ensuring GregTech CEu Modern layers are fully assigned and populated.
+     */
+    private void onRegisterBlocksAndItems(net.minecraftforge.registries.RegisterEvent event) {
         PhoenixBlocks.init();
         PhoenixItems.init();
         ManipulaterItems.init();
-        PhoenixMaterialFlags.init();
-        PhoenixDatagen.init();
+
+        if (FMLLoader.getDist().isClient()) {
+            PhoenixDatagen.init();
+        }
     }
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES,
@@ -159,19 +169,25 @@ public class PhoenixCore {
         FluidInHatchCondition.TYPE = new RecipeConditionType<>(
                 FluidInHatchCondition::new,
                 FluidInHatchCondition.CODEC);
-        event.register("plasma_temp_condition", FluidInHatchCondition.TYPE);
+        // FIX: Convert the ResourceLocation to a namespace string ("phoenixcore:plasma_temp_condition")
+        event.register(PhoenixCore.id("plasma_temp_condition").toString(), FluidInHatchCondition.TYPE);
 
         SoulCondition.TYPE = new RecipeConditionType<>(
                 SoulCondition::new,
                 SoulCondition.CODEC);
-        event.register("soul_resonance", SoulCondition.TYPE);
+        // FIX: Convert the ResourceLocation to a namespace string ("phoenixcore:soul_resonance")
+        event.register(PhoenixCore.id("soul_resonance").toString(), SoulCondition.TYPE);
+
+        AxiomResearchCondition.TYPE = new RecipeConditionType<>(
+                AxiomResearchCondition::new,
+                AxiomResearchCondition.CODEC);
+        event.register(AxiomResearchCondition.CONDITION_ID, AxiomResearchCondition.TYPE);
     }
 
     @SubscribeEvent
     public void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             PhoenixNetwork.init();
-            net.phoenix.core.integration.phoenix_chronicles.ChroniclesTheme.loadThemes();
 
             MapIngredientTypeManager.registerMapIngredient(Shield.ShieldTypes.class, MapShieldIngredient::from);
             MapIngredientTypeManager.registerMapIngredient(
@@ -180,18 +196,14 @@ public class PhoenixCore {
         });
     }
 
-    // Runs on both client and server — safe because JukeDebugCommand contains
-    // no client-only classes (it only references S2CPlaySoundPacket and
-    // PhoenixNetwork, both of which are dist-neutral).
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        // JukeDebugCommand.register(event.getDispatcher());
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {}
 
-    private void addMaterialRegistries(MaterialRegistryEvent event) {
-        GTCEuAPI.materialManager.createRegistry(MOD_ID);
+    private void registerMaterialIconSets(GTCEuAPI.RegisterEvent<String, MaterialIconSet> event) {
+        PhoenixMaterialSet.init();
     }
 
     private void addMaterials(MaterialEvent event) {
@@ -201,6 +213,7 @@ public class PhoenixCore {
         PhoenixPolymerMaterials.register();
         PhoenixBeeMaterials.register();
         PhoenixFissionMaterials.register();
+        PhoenixMaterialFlags.init();
     }
 
     private void modifyMaterials(PostMaterialEvent event) {
@@ -217,62 +230,10 @@ public class PhoenixCore {
 
     private void registerMachines(GTCEuAPI.RegisterEvent<ResourceLocation, MachineDefinition> event) {
         PhoenixMachines.init();
-        PhoenixFissionMachines.init();
         PhoenixBeeMachines.init();
-        PhoenixResearchMachines.init();
         PhoenixTeslaMachines.init();
-    }
-
-    @SubscribeEvent
-    public void onServerAboutToStart(ServerAboutToStartEvent event) {
-        PhoenixCore.LOGGER.info("🔥 Running Phantasia Blast Furnace & Vacuum Freezer Property Scan...");
-        int blastCount = 0;
-
-        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
-            if (material.hasProperty(PropertyKey.BLAST)) {
-                BlastProperty blastProps = material.getProperty(PropertyKey.BLAST);
-
-                // 1. Core properties matching source getters
-                int blastTemp = blastProps.getBlastTemperature();
-                int durationOverride = blastProps.getDurationOverride();
-                int eutOverride = blastProps.getEUtOverride();
-                int vacuumDuration = blastProps.getVacuumDurationOverride();
-                int vacuumEUt = blastProps.getVacuumEUtOverride();
-
-                // 2. Parse Gas Tier and matching automated recipe ingredients safely
-                BlastProperty.GasTier gasTierEnum = blastProps.getGasTier();
-                String gasTierName = (gasTierEnum != null) ? gasTierEnum.name() : "NONE";
-                String requiredGasFluid = "None";
-
-                if (gasTierEnum != null) {
-                    try {
-                        // Retrieves the underlying ingredient description (e.g. "1000mB Nitrogen")
-                        var fluidIngredient = gasTierEnum.getFluid();
-                        if (fluidIngredient != null && !fluidIngredient.isEmpty()) {
-                            requiredGasFluid = fluidIngredient.toString();
-                        }
-                    } catch (Exception e) {
-                        requiredGasFluid = "Error resolving gas fluid";
-                    }
-                }
-
-                // 3. Log everything cleanly
-                PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
-                        "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
-                        "| Gas Tier: {} | Gas Input Required: {} " +
-                        "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
-                        material.getName(),
-                        blastTemp,
-                        eutOverride,
-                        durationOverride,
-                        gasTierName,
-                        requiredGasFluid,
-                        vacuumEUt,
-                        vacuumDuration);
-                blastCount++;
-            }
-        }
-        PhoenixCore.LOGGER.info("🔥 Blast Scan complete. Successfully logged {} thermodynamic properties.", blastCount);
+        ConfluxProducerMachines.init();
+        ConfluxMultiblockRegistry.init();
     }
 
     public static ResourceLocation id(String path) {

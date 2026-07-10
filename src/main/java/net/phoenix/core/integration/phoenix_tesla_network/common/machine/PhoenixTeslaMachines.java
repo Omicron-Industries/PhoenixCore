@@ -2,23 +2,25 @@ package net.phoenix.core.integration.phoenix_tesla_network.common.machine;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+
 import com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties;
-import com.gregtechceu.gtceu.api.pattern.FactoryBlockPattern;
-import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.multiblock.Predicates;
+import com.gregtechceu.gtceu.api.multiblock.pattern.MultiblockPatternBuilder;
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.registry.registrate.MachineBuilder;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
-import com.gregtechceu.gtceu.common.machine.electric.ChargerMachine;
+import com.gregtechceu.gtceu.common.machine.electric.BatteryBufferMachine;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -35,7 +37,7 @@ import net.phoenix.core.common.registry.PhoenixRegistration;
 import net.phoenix.core.datagen.models.PhoenixMachineModels;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine;
 import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.part.TeslaEnergyHatchPartMachine;
-import net.phoenix.core.integration.phoenix_tesla_network.common.machine.singleblock.electric.TeslaWirelessChargerMachine;
+import net.phoenix.core.integration.phoenix_tesla_network.common.machine.singleblock.electric.TeslaWirelessBatteryBufferMachine;
 
 import java.util.List;
 import java.util.Locale;
@@ -44,8 +46,9 @@ import java.util.function.BiFunction;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.GTValues.VCF;
-import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
-import static com.gregtechceu.gtceu.api.pattern.Predicates.controller;
+
+import static com.gregtechceu.gtceu.api.multiblock.Predicates.blocks;
+import static com.gregtechceu.gtceu.api.multiblock.Predicates.controller;
 import static com.gregtechceu.gtceu.common.data.models.GTMachineModels.createWorkableCasingMachineModel;
 import static net.phoenix.core.common.machine.PhoenixMachines.registerTieredMachines;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
@@ -71,8 +74,8 @@ public class PhoenixTeslaMachines {
             .rotationState(RotationState.ALL)
             .recipeType(PhoenixRecipeTypes.TESLA_TOWER)
             .appearanceBlock(PhoenixBlocks.INSANELY_SUPERCHARGED_TESLA_CASING)
-            .pattern(definition -> FactoryBlockPattern.start()
-                    .aisle("                   ", "                   ", "                   ", "                   ",
+            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+                    .slice("                   ", "                   ", "                   ", "                   ",
                             "       CCCCC       ", "       DDCDD       ", "       DDCDD       ", "       DDCDD       ",
                             "       CCCCC       ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
@@ -86,7 +89,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("                   ", "                   ", "                   ", "                   ",
+                    .slice("                   ", "                   ", "                   ", "                   ",
                             "     CCCEFECCC     ", "     GDD   DDG     ", "     GDD   DDG     ", "     GDD   DDG     ",
                             "     CCCHFHCCC     ", "       F   F       ", "       F   F       ", "       F   F       ",
                             "       F   F       ", "       CCCCC       ", "       DDCDD       ", "       DDCDD       ",
@@ -100,7 +103,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("     IIIIIIIII     ", "                   ", "                   ", "                   ",
+                    .slice("     IIIIIIIII     ", "                   ", "                   ", "                   ",
                             "    CCEEEFEEECC    ", "    DD       DD    ", "    DD       DD    ", "    DD       DD    ",
                             "    CCHHJFJHHCC    ", "                   ", "                   ", "                   ",
                             "                   ", "     CCCEFECCC     ", "     GDD   DDG     ", "     GDD   DDG     ",
@@ -114,7 +117,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("    IIJJJJJJJII    ", "        FJF        ", "        FFF        ", "        FJF        ",
+                    .slice("    IIJJJJJJJII    ", "        FJF        ", "        FFF        ", "        FJF        ",
                             "   CCEEGJJJGEECC   ", "   GD         DG   ", "   GD         DG   ", "   GD         DG   ",
                             "   CCHHJIFIJHHCC   ", "                   ", "                   ", "                   ",
                             "                   ", "    CCEEEFEEECC    ", "    DD       DD    ", "    DD       DD    ",
@@ -128,7 +131,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("   IIJJCCCCCJJII   ", "     J       J     ", "     J       J     ", "     J       J     ",
+                    .slice("   IIJJCCCCCJJII   ", "     J       J     ", "     J       J     ", "     J       J     ",
                             "  CCEJGGJCJGGJECC  ", "  DD           DD  ", "  DD           DD  ", "  DD           DD  ",
                             "  CCHHJIIFIIJHHCC  ", "                   ", "                   ", "                   ",
                             "                   ", "   CCEEIIIIIEECC   ", "   DD         DD   ", "   DD         DD   ",
@@ -142,7 +145,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("  IIJJCCCCCCCJJII  ", "    J         J    ", "    J         J    ", "    J         J    ",
+                    .slice("  IIJJCCCCCCCJJII  ", "    J         J    ", "    J         J    ", "    J         J    ",
                             " CCEJGGJJCJJGGJECC ", " GD             DG ", " GD             DG ", " GD             DG ",
                             " CCHHJIIJJJIIJHHCC ", "         F         ", "         F         ", "         F         ",
                             "         C         ", "  CCEEIIJCJIIEECC  ", "  GD           DG  ", "  GD           DG  ",
@@ -156,7 +159,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("  IJJCCCGGGCCCJJI  ", "                   ", "                   ", "                   ",
+                    .slice("  IJJCCCGGGCCCJJI  ", "                   ", "                   ", "                   ",
                             " CEEGGJJCCCJJGGEEC ", " D               D ", " D               D ", " D               D ",
                             " CHHJIICCGCCIIJHHC ", "        K K        ", "        K K        ", "        K K        ",
                             "        LCL        ", "  CEEIIJCCCJIIEEC  ", "  D             D  ", "  D             D  ",
@@ -170,7 +173,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("  IJCCCGGEGGCCCJI  ", "                   ", "                   ", "                   ",
+                    .slice("  IJCCCGGEGGCCCJI  ", "                   ", "                   ", "                   ",
                             "CCEGGJJJCECJJJGGECC", "DD               DD", "DD               DD", "DD               DD",
                             "CCHJIICEEGEECIIJHCC", " F     D   D     F ", " F     D   D     F ", " F     D   D     F ",
                             " F     ILCLI     F ", " CCEIIJJCECJJIIECC ", " DD             DD ", " DD             DD ",
@@ -184,7 +187,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("  IJCCGGEEEGGCCJI  ", "   F     C     F   ", "   F           F   ", "   F     C     F   ",
+                    .slice("  IJCCGGEEEGGCCJI  ", "   F     C     F   ", "   F           F   ", "   F     C     F   ",
                             "CEEJJJCCEGECCJJJEEC", "D        F        D", "D        F        D", "D        F        D",
                             "CHJIIJCEFIFECJIIJHC", "      K GIG K      ", "      K GIG K      ", "      K GIGCK      ",
                             "      LLLCLLL      ", " CEEIJCCEGECCJIEEC ", " D       F       D ", " D       F       D ",
@@ -198,7 +201,7 @@ public class PhoenixTeslaMachines {
                             "         F         ", "         F         ", "         F         ", "         F         ",
                             "         F         ", "         F         ", "         F         ", "                   ",
                             "                   ")
-                    .aisle("  IJCCGEEEEEGCCJI  ", "   J    CFC    J   ", "   J     M     J   ", "   J    CNC    J   ",
+                    .slice("  IJCCGEEEEEGCCJI  ", "   J    CFC    J   ", "   J     M     J   ", "   J    CNC    J   ",
                             "CFFJCCCEGNGECCCJFFC", "C       FNF       C", "C       FNF       C", "C       FNF       C",
                             "CFFFFJGGINIGGJFFFFC", "     F  INI  F     ", "     F  INI  F     ", "     F  INI  F     ",
                             "     CCCCNCCCC     ", " CFFICCEGNGECCIFFC ", " C      FNF      C ", " C      FNF      C ",
@@ -212,7 +215,7 @@ public class PhoenixTeslaMachines {
                             "        FNF        ", "        FNF        ", "        FNF        ", "        FNF        ",
                             "        FNF        ", "        FNF        ", "        FNF        ", "         N         ",
                             "         N         ")
-                    .aisle("  IJCCGGEEEGGCCJI  ", "   F     C     F   ", "   F           F   ", "   F     C     F   ",
+                    .slice("  IJCCGGEEEGGCCJI  ", "   F     C     F   ", "   F           F   ", "   F     C     F   ",
                             "CEEJJJCCEGECCJJJEEC", "D        F        D", "D        F        D", "D        F        D",
                             "CHJIIJCEFIFECJIIJHC", "      K GIG K      ", "      K GIG K      ", "      K GIG K      ",
                             "      LLLCLLL      ", " CEEIJCCEGECCJIEEC ", " D       F       D ", " D       F       D ",
@@ -226,7 +229,7 @@ public class PhoenixTeslaMachines {
                             "         F         ", "         F         ", "         F         ", "         F         ",
                             "         F         ", "         F         ", "         F         ", "                   ",
                             "                   ")
-                    .aisle("  IJCCCGGEGGCCCJI  ", "                   ", "                   ", "                   ",
+                    .slice("  IJCCCGGEGGCCCJI  ", "                   ", "                   ", "                   ",
                             "CCEGGJJJCECJJJGGECC", "DD               DD", "DD               DD", "DD               DD",
                             "CCHJIICEEGEECIIJHCC", " F     D   D     F ", " F     D   D     F ", " F     D   D     F ",
                             " F     ILCLI     F ", " CCEIIJJCECJJIIECC ", " DD             DD ", " DD             DD ",
@@ -240,7 +243,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("  IJJCCCGGGCCCJJI  ", "                   ", "                   ", "                   ",
+                    .slice("  IJJCCCGGGCCCJJI  ", "                   ", "                   ", "                   ",
                             " CEEGGJJCCCJJGGEEC ", " D               D ", " D               D ", " D               D ",
                             " CHHJIICCGCCIIJHHC ", "        K K        ", "        K K        ", "        K K        ",
                             "        LCL        ", "  CEEIIJCCCJIIEEC  ", "  D             D  ", "  D             D  ",
@@ -254,7 +257,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("  IIJJCCCCCCCJJII  ", "    J         J    ", "    J         J    ", "    J         J    ",
+                    .slice("  IIJJCCCCCCCJJII  ", "    J         J    ", "    J         J    ", "    J         J    ",
                             " CCEJGGJJCJJGGJECC ", " GD             DG ", " GD             DG ", " GD             DG ",
                             " CCHHJIIJJJIIJHHCC ", "         F         ", "         F         ", "         F         ",
                             "         C         ", "  CCEEIIJCJIIEECC  ", "  GD           DG  ", "  GD           DG  ",
@@ -268,7 +271,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("   IIJJCCCCCJJII   ", "     J       J     ", "     J       J     ", "     J       J     ",
+                    .slice("   IIJJCCCCCJJII   ", "     J       J     ", "     J       J     ", "     J       J     ",
                             "  CCEJGGJCJGGJECC  ", "  DD           DD  ", "  DD           DD  ", "  DD           DD  ",
                             "  CCHHJIIFIIJHHCC  ", "                   ", "                   ", "                   ",
                             "                   ", "   CCEEIIIIIEECC   ", "   DD         DD   ", "   DD         DD   ",
@@ -282,7 +285,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("    IIJJJJJJJII    ", "        FJF        ", "        FOF        ", "        FJF        ",
+                    .slice("    IIJJJJJJJII    ", "        FJF        ", "        FOF        ", "        FJF        ",
                             "   CCEEGJJJGEECC   ", "   GD         DG   ", "   GD         DG   ", "   GD         DG   ",
                             "   CCHHJIFIJHHCC   ", "                   ", "                   ", "                   ",
                             "                   ", "    CCEEEFEEECC    ", "    DD       DD    ", "    DD       DD    ",
@@ -296,7 +299,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("     IIIIIIIII     ", "                   ", "                   ", "                   ",
+                    .slice("     IIIIIIIII     ", "                   ", "                   ", "                   ",
                             "    CCEEEFEEECC    ", "    DD       DD    ", "    DD       DD    ", "    DD       DD    ",
                             "    CCHHJFJHHCC    ", "                   ", "                   ", "                   ",
                             "                   ", "     CCCEFECCC     ", "     GDD   DDG     ", "     GDD   DDG     ",
@@ -310,7 +313,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("                   ", "                   ", "                   ", "                   ",
+                    .slice("                   ", "                   ", "                   ", "                   ",
                             "     CCCEFECCC     ", "     GDD   DDG     ", "     GDD   DDG     ", "     GDD   DDG     ",
                             "     CCCHFHCCC     ", "       F   F       ", "       F   F       ", "       F   F       ",
                             "       F   F       ", "       CCCCC       ", "       DDCDD       ", "       DDCDD       ",
@@ -324,7 +327,7 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .aisle("                   ", "                   ", "                   ", "                   ",
+                    .slice("                   ", "                   ", "                   ", "                   ",
                             "       CCCCC       ", "       DDCDD       ", "       DDCDD       ", "       DDCDD       ",
                             "       CCCCC       ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
@@ -338,18 +341,18 @@ public class PhoenixTeslaMachines {
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ", "                   ", "                   ", "                   ",
                             "                   ")
-                    .where(" ", Predicates.any())
-                    .where("C", blocks(PhoenixBlocks.MACHINE_CASING_NAQUADAH_ALLOY.get()))
-                    .where("D", blocks(GTBlocks.CASING_TEMPERED_GLASS.get())
+                    .where(' ', Predicates.any())
+                    .where('C', blocks(PhoenixBlocks.MACHINE_CASING_NAQUADAH_ALLOY.get()))
+                    .where('D', blocks(GTBlocks.CASING_TEMPERED_GLASS.get())
                             .or(blocks(GTBlocks.CASING_LAMINATED_GLASS.get()))
                             .or(blocks(GTBlocks.FUSION_GLASS.get())))
-                    .where("E", Predicates.lampsByColor(DyeColor.PURPLE))
-                    .where("F",
+                    .where('E', PhoenixPredicates.lampsByColor(DyeColor.PURPLE))
+                    .where('F',
                             blocks(ChemicalHelper.getBlock(TagPrefix.frameGt,
                                     PhoenixProgressionMaterials.ADVANCED_QUIN_NAQUADIAN_ALLOY)))
-                    .where("G", Predicates.blocks(PhoenixBlocks.MACHINE_CASING_RHODIUM_PLATED_PALLADIUM.get()))
-                    .where("H", Predicates.lampsByColor(DyeColor.BLACK))
-                    .where("I", blocks(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING.get()))
+                    .where('G', Predicates.blocks(PhoenixBlocks.MACHINE_CASING_RHODIUM_PLATED_PALLADIUM.get()))
+                    .where('H', PhoenixPredicates.lampsByColor(DyeColor.BLACK))
+                    .where('I', blocks(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING.get()))
                     .where('J', blocks(PhoenixBlocks.INSANELY_SUPERCHARGED_TESLA_CASING.get())
                             .or(Predicates.autoAbilities(definition.getRecipeTypes()))
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
@@ -359,7 +362,7 @@ public class PhoenixTeslaMachines {
                                     .setPreviewCount(1)))
                     .where('K', blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get()))
                     .where('L', blocks(PhoenixBlocks.RELIABLE_NAQUADAH_ALLOY_MACHINE_CASING.get()))
-                    .where("M", PhoenixPredicates.teslaBatteries())
+                    .where('M', PhoenixPredicates.teslaBatteries())
                     .where('N', blocks(GTBlocks.COIL_CUPRONICKEL.get()))
                     .where('O', controller(blocks(definition.get())))
                     .build())
@@ -502,14 +505,14 @@ public class PhoenixTeslaMachines {
     public static MachineDefinition[] registerWirelessCharger(
                                                               GTRegistrate registrate,
                                                               String name,
-                                                              BiFunction<IMachineBlockEntity, Integer, TeslaWirelessChargerMachine> factory) {
+                                                              BiFunction<BlockEntityCreationInfo, Integer, TeslaWirelessBatteryBufferMachine> factory) {
         return registerChargerTieredMachines(
                 registrate,
                 name,
                 (holder, tier) -> factory.apply(holder, tier),
                 (tier, builder) -> builder
                         .rotationState(RotationState.ALL)
-                        .modelProperty(GTMachineModelProperties.CHARGER_STATE, ChargerMachine.State.IDLE)
+                        .modelProperty(GTMachineModelProperties.CHARGER_STATE, BatteryBufferMachine.State.IDLE)
                         .model(PhoenixMachineModels.createWirelessChargerModel())
                         .langValue("%s Tesla Wireless Charger".formatted(
                                 VCF[tier] + GTValues.VOLTAGE_NAMES[tier] + ChatFormatting.RESET))
@@ -532,8 +535,8 @@ public class PhoenixTeslaMachines {
     public static MachineDefinition[] registerChargerTieredMachines(
                                                                     GTRegistrate registrate,
                                                                     String name,
-                                                                    BiFunction<IMachineBlockEntity, Integer, MetaMachine> machineFactory,
-                                                                    BiFunction<Integer, MachineBuilder<MachineDefinition, ?>, MachineDefinition> definitionBuilder,
+                                                                    BiFunction<BlockEntityCreationInfo, Integer, MetaMachine> machineFactory,
+                                                                    BiFunction<Integer, MachineBuilder<MachineDefinition, ?, ?>, MachineDefinition> definitionBuilder,
                                                                     int... tiers) {
         MachineDefinition[] definitions = new MachineDefinition[GTValues.TIER_COUNT];
 
@@ -552,7 +555,7 @@ public class PhoenixTeslaMachines {
     public static final MachineDefinition[] TESLA_WIRELESS_CHARGER = registerWirelessCharger(
             PhoenixRegistration.REGISTRATE,
             "tesla_wireless_charger",
-            TeslaWirelessChargerMachine::new);
+            TeslaWirelessBatteryBufferMachine::new);
 
     /*
      * private static MachineDefinition[] registerTeslaEnergyHatch(String name,

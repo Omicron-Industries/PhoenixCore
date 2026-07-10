@@ -1,0 +1,21 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "one",
+    "dstrgb": "zero"
+  },
+  "vertex": "phoenixcore:phoenix_black_hole",
+  "fragment": "phoenixcore:phoenix_black_hole",
+  "samplers": [
+    { "name": "InSampler" }
+  ],
+  "uniforms": [
+    { "name": "OutSize",               "type": "float",  "count": 2,  "values": [1.0, 1.0] },
+    { "name": "BlackHoleScreenPos",    "type": "float",  "count": 2,  "values": [0.5, 0.5] },
+    { "name": "EventHorizonRadius",    "type": "float",  "count": 1,  "values": [0.05] },
+    { "name": "LensingStrength",       "type": "float",  "count": 1,  "values": [0.015] },
+    { "name": "AccretionDiskBrightness","type": "float", "count": 1,  "values": [1.5] },
+    { "name": "AspectRatio",           "type": "float",  "count": 1,  "values": [1.777] },
+    { "name": "Time",                  "type": "float",  "count": 1,  "values": [0.0] }
+  ]
+}

@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.api.data.worldgen.generator.indicators.SurfaceIndic
 import com.gregtechceu.gtceu.api.data.worldgen.ores.GeneratedVeinMetadata;
 import com.gregtechceu.gtceu.api.data.worldgen.ores.OreIndicatorPlacer;
 
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -37,7 +38,7 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
             .group(
                     ((Codec<Either<BlockState, Material>>) Codec.either(
                             BlockState.CODEC,
-                            GTCEuAPI.materialManager.codec())).fieldOf("block").forGetter(ext -> ext.block),
+                            GTRegistries.MATERIALS.codec())).fieldOf("block").forGetter(ext -> ext.block),
                     IntProvider.codec(1, 32).fieldOf("radius").forGetter(ext -> ext.radius),
                     FloatProvider.codec(0.0f, 2.0f).fieldOf("density").forGetter(ext -> ext.density),
                     SurfaceIndicatorGenerator.IndicatorPlacement.CODEC.fieldOf("placement")
@@ -108,7 +109,7 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
 
     private OreIndicatorPlacer createPlacer(WorldGenLevel level, List<BlockPos> positionsWithoutY,
                                             BlockState blockState) {
-        return (access) -> {
+        return (access, random) -> {
             for (BlockPos initialPos : positionsWithoutY) {
                 // 1. Scan down from the open sky using the global level container
                 BlockPos pos = findTrueSurfacePos(level, initialPos);

@@ -1,27 +1,24 @@
 package net.phoenix.core.integration.ae2;
 
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.value.sync.StringSyncValue;
+import brachy.modularui.widget.ParentWidget;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
-import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+import com.gregtechceu.gtceu.common.mui.widgets.textfield.TextEditorWidget;
 import com.gregtechceu.gtceu.integration.ae2.machine.MEHatchPartMachine;
 import com.gregtechceu.gtceu.integration.ae2.slot.ExportOnlyAEFluidList;
 import com.gregtechceu.gtceu.integration.ae2.slot.ExportOnlyAEFluidSlot;
 import com.gregtechceu.gtceu.utils.GTMath;
-
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
-import com.lowdragmc.lowdraglib.utils.Position;
-import com.lowdragmc.lowdraglib.utils.Size;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -39,7 +36,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.phoenix.core.integration.ae2.utils.TagMatcher;
-import net.phoenix.core.integration.ae2.widget.FluidPreviewWidget;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEFluidKey;
@@ -54,60 +50,54 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class METagInputHatchPartMachine extends MEHatchPartMachine
-                                        implements IDataStickInteractable, IMachineLife {
-
-    protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
-            METagInputHatchPartMachine.class,
-            MEHatchPartMachine.MANAGED_FIELD_HOLDER);
+        implements IDataStickInteractable {
 
     protected static final int CONFIG_SIZE = 32;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     protected ExportOnlyAEFluidList aeFluidHandler;
-    @Persisted
+    @SaveField
     private boolean nukeTriggered = false;
 
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     protected String whitelistExpr = "";
-    @Persisted
-    @DescSynced
+    @SaveField
+    @SyncToClient
     protected String blacklistExpr = "";
 
-    @DescSynced
+    @SyncToClient
     public FluidStack[] previewFluids = new FluidStack[CONFIG_SIZE];
 
-    @DescSynced
+    @SyncToClient
     public long[] previewAmounts = new long[CONFIG_SIZE];
 
     protected int refreshTimer = 0;
 
-    public METagInputHatchPartMachine(IMachineBlockEntity holder, Object... args) {
-        super(holder, IO.IN, args);
+    public METagInputHatchPartMachine(BlockEntityCreationInfo holder, Object... args) {
+        super(holder, IO.IN);
         clearPreview();
     }
 
     @Override
-    public ManagedFieldHolder getFieldHolder() {
-        return MANAGED_FIELD_HOLDER;
-    }
-
-    /*
-     * =========================
-     * == LIFECYCLE / TANK ==
-     * =========================
-     */
-
-    @Override
-    protected NotifiableFluidTank createTank(int initialCapacity, int slots, Object... args) {
+    protected NotifiableFluidTank createTank(int initialCapacity, int slots) {
         this.aeFluidHandler = new ExportOnlyAEFluidList(this, CONFIG_SIZE);
         return aeFluidHandler;
     }
 
     @Override
-    public void onMachineRemoved() {
+    public void removedFromController(com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller) {
+        // Triggers the exact second the multiblock structure unforms or breaks
         flushInventory();
+        super.removedFromController(controller);
+    }
+
+    @Override
+    public void onUnload() {
+        // Triggers when the block is broken, or the chunk unloads
+        flushInventory();
+        super.onUnload();
     }
 
     /*
@@ -126,7 +116,7 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
             if (!isRemote() && !nukeTriggered && containsNukeTag()) {
                 nukeTriggered = true;
                 triggerNuke();
-                markDirty();
+                this.markAsChanged();
                 return;
             }
 
@@ -143,9 +133,9 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
     private void triggerNuke() {
         if (!(getLevel() instanceof ServerLevel world)) return;
 
-        double x = getPos().getX() + 0.5;
-        double y = getPos().getY() + 0.5;
-        double z = getPos().getZ() + 0.5;
+        double x = getBlockPos().getX() + 0.5;
+        double y = getBlockPos().getY() + 0.5;
+        double z = getBlockPos().getZ() + 0.5;
 
         float power = 4.0f;
 
@@ -156,7 +146,7 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
                 Level.ExplosionInteraction.BLOCK);
 
         int radius = Mth.clamp((int) Math.ceil(power / 4.0), 1, 3);
-        BlockPos center = getPos();
+        BlockPos center = getBlockPos();
 
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
@@ -300,7 +290,7 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
 
         if (changed) {
             updateTankSubscription();
-            markDirty();
+            this.markAsChanged();
         }
     }
 
@@ -318,54 +308,32 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
      */
 
     @Override
-    public Widget createUIWidget() {
-        WidgetGroup group = new WidgetGroup(new Position(0, 0), new Size(176, 220));
-
-        group.addWidget(new LabelWidget(3, 0,
-                () -> this.isOnline ? "gtceu.gui.me_network.online" : "gtceu.gui.me_network.offline"));
-
-        group.addWidget(new ToggleButtonWidget(176 - 45, 0, 40, 16, () -> false, pressed -> {
-            whitelistExpr = "";
-            blacklistExpr = "";
+    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager, UISettings settings) {
+        StringSyncValue whitelistSync = new StringSyncValue(() -> whitelistExpr, val -> {
+            whitelistExpr = val;
             updateConfigurationFromTags();
-        }).setTexture(new GuiTextureGroup(GuiTextures.VANILLA_BUTTON, new TextTexture("Clear")),
-                new GuiTextureGroup(GuiTextures.VANILLA_BUTTON, new TextTexture("Clear"))));
+        });
+        syncManager.syncValue("whitelist", whitelistSync);
 
-        int y = 18;
-        group.addWidget(new LabelWidget(5, y, "Whitelist Tags"));
+        StringSyncValue blacklistSync = new StringSyncValue(() -> blacklistExpr, val -> {
+            blacklistExpr = val;
+            updateConfigurationFromTags();
+        });
+        syncManager.syncValue("blacklist", blacklistSync);
 
-        y += 12;
-        group.addWidget(new MultilineTextFieldWidget(5, y, 166, 30,
-                () -> whitelistExpr,
-                val -> {
-                    whitelistExpr = val;
-                    updateConfigurationFromTags();
-                },
-                Component.literal("...")));
-
-        y += 36;
-        group.addWidget(new LabelWidget(5, y, "Blacklist Tags"));
-
-        y += 12;
-        group.addWidget(new MultilineTextFieldWidget(5, y, 166, 30,
-                () -> blacklistExpr,
-                val -> {
-                    blacklistExpr = val;
-                    updateConfigurationFromTags();
-                },
-                Component.literal("...")));
-
-        y += 36;
-        group.addWidget(new LabelWidget(5, y, "Fluid Preview (Read Only)"));
-
-        y += 15;
-        for (int i = 0; i < CONFIG_SIZE; i++) {
-            int col = i % 8;
-            int row = i / 8;
-            group.addWidget(new FluidPreviewWidget(16 + col * 18, y + row * 18, i, this));
-        }
-
-        return group;
+        mainWidget.child(Flow.column()
+                .coverChildren()
+                .child(new TextWidget<>(Text.dynamic(() -> isOnline
+                        ? Component.translatable("gtceu.gui.me_network.online")
+                        : Component.translatable("gtceu.gui.me_network.offline"))))
+                .child(new TextWidget<>(Text.of(Component.literal("Whitelist Tags:"))))
+                .child(new TextEditorWidget<>().value(whitelistSync).size(166, 20))
+                .child(new TextWidget<>(Text.of(Component.literal("Blacklist Tags:"))))
+                .child(new TextEditorWidget<>().value(blacklistSync).size(166, 20))
+                .child(new TextWidget<>(Text.dynamic(() ->
+                        Component.literal("Matched Fluids: " + java.util.Arrays.stream(previewFluids)
+                                .filter(f -> f != null && !f.isEmpty()).count()))))
+        );
     }
 
     /*

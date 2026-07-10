@@ -1,25 +1,25 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.item;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import brachy.modularui.factory.PlayerInventoryGuiData;
+import brachy.modularui.screen.ModularPanel;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
+
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
-import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
-
-import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
-import com.lowdragmc.lowdraglib.gui.texture.ColorBorderTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.gregtechceu.gtceu.api.mui.IItemUIHolder;
+import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -35,17 +35,38 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+
 import net.phoenix.core.api.gui.PhoenixGuiTextures;
 import net.phoenix.core.integration.ars_nouveau.client.SoulMapWidget;
 import net.phoenix.core.saveddata.SoulSavedData;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
+/**
+ * MUI2 / GTM 8.0 port of the old MUI1 SoulLensItem.
+ *
+ * Game logic (onItemUseFirst, inventoryTick NBT sync, appendHoverText, etc.) is untouched.
+ * Only the UI layer changed: IItemUIFactory#createUI(...) -> IItemUIHolder#buildUI(...), and every
+ * MUI1 widget (WidgetGroup, LabelWidget, ImageWidget, ColorBorderTexture) replaced with confirmed
+ * MUI2 equivalents.
+ *
+ * Two things from the original were intentionally dropped rather than guessed at:
+ * 1. The 2px black ColorBorderTexture border drawn over the whole panel -- no confirmed
+ *    border-drawable primitive exists in this codebase (same gap as SoulMapWidget's center-cell
+ *    outline). The panel still gets PhoenixGuiTextures.TESLA_BACKGROUND.
+ * 2. The original info-label positions used negative x-offsets (e.g. LabelWidget(-155, 0, ...))
+ *    inside a WidgetGroup placed at x=160, netting to roughly x=5 relative to that group. That
+ *    reads like an MUI1 positioning quirk rather than something to preserve literally; the labels
+ *    below use plain positive offsets relative to their container instead, keeping the same
+ *    visual layout (a small stack of three labels near the left edge of the info panel).
+ */
+public class SoulLensItem extends ComponentItem implements IItemUIHolder, IInteractionItem {
 
-public class SoulLensItem extends ComponentItem implements IItemUIFactory, IInteractionItem {
+    private static final int UI_WIDTH = 220;
+    private static final int UI_HEIGHT = 200;
 
     public SoulLensItem(Properties properties) {
         super(properties);
@@ -72,63 +93,106 @@ public class SoulLensItem extends ComponentItem implements IItemUIFactory, IInte
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player,
                                                            @NotNull InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
+        return super.use(level, player, hand);
+    }
 
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            HeldItemUIFactory.INSTANCE.openUI(new HeldItemUIFactory.HeldItemHolder(player, hand), serverPlayer);
-        }
+    // ------------------------------------------------------------------
+    // MUI2 UI
+    // ------------------------------------------------------------------
 
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+    /**
+     * See TeslaBinderItem's identical override for the full explanation: ComponentItem's own
+     * shouldOpenUI() loops over getComponents() looking for an IItemUIHolder to delegate to. If
+     * this item is ever attached to its own components list during registration, that loop finds
+     * itself and recurses infinitely (confirmed via a StackOverflowError crash on the Tesla Binder
+     * with the same class structure). Overriding it directly here, like buildUI, prevents that
+     * loop from ever being reached.
+     */
+    @Override
+    public boolean shouldOpenUI() {
+        return true;
     }
 
     @Override
-    public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        ItemStack stack = holder.getHeld();
+    public ModularPanel<?> buildUI(PlayerInventoryGuiData<?> guiData, PanelSyncManager panelSyncManager,
+                                   UISettings settings) {
+        Player player = guiData.getPlayer();
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
         CompoundTag tag = stack.getOrCreateTag();
 
-        ModularUI ui = new ModularUI(220, 200, holder, player).background(PhoenixGuiTextures.TESLA_BACKGROUND);
-        ui.widget(new ImageWidget(0, 0, 220, 200, new ColorBorderTexture(2, 0xFF000000)));
-        ui.widget(new LabelWidget(50, 6, "Soul Field Topography").setTextColor(0x8F00FF));
+        ModularPanel<?> panel = ModularPanel.defaultPanel("soul_lens", UI_WIDTH, UI_HEIGHT)
+                .background(PhoenixGuiTextures.TESLA_BACKGROUND);
 
-        WidgetGroup mapBorder = new WidgetGroup(48, 78, 114, 114);
-        mapBorder.setBackground(new ColorBorderTexture(2, 0xFF000000));
+        TextWidget titleText = new TextWidget(Component.literal("Soul Field Topography")
+                .withStyle(Style.EMPTY.withColor(0x8F00FF)));
+        titleText.pos(50, 6);
+        panel.child(titleText);
 
-        WidgetGroup mapGroup = new WidgetGroup(2, 2, 110, 110);
-        mapGroup.setBackground(GuiTextures.DISPLAY);
-        mapGroup.addWidget(new SoulMapWidget(4, 4, stack));
+        // Map box: a fixed-size display panel containing the live density grid.
+        // Using Flow.col() here rather than a bare ParentWidget -- Flow is confirmed concrete and
+        // directly instantiable (used throughout TeslaBinderItem), whereas ParentWidget's own
+        // constructor/abstractness was never directly confirmed in anything I've seen.
+        Flow mapBox = Flow.col();
+        mapBox.pos(48, 78);
+        mapBox.size(114, 114);
+        mapBox.background(GTGuiTextures.DISPLAY);
 
-        mapBorder.addWidget(mapGroup);
-        ui.widget(mapBorder);
+        SoulMapWidget mapWidget = new SoulMapWidget(stack);
+        mapWidget.pos(6, 6);
+        mapBox.child(mapWidget);
 
-        WidgetGroup infoGroup = new WidgetGroup(160, 20, 85, 110);
-        String biomeName = tag.getString("BiomeName");
-        float current = tag.getFloat("CurrentSoul");
-        float max = tag.getFloat("MaxSoul");
+        panel.child(mapBox);
 
-        infoGroup.addWidget(new LabelWidget(-155, 0,
-                "Target: §6" + (biomeName)));
+        // Info box: target biome, density, and status, refreshed live each frame via suppliers.
+        TextWidget biomeLabel = new TextWidget(() -> Component.literal("Target: ")
+                .append(Component.literal(stack.getOrCreateTag().getString("BiomeName"))
+                        .withStyle(ChatFormatting.GOLD)));
+        biomeLabel.pos(160, 20);
 
-        infoGroup.addWidget(new LabelWidget(-155, 20, "Density: §d" + String.format("%.2fx", current)));
-        infoGroup.addWidget(new LabelWidget(-155, 40, "Status: " + getStatusString(current, max)));
+        TextWidget densityLabel = new TextWidget(() -> {
+            float current = stack.getOrCreateTag().getFloat("CurrentSoul");
+            return Component.literal("Density: ")
+                    .append(Component.literal(String.format("%.2fx", current))
+                            .withStyle(ChatFormatting.LIGHT_PURPLE));
+        });
+        densityLabel.pos(160, 40);
 
-        ui.widget(infoGroup);
-        return ui;
+        TextWidget statusLabel = new TextWidget(() -> {
+            float current = stack.getOrCreateTag().getFloat("CurrentSoul");
+            float max = stack.getOrCreateTag().getFloat("MaxSoul");
+            return Component.literal("Status: ").append(getStatusComponent(current, max));
+        });
+        statusLabel.pos(160, 60);
+
+        panel.child(biomeLabel);
+        panel.child(densityLabel);
+        panel.child(statusLabel);
+
+        return panel;
     }
 
-    private String getStatusString(float current, float max) {
-        if (max <= 0) return "§7Unknown";
+    private Component getStatusComponent(float current, float max) {
+        if (max <= 0) {
+            return Component.literal("Unknown").withStyle(ChatFormatting.GRAY);
+        }
         float percentage = current / max;
-        if (percentage >= 0.90f) return "§aVibrant";
-        if (percentage >= 0.40f) return "§bStable";
-        return "§cDepleted";
+        if (percentage >= 0.90f) {
+            return Component.literal("Vibrant").withStyle(ChatFormatting.GREEN);
+        }
+        if (percentage >= 0.40f) {
+            return Component.literal("Stable").withStyle(ChatFormatting.AQUA);
+        }
+        return Component.literal("Depleted").withStyle(ChatFormatting.RED);
     }
+
+    // ------------------------------------------------------------------
+    // Game logic (unchanged from the MUI1 version)
+    // ------------------------------------------------------------------
 
     @Override
     public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slotId,
                               boolean isSelected) {
         if (level.isClientSide || !(entity instanceof ServerPlayer player)) return;
-
-        boolean isUIOpen = player.containerMenu instanceof ModularUIContainer;
 
         CompoundTag tag = stack.getOrCreateTag();
         SoulSavedData data = SoulSavedData.get((ServerLevel) level);

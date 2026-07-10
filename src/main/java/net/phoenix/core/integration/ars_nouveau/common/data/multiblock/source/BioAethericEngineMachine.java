@@ -1,22 +1,25 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.ITieredMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -25,6 +28,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.api.recipe.PhoenixRecipeModifier;
 import net.phoenix.core.saveddata.SoulSavedData;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,15 +40,23 @@ import java.util.List;
 public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine implements ITieredMachine {
 
     @Getter
+    @SaveField
+    @SyncToClient
     private float lastBotanicalBoost = 0.0f;
 
-    public BioAethericEngineMachine(IMachineBlockEntity holder) {
-        super(holder);
-    }
+    @SaveField
+    @SyncToClient
+    private float cachedSoulDensity = 0.0f;
 
-    @Persisted
+    @SaveField
     private int dynamoTier = GTValues.HV;
     private long maxHatchOutput = 0;
+
+    private int scanTimer = 0;
+
+    public BioAethericEngineMachine(BlockEntityCreationInfo info) {
+        super(info);
+    }
 
     @Override
     public int getTier() {
@@ -49,11 +64,12 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@NotNull String substructureName) {
+        super.formStructure(substructureName);
         detectDynamoTier();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            this.lastBotanicalBoost = calculateFloraBoost(serverLevel, getPos());
+            this.lastBotanicalBoost = calculateFloraBoost(serverLevel, getBlockPos());
+            this.cachedSoulDensity = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(getBlockPos()));
         }
     }
 
@@ -64,7 +80,7 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
         var parts = getParts();
         if (parts == null) return;
 
-        for (IMultiPart part : parts) {
+        for (MultiblockPartMachine part : parts) {
             var handlers = part.getRecipeHandlers();
             if (handlers == null) continue;
 
@@ -114,7 +130,7 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
     }
 
     private float getFloraBoost(BlockState state) {
-        String registryName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
+        String registryName = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
 
         switch (registryName) {
             case "ars_nouveau:whirlisprig_flower":
@@ -124,7 +140,7 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
             case "ars_nouveau:sourceberry_bush":
                 return 0.05f;
             default:
-                if (state.is(net.minecraft.tags.BlockTags.FLOWERS)) {
+                if (state.is(BlockTags.FLOWERS)) {
                     return 0.01f;
                 }
                 return 0.0f;
@@ -138,8 +154,7 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
 
         float baseSoul = 1.0f;
         if (engine.getLevel() instanceof ServerLevel serverLevel) {
-
-            baseSoul = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(engine.getPos()));
+            baseSoul = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(engine.getBlockPos()));
         }
 
         float totalResonance = baseSoul + engine.getLastBotanicalBoost();
@@ -159,8 +174,6 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
                 .build();
     }
 
-    private int scanTimer = 0;
-
     @Override
     public boolean onWorking() {
         boolean isWorking = super.onWorking();
@@ -169,8 +182,8 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
             scanTimer++;
             if (scanTimer >= 200) {
                 if (getLevel() instanceof ServerLevel level) {
-                    this.lastBotanicalBoost = calculateFloraBoost(level, getPos());
-                    this.markDirty();
+                    this.lastBotanicalBoost = calculateFloraBoost(level, getBlockPos());
+                    this.cachedSoulDensity = SoulSavedData.get(level).getMultiplier(new ChunkPos(getBlockPos()));
                 }
                 scanTimer = 0;
             }
@@ -179,28 +192,22 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
     }
 
     @Override
-    public void addDisplayText(List<Component> textList) {
-        super.addDisplayText(textList);
-        if (!isFormed()) return;
-
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            float baseSoul = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(getPos()));
-            float totalResonance = baseSoul + lastBotanicalBoost;
-
-            textList.add(Component.literal("§7-".repeat(15)));
-            textList.add(Component.literal("§5Aetheric Analysis:"));
-            textList.add(Component.literal("  §7Chunk Base Soul: §d" + String.format("%.2f", baseSoul)));
-            textList.add(Component.literal("  §7Flora Bonus: §b+" + String.format("%.2f", lastBotanicalBoost)));
-
-            boolean isNight = serverLevel.isNight();
-            String timeStatus = isNight ? "§aActive (1.25x)" : "§6Dormant";
-            textList.add(Component.literal("  §7Veil Status: " + timeStatus));
-
-            textList.add(Component.literal("  §eTotal EU Multiplier: §l" + String.format("%.2fx", totalResonance)));
-
-            if (lastBotanicalBoost > 1.0f) {
-                textList.add(Component.literal("§b§l» SOUL SATURATED «"));
-            }
-        }
+    public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
+        List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
+        if (!isFormed()) return widgets;
+        widgets.add(new TextWidget<>(Text.of(Component.literal("§5Aetheric Analysis:"))));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §7Chunk Base Soul: §d" + String.format("%.2f", cachedSoulDensity)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §7Flora Bonus: §b+" + String.format("%.2f", lastBotanicalBoost)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> {
+            boolean isNight = getLevel() != null && getLevel().isNight();
+            return Component.literal("  §7Veil Status: " + (isNight ? "§aActive (1.25x)" : "§6Dormant"));
+        })));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §eTotal EU Multiplier: §l" + String.format("%.2fx", cachedSoulDensity + lastBotanicalBoost)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                lastBotanicalBoost > 1.0f ? Component.literal("§b§l» SOUL SATURATED «") : Component.literal(""))));
+        return widgets;
     }
 }

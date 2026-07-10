@@ -1,6 +1,6 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -50,12 +51,15 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity metaBE)) return;
-        if (!(metaBE.getMetaMachine() instanceof BasicThreadedMachine imbuer)) return;
+        // Fix: Resolved machine using the universal O(1) 8.0.0 lookup pattern
+        MetaMachine machine = MetaMachine.getMachine(accessor.getLevel(), accessor.getPosition());
+        if (!(machine instanceof BasicThreadedMachine imbuer)) return;
 
         BasicThreadedMachine.RecipeThread[] threads = imbuer.getThreads();
 
         ListTag threadsList = new ListTag();
+        HolderLookup.Provider registries = accessor.getLevel().registryAccess();
+
         for (int i = 0; i < threads.length; i++) {
             BasicThreadedMachine.RecipeThread thread = threads[i];
             if (!thread.isActive() || thread.recipe == null) continue;
@@ -65,7 +69,7 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
             threadTag.putFloat("Progress", thread.getProgressPercent());
             threadTag.putLong("CurrentTick", thread.progress);
             threadTag.putLong("MaxTick", thread.duration);
-            captureOutputs(threadTag, thread.recipe);
+            captureOutputs(threadTag, thread.recipe, registries);
             threadsList.add(threadTag);
         }
 
@@ -74,30 +78,30 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
         }
     }
 
-    private void captureOutputs(CompoundTag tag, GTRecipe recipe) {
+    private void captureOutputs(CompoundTag tag, GTRecipe recipe, HolderLookup.Provider registries) {
         int tier = RecipeHelper.getPreOCRecipeEuTier(recipe);
-        int chanceTier = tier + recipe.ocLevel;
-        var function = recipe.getType().getChanceFunction();
         int runs = recipe.getTotalRuns();
 
         ListTag itemTags = new ListTag();
         for (var out : recipe.getOutputContents(ItemRecipeCapability.CAP)) {
             CompoundTag itemTag = new CompoundTag();
-            if (out.content instanceof IntProviderIngredient provider) {
+            if (out.content() instanceof IntProviderIngredient provider) {
                 IntProviderIngredient chanced = provider;
-                if (out.chance < out.maxChance) {
-                    double countD = (double) runs * function.getBoostedChance(out, tier, chanceTier) / out.maxChance;
+                if (out.chance() < out.maxChance()) {
+                    double countD = (double) runs * out.chance() / out.maxChance();
                     chanced = (IntProviderIngredient) ItemRecipeCapability.CAP.copyWithModifier(provider,
                             ContentModifier.multiplier(countD));
                 }
                 itemTag = (CompoundTag) JsonOps.INSTANCE.convertTo(NbtOps.INSTANCE, chanced.toJson());
             } else {
-                ItemStack[] stacks = ItemRecipeCapability.CAP.of(out.content).getItems();
+                ItemStack[] stacks = ItemRecipeCapability.CAP.of(out.content()).getItems();
                 if (stacks.length == 0 || stacks[0].isEmpty()) continue;
-                GTUtil.saveItemStack(stacks[0], itemTag);
-                if (out.chance < out.maxChance) {
-                    double countD = (double) stacks[0].getCount() * runs *
-                            function.getBoostedChance(out, tier, chanceTier) / out.maxChance;
+
+                itemTag = new CompoundTag();
+                stacks[0].save(itemTag);
+
+                if (out.chance() < out.maxChance()) {
+                    double countD = (double) stacks[0].getCount() * runs * out.chance() / out.maxChance();
                     itemTag.putInt("Count", Math.max(1, (int) Math.round(countD)));
                 }
             }
@@ -108,21 +112,20 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
         ListTag fluidTags = new ListTag();
         for (var out : recipe.getOutputContents(FluidRecipeCapability.CAP)) {
             CompoundTag fluidTag = new CompoundTag();
-            if (out.content instanceof IntProviderFluidIngredient provider) {
+            if (out.content() instanceof IntProviderFluidIngredient provider) {
                 IntProviderFluidIngredient chanced = provider;
-                if (out.chance < out.maxChance) {
-                    double countD = (double) runs * function.getBoostedChance(out, tier, chanceTier) / out.maxChance;
+                if (out.chance() < out.maxChance()) {
+                    double countD = (double) runs * out.chance() / out.maxChance();
                     chanced = (IntProviderFluidIngredient) FluidRecipeCapability.CAP.copyWithModifier(provider,
                             ContentModifier.multiplier(countD));
                 }
                 fluidTag = chanced.toNBT();
             } else {
-                FluidStack[] stacks = FluidRecipeCapability.CAP.of(out.content).getStacks();
+                FluidStack[] stacks = FluidRecipeCapability.CAP.of(out.content()).getStacks();
                 if (stacks.length == 0 || stacks[0].isEmpty()) continue;
                 stacks[0].writeToNBT(fluidTag);
-                if (out.chance < out.maxChance) {
-                    double amountD = (double) stacks[0].getAmount() * runs *
-                            function.getBoostedChance(out, tier, chanceTier) / out.maxChance;
+                if (out.chance() < out.maxChance()) {
+                    double amountD = (double) stacks[0].getAmount() * runs * out.chance() / out.maxChance();
                     fluidTag.putInt("Amount", Math.max(1, (int) Math.round(amountD)));
                 }
             }
@@ -140,6 +143,7 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
         if (threadsNbt.isEmpty()) return;
 
         IElementHelper helper = tooltip.getElementHelper();
+        HolderLookup.Provider registries = accessor.getLevel().registryAccess();
 
         for (int i = 0; i < threadsNbt.size(); i++) {
             CompoundTag tag = threadsNbt.getCompound(i);
@@ -169,11 +173,12 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
                 List<Ingredient> items = new ArrayList<>();
                 for (Tag it : tag.getList("OutputItems", Tag.TAG_COMPOUND)) {
                     CompoundTag ct = (CompoundTag) it;
-                    if (ct.contains("count_provider")) {
+                    if (ct.contains("count_provider") || ct.contains("ingredient")) {
                         items.add(IntProviderIngredient.SERIALIZER.parse(
                                 (JsonObject) NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, ct)));
                     } else {
-                        ItemStack stack = GTUtil.loadItemStack(ct);
+                        // Fix: Load stack cleanly through registry tokens
+                        ItemStack stack = ItemStack.of(ct);
                         if (!stack.isEmpty()) items.add(SizedIngredient.create(stack));
                     }
                 }

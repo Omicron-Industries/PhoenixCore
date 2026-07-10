@@ -5,6 +5,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
@@ -24,11 +25,16 @@ import static net.phoenix.core.common.data.materials.PhoenixFissionMaterials.CRY
 public class CrystalRoseAssemblerGenerator {
 
     public static void generateCrystalRoseRecipes(Consumer<FinishedRecipe> provider) {
+        if (CRYO_GRAPHITE_BINDING_SOLUTION == null || CRYO_GRAPHITE_BINDING_SOLUTION == GTMaterials.NULL) return;
+
+        FluidStack crystalRoseFluid = CRYO_GRAPHITE_BINDING_SOLUTION.getFluid(144);
+        if (crystalRoseFluid.isEmpty()) return;
+
         BeeRecipeData.ALL_BEE_CONFIGS.forEach((id, config) -> {
 
             Material material = getMaterial(id);
 
-            if (material == null || material.isNull()) return;
+            if (material == null || material == GTMaterials.NULL) return;
 
             ItemStack inputStack = ChemicalHelper.get(TagPrefix.dust, material, 4);
 
@@ -41,10 +47,8 @@ public class CrystalRoseAssemblerGenerator {
             ItemStack roseStack = ChemicalHelper.get(PhoenixMaterialFlags.crystal_rose, material, 1);
             if (roseStack.isEmpty()) return;
 
-            FluidStack crystalRoseFluid = CRYO_GRAPHITE_BINDING_SOLUTION.getFluid(144);
-
             GTRecipeBuilder builder = GTRecipeTypes.ASSEMBLER_RECIPES.recipeBuilder(
-                    "phoenixcore:crystal_rose_" + material.getName())
+                            "phoenixcore:crystal_rose_" + material.getName())
                     .EUt(GTValues.V[GTValues.IV])
                     .duration(200)
                     .inputItems(inputStack)
@@ -56,7 +60,7 @@ public class CrystalRoseAssemblerGenerator {
     }
 
     private static Material getMaterial(String id) {
-        if (id == null || id.isEmpty()) return null;
+        if (id == null || id.isEmpty()) return GTMaterials.NULL;
 
         switch (id) {
             case "fluorite" -> {
@@ -109,20 +113,22 @@ public class CrystalRoseAssemblerGenerator {
             }
         }
 
-        Material mat = GTCEuAPI.materialManager.getMaterial(id);
+        // Standardize lookups to lowercase to protect ResourceLocation.tryParse allocations
+        String normalizedId = id.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+        Material mat = GTRegistries.MATERIALS.get(normalizedId);
 
-        if (mat == null) {
-            String capitalized = id.substring(0, 1).toUpperCase() + id.substring(1);
-            mat = GTCEuAPI.materialManager.getMaterial(capitalized);
+        // Fixed validation check: verify against GTMaterials.NULL instead of a raw java null pointer
+        if (mat == null || mat == GTMaterials.NULL) {
+            mat = GTRegistries.MATERIALS.get(id.toLowerCase());
         }
 
-        return mat;
+        return mat != null ? mat : GTMaterials.NULL;
     }
 
     public static void linkCrystalRoseFlags() {
         BeeRecipeData.ALL_BEE_CONFIGS.forEach((id, config) -> {
             Material material = getMaterial(id);
-            if (material != null && !material.isNull()) {
+            if (material != null && material != GTMaterials.NULL) {
                 material.addFlags(PhoenixMaterialFlags.GENERATE_CRYSTAL_ROSE);
             }
         });

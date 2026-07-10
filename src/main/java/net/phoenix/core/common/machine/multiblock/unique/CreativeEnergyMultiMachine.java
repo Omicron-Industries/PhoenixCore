@@ -1,7 +1,7 @@
 package net.phoenix.core.common.machine.multiblock.unique;
 
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 
 import net.minecraft.server.level.ServerLevel;
 import net.phoenix.core.saveddata.CreativeEnergySavedData;
@@ -13,7 +13,7 @@ public class CreativeEnergyMultiMachine extends UniqueWorkableElectricMultiblock
 
     private final ConditionalSubscriptionHandler creativeEnergySubscription;
 
-    public CreativeEnergyMultiMachine(IMachineBlockEntity holder, Object... args) {
+    public CreativeEnergyMultiMachine(BlockEntityCreationInfo holder, Object... args) {
         super(holder, args);
 
         this.creativeEnergySubscription = new ConditionalSubscriptionHandler(this, this::tickEnableCreativeEnergy,
@@ -21,8 +21,8 @@ public class CreativeEnergyMultiMachine extends UniqueWorkableElectricMultiblock
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@org.jetbrains.annotations.NotNull String substructureName) {
+        super.formStructure(substructureName);
         creativeEnergySubscription.updateSubscription();
     }
 
@@ -61,8 +61,8 @@ public class CreativeEnergyMultiMachine extends UniqueWorkableElectricMultiblock
     }
 
     @Override
-    public void onStructureInvalid() {
-        super.onStructureInvalid();
+    public void invalidateStructure(@org.jetbrains.annotations.NotNull String substructureName) {
+        super.invalidateStructure(substructureName);
         enableCreativeEnergy(false);
         creativeEnergySubscription.unsubscribe();
     }

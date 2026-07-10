@@ -6,8 +6,7 @@ import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.data.recipes.FinishedRecipe;
-import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.PhoenixFissionBlocks;
+
 
 import java.util.function.Consumer;
 
@@ -20,7 +19,9 @@ import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials
 
 public class PhoenixFissionMachineRecipes {
 
+
     public static void init(Consumer<FinishedRecipe> provider) {
+        /*
         var assembler = GTRecipeTypes.ASSEMBLER_RECIPES;
 
         assembler.recipeBuilder("fissile_heat_safe_casing")
@@ -66,6 +67,9 @@ public class PhoenixFissionMachineRecipes {
                 .duration(320)
                 .EUt(VA[HV])
                 .save(provider);
+
+
+
 
         assembler.recipeBuilder("heat_exhanger")
                 .inputItems(PhoenixFissionBlocks.FISSILE_REACTION_SAFE_CASING.asItem(), 2)
@@ -157,5 +161,7 @@ public class PhoenixFissionMachineRecipes {
                 .duration(120)
                 .EUt(-VA[EV] * 2L)
                 .save(provider);
+
+         */
     }
 }

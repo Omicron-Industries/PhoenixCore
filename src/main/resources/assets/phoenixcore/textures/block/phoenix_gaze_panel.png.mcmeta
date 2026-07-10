@@ -1,5 +1,5 @@
 {
-    "ldlib": {
-        "connection": "gtceu:block/phoenix_gaze_panel_ctm"
+    "gtceu": {
+        "connection_texture": "gtceu:block/phoenix_gaze_panel_ctm"
     }
 }

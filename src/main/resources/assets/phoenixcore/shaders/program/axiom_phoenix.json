@@ -1,0 +1,17 @@
+{
+    "blend": { "func": "add", "srcrgb": "one", "dstrgb": "zero" },
+    "vertex":   "phoenixcore:axiom_blit",
+    "fragment": "phoenixcore:axiom_phoenix",
+    "attributes": [ "Position" ],
+    "samplers": [ { "name": "DiffuseSampler" } ],
+    "uniforms": [
+        { "name": "ProjMat",      "type": "matrix4x4", "count": 16, "values": [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ] },
+        { "name": "OutSize",      "type": "float",     "count": 2,  "values": [ 1.0, 1.0 ] },
+        { "name": "Time",         "type": "float",     "count": 1,  "values": [ 0.0 ] },
+        { "name": "ScreenSize",   "type": "float",     "count": 2,  "values": [ 1920.0, 1080.0 ] },
+        { "name": "CursorUV",     "type": "float",     "count": 2,  "values": [ 0.5, 0.5 ] },
+        { "name": "HeatCount",    "type": "int",       "count": 1,  "values": [ 0 ] },
+        { "name": "HeatSources",  "type": "float",     "count": 16, "values": [ 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0 ] },
+        { "name": "HeatStrength", "type": "float",     "count": 8,  "values": [ 0,0,0,0, 0,0,0,0 ] }
+    ]
+}

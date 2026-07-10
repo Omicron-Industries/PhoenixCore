@@ -1,8 +1,8 @@
 package net.phoenix.core.common.machine.multiblock.part.special;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; // Added 8.0.0 import
 
 import net.minecraft.core.Direction;
 import net.phoenix.core.common.machine.multiblock.Shield.ShieldTypes;
@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public class ShieldSensorHatchPartMachine extends SensorHatchPartMachine {
 
-    public ShieldSensorHatchPartMachine(IMachineBlockEntity holder) {
+    public ShieldSensorHatchPartMachine(BlockEntityCreationInfo holder) {
         super(holder, GTValues.HV);
     }
 
@@ -74,16 +74,18 @@ public class ShieldSensorHatchPartMachine extends SensorHatchPartMachine {
         }
     }
 
+    // Fix: Updated to match 8.0.0 2-argument signature
     @Override
-    public void addedToController(@NotNull IMultiController controller) {
-        super.addedToController(controller);
+    public void addedToController(@NotNull MultiblockControllerMachine controller, String substructureName) {
+        super.addedToController(controller, substructureName);
         if (controller instanceof ShieldedMachine shielded) {
             setRenderShieldState(shielded.getShieldType());
         }
     }
 
+    // Fix: Updated to match 8.0.0 1-argument signature
     @Override
-    public void removedFromController(@NotNull IMultiController controller) {
+    public void removedFromController(@NotNull MultiblockControllerMachine controller) {
         super.removedFromController(controller);
         setRenderShieldState(ShieldTypes.INACTIVE);
     }

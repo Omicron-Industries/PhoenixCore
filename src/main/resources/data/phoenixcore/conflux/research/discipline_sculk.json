@@ -1,0 +1,134 @@
+{
+  "title": "The Sculk",
+  "description": "The network remembers every death that fed it. It is not a parasite — it is a library. You are adding a chapter.",
+  "discipline": "sculk",
+  "switch_cost": { "biological": 50000, "material": 20000 },
+  "nodes": [
+    {
+      "id": "phoenixcore:sk_core",
+      "title": "First Contact",
+      "lore": "The moment you touch the network, it already knows your shape. It has been waiting for something like you.",
+      "icon": "minecraft:sculk",
+      "position": [0, 0],
+      "prerequisites": [],
+      "cost": { "biological": 500 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_awakened" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_branch_a",
+      "title": "Mycelial Reach",
+      "lore": "Roots do not seek water. They simply grow — and water is where they find themselves.",
+      "icon": "minecraft:brown_mushroom",
+      "position": [-1, 1],
+      "prerequisites": ["phoenixcore:sk_core"],
+      "cost": { "biological": 1000, "material": 300 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_mycelial" },
+        { "type": "recipe_tag", "value": "phoenixcore:research/sk_organic" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_branch_b",
+      "title": "Echo Memory",
+      "lore": "The Sculk does not record events. It records the shape that events leave behind — the indent in the soil where something happened.",
+      "icon": "minecraft:sculk_catalyst",
+      "position": [0, 1],
+      "prerequisites": ["phoenixcore:sk_core"],
+      "cost": { "biological": 1200 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_echo_memory" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_branch_c",
+      "title": "Bioluminescent Signal",
+      "lore": "Light in the deep dark is not hope — it is communication. Something is talking. You are beginning to hear it.",
+      "icon": "minecraft:glow_ink_sac",
+      "position": [1, 1],
+      "prerequisites": ["phoenixcore:sk_core"],
+      "cost": { "biological": 900, "computational": 400 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_bioluminescent" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_growth_a",
+      "title": "Redundant Pathways",
+      "lore": "Efficiency is a property of machines. Living networks are redundant by design — when one path dies, three others were already forming.",
+      "icon": "minecraft:moss_block",
+      "position": [-1, 2],
+      "prerequisites": ["phoenixcore:sk_branch_a", "phoenixcore:sk_branch_b"],
+      "cost": { "biological": 2500, "material": 1000 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_redundant" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_growth_b",
+      "title": "Infection Protocol",
+      "lore": "Spread is not aggression. It is invitation. The Sculk does not conquer — it offers belonging.",
+      "icon": "minecraft:sculk_vein",
+      "position": [0, 2],
+      "prerequisites": ["phoenixcore:sk_branch_b", "phoenixcore:sk_branch_c"],
+      "cost": { "biological": 3000, "computational": 1000 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_infection" },
+        { "type": "recipe_tag", "value": "phoenixcore:research/sk_infection" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_growth_c",
+      "title": "Sensor Array",
+      "lore": "Every vibration. Every footfall. Every heartbeat in the darkness. The network feels them all. Now so do you.",
+      "icon": "minecraft:sculk_sensor",
+      "position": [1, 2],
+      "prerequisites": ["phoenixcore:sk_branch_c"],
+      "cost": { "biological": 2000, "computational": 1500 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_sensor" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_commitment",
+      "title": "The Joining",
+      "lore": "You are not absorbed. You persist, individual and intact, within something immeasurably larger. The network did not lose what it consumed — it became everything those things were, and you become what the network knows.",
+      "icon": "minecraft:sculk_shrieker",
+      "position": [0, 3],
+      "prerequisites": ["phoenixcore:sk_growth_a", "phoenixcore:sk_growth_b", "phoenixcore:sk_growth_c"],
+      "commitment": true,
+      "cost": { "biological": 15000, "computational": 5000 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_committed" },
+        { "type": "multiblock", "value": "phoenixcore:sculk_nexus" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_apex_a",
+      "title": "Distributed Cognition",
+      "lore": "Thought is not in the head. It is in the pattern of signals between things. The network has always been thinking. Now it can think with you.",
+      "icon": "gtceu:wetware_processor_assembly",
+      "position": [-1, 4],
+      "prerequisites": ["phoenixcore:sk_commitment"],
+      "cost": { "biological": 30000, "computational": 15000 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_distributed_mind" },
+        { "type": "multiblock", "value": "phoenixcore:neural_lattice" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sk_apex_b",
+      "title": "The Living Archive",
+      "lore": "The deepest Sculk nodes predate recorded history. They remember a world before names for things. When you access them, you access everything that has ever ended — not as grief, as knowledge.",
+      "icon": "minecraft:ancient_debris",
+      "position": [1, 4],
+      "prerequisites": ["phoenixcore:sk_commitment"],
+      "cost": { "biological": 40000, "computational": 10000 },
+      "unlocks": [
+        { "type": "flag", "value": "sk_living_archive" },
+        { "type": "multiblock", "value": "phoenixcore:living_archive" }
+      ]
+    }
+  ]
+}

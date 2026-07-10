@@ -1,6 +1,7 @@
 package net.phoenix.core.common.machine;
 
 import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
@@ -23,7 +24,7 @@ public class PhoenixAEMachines {
         if (PhoenixConfigs.INSTANCE.features.tagInputsEnabled && GTCEu.Mods.isAE2Loaded() || GTCEu.isDataGen()) {
 
             ME_TAG_INPUT_BUS = REGISTRATE
-                    .machine("me_tag_input_bus", METagInputBusPartMachine::new)
+                    .machine("me_tag_input_bus", (info) -> new METagInputBusPartMachine(info, IO.IN))
                     .tier(UHV)
                     .rotationState(RotationState.ALL)
                     .abilities(

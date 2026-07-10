@@ -1,0 +1,65 @@
+{
+  "title": "██████",
+  "description": "This record has been sealed pending review. Access requires prior commitment to an incompatible path. You should not be reading this.",
+  "discipline": "sealed_a",
+  "switch_cost": { "arcane": 999999, "computational": 999999 },
+  "nodes": [
+    {
+      "id": "phoenixcore:sa_entry",
+      "title": "Wrong Door",
+      "lore": "You found this. That means something about you. We have not decided what yet.",
+      "hint": "Some doors are only visible to those who already know what's on the other side.",
+      "icon": "minecraft:structure_block",
+      "position": [0, 0],
+      "hidden": false,
+      "prerequisites": [],
+      "cost": { "arcane": 99999 },
+      "unlocks": [
+        { "type": "flag", "value": "sa_entry" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sa_node_1",
+      "title": "████ ██",
+      "lore": "The name of this node has been removed. The node itself has not.",
+      "hint": "Something here was named, once. The name was the dangerous part.",
+      "icon": "minecraft:barrier",
+      "hidden": true,
+      "position": [-1, 1],
+      "prerequisites": ["phoenixcore:sa_entry"],
+      "cost": { "arcane": 999999 },
+      "unlocks": [
+        { "type": "flag", "value": "sa_node_1" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sa_node_2",
+      "title": "Redacted",
+      "lore": "We sealed this for a reason. The reason is also sealed.",
+      "hint": "The shape of the node is visible. The shape of what it does is not.",
+      "icon": "minecraft:command_block",
+      "hidden": true,
+      "position": [1, 1],
+      "prerequisites": ["phoenixcore:sa_entry"],
+      "cost": { "arcane": 999999 },
+      "unlocks": [
+        { "type": "flag", "value": "sa_node_2" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sa_commitment",
+      "title": "Point of No Return",
+      "lore": "You already passed it.",
+      "hint": "...",
+      "icon": "minecraft:bedrock",
+      "hidden": true,
+      "position": [0, 2],
+      "commitment": true,
+      "prerequisites": ["phoenixcore:sa_node_1", "phoenixcore:sa_node_2"],
+      "cost": { "arcane": 999999, "computational": 999999 },
+      "unlocks": [
+        { "type": "flag", "value": "sa_committed" }
+      ]
+    }
+  ]
+}

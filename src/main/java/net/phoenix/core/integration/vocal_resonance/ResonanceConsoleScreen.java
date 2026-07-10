@@ -39,7 +39,7 @@ public class ResonanceConsoleScreen extends Screen {
     protected void init() {
         super.init();
 
-        VocalVibrancyClient.startTracking(machine.getPos());
+        VocalVibrancyClient.startTracking(machine.getBlockPos());
 
         int panelWidth = this.width / 3;
         int center = this.width / 2;
@@ -98,7 +98,7 @@ public class ResonanceConsoleScreen extends Screen {
 
     @Override
     public void onClose() {
-        VocalVibrancyClient.stopTracking(machine.getPos());
+        VocalVibrancyClient.stopTracking(machine.getBlockPos());
         super.onClose();
     }
 

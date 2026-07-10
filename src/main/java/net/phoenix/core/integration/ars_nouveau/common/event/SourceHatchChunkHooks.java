@@ -1,7 +1,5 @@
 package net.phoenix.core.integration.ars_nouveau.common.event;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -20,8 +18,9 @@ public final class SourceHatchChunkHooks {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
 
         chunk.getBlockEntities().forEach((pos, be) -> {
-            if (be instanceof MetaMachineBlockEntity metaBE &&
-                    metaBE.getMetaMachine() instanceof SourceHatchPartMachine) {
+            // FIXED FOR 8.0.0: The block entity is the MetaMachine directly,
+            // so we can check for SourceHatchPartMachine in a single shot.
+            if (be instanceof SourceHatchPartMachine) {
                 SourceHatchTracker.add(level.dimension(), pos);
             }
         });
@@ -29,12 +28,11 @@ public final class SourceHatchChunkHooks {
 
     @SubscribeEvent
     public static void onChunkUnload(ChunkEvent.Unload event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) return;
-        if (!(event.getChunk() instanceof LevelChunk chunk)) return;
+        if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
 
         chunk.getBlockEntities().forEach((pos, be) -> {
-            if (be instanceof MetaMachineBlockEntity metaBE &&
-                    metaBE.getMetaMachine() instanceof SourceHatchPartMachine) {
+            // FIXED FOR 8.0.0: Direct check against the new merged BlockEntity hierarchy
+            if (be instanceof SourceHatchPartMachine) {
                 SourceHatchTracker.remove(level.dimension(), pos);
             }
         });

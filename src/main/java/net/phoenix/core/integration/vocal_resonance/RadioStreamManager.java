@@ -38,12 +38,12 @@ public class RadioStreamManager {
 
         PhoenixNetwork.CHANNEL.send(
                 PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(
-                        controller.getPos().getX(),
-                        controller.getPos().getY(),
-                        controller.getPos().getZ(),
+                        controller.getBlockPos().getX(),
+                        controller.getBlockPos().getY(),
+                        controller.getBlockPos().getZ(),
                         radius,
                         controller.getLevel().dimension())),
-                new S2CPlayStreamPacket(url, controller.getPos(), radius, controller.getResonancePower()));
+                new S2CPlayStreamPacket(url, controller.getBlockPos(), radius, controller.getResonancePower()));
 
         String label = isYoutube(url) ? "YT Audio" : shortenUrl(url);
         controller.setStreamTitle("§eResolving: §f" + label);

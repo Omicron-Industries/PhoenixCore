@@ -305,7 +305,7 @@ public class PhoenixMachineRecipes {
          * .save(provider);
          * 
          */
-
+/*
         PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("source_imbued_titanium")
                 .inputItems(ingot, Titanium, 1)
                 .input(SourceRecipeCapability.CAP, new SourceIngredient(260))
@@ -316,6 +316,10 @@ public class PhoenixMachineRecipes {
                 // .addData("soul_growth_temp", 0.5f)
                 .addCondition(new SoulCondition(false, 0.5f))
                 .save(provider);
+
+ */
+
+
         PhoenixRecipeTypes.SOURCE_IMBUEMENT_RECIPES.recipeBuilder("source_gem")
                 .inputItems(gem, Amethyst, 1)
                 .input(SourceRecipeCapability.CAP, new SourceIngredient(150))

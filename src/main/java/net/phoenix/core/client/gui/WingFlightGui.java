@@ -1,31 +1,29 @@
 package net.phoenix.core.client.gui;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-
-import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.*;
-
+import brachy.modularui.api.drawable.IDrawable;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.IntSyncValue;
+import brachy.modularui.value.sync.StringSyncValue;
+import com.gregtechceu.gtceu.api.mui.IItemUIHolder;
+import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.phoenix.core.common.data.item.PhoenixArmorItem;
 
-import static net.phoenix.core.api.gui.PhoenixGuiTextures.TESLA_BACKGROUND;
+import brachy.modularui.factory.PlayerInventoryGuiData;
+import brachy.modularui.screen.ModularPanel;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.utils.Alignment;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.ButtonWidget;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
 
-/**
- * GUI for controlling Phoenix Wing flight modes.
- * Opened via Numpad9 keybind on the client side.
- * NBT keys written to the chestplate stack:
- * "FlightMode" — "powered" or "creative"
- * "FlightSpeed" — int 0–10
- * "FlightDrift" — int 0–10
- * When applying to movement, divide by 10f to get a 0.0–1.0 multiplier.
- */
-public class WingFlightGui {
+public class WingFlightGui implements IItemUIHolder {
 
     public static final String NBT_MODE = "FlightMode";
     public static final String NBT_SPEED = "FlightSpeed";
@@ -36,107 +34,177 @@ public class WingFlightGui {
 
     private static final int STEPS = 10;
 
-    public static ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
-        ItemStack stack = holder.getHeld();
+    @Override
+    public ModularPanel<?> buildUI(PlayerInventoryGuiData<?> guiData, PanelSyncManager panelSyncManager, UISettings settings) {
+        Player player = guiData.getPlayer();
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        if (!(stack.getItem() instanceof PhoenixArmorItem)) return null;
+        if (!(stack.getItem() instanceof PhoenixArmorItem)) {
+            return ModularPanel.defaultPanel("empty", 100, 100);
+        }
 
         CompoundTag tag = stack.getOrCreateTag();
         if (!tag.contains(NBT_MODE)) tag.putString(NBT_MODE, MODE_POWERED);
         if (!tag.contains(NBT_SPEED)) tag.putInt(NBT_SPEED, 5);
         if (!tag.contains(NBT_DRIFT)) tag.putInt(NBT_DRIFT, 5);
 
-        int W = 200;
-        int H = 230;
+        StringSyncValue modeValue = new StringSyncValue(
+                () -> stack.getOrCreateTag().getString(NBT_MODE),
+                (val) -> stack.getOrCreateTag().putString(NBT_MODE, val)
+        );
+        IntSyncValue speedValue = new IntSyncValue(
+                () -> stack.getOrCreateTag().getInt(NBT_SPEED),
+                (val) -> stack.getOrCreateTag().putInt(NBT_SPEED, val)
+        );
+        IntSyncValue driftValue = new IntSyncValue(
+                () -> stack.getOrCreateTag().getInt(NBT_DRIFT),
+                (val) -> stack.getOrCreateTag().putInt(NBT_DRIFT, val)
+        );
 
-        ModularUI ui = new ModularUI(W, H, holder, player)
-                .background(GuiTextures.BACKGROUND);
+        panelSyncManager.syncValue("flight_mode", 0, modeValue);
+        panelSyncManager.syncValue("flight_speed", 1, speedValue);
+        panelSyncManager.syncValue("flight_drift", 2, driftValue);
 
-        WidgetGroup root = new WidgetGroup(0, 0, W, H);
+        // 1. Explicitly isolate layout spacer properties
+        Flow layoutSpacer = Flow.row();
+        layoutSpacer.resizer().expanded(true);
 
-        root.addWidget(new LabelWidget(8, 6, "§5Wing Flight Control"));
+        // 2. Define the header text explicitly to retain its widget type
+        TextWidget headerText = new TextWidget(Component.literal("Wing Flight Control").withStyle(ChatFormatting.DARK_PURPLE));
+        headerText.margin(2, 0, 4, 0);
 
-        WidgetGroup header = new WidgetGroup(5, 18, W - 10, 46);
-        header.setBackground(TESLA_BACKGROUND);
-        header.addWidget(new ComponentPanelWidget(5, 4, text -> {
-            String mode = stack.getOrCreateTag().getString(NBT_MODE);
-            boolean isPowered = MODE_POWERED.equals(mode);
+        // 3. Define the info status box explicitly to retain its widget type
+        TextWidget infoStatusBox = new TextWidget(() -> {
+            boolean isPowered = MODE_POWERED.equals(modeValue.getStringValue());
+            String modeText = isPowered ? "⚡ Powered" : "✦ Creative";
+            ChatFormatting modeColor = isPowered ? ChatFormatting.GOLD : ChatFormatting.LIGHT_PURPLE;
+            String drainText = isPowered ? "Drain: 5,000 EU/t" : "Drain: None (Creative)";
 
-            text.add(Component.literal("Mode: ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(isPowered ? "⚡ Powered" : "✦ Creative")
-                            .withStyle(isPowered ? ChatFormatting.GOLD : ChatFormatting.LIGHT_PURPLE)));
+            return Component.literal("Mode: ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(modeText).withStyle(modeColor))
+                    .append(Component.literal("\n" + drainText).withStyle(isPowered ? ChatFormatting.RED : ChatFormatting.GREEN));
+        });
+        infoStatusBox.widthRel(1f).height(32).margin(0, 0, 6, 0);
 
-            text.add(Component.literal(isPowered ? "§7Drain: §c5,000 EU/t" : "§7Drain: §aNone (Creative)"));
-        }));
-        root.addWidget(header);
+        // 4. Define Section Headers explicitly to prevent type degradation
+        TextWidget speedHeader = new TextWidget(Component.literal("Flight Speed").withStyle(ChatFormatting.GRAY));
+        speedHeader.margin(0, 0, 2, 0);
 
-        int btnY = 72;
-        root.addWidget(new ButtonWidget(5, btnY, W - 10, 20, GuiTextures.BUTTON, c -> {
-            if (player.level().isClientSide) return;
-            CompoundTag t = stack.getOrCreateTag();
-            String current = t.getString(NBT_MODE);
-            t.putString(NBT_MODE, MODE_POWERED.equals(current) ? MODE_CREATIVE : MODE_POWERED);
-            if (player instanceof ServerPlayer sp) HeldItemUIFactory.INSTANCE.openUI(holder, sp);
-        }));
-        String currentMode = tag.getString(NBT_MODE);
-        root.addWidget(new LabelWidget(W / 2 - 55, btnY + 6,
-                MODE_POWERED.equals(currentMode) ? "§eSwitch to ✦ Creative Flight" : "§6Switch to ⚡ Powered Flight"));
+        TextWidget driftHeader = new TextWidget(Component.literal("Flight Drift").withStyle(ChatFormatting.GRAY));
+        driftHeader.margin(6, 0, 2, 0);
 
-        root.addWidget(new LabelWidget(8, 102, "§7Flight Speed"));
-        root.addWidget(buildStepControl(holder, player, stack, NBT_SPEED, 118, W));
+        return ModularPanel.defaultPanel("wing_flight_control", 200, 240)
+                .margin(6)
+                .child(Flow.col()
+                        .widthRel(1f)
+                        .heightRel(1f)
+                        .crossAxisAlignment(Alignment.CrossAxis.START)
 
-        root.addWidget(new LabelWidget(8, 158, "§7Flight Drift"));
-        root.addWidget(buildStepControl(holder, player, stack, NBT_DRIFT, 174, W));
+                        // Title Header
+                        .child(headerText)
 
-        root.addWidget(new LabelWidget(8, H - 12, "§8Press Numpad9 or Esc to close"));
+                        // Info Status Box
+                        .child(infoStatusBox)
 
-        ui.widget(root);
-        return ui;
+                        // Mode Swap Toggle Button
+                        .child(new ButtonWidget<>()
+                                .onMousePressed((context, button) -> {
+                                    modeValue.setStringValue(MODE_POWERED.equals(modeValue.getStringValue()) ? MODE_CREATIVE : MODE_POWERED);
+                                    return true;
+                                })
+                                .background(new IDrawable[]{ GTGuiTextures.BUTTON })
+                                .widthRel(1f)
+                                .height(20)
+                                .margin(0, 0, 8, 0)
+                                .child(new TextWidget(() -> MODE_POWERED.equals(modeValue.getStringValue())
+                                        ? Component.literal("Switch to ✦ Creative Flight")
+                                        : Component.literal("Switch to ⚡ Powered Flight"))
+                                        .alignment(Alignment.CENTER))
+                                .getThis()
+                        )
+
+                        // Controls for Speed Section Header
+                        .child(speedHeader)
+                        .child(buildStepControl(speedValue, "Speed"))
+
+                        // Controls for Drift Section Header
+                        .child(driftHeader)
+                        .child(buildStepControl(driftValue, "Drift"))
+
+                        // Layout Spacing Spacer
+                        .child(layoutSpacer)
+
+                        // Footer Tip
+                        .child(new TextWidget(Component.literal("Press Numpad9 or Esc to close").withStyle(ChatFormatting.DARK_GRAY)))
+                );
     }
 
-    private static WidgetGroup buildStepControl(HeldItemUIFactory.HeldItemHolder holder,
-                                                Player player, ItemStack stack,
-                                                String nbtKey, int y, int W) {
-        WidgetGroup group = new WidgetGroup(5, y, W - 10, 34);
 
-        group.addWidget(new ButtonWidget(0, 0, 18, 18, GuiTextures.BUTTON, c -> {
-            if (player.level().isClientSide) return;
-            CompoundTag t = stack.getOrCreateTag();
-            t.putInt(nbtKey, Math.max(0, t.getInt(nbtKey) - 1));
-            if (player instanceof ServerPlayer sp) HeldItemUIFactory.INSTANCE.openUI(holder, sp);
-        }));
-        group.addWidget(new LabelWidget(6, 5, "§f-"));
+    private static Flow buildStepControl(IntSyncValue valueTracker, String label) {
+        Flow controlRow = Flow.row()
+                .widthRel(1f)
+                .height(18)
+                .mainAxisAlignment(Alignment.MainAxis.SPACE_BETWEEN)
+                .crossAxisAlignment(Alignment.CrossAxis.CENTER);
 
-        group.addWidget(new ButtonWidget(W - 28, 0, 18, 18, GuiTextures.BUTTON, c -> {
-            if (player.level().isClientSide) return;
-            CompoundTag t = stack.getOrCreateTag();
-            t.putInt(nbtKey, Math.min(STEPS, t.getInt(nbtKey) + 1));
-            if (player instanceof ServerPlayer sp) HeldItemUIFactory.INSTANCE.openUI(holder, sp);
-        }));
-        group.addWidget(new LabelWidget(W - 23, 5, "§f+"));
+        // Minus (-) Adjustment Button
+        controlRow.child(new ButtonWidget<>()
+                .onMousePressed((context, button) -> {
+                    valueTracker.setIntValue(Math.max(0, valueTracker.getIntValue() - 1));
+                    return true;
+                })
+                .background(new IDrawable[]{ GTGuiTextures.BUTTON })
+                .size(18)
+                .child(new TextWidget(Component.literal("-")).alignment(Alignment.CENTER))
+                .getThis()
+        );
 
-        int barX = 22;
-        int barW = W - 10 - 22 - 22;
-        int segW = barW / STEPS;
-        int filled = stack.getOrCreateTag().getInt(nbtKey);
+        // Progress Segments Flex Box
+        Flow segmentsGroup = Flow.row();
+        segmentsGroup.resizer().expanded(true);
+        segmentsGroup.margin(4, 0)
+                .crossAxisAlignment(Alignment.CrossAxis.CENTER)
+                .mainAxisAlignment(Alignment.MainAxis.SPACE_BETWEEN);
 
         for (int i = 0; i < STEPS; i++) {
-            final int segment = i + 1;
-            group.addWidget(new ButtonWidget(
-                    barX + (i * segW), 0, segW - 1, 18,
-                    segment <= filled ? GuiTextures.BUTTON : GuiTextures.SLOT,
-                    c -> {
-                        if (player.level().isClientSide) return;
-                        stack.getOrCreateTag().putInt(nbtKey, segment);
-                        if (player instanceof ServerPlayer sp) HeldItemUIFactory.INSTANCE.openUI(holder, sp);
-                    }));
+            final int targetValue = i + 1;
+
+            ButtonWidget<?> stepSegmentButton = new ButtonWidget<>();
+            stepSegmentButton.onMousePressed((context, button) -> {
+                        valueTracker.setIntValue(targetValue);
+                        return true;
+                    })
+                    .background(new IDrawable[]{ valueTracker.getIntValue() >= targetValue ? GTGuiTextures.BUTTON : GTGuiTextures.SLOT })
+                    .margin(0, 1, 0, 0);
+
+            stepSegmentButton.resizer().expanded(true);
+
+            segmentsGroup.child(stepSegmentButton.getThis());
         }
+        controlRow.child(segmentsGroup);
 
-        int current = stack.getOrCreateTag().getInt(nbtKey);
-        group.addWidget(new LabelWidget(0, 22,
-                String.format("§8%s: §f%d / %d",
-                        nbtKey.equals(NBT_SPEED) ? "Speed" : "Drift", current, STEPS)));
+        // Plus (+) Adjustment Button
+        controlRow.child(new ButtonWidget<>()
+                .onMousePressed((context, button) -> {
+                    valueTracker.setIntValue(Math.min(STEPS, valueTracker.getIntValue() + 1));
+                    return true;
+                })
+                .background(new IDrawable[]{ GTGuiTextures.BUTTON })
+                .size(18)
+                .child(new TextWidget(Component.literal("+")).alignment(Alignment.CENTER))
+                .getThis()
+        );
 
-        return group;
+        // Explicitly define the TextWidget to stop Java from degrading the generic parameter type
+        TextWidget footerText = new TextWidget(() -> Component.literal(
+                        String.format("%s: %d / %d", label, valueTracker.getIntValue(), STEPS))
+                .withStyle(ChatFormatting.DARK_GRAY)
+        );
+        footerText.height(12).margin(2, 0, 0, 0);
+
+        return Flow.col()
+                .widthRel(1f)
+                .child(controlRow)
+                .child(footerText); // Safe, clean, and compiles perfectly
     }
 }

@@ -4,6 +4,7 @@ import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
 
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.phoenix.core.client.particle.PhoenixParticles;
@@ -24,6 +25,16 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
     public static final Codec<TeslaTowerRenderer> CODEC = Codec.unit(INSTANCE);
     public static final DynamicRenderType<TeslaTowerMachine, TeslaTowerRenderer> TYPE = new DynamicRenderType<>(CODEC);
 
+    // Static constant configuration arrays to prevent per-frame memory allocation
+    private static final float[] Y_POSITIONS = new float[] { 5.5f, 14.5f, 22.5f };
+    private static final float[] X_POSITIONS = new float[] { 1.0f, 1.0f, 1.0f };
+    private static final float[] Z_POSITIONS = new float[] { 6.0f, 6.0f, 6.0f };
+
+    private static final Vec3[] POINT_CACHE = new Vec3[64];
+    static {
+        for (int i = 0; i < 64; i++) POINT_CACHE[i] = Vec3.ZERO;
+    }
+
     private TeslaTowerRenderer() {}
 
     @Override
@@ -43,7 +54,7 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
 
     @Override
     public @NotNull AABB getRenderBoundingBox(TeslaTowerMachine m) {
-        return new AABB(m.getPos()).inflate(40);
+        return new AABB(m.getBlockPos()).inflate(40);
     }
 
     @Override
@@ -62,16 +73,18 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         float TEEPEE_DROP = 2.5f;
         int ARC_POINTS = 30;
 
-        float[] yPositions = new float[] { 5.5f, 14.5f, 22.5f };
-        float[] xPositions = new float[] { 1.0f, 1.0f, 1.0f };
-        float[] zPositions = new float[] { 6f, 6.0f, 6.0f };
+        // Fetch position info using standard 8.0.0 Direct BlockEntity getters
+        BlockPos machinePos = machine.getBlockPos();
+        double baseParticleX = machinePos.getX() + 0.5;
+        double baseParticleY = machinePos.getY() + 0.5;
+        double baseParticleZ = machinePos.getZ() + 0.5;
 
         poseStack.pushPose();
 
-        for (int ringIndex = 0; ringIndex < yPositions.length; ringIndex++) {
-            float xBase = xPositions[ringIndex];
-            float yBase = yPositions[ringIndex];
-            float zBase = zPositions[ringIndex];
+        for (int ringIndex = 0; ringIndex < Y_POSITIONS.length; ringIndex++) {
+            float xBase = X_POSITIONS[ringIndex];
+            float yBase = Y_POSITIONS[ringIndex];
+            float zBase = Z_POSITIONS[ringIndex];
             Vec3 currentTopCenter = new Vec3(xBase, yBase, zBase);
 
             for (int i = 0; i < ARC_POINTS; i++) {
@@ -91,9 +104,9 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
                     if (machine.getLevel().isClientSide && machine.getLevel().random.nextFloat() < 0.05f) {
                         machine.getLevel().addParticle(
                                 PhoenixParticles.TESLA_SPARK.get(),
-                                targetPos.x + machine.getPos().getX() + 0.5,
-                                targetPos.y + machine.getPos().getY() + 0.5,
-                                targetPos.z + machine.getPos().getZ() + 0.5,
+                                targetPos.x + baseParticleX,
+                                targetPos.y + baseParticleY,
+                                targetPos.z + baseParticleZ,
                                 0.0, 0.0, 0.0);
                     }
                 }
@@ -109,7 +122,6 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         }
 
         Vec3 mid = start.add(end).scale(0.5);
-
         float seed = (float) (time + start.x + start.y + start.z);
 
         mid = mid.add(
@@ -176,11 +188,6 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         drawTeslaLine(vc, pose, mid, e, depth - 1, isCore, time);
     }
 
-    private static final Vec3[] POINT_CACHE = new Vec3[64];
-    static {
-        for (int i = 0; i < 64; i++) POINT_CACHE[i] = Vec3.ZERO;
-    }
-
     private void renderArc(PoseStack stack, VertexConsumer vc, Vec3 start, Vec3 end, long time) {
         Matrix4f pose = stack.last().pose();
 
@@ -202,9 +209,7 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         }
 
         Vec3 mid = s.add(e).scale(0.5);
-
         float seed = (float) (snapTime + (index * 1.5f) + smoothTime);
-
         float currentJitter = jitter * (float) Math.sqrt(depth);
 
         mid = mid.add(

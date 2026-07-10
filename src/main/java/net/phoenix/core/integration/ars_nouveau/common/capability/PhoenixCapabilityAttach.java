@@ -1,6 +1,7 @@
 package net.phoenix.core.integration.ars_nouveau.common.capability;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.blockentity.IGregtechBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -28,9 +29,12 @@ public final class PhoenixCapabilityAttach {
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<BlockEntity> event) {
         BlockEntity be = event.getObject();
-        if (!(be instanceof MetaMachineBlockEntity gtBe)) return;
 
-        var machine = gtBe.getMetaMachine();
+        // FIXED FOR 8.0.0: MetaMachine is now the BlockEntity directly.
+        // We cast it to MetaMachine to evaluate our type safety hierarchies.
+        if (!(be instanceof MetaMachine machine)) return;
+
+        // Safely check if this specific machine instance is our Source Hatch
         if (!(machine instanceof SourceHatchPartMachine hatch)) return;
 
         PhoenixCore.LOGGER.info("[SourceHatchCap] Attaching to {} machine={}",
@@ -39,7 +43,6 @@ public final class PhoenixCapabilityAttach {
         LazyOptional<ISourceProviderCapability> opt = LazyOptional.of(() -> hatch);
 
         event.addCapability(KEY, new ICapabilityProvider() {
-
             @Override
             public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
                 return cap == ISourceProviderCapability.CAPABILITY ? opt.cast() : LazyOptional.empty();

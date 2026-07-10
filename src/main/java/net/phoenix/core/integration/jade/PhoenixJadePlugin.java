@@ -1,6 +1,6 @@
 package net.phoenix.core.integration.jade;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.world.level.block.Block;
 import net.phoenix.core.PhoenixCore;
@@ -18,13 +18,13 @@ public class PhoenixJadePlugin implements IWailaPlugin {
     public void register(IWailaCommonRegistration registration) {
         PhoenixCore.LOGGER.info("[PhoenixJade] register(common) called");
 
-        registration.registerBlockDataProvider(new SourceMachineProvider(), MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(new SourceTankJadeProvider(), MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(new TeslaNetworkProvider(), MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(new HighPressurePlasmaArcFurnaceProvider(),
-                MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(new FissionMachineProvider(), MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(new ThreadedRecipeOutputProvider(), MetaMachineBlockEntity.class);
+        // Since MetaMachine is now natively a BlockEntity, registering against
+        // MetaMachine.class remains valid for matching the block entity instances!
+        registration.registerBlockDataProvider(new SourceMachineProvider(), MetaMachine.class);
+        registration.registerBlockDataProvider(new SourceTankJadeProvider(), MetaMachine.class);
+        registration.registerBlockDataProvider(new TeslaNetworkProvider(), MetaMachine.class);
+        registration.registerBlockDataProvider(new HighPressurePlasmaArcFurnaceProvider(), MetaMachine.class);
+        registration.registerBlockDataProvider(new ThreadedRecipeOutputProvider(), MetaMachine.class);
     }
 
     @Override
@@ -35,7 +35,6 @@ public class PhoenixJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(new SourceTankJadeProvider(), Block.class);
         registration.registerBlockComponent(new TeslaNetworkProvider(), Block.class);
         registration.registerBlockComponent(new HighPressurePlasmaArcFurnaceProvider(), Block.class);
-        registration.registerBlockComponent(new FissionMachineProvider(), Block.class);
         registration.registerBlockComponent(new ThreadedRecipeOutputProvider(), Block.class);
     }
 }

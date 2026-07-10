@@ -1,6 +1,6 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.recipeConditons;
 
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.condition.RecipeConditionType;
@@ -37,7 +37,7 @@ public class SoulCondition extends RecipeCondition<SoulCondition> {
     @Override
     protected boolean testCondition(@NotNull GTRecipe recipe, @NotNull RecipeLogic recipeLogic) {
         if (recipeLogic.getMachine().getLevel() instanceof ServerLevel level) {
-            float currentSoul = SoulSavedData.get(level).getMultiplier(new ChunkPos(recipeLogic.getMachine().getPos()));
+            float currentSoul = SoulSavedData.get(level).getMultiplier(new ChunkPos(recipeLogic.getMachine().getBlockPos()));
             return currentSoul >= minSoul;
         }
         return false;

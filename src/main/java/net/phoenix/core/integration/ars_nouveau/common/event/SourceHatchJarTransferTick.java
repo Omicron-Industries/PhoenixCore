@@ -1,6 +1,6 @@
 package net.phoenix.core.integration.ars_nouveau.common.event;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 
 import net.minecraft.core.BlockPos;
@@ -37,12 +37,10 @@ public final class SourceHatchJarTransferTick {
             if (!level.isLoaded(hatchPos)) continue;
 
             BlockEntity be = level.getBlockEntity(hatchPos);
-            if (!(be instanceof MetaMachineBlockEntity metaBE)) {
-                // PhoenixCore.LOGGER.debug("Tracker contained non-machine at {}", hatchPos);
-                continue;
-            }
 
-            if (!(metaBE.getMetaMachine() instanceof SourceHatchPartMachine hatch)) continue;
+            // FIXED FOR 8.0.0: The block entity is the MetaMachine natively.
+            // We can match directly against our SourceHatchPartMachine target.
+            if (!(be instanceof SourceHatchPartMachine hatch)) continue;
             if (!hatch.isWorkingEnabled()) continue;
 
             ISourceTile tank = hatch.getSource();
@@ -55,14 +53,14 @@ public final class SourceHatchJarTransferTick {
             if (rate <= 0) continue;
 
             if (hatch.getIo() == IO.IN) {
-                handleInbound(level, hatchPos, tank, radius, rate);
+                handleInbound(level, hatchPos, hatch, tank, radius, rate);
             } else {
-                handleOutbound(level, hatchPos, tank, radius, rate);
+                handleOutbound(level, hatchPos, hatch, tank, radius, rate);
             }
         }
     }
 
-    private static void handleInbound(ServerLevel level, BlockPos hatchPos, ISourceTile tank, int radius, int rate) {
+    private static void handleInbound(ServerLevel level, BlockPos hatchPos, SourceHatchPartMachine hatch, ISourceTile tank, int radius, int rate) {
         if (!tank.canAcceptSource()) return;
 
         int remaining = Math.min(tank.getMaxSource() - tank.getSource(), rate);
@@ -79,19 +77,19 @@ public final class SourceHatchJarTransferTick {
                 jar.removeSource(toMove);
                 tank.addSource(toMove);
 
-                // CRITICAL: Ensure the jar and hatch sync to client for particles/UI
                 jar.setChanged();
                 level.sendBlockUpdated(targetPos, jar.getBlockState(), jar.getBlockState(), 3);
 
+                // FIXED FOR 8.0.0: Update the hatch data status using the refactored mark method
+                hatch.markAsChanged();
+
                 ParticleUtil.spawnFollowProjectile(level, targetPos, hatchPos, jar.getColor());
                 remaining -= toMove;
-
-                // PhoenixCore.LOGGER.debug("Hatch at {} pulled {} source from jar at {}", hatchPos, toMove, targetPos);
             }
         }
     }
 
-    private static void handleOutbound(ServerLevel level, BlockPos hatchPos, ISourceTile tank, int radius, int rate) {
+    private static void handleOutbound(ServerLevel level, BlockPos hatchPos, SourceHatchPartMachine hatch, ISourceTile tank, int radius, int rate) {
         int remaining = Math.min(tank.getSource(), rate);
         if (remaining <= 0) return;
 
@@ -110,10 +108,11 @@ public final class SourceHatchJarTransferTick {
                 jar.setChanged();
                 level.sendBlockUpdated(targetPos, jar.getBlockState(), jar.getBlockState(), 3);
 
+                // FIXED FOR 8.0.0: Notifies the machine network to update state and sync data fields
+                hatch.markAsChanged();
+
                 ParticleUtil.spawnFollowProjectile(level, hatchPos, targetPos, jar.getColor());
                 remaining -= toMove;
-
-                // PhoenixCore.LOGGER.debug("Hatch at {} pushed {} source to jar at {}", hatchPos, toMove, targetPos);
             }
         }
     }

@@ -17,7 +17,7 @@
  * 
  * private int cleanliness = 1000;
  * 
- * public PhoenixCleanroomMachine(IMachineBlockEntity holder, Object... args) {
+ * public PhoenixCleanroomMachine(BlockEntityCreationInfo holder, Object... args) {
  * super(holder, args);
  * }
  * 
@@ -39,7 +39,7 @@
  * 
  * getInputFluidInventory().drain(config.fluidConsumption, true);
  * 
- * AABB interior = new AABB(getPos().offset(1, 1, 1), getPos().offset(2, 2, 2));
+ * AABB interior = new AABB(getBlockPos().offset(1, 1, 1), getBlockPos().offset(2, 2, 2));
  * List<Player> playersInside = getLevel().getEntitiesOfClass(Player.class, interior);
  * 
  * if (!playersInside.isEmpty()) {

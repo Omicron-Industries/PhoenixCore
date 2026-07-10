@@ -1,6 +1,6 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,10 +25,8 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity metaBE)) return;
-
-        var machine = metaBE.getMetaMachine();
-        if (!(machine instanceof SourceHatchPartMachine hatch)) return;
+        // FIXED FOR 8.0.0: SourceHatchPartMachine is now the BlockEntity directly.
+        if (!(accessor.getBlockEntity() instanceof SourceHatchPartMachine hatch)) return;
 
         ISourceTile source = hatch.getSource();
         if (source == null) return;
@@ -39,8 +37,11 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+        // FIXED FOR 8.0.0: Type verification safety check added to match the formatting behavior
+        if (!(accessor.getBlockEntity() instanceof SourceHatchPartMachine)) return;
+
         CompoundTag data = accessor.getServerData();
-        if (!data.contains(KEY_STORED) || !data.contains(KEY_CAP)) return;
+        if (data == null || !data.contains(KEY_STORED) || !data.contains(KEY_CAP)) return;
 
         int stored = data.getInt(KEY_STORED);
         int cap = data.getInt(KEY_CAP);

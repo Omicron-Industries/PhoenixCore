@@ -1,0 +1,20 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "one_minus_srcalpha"
+  },
+  "vertex": "phoenixcore:phoenix_nebula",
+  "fragment": "phoenixcore:phoenix_nebula",
+  "uniforms": [
+    { "name": "OutSize",        "type": "float",     "count": 2,  "values": [1.0, 1.0] },
+    { "name": "InvViewMat",     "type": "matrix4x4", "count": 16, "values": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1] },
+    { "name": "InvProjMat",     "type": "matrix4x4", "count": 16, "values": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1] },
+    { "name": "PrimaryColor",   "type": "float",     "count": 3,  "values": [0.6, 0.05, 0.9] },
+    { "name": "SecondaryColor", "type": "float",     "count": 3,  "values": [0.1, 0.3,  1.0] },
+    { "name": "Density",        "type": "float",     "count": 1,  "values": [0.5] },
+    { "name": "Scale",          "type": "float",     "count": 1,  "values": [1.2] },
+    { "name": "Seed",           "type": "float",     "count": 1,  "values": [0.0] },
+    { "name": "Time",           "type": "float",     "count": 1,  "values": [0.0] }
+  ]
+}

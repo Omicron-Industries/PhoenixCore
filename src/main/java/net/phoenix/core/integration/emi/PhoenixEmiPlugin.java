@@ -7,8 +7,6 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.*;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 
 import dev.emi.emi.api.EmiDragDropHandler;
@@ -25,79 +23,11 @@ import dev.emi.emi.api.widget.Bounds;
 @EmiEntrypoint
 public class PhoenixEmiPlugin implements EmiPlugin {
 
-    // ── Category definitions ───────────────────────────────────────────────────
-    public static final EmiStack COOLER_ICON = EmiStack.of(PhoenixFissionBlocks.COOLER_BASIC.asStack());
-
-    public static final EmiRecipeCategory FISSION_FUEL = new EmiRecipeCategory(
-            new ResourceLocation("phoenixcore", "fission_fuel"),
-            EmiStack.of(ChemicalHelper.get(TagPrefix.ingot, GTMaterials.Uranium235)));
-
-    public static final EmiRecipeCategory FISSION_COOLANT = new EmiRecipeCategory(
-            new ResourceLocation("phoenixcore", "fission_coolant"),
-            EmiStack.of(Items.WATER_BUCKET));
-
-    public static final EmiRecipeCategory FISSION_BREEDING = new EmiRecipeCategory(
-            new ResourceLocation("phoenixcore", "fission_breeding"),
-            EmiStack.of(Items.CAULDRON));
-
     // ── Registration ──────────────────────────────────────────────────────────
     @Override
     public void register(EmiRegistry registry) {
-        registry.addCategory(FISSION_FUEL);
-        registry.addCategory(FISSION_COOLANT);
-        registry.addCategory(FISSION_BREEDING);
 
-        // ── Fuel rod info cards ───────────────────────────────────────────────
-        for (FissionFuelRodBlock.FissionFuelRodTypes type : FissionFuelRodBlock.FissionFuelRodTypes.values()) {
-            registry.addRecipe(new FuelRodEmiRecipe(type));
-            registry.addRecipe(new FissionFuelInfoEmiRecipe(type));
-            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
-            if (!stack.isEmpty()) {
-                registry.addWorkstation(FISSION_FUEL, stack);
-                registry.addWorkstation(FISSION_BREEDING, stack);
-            }
-        }
 
-        // ── Coolants ─────────────────────────────────────────────────────────
-        for (FissionCoolerBlock.FissionCoolerTypes type : FissionCoolerBlock.FissionCoolerTypes.values()) {
-            registry.addRecipe(new CoolantEmiRecipe(type));
-            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
-            if (!stack.isEmpty()) {
-                registry.addWorkstation(FISSION_COOLANT, stack);
-            }
-        }
-
-        // ── Breeding blanket info cards ────────────────────────────────────────
-        for (FissionBlanketBlock.BreederBlanketTypes type : FissionBlanketBlock.BreederBlanketTypes.values()) {
-            registry.addRecipe(new BreedingEmiRecipe(type));
-            registry.addRecipe(new BreederBlanketInfoEmiRecipe(type));
-            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
-            if (!stack.isEmpty()) {
-                registry.addWorkstation(FISSION_BREEDING, stack);
-            }
-        }
-
-        // ── Moderators ────────────────────────────────────────────────────────
-        for (FissionModeratorBlock.FissionModeratorTypes type : FissionModeratorBlock.FissionModeratorTypes.values()) {
-            EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
-            if (!stack.isEmpty()) {
-                registry.addWorkstation(FISSION_FUEL, stack);
-                registry.addWorkstation(FISSION_BREEDING, stack);
-            }
-        }
-
-        // ── Machine workstations ──────────────────────────────────────────────
-        registry.addWorkstation(FISSION_FUEL,
-                EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
-        registry.addWorkstation(FISSION_COOLANT,
-                EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
-        registry.addWorkstation(FISSION_BREEDING,
-                EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
-
-        registry.addWorkstation(FISSION_FUEL,
-                EmiStack.of(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR.asStack()));
-        registry.addWorkstation(FISSION_COOLANT,
-                EmiStack.of(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR.asStack()));
 
         // ── Recipe Builder exclusion + drag-drop ─────────────────────────────
         registry.addExclusionArea(RecipeBuilderScreen.class, (screen, consumer) -> consumer.accept(new Bounds(

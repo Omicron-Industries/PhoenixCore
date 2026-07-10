@@ -1,6 +1,7 @@
 package net.phoenix.core.client.renderer.machine;
 
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
@@ -106,7 +107,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         float time = (machine.getOffsetTimer() + partialTick) * 0.02f;
 
         Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-        Vec3 center = Vec3.atCenterOf(machine.getPos());
+        Vec3 center = Vec3.atCenterOf(machine.getBlockPos());
         double distSq = cam.distanceToSqr(center);
 
         int segments, crossSections;
@@ -330,7 +331,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
 
     @Override
     public @NotNull AABB getRenderBoundingBox(FusionReactorMachine m) {
-        return new AABB(m.getPos()).inflate(40);
+        return new AABB(m.getBlockPos()).inflate(40);
     }
 }
 
@@ -436,7 +437,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
  * float time = (machine.getOffsetTimer() + partialTick) * 0.02f;
  * 
  * Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
- * double distSq = cam.distanceToSqr(Vec3.atCenterOf(machine.getPos()));
+ * double distSq = cam.distanceToSqr(Vec3.atCenterOf(machine.getBlockPos()));
  * int segments = distSq < LOD_NEAR * LOD_NEAR ? 400 : (distSq < LOD_MID * LOD_MID ? 260 : 160);
  * int crossSections = distSq < LOD_NEAR * LOD_NEAR ? 12 : 8;
  * 
@@ -587,7 +588,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
  * 
  * @Override
  * public @NotNull AABB getRenderBoundingBox(FusionReactorMachine m) {
- * return new AABB(m.getPos()).inflate(60);
+ * return new AABB(m.getBlockPos()).inflate(60);
  * }
  * }
  * 
@@ -652,7 +653,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
  * float time = (machine.getOffsetTimer() + partialTick) * 0.02f;
  * 
  * Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
- * Vec3 center = Vec3.atCenterOf(machine.getPos());
+ * Vec3 center = Vec3.atCenterOf(machine.getBlockPos());
  * double distSq = cameraPos.distanceToSqr(center);
  * 
  * int segments;
@@ -864,7 +865,7 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
  * 
  * @Override
  * public @NotNull AABB getRenderBoundingBox(FusionReactorMachine machine) {
- * return new AABB(machine.getPos()).inflate(40, 40, 40);
+ * return new AABB(machine.getBlockPos()).inflate(40, 40, 40);
  * }
  * }
  * 

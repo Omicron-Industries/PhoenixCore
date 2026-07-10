@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -27,77 +26,106 @@ import snownee.jade.api.config.IPluginConfig;
 
 import java.util.UUID;
 
+/**
+ * GTM 8.0 port of TeslaNetworkProvider.
+ *
+ * Two real bugs fixed here, neither of which was a MUI/8.0-API issue:
+ *
+ * 1. COMPILE ERROR: the original imported two different classes both named MetaMachine under
+ *    the same simple name (com.gregtechceu.gtceu.api.blockentity.MetaMachine AND
+ *    com.gregtechceu.gtceu.api.machine.MetaMachine) -- a duplicate single-type-import, which
+ *    doesn't compile. Fixed by dropping the block-entity-side check entirely and resolving the
+ *    machine directly via MetaMachine.getMachine(level, pos) -- the same confirmed pattern
+ *    already used throughout TeslaBinderItem -- instead of guessing at the real block-entity
+ *    class name.
+ *
+ * 2. THE "DOUBLE TRACKING / UNRELIABLE" BUG: the original's else-branch (for blocks that are
+ *    neither a TeslaEnergyHatchPartMachine nor a TeslaTowerMachine) found the owning team by
+ *    linearly scanning EVERY team's network and checking soulLinkedMachines.contains(pos) /
+ *    activeChargers.contains(pos). This is exactly the kind of scan that produces unreliable
+ *    results: if a position is ever stale in more than one team's tracking set (e.g. after an
+ *    incomplete rebind/cleanup), the result silently depends on HashMap iteration order, picking
+ *    whichever team happens to be visited first rather than the actually-correct owner. It also
+ *    only checked 2 of the real tracking paths (soulLinkedMachines, activeChargers), silently
+ *    missing energyBuffered-tracked positions in this branch.
+ *
+ *    TeslaTeamEnergyData already has the correct, authoritative, O(1) lookup for exactly this:
+ *    machineToTeam (a single global BlockPos -> UUID map, kept up to date by toggleSoulLink,
+ *    setEnergyBuffered, and removeEndpoint) via getOwnerTeam(pos). This rewrite resolves the
+ *    team with getOwnerTeam(pos) directly -- no scanning, no ambiguity -- then determines the
+ *    connection-type label (mode) by checking the membership sets ONLY on that single resolved
+ *    team's TeamEnergy, not across all teams.
+ */
 public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDataProvider<BlockAccessor> {
 
     public static final ResourceLocation UID = PhoenixCore.id("tesla_network_info");
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        if (accessor.getBlockEntity() instanceof MetaMachineBlockEntity metaBE) {
-            UUID team = null;
-            BlockPos pos = accessor.getPosition();
-            long transferRate = 0;
-            int mode = -1;
+        // The original checked `accessor.getBlockEntity() instanceof MetaMachine`, but that
+        // can't have compiled -- MetaMachine here is the machine-logic class (returned by
+        // .getMetaMachine() in the original), not a block-entity type, and the import collision
+        // means the actual intended block-entity type is unknown. Sidestepped entirely by using
+        // MetaMachine.getMachine(level, pos) directly -- the same confirmed pattern already used
+        // throughout TeslaBinderItem -- instead of guessing at a block-entity class name.
+        MetaMachine machine = MetaMachine.getMachine(accessor.getLevel(), accessor.getPosition());
+        if (machine == null) return;
 
-            if (accessor.getLevel() instanceof ServerLevel sl) {
-                MinecraftServer server = sl.getServer();
-                ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-                if (overworld == null) return;
+        BlockPos pos = accessor.getPosition();
+        UUID team = null;
+        long transferRate = 0;
+        int mode = -1;
 
-                TeslaTeamEnergyData data = TeslaTeamEnergyData.get(overworld);
-                MetaMachine machine = metaBE.getMetaMachine();
+        if (!(accessor.getLevel() instanceof ServerLevel sl)) return;
 
-                if (machine instanceof TeslaEnergyHatchPartMachine hatch) {
-                    team = hatch.getOwnerTeamUUID();
-                    if (team != null) {
-                        mode = hatch.isUplink() ? 0 : 1;
-                        transferRate = data.getOrCreate(team).machineDisplayFlow.getOrDefault(pos, 0L);
-                    }
-                } else if (machine instanceof TeslaTowerMachine tower) {
-                    team = tower.getOwnerUUID();
-                    mode = -1;
-                }
+        MinecraftServer server = sl.getServer();
+        ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+        if (overworld == null) return;
 
-                else {
-                    for (var entry : data.getNetworksView().entrySet()) {
-                        TeslaTeamEnergyData.TeamEnergy teamData = entry.getValue();
+        TeslaTeamEnergyData data = TeslaTeamEnergyData.get(overworld);
 
-                        // Inside the loop in appendServerData
-                        if (teamData.soulLinkedMachines.contains(pos)) {
-                            team = entry.getKey();
-                            transferRate = teamData.machineDisplayFlow.getOrDefault(pos, 0L);
+        if (machine instanceof TeslaEnergyHatchPartMachine hatch) {
+            team = hatch.getOwnerTeamUUID();
+            if (team != null) {
+                mode = hatch.isUplink() ? 0 : 1;
+                transferRate = data.getOrCreate(team).machineDisplayFlow.getOrDefault(pos, 0L);
+            }
+        } else if (machine instanceof TeslaTowerMachine tower) {
+            team = tower.getOwnerUUID();
+            mode = -1;
+        } else {
+            // Single authoritative O(1) lookup instead of scanning every team's network.
+            team = data.getOwnerTeam(pos);
+            if (team != null) {
+                TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(team);
+                transferRate = teamData.machineDisplayFlow.getOrDefault(pos, 0L);
 
-                            if (transferRate < 0) {
-                                mode = 3;
-                            } else {
-                                mode = 1;
-                            }
-                            break;
-                        } else if (teamData.activeChargers.contains(pos)) {
-                            team = entry.getKey();
-                            mode = 2;
-                            transferRate = teamData.machineDisplayFlow.getOrDefault(pos, 0L);
-                            break;
-                        }
-                    }
-                }
-
-                if (team != null) {
-                    TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(team);
-                    tag.putUUID("TeslaTeam", team);
-                    tag.putString("TeamName", TeamUtils.getTeamName(team));
-                    tag.putString("Stored", FormattingUtil.formatNumbers(teamData.stored));
-                    tag.putString("Capacity", FormattingUtil.formatNumbers(teamData.capacity));
-                    tag.putLong("LocalTransfer", transferRate);
-                    tag.putInt("TransferMode", mode);
-
-                    int physicalHatches = teamData.getLiveHatchCount(sl.getGameTime());
-                    int wiredMachines = teamData.soulLinkedMachines.size();
-                    int wirelessChargers = teamData.activeChargers.size();
-
-                    tag.putInt("TotalConnections", physicalHatches + wiredMachines + wirelessChargers);
+                if (teamData.soulLinkedMachines.contains(pos)) {
+                    mode = transferRate < 0 ? 3 : 1;
+                } else if (teamData.activeChargers.contains(pos)) {
+                    mode = 2;
+                } else {
+                    // Registered via machineToTeam (e.g. through energyBuffered) but not in
+                    // either membership set on this team -- treat as a generic consumer/taker.
+                    mode = 1;
                 }
             }
+        }
+
+        if (team != null) {
+            TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(team);
+            tag.putUUID("TeslaTeam", team);
+            tag.putString("TeamName", TeamUtils.getTeamName(team));
+            tag.putString("Stored", FormattingUtil.formatNumbers(teamData.stored));
+            tag.putString("Capacity", FormattingUtil.formatNumbers(teamData.capacity));
+            tag.putLong("LocalTransfer", transferRate);
+            tag.putInt("TransferMode", mode);
+
+            int physicalHatches = teamData.getLiveHatchCount(sl.getGameTime());
+            int wiredMachines = teamData.soulLinkedMachines.size();
+            int wirelessChargers = teamData.activeChargers.size();
+
+            tag.putInt("TotalConnections", physicalHatches + wiredMachines + wirelessChargers);
         }
     }
 

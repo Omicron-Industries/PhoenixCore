@@ -1,8 +1,11 @@
 package net.phoenix.core.common.machine.multiblock.unique;
 
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -10,7 +13,11 @@ import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
+
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -61,16 +68,16 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
     private float cachedFloraBoost = 0.0f;
 
     @Getter
-    @Persisted
+    @SaveField
     private long totalWorkTicks = 0L;
 
-    @Persisted
+    @SaveField
     private final long[] threadProgress = new long[THREAD_COUNT];
 
-    @Persisted
+    @SaveField
     private final long[] threadDuration = new long[THREAD_COUNT];
 
-    public BasicThreadedMachine(IMachineBlockEntity holder) {
+    public BasicThreadedMachine(BlockEntityCreationInfo holder) {
         super(holder);
 
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -81,14 +88,14 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@org.jetbrains.annotations.NotNull String substructureName) {
+        super.formStructure(substructureName);
         restoreThreadsFromPersisted();
     }
 
     @Override
-    public void onStructureInvalid() {
-        super.onStructureInvalid();
+    public void invalidateStructure(@org.jetbrains.annotations.NotNull String substructureName) {
+        super.invalidateStructure(substructureName);
         for (BasicThreadedMachine.RecipeThread t : threads) t.clear();
     }
 
@@ -114,7 +121,7 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
 
         if (getOffsetTimer() % 5 == 0) {
             saveThreadsToPersisted();
-            this.markDirty();
+            if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
         }
     }
 
@@ -212,26 +219,31 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
     }
 
     @Override
-    public void addDisplayText(@NotNull List<Component> textList) {
-        super.addDisplayText(textList);
-        if (!isFormed()) return;
+    public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
+        List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
+        if (!isFormed()) return widgets;
 
-        if (getLevel() instanceof ServerLevel serverLevel) {
+        if (getLevel() instanceof ServerLevel) {
             int activeThreads = 0;
             for (BasicThreadedMachine.RecipeThread t : threads) if (t.isActive()) activeThreads++;
 
             if (activeThreads > 0) {
-                textList.add(Component.literal("§dActive Threads: §f" + activeThreads + " / " + THREAD_COUNT));
+                final int active = activeThreads;
+                widgets.add(new TextWidget<>(Text.dynamic(() ->
+                        Component.literal("§dActive Threads: §f" + active + " / " + THREAD_COUNT))));
                 for (int i = 0; i < THREAD_COUNT; i++) {
-                    BasicThreadedMachine.RecipeThread t = threads[i];
-                    if (t.isActive()) {
+                    final int idx = i;
+                    widgets.add(new TextWidget<>(Text.dynamic(() -> {
+                        BasicThreadedMachine.RecipeThread t = threads[idx];
+                        if (!t.isActive()) return Component.empty();
                         int pct = (int) (t.getProgressPercent() * 100);
-                        textList.add(Component.literal("  §8Thread " + (i + 1) + ": §7" + pct + "%"));
-                    }
+                        return Component.literal("  §8Thread " + (idx + 1) + ": §7" + pct + "%");
+                    })));
                 }
             } else {
-                textList.add(Component.literal("§8Threads Idle"));
+                widgets.add(new TextWidget<>(Text.of(Component.literal("§8Threads Idle"))));
             }
         }
+        return widgets;
     }
 }

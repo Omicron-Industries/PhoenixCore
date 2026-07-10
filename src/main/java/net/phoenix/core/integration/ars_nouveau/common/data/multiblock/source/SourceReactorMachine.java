@@ -1,12 +1,14 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +17,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.api.recipe.PhoenixRecipeModifier;
 import net.phoenix.core.saveddata.SoulSavedData;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,17 +29,26 @@ import java.util.List;
 public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
 
     @Getter
+    @SaveField
+    @SyncToClient
     private float reactorStability = 1.0f;
 
-    public SourceReactorMachine(IMachineBlockEntity holder) {
-        super(holder);
+    @SaveField
+    @SyncToClient
+    private float cachedSoulDensity = 1.0f;
+
+    private int scanTimer = 0;
+
+    public SourceReactorMachine(BlockEntityCreationInfo info) {
+        super(info);
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@NotNull String substructureName) {
+        super.formStructure(substructureName);
         if (getLevel() instanceof ServerLevel serverLevel) {
-            this.reactorStability = calculateStability(serverLevel, getPos());
+            this.reactorStability = calculateStability(serverLevel, getBlockPos());
+            this.cachedSoulDensity = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(getBlockPos()));
         }
     }
 
@@ -60,9 +75,8 @@ public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
                             if (id.contains("source_gem_block")) stabilizers += 0.04f;
                             else if (id.contains("magebloom_block")) stabilizers += 0.06f;
                             else if (id.contains("arcane_core")) stabilizers += 0.12f;
-                            else if (id.contains(""))
 
-                                if (stabilizers >= 4.0f) return 5.0f;
+                            if (stabilizers >= 4.0f) return 5.0f;
                         }
                     }
                 }
@@ -70,8 +84,6 @@ public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
         }
         return 1.0f + stabilizers;
     }
-
-    private int scanTimer = 0;
 
     @Override
     public boolean onWorking() {
@@ -81,8 +93,8 @@ public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
             scanTimer++;
             if (scanTimer >= 200) {
                 if (getLevel() instanceof ServerLevel level) {
-                    this.reactorStability = calculateStability(level, getPos());
-                    this.markDirty();
+                    this.reactorStability = calculateStability(level, getBlockPos());
+                    this.cachedSoulDensity = SoulSavedData.get(level).getMultiplier(new ChunkPos(getBlockPos()));
                 }
                 scanTimer = 0;
             }
@@ -98,7 +110,7 @@ public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
         float soulDensity = 1.0f;
 
         if (reactor.getLevel() instanceof ServerLevel serverLevel) {
-            soulDensity = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(reactor.getPos()));
+            soulDensity = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(reactor.getBlockPos()));
         }
 
         double speedBoost = 1.0 + (soulDensity * 0.15);
@@ -111,34 +123,23 @@ public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
     }
 
     @Override
-    public void addDisplayText(List<Component> textList) {
-        super.addDisplayText(textList);
-        if (!isFormed()) return;
-
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            float soulDensity = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(getPos()));
-            float totalPressure = soulDensity * reactorStability;
-
-            textList.add(Component.literal("§7-".repeat(15)));
-            textList.add(Component.literal("§5Reactor Core Metrics:"));
-            textList.add(Component.literal("  §7Local Soul Density: §d" + String.format("%.2f", soulDensity)));
-
+    public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
+        List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
+        if (!isFormed()) return widgets;
+        widgets.add(new TextWidget<>(Text.of(Component.literal("§5Reactor Core Metrics:"))));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §7Local Soul Density: §d" + String.format("%.2f", cachedSoulDensity)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> {
             String color = reactorStability > 2.0f ? "§b" : (reactorStability > 1.5f ? "§a" : "§e");
-            textList.add(Component.literal("  §7Stability Index: " + color + String.format("%.2fx", reactorStability)));
-
-            var recipe = recipeLogic.getLastRecipe();
-            if (recipe != null && recipe.data.contains("voidic")) {
-                textList.add(Component.literal("  §3Voidic Buffer: §bOPTIMAL (-25% EU)"));
-            }
-
-            textList.add(Component.literal("  §eReaction Pressure: §l" + String.format("%.2fx", totalPressure)));
-
-            if (reactorStability < 1.1f) {
-                textList.add(Component.literal("§c§l⚠ LOW STABILITY ⚠"));
-                textList.add(Component.literal("§7(Source Waste Imminent)"));
-            } else if (reactorStability > 2.2f) {
-                textList.add(Component.literal("§b§l⚡ CRITICAL EFFICIENCY ⚡"));
-            }
-        }
+            return Component.literal("  §7Stability Index: " + color + String.format("%.2fx", reactorStability));
+        })));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §eReaction Pressure: §l" + String.format("%.2fx", cachedSoulDensity * reactorStability)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> {
+            if (reactorStability < 1.1f) return Component.literal("§c§l⚠ LOW STABILITY — Source Waste Imminent ⚠");
+            if (reactorStability > 2.2f) return Component.literal("§b§l⚡ CRITICAL EFFICIENCY ⚡");
+            return Component.literal("");
+        })));
+        return widgets;
     }
 }

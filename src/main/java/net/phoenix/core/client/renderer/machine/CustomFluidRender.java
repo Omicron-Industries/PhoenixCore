@@ -1,16 +1,18 @@
 package net.phoenix.core.client.renderer.machine;
 
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IFluidRenderMulti;
-import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
+import com.gregtechceu.gtceu.common.machine.trait.multiblock.MultiblockFluidRendererTrait;
 import com.gregtechceu.gtceu.client.renderer.block.FluidBlockRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
 import com.gregtechceu.gtceu.client.util.RenderUtil;
 import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
@@ -22,16 +24,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Custom renderer that draws the current recipe output fluid on chosen faces.
  */
 @SuppressWarnings("all")
-public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFluidRender> {
+public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, CustomFluidRender> {
 
     public static final CustomFluidRender INSTANCE = new CustomFluidRender();
     public static final Codec<CustomFluidRender> CODEC = Codec.unit(CustomFluidRender::new);
-    public static final DynamicRenderType<IFluidRenderMulti, CustomFluidRender> TYPE = new DynamicRenderType<>(CODEC);
+    public static final DynamicRenderType<WorkableMultiblockMachine, CustomFluidRender> TYPE = new DynamicRenderType<>(CODEC);
 
     private final FluidBlockRenderer fluidRenderer;
     private final List<RelativeDirection> drawFaces;
@@ -51,17 +54,22 @@ public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFl
     }
 
     @Override
-    public @NotNull DynamicRenderType<IFluidRenderMulti, CustomFluidRender> getType() {
+    public @NotNull DynamicRenderType<WorkableMultiblockMachine, CustomFluidRender> getType() {
         return TYPE;
     }
 
     @Override
-    public void render(@NotNull IFluidRenderMulti machine, float partialTick,
+    public void render(@NotNull WorkableMultiblockMachine machine, float partialTick,
                        @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer,
                        int packedLight, int packedOverlay) {
         if (!ConfigHolder.INSTANCE.client.renderer.renderFluids) return;
 
-        if (!machine.isFormed() || machine.getFluidOffsets() == null) return;
+        // FIX 1: Passed .TYPE instead of .class
+        var fluidTrait = machine.getTrait(MultiblockFluidRendererTrait.TYPE);
+        if (fluidTrait == null || !machine.isFormed()) return;
+
+        Set<BlockPos> fluidOffsets = fluidTrait.getFluidOffsets();
+        if (fluidOffsets == null || fluidOffsets.isEmpty()) return;
 
         var recipeLogic = machine.getRecipeLogic();
         if (recipeLogic == null) return;
@@ -69,8 +77,8 @@ public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFl
         var lastRecipe = recipeLogic.getLastRecipe();
         if (lastRecipe == null) return;
 
-        if (machine.isActive()) {
-            if (cachedFluid == null || machine.self().getOffsetTimer() % 20 == 0) {
+        if (recipeLogic.isActive()) {
+            if (cachedFluid == null || machine.getOffsetTimer() % 20 == 0) {
                 cachedFluid = RenderUtil.getRecipeFluidToRender(lastRecipe);
             }
         } else {
@@ -85,34 +93,40 @@ public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFl
         for (RelativeDirection face : drawFaces) {
             poseStack.pushPose();
 
-            var dir = face.getRelative(machine.self().getFrontFacing(), machine.self().getUpwardsFacing(),
-                    machine.self().isFlipped());
+            Direction dir = face.getRelativeFacing(
+                    machine.getFrontFacing(),
+                    machine.getUpwardsFacing(),
+                    false
+            );
 
             if (dir.getAxis() != Direction.Axis.Y) {
                 dir = dir.getOpposite();
             }
 
+            // FIX 2: Let drawPlane handle the Collection natively instead of looping manually.
+            // Passed fluidOffsets, poseStack, and machine.getBlockPos() directly matching the signature.
             fluidRenderer.drawPlane(
                     dir,
-                    machine.getFluidOffsets(),
-                    poseStack.last().pose(),
+                    fluidOffsets,
+                    poseStack,
                     consumer,
                     cachedFluid,
                     RenderUtil.FluidTextureType.STILL,
-                    packedOverlay,
-                    machine.self().getPos());
+                    packedOverlay, // 7. combinedOverlay
+                    packedLight    // 8. combinedLight
+            );
 
             poseStack.popPose();
         }
     }
 
     @Override
-    public boolean shouldRenderOffScreen(@NotNull IFluidRenderMulti machine) {
+    public boolean shouldRenderOffScreen(@NotNull WorkableMultiblockMachine machine) {
         return true;
     }
 
     @Override
-    public @NotNull AABB getRenderBoundingBox(IFluidRenderMulti machine) {
-        return new AABB(machine.self().getPos()).inflate(32);
+    public @NotNull AABB getRenderBoundingBox(WorkableMultiblockMachine machine) {
+        return new AABB(machine.getBlockPos()).inflate(32);
     }
 }

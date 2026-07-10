@@ -1,29 +1,28 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
+
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.drawable.Rectangle;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widget.ParentWidget;
+
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.network.chat.Component;
 import net.phoenix.core.integration.ars_nouveau.api.machine.trait.NotifiableSourceContainer;
-import net.phoenix.core.integration.ars_nouveau.client.gui.SourceTankFancyUIWidget;
+import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchBackground;
 import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source.SourceHatchPartMachine;
 
 import lombok.Getter;
@@ -34,27 +33,31 @@ import static net.phoenix.core.utils.CompactCount.fmt;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-
-public class SourceMultiblockTankMachine extends MultiblockControllerMachine implements IFancyUIMachine {
+public class SourceMultiblockTankMachine extends MultiblockControllerMachine implements IMuiMachine {
 
     @Getter
-    @DescSynced
-    @Persisted
+    @SaveField
+    @SyncToClient
     protected final NotifiableSourceContainer sourceTank;
 
-    public SourceMultiblockTankMachine(IMachineBlockEntity holder, int capacity, int maxConsumption) {
-        super(holder);
-        this.sourceTank = new NotifiableSourceContainer(this, IO.BOTH, capacity, maxConsumption);
-    }
-
-    @Override
-    public InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-                                   BlockHitResult hit) {
-        if (!isFormed()) return InteractionResult.FAIL;
-        return super.onUse(state, world, pos, player, hand, hit);
-    }
-
     private TickableSubscription transferSub;
+
+    public SourceMultiblockTankMachine(BlockEntityCreationInfo info, int capacity, int maxConsumption) {
+        super(info);
+        this.sourceTank = attachTrait(new NotifiableSourceContainer(IO.BOTH, capacity, maxConsumption));
+    }
+
+    // NOTE: this onUse override is UNVERIFIED. I don't have a confirmed signature for
+    // ExtendedUseOnContext or tryToOpenUI in your 8.0 codebase, and the person hasn't
+    // either, so treat this as a starting guess to check against the real API rather
+    // than working code. If MultiblockControllerMachine already opens the UI on right
+    // click by default (worth checking before assuming an override is even needed),
+    // this whole method may be unnecessary.
+    // @Override
+    // public InteractionResult onUse(ExtendedUseOnContext context) {
+    //     if (!isFormed()) return InteractionResult.FAIL;
+    //     return this.tryToOpenUI(context.getPlayer(), context.getHand());
+    // }
 
     @Override
     public void onLoad() {
@@ -76,22 +79,21 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
     private void transferSource() {
         if (!isFormed()) return;
 
-        for (IMultiPart part : getParts()) {
+        for (MultiblockPartMachine part : getParts()) {
             if (!(part instanceof SourceHatchPartMachine hatch)) continue;
             NotifiableSourceContainer hatchTank = hatch.getSourceContainer();
 
             if (hatch.getIo() == IO.IN) {
                 int available = hatchTank.getSource();
                 if (available > 0) {
-                    int space = sourceTank.getMaxSource() - sourceTank.getSource();
-                    int transfer = Math.min(available, space);
+                    int transfer = Math.min(available, (int) (sourceTank.getMaxSource() - sourceTank.getSource()));
                     if (transfer > 0) {
                         hatchTank.setSource(hatchTank.getSource() - transfer);
                         sourceTank.setSource(sourceTank.getSource() + transfer);
                     }
                 }
             } else if (hatch.getIo() == IO.OUT) {
-                int available = sourceTank.getSource();
+                int available = (int) sourceTank.getSource();
                 if (available > 0) {
                     int space = hatchTank.getMaxSource() - hatchTank.getSource();
                     int transfer = Math.min(available, space);
@@ -104,17 +106,83 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
         }
     }
 
+    /**
+     * MUI2 panel for the Source Tank controller.
+     *
+     * Recreates the purple HUD that was previously in SourceTankFancyUIWidget:
+     *  - Purple gradient + grid + animated mist background
+     *  - "SOURCE TANK" title
+     *  - "Capacity X/Y – Z%" label
+     *  - Colour-coded fill bar (cyan → lavender → bright purple)
+     */
     @Override
-    public ModularUI createUI(Player player) {
-        final int w = 176;
-        final int h = 166;
-        return new ModularUI(w, h, this, player)
-                .widget(new SourceTankFancyUIWidget(this, w, h));
+    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData data, PanelSyncManager syncManager,
+                            UISettings settings) {
+        // Purple background — same drawable as the hatch, fixed accent colour for the tank
+        if (isRemote()) {
+            mainWidget.background(new SourceHatchBackground(0xAA8F00FF));
+        }
+
+        // ----- Title -----
+        mainWidget.child(Text.dynamic(() -> Component.literal("SOURCE TANK"))
+                .asWidget()
+                .pos(8, 6)
+                .color(0xFF8F00FF));
+
+        // ----- Capacity label (dynamic) -----
+        mainWidget.child(Text.dynamic(() -> {
+            int cur = (int) sourceTank.getSource();
+            int max = Math.max(1, sourceTank.getMaxSource());
+            int pct = (int) ((cur * 100L) / max);
+            return Component.literal("Capacity " + fmtSrc(cur) + "/" + fmtSrc(max) + " - " + pct + "%");
+        }).asWidget()
+                .pos(8, 24)
+                .color(0xFFE6E6FF));
+
+        // ----- Fill bar (background + filled portion) -----
+        // Background rectangle
+        mainWidget.child(new Rectangle()
+                .color(0xFF120520)
+                .asWidget()
+                .pos(8, 38)
+                .size(160, 5));
+
+        // Filled portion — uses a DynamicWidget or we approximate with a fixed-width rectangle
+        // driven by a sync value.  For simplicity we embed a rectangle whose width is set
+        // each frame via a Text overlay hack; a proper ProgressWidget is the cleaner solution
+        // but requires a DoubleSyncValue that is beyond the current sync wiring here.
+        // For now, attach the fill as a child that redraws itself using Text.dynamic width trick:
+        mainWidget.child(Text.dynamic(() -> {
+            int cur = (int) sourceTank.getSource();
+            int max = Math.max(1, sourceTank.getMaxSource());
+            int pct = (int) ((cur * 100L) / max);
+            // Pick bar colour
+            int barColor = pct < 30 ? 0xFF00E5FF : pct < 75 ? 0xFFD466FF : 0xFFBD00FF;
+            // We can't resize a widget here, so just show a coloured string of '|' characters
+            // to approximate a bar (16 chars wide at ~10 px each = 160 px).
+            int filled = (int) ((pct / 100.0) * 20);
+            String bar = "|".repeat(filled);
+            return Component.literal(bar).withStyle(style -> style.withColor(barColor));
+        }).asWidget()
+                .pos(8, 37)
+                .height(10));
+
+        // ----- Separator line -----
+        mainWidget.child(new Rectangle()
+                .color(0x448F00FF)
+                .asWidget()
+                .pos(8, 55)
+                .size(160, 1));
     }
 
-    @Override
-    public Widget createUIWidget() {
-        return new WidgetGroup(0, 0, 176, 74);
+    /** Compact number formatter used in the source-level capacity label. */
+    private static String fmtSrc(long v) {
+        if (v < 1_000)       return String.valueOf(v);
+        if (v < 10_000)      return String.format("%.1fk", v / 1_000.0);
+        if (v < 1_000_000)   return (v / 1_000) + "k";
+        if (v < 10_000_000)  return String.format("%.1fM", v / 1_000_000.0);
+        if (v < 1_000_000_000) return (v / 1_000_000) + "M";
+        return String.format("%.1fB", v / 1_000_000_000.0);
     }
 
     public static String compactIfNumeric(String s) {
@@ -140,12 +208,4 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
         if (v >= 1_000_000L) return fmt(v, 1_000_000L, "M");
         return fmt(v, 1_000L, "k");
     }
-
-    @Override
-    public ManagedFieldHolder getFieldHolder() {
-        return MANAGED_FIELD_HOLDER;
-    }
-
-    public static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
-            SourceMultiblockTankMachine.class, MultiblockControllerMachine.MANAGED_FIELD_HOLDER);
 }

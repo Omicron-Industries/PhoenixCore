@@ -6,7 +6,6 @@
   "refmap": "mixins.phoenixcore.refmap.json",
   "mixins": [
     "accessor.AbilitiesAccessor",
-    "accessor.ColorSprayBehaviourAccessor",
     "accessor.GTOresAccessor",
     "accessor.RelayTileDisabledAccessor",
     "ae2.MEPatternBufferAccessor",
@@ -17,6 +16,7 @@
     "emi.EmiApiMixin",
     "gtceu.MetaMachineBlockEntityWandableMixin",
     "gtceu.MixinGTOres",
+    "gtceu.MultiblockResearchGateMixin",
     "gtceu.WorkableMultiblockMachineMixin",
     "minecraft.ItemStackTooltipMixin",
     "minecraft.RecipeManagerMixin"
@@ -27,7 +27,9 @@
     "minecraft.ChannelMixin",
     "minecraft.GameRendererMixin",
     "minecraft.GuiGraphicsCountSuffixMixin",
+    "minecraft.LevelRendererMixin",
     "minecraft.MixinOggAudioStream",
+    "minecraft.RenderTargetMixin",
     "minecraft.SoundEngineMixin"
   ],
   "injectors": {

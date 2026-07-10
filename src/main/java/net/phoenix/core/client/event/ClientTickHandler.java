@@ -62,11 +62,7 @@ public class ClientTickHandler {
             }
         }
 
-        // ── Guilds GUI ────────────────────────────────────────────────────
-        while (PhoenixKeybinds.OPEN_GUILDS.consumeClick()) {
-            if (mc.screen == null)
-                mc.setScreen(new net.phoenix.core.integration.phoenix_guilds.client.GuildScreen());
-        }
+
 
         // ── Tesla Mode Keybind Handling ─────────────────────────────────────
         while (PhoenixKeybinds.TESLA_MODE.consumeClick()) {

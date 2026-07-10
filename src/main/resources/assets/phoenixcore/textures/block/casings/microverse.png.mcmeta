@@ -1,5 +1,5 @@
 {
-    "ldlib": {
-        "connection": "phoenixcore:block/casing/microverse_ctm"
+    "gtceu": {
+        "connection_texture": "phoenixcore:block/casing/microverse_ctm"
     }
 }

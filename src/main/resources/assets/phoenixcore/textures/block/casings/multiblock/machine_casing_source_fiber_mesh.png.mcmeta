@@ -1,5 +1,5 @@
 {
-  "ldlib": {
-    "connection": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh_ctm"
+  "gtceu": {
+    "connection_texture": "phoenixcore:block/casings/multiblock/machine_casing_source_fiber_mesh_ctm"
   }
 }

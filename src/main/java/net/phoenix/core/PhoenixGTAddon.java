@@ -39,7 +39,9 @@ public class PhoenixGTAddon implements IGTAddon {
     }
 
     @Override
-    public void registerTagPrefixes() {}
+    public void registerTagPrefixes() {
+
+    }
 
     @Override
     public void addRecipes(Consumer<FinishedRecipe> provider) {

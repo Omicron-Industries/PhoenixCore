@@ -1,15 +1,17 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
-import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -19,6 +21,10 @@ import net.phoenix.core.api.recipe.PhoenixRecipeModifier;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
 import net.phoenix.core.saveddata.SoulSavedData;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,26 +35,34 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
     private static final long HARMONIZATION_THRESHOLD = 72000L;
 
     @Getter
+    @SaveField
+    @SyncToClient
     private float cachedFloraBoost = 0.0f;
 
+    @SaveField
+    @SyncToClient
+    private float cachedSoulDensity = 0.0f;
+
     @Getter
-    @Persisted
+    @SaveField
+    @SyncToClient
     private long totalWorkTicks = 0L;
 
-    @Persisted
+    @SaveField
     private boolean wasWorking = false;
 
     private int scanTimer = 0;
 
-    public AlchemicalImbuerMachine(IMachineBlockEntity holder) {
-        super(holder);
+    public AlchemicalImbuerMachine(BlockEntityCreationInfo info) {
+        super(info);
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
+    public void formStructure(@NotNull String substructureName) {
+        super.formStructure(substructureName);
         if (getLevel() instanceof ServerLevel level) {
-            this.cachedFloraBoost = scanEnvironment(level, getPos());
+            this.cachedFloraBoost = scanEnvironment(level, getBlockPos());
+            this.cachedSoulDensity = SoulSavedData.get(level).getMultiplier(new ChunkPos(getBlockPos()));
         }
     }
 
@@ -65,8 +79,8 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
             scanTimer++;
             if (scanTimer >= 200) {
                 if (getLevel() instanceof ServerLevel level) {
-                    this.cachedFloraBoost = scanEnvironment(level, getPos());
-                    this.markDirty();
+                    this.cachedFloraBoost = scanEnvironment(level, getBlockPos());
+                    this.cachedSoulDensity = SoulSavedData.get(level).getMultiplier(new ChunkPos(getBlockPos()));
                 }
                 scanTimer = 0;
             }
@@ -105,7 +119,7 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
     }
 
     private float getBlockBoost(BlockState state) {
-        String registryName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
+        String registryName = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
 
         // Assign specific values per block type
         switch (registryName) {
@@ -117,7 +131,7 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
                 return 0.01f; // Lower boost (common bush)
             default:
                 // Fallback to vanilla/other flowers tag
-                if (state.is(net.minecraft.tags.BlockTags.FLOWERS)) {
+                if (state.is(BlockTags.FLOWERS)) {
                     return 0.002f;
                 }
                 return 0.0f;
@@ -131,7 +145,7 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
 
         float resonance = 1.0f;
         if (imbuer.getLevel() instanceof ServerLevel serverLevel) {
-            resonance = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(imbuer.getPos())) +
+            resonance = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(imbuer.getBlockPos())) +
                     imbuer.getCachedFloraBoost();
             if (imbuer.getTotalWorkTicks() >= HARMONIZATION_THRESHOLD) resonance += 0.5f;
         }
@@ -152,27 +166,25 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
     }
 
     @Override
-    public void addDisplayText(@NotNull List<Component> textList) {
-        super.addDisplayText(textList);
-        if (!isFormed()) return;
-
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            float baseSoul = SoulSavedData.get(serverLevel).getMultiplier(new ChunkPos(getPos()));
+    public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
+        List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
+        if (!isFormed()) return widgets;
+        widgets.add(new TextWidget<>(Text.of(Component.literal("§5Alchemical Analysis:"))));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §7Soul Resonance: §d" + String.format("%.2f", cachedSoulDensity)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() ->
+                Component.literal("  §7Garden Boost:   §b+" + String.format("%.2f", cachedFloraBoost)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> {
             float harmonicBonus = (totalWorkTicks >= HARMONIZATION_THRESHOLD) ? 0.5f : 0.0f;
-            float totalPotency = baseSoul + cachedFloraBoost + harmonicBonus;
-
-            textList.add(Component.literal("§7-".repeat(15)));
-            textList.add(Component.literal("§5Alchemical Analysis:"));
-            textList.add(Component.literal("  §7Soul Resonance: §d" + String.format("%.2f", baseSoul)));
-            textList.add(Component.literal("  §7Garden Boost:   §b+" + String.format("%.2f", cachedFloraBoost)));
-            textList.add(Component.literal("  §eTotal Potency:  §l" + String.format("%.2fx", totalPotency)));
-
-            if (harmonicBonus > 0) {
-                textList.add(Component.literal("§6Status: §l§nCHUNK HARMONIZED §a(+0.50)"));
-            } else {
-                int percent = (int) ((totalWorkTicks / (double) HARMONIZATION_THRESHOLD) * 100);
-                textList.add(Component.literal("§8Harmonizing: " + percent + "%"));
-            }
-        }
+            float totalPotency = cachedSoulDensity + cachedFloraBoost + harmonicBonus;
+            return Component.literal("  §eTotal Potency:  §l" + String.format("%.2fx", totalPotency));
+        })));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> {
+            if (totalWorkTicks >= HARMONIZATION_THRESHOLD)
+                return Component.literal("§6Status: §l§nCHUNK HARMONIZED §a(+0.50)");
+            int percent = (int) ((totalWorkTicks / (double) HARMONIZATION_THRESHOLD) * 100);
+            return Component.literal("§8Harmonizing: " + percent + "%");
+        })));
+        return widgets;
     }
 }

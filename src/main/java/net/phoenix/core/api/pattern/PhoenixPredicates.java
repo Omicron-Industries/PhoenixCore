@@ -1,21 +1,21 @@
 package net.phoenix.core.api.pattern;
 
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
-import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
+import com.gregtechceu.gtceu.api.multiblock.PatternPredicate;
+import com.gregtechceu.gtceu.api.multiblock.Predicates;
+import com.gregtechceu.gtceu.api.multiblock.error.PatternError;
+import com.gregtechceu.gtceu.api.multiblock.error.PlaceholderError;
+import com.gregtechceu.gtceu.api.multiblock.pattern.CurrentBlockInfo;
+import com.gregtechceu.gtceu.api.multiblock.util.BlockInfo;
 import com.gregtechceu.gtceu.common.block.LampBlock;
-
-import com.lowdragmc.lowdraglib.utils.BlockInfo;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.common.machine.PhoenixMachines;
-import net.phoenix.core.integration.phoenix_fission.api.block.*;
-import net.phoenix.core.integration.phoenix_fission.common.data.block.*;
+
 import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
-import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine;
 import net.phoenix.core.integration.vocal_resonance.ISpeakerType;
 import net.phoenix.core.integration.vocal_resonance.SoundHatchPartMachine;
 import net.phoenix.core.integration.vocal_resonance.SpeakerBlock;
@@ -25,61 +25,56 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.gregtechceu.gtceu.common.data.GTBlocks.BORDERLESS_LAMPS;
 import static com.gregtechceu.gtceu.common.data.GTBlocks.LAMPS;
-import static net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.TeslaTowerMachine.TTB_BATTERY_HEADER;
 
 public class PhoenixPredicates {
 
-    public static TraceabilityPredicate teslaBatteries() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            BlockState state = blockWorldState.getBlockState();
+    // NOTE: matchContext is gone in GTM 8.0. Machines must scan getMultiblockState().getCache()
+    // in onStructureFormed() to collect per-block data (cooler types, battery counts, etc.).
 
+    public static PatternPredicate teslaBatteries() {
+        List<BlockInfo> candidates = PhoenixAPI.TESLA_BATTERIES.entrySet().stream()
+                .sorted(Comparator.comparingInt(e -> e.getKey().getTier()))
+                .map(e -> new BlockInfo(e.getValue().get().defaultBlockState()))
+                .collect(Collectors.toList());
+
+        return Predicates.custom(info -> {
+            BlockState state = info.getBlockState();
             for (Map.Entry<ITeslaBattery, Supplier<TeslaBatteryBlock>> entry : PhoenixAPI.TESLA_BATTERIES.entrySet()) {
                 if (state.is(entry.getValue().get())) {
-                    ITeslaBattery battery = entry.getKey();
-
-                    if (battery.getTier() != -1 && battery.getCapacity().compareTo(BigInteger.ZERO) > 0) {
-                        String key = TTB_BATTERY_HEADER + battery.getBatteryName();
-
-                        TeslaTowerMachine.BatteryMatchWrapper wrapper = blockWorldState.getMatchContext()
-                                .getOrCreate(key, () -> new TeslaTowerMachine.BatteryMatchWrapper(battery));
-
-                        wrapper.increment();
-                    }
-                    return true;
+                    return null;
                 }
             }
-            return false;
-        }, () -> PhoenixAPI.TESLA_BATTERIES.entrySet().stream()
-                .sorted(Comparator.comparingInt(entry -> entry.getKey().getTier()))
-                .map(entry -> new BlockInfo(entry.getValue().get().defaultBlockState(), null))
-                .toArray(BlockInfo[]::new))
-                .addTooltips(Component.translatable("gtceu.multiblock.pattern.error.batteries"));
+            return new PlaceholderError(info.getBlockPos(), List.of(candidates));
+        }, candidates).addTooltips(Component.translatable("gtceu.multiblock.pattern.error.batteries"));
     }
 
     @SafeVarargs
-    public static TraceabilityPredicate lamps(BlockEntry<LampBlock>... lampEntries) {
-        return new TraceabilityPredicate(blockWorldState -> {
-            BlockState state = blockWorldState.getBlockState();
+    public static PatternPredicate lamps(BlockEntry<LampBlock>... lampEntries) {
+        List<BlockInfo> candidates = Arrays.stream(lampEntries)
+                .map(e -> new BlockInfo(e.get().defaultBlockState()))
+                .collect(Collectors.toList());
+
+        return Predicates.custom(info -> {
+            BlockState state = info.getBlockState();
             for (BlockEntry<LampBlock> entry : lampEntries) {
-                if (state.is(entry.get())) return true;
+                if (state.is(entry.get())) return null;
             }
-            return false;
-        }, () -> Arrays.stream(lampEntries)
-                .map(entry -> new BlockInfo(entry.get().defaultBlockState(), null))
-                .toArray(BlockInfo[]::new));
+            return new PlaceholderError(info.getBlockPos(), List.of(candidates));
+        }, candidates);
     }
 
-    public static TraceabilityPredicate anyLamp() {
+    public static PatternPredicate anyLamp() {
         List<BlockEntry<LampBlock>> all = new ArrayList<>();
         all.addAll(LAMPS.values());
         all.addAll(BORDERLESS_LAMPS.values());
         return lamps(all.toArray(BlockEntry[]::new));
     }
 
-    private static final Map<DyeColor, TraceabilityPredicate> LAMPS_BY_COLOR = new EnumMap<>(DyeColor.class);
+    private static final Map<DyeColor, PatternPredicate> LAMPS_BY_COLOR = new EnumMap<>(DyeColor.class);
 
     static {
         for (DyeColor color : DyeColor.values()) {
@@ -87,219 +82,50 @@ public class PhoenixPredicates {
         }
     }
 
-    public static TraceabilityPredicate lampsByColor(DyeColor color) {
+    public static PatternPredicate lampsByColor(DyeColor color) {
         return LAMPS_BY_COLOR.getOrDefault(color, anyLamp());
     }
 
-    public static TraceabilityPredicate fissionCoolers() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            var blockState = blockWorldState.getBlockState();
 
-            for (Map.Entry<IFissionCoolerType, Supplier<FissionCoolerBlock>> entry : PhoenixAPI.FISSION_COOLERS
-                    .entrySet()) {
 
-                if (blockState.is(entry.getValue().get())) {
+    public static PatternPredicate soundHatches() {
+        List<BlockInfo> candidates = new ArrayList<>();
+        for (var machine : PhoenixMachines.DISC_HATCH) {
+            if (machine != null) candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
+        }
+        for (var machine : PhoenixMachines.LIBRARY_HATCH) {
+            if (machine != null) candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
+        }
+        for (var machine : PhoenixMachines.STREAM_HATCH) {
+            if (machine != null) candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
+        }
 
-                    var type = entry.getKey();
+        return Predicates.custom(info -> {
+            var level = info.getLevel();
+            var pos = info.getBlockPos();
+            if (level == null || pos == null) return new PlaceholderError(pos != null ? pos : net.minecraft.core.BlockPos.ZERO, List.of(candidates));
 
-                    List<IFissionCoolerType> componentList = blockWorldState
-                            .getMatchContext()
-                            .getOrPut("CoolerTypes", new ArrayList<>());
-                    componentList.add(type);
-
-                    return true;
-                }
+            var blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof SoundHatchPartMachine) {
+                return null;
             }
-
-            return false;
-        },
-                () -> PhoenixAPI.FISSION_COOLERS.entrySet().stream()
-                        .sorted(Comparator.comparingInt(e -> e.getKey().getTier()))
-                        .map(e -> BlockInfo.fromBlockState(e.getValue().get().defaultBlockState()))
-                        .toArray(BlockInfo[]::new))
-                .addTooltips(Component.translatable("phoenix.multiblock.pattern.info.multiple_coolers"));
+            return new PlaceholderError(pos, List.of(candidates));
+        }, candidates);
     }
 
-    public static TraceabilityPredicate fissionBlankets() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            var blockState = blockWorldState.getBlockState();
-            for (Map.Entry<IFissionBlanketType, Supplier<FissionBlanketBlock>> entry : PhoenixAPI.FISSION_BLANKETS
-                    .entrySet()) {
-                if (blockState.is(entry.getValue().get())) {
-                    var type = entry.getKey();
-                    List<IFissionBlanketType> componentList = blockWorldState.getMatchContext().getOrPut("BlanketTypes",
-                            new ArrayList<>());
-                    componentList.add(type);
-                    return true;
-                }
-            }
-            return false;
-        },
-                () -> PhoenixAPI.FISSION_BLANKETS.entrySet().stream()
-                        .sorted(Comparator.comparingInt(e -> e.getKey().getTier()))
-                        .map(e -> BlockInfo.fromBlockState(e.getValue().get().defaultBlockState()))
-                        .toArray(BlockInfo[]::new))
-                .addTooltips(Component.translatable("phoenix.multiblock.pattern.info.multiple_blankets"));
-    }
 
-    public static TraceabilityPredicate fissionFuelRods() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            var blockState = blockWorldState.getBlockState();
 
-            for (Map.Entry<IFissionFuelRodType, Supplier<FissionFuelRodBlock>> entry : PhoenixAPI.FISSION_FUEL_RODS
-                    .entrySet()) {
+    public static PatternPredicate tieredSpeakers() {
+        var lvBlock = net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get();
+        List<BlockInfo> candidates = lvBlock != null ? List.of(
+                BlockInfo.fromBlockState(lvBlock.defaultBlockState()),
+                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_MV.get().defaultBlockState()),
+                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_HV.get().defaultBlockState())
+        ) : List.of();
 
-                if (blockState.is(entry.getValue().get())) {
-
-                    var type = entry.getKey();
-
-                    List<IFissionFuelRodType> componentList = blockWorldState
-                            .getMatchContext()
-                            .getOrPut("FuelRodTypes", new ArrayList<>());
-                    componentList.add(type);
-
-                    return true;
-                }
-            }
-
-            return false;
-        },
-                () -> PhoenixAPI.FISSION_FUEL_RODS.entrySet().stream()
-                        .sorted(Comparator.comparingInt(e -> e.getKey().getTier()))
-                        .map(e -> BlockInfo.fromBlockState(e.getValue().get().defaultBlockState()))
-                        .toArray(BlockInfo[]::new))
-                .addTooltips(Component.translatable("phoenix.multiblock.pattern.info.multiple_fuel_rods"));
-    }
-
-    public static TraceabilityPredicate fissionModerators() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            var blockState = blockWorldState.getBlockState();
-
-            for (Map.Entry<IFissionModeratorType, Supplier<FissionModeratorBlock>> entry : PhoenixAPI.FISSION_MODERATORS
-                    .entrySet()) {
-
-                if (blockState.is(entry.getValue().get())) {
-
-                    var type = entry.getKey();
-
-                    List<IFissionModeratorType> componentList = blockWorldState
-                            .getMatchContext()
-                            .getOrPut("ModeratorTypes", new ArrayList<>());
-                    componentList.add(type);
-
-                    return true;
-                }
-            }
-
-            return false;
-        },
-                () -> PhoenixAPI.FISSION_MODERATORS.entrySet().stream()
-                        .sorted(Comparator.comparingInt(e -> e.getKey().getTier()))
-                        .map(e -> BlockInfo.fromBlockState(e.getValue().get().defaultBlockState()))
-                        .toArray(BlockInfo[]::new))
-                .addTooltips(Component.translatable("phoenix.multiblock.pattern.info.multiple_moderators"));
-    }
-
-    // Add to PhoenixPredicates.java
-
-    public static TraceabilityPredicate msrCoreLiner() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            BlockState state = blockWorldState.getBlockState();
-
-            // Match against your brand-new custom block class
-            if (state.getBlock() instanceof MSRCoreLinerBlock linerBlock) {
-                int tier = linerBlock.getLinerType().getTier();
-
-                // Track total parallels (1 parallel count per core liner block placed)
-                blockWorldState.getMatchContext().increment("MSRLinerCount", 1);
-
-                // Track bottlenecks: Core operates at the tier level of its weakest block
-                int currentMinTier = blockWorldState.getMatchContext().getOrDefault("MSRMinTier", Integer.MAX_VALUE);
-                blockWorldState.getMatchContext().set("MSRMinTier", Math.min(currentMinTier, tier));
-
-                return true;
-            }
-            return false;
-        },
-                // Automatically fetch your enum types to construct the multiblock structure ghost-view preview
-                () -> Arrays.stream(MSRCoreLinerBlock.MSRLinerTypes.values())
-                        .map(type -> {
-                            // This generates preview info if your blocks are directly registered or instantiated
-                            // Fallback to empty if registration references require complex object supplier getters
-                            return BlockInfo.EMPTY;
-                        })
-                        .toArray(BlockInfo[]::new));
-    }
-
-    public static TraceabilityPredicate soundHatches() {
-        return new TraceabilityPredicate(
-                state -> {
-                    var level = state.getWorld();
-                    var pos = state.getPos();
-                    if (level == null || pos == null) return false;
-
-                    var blockEntity = level.getBlockEntity(pos);
-                    if (blockEntity instanceof IMachineBlockEntity machineEntity &&
-                            machineEntity.getMetaMachine() instanceof SoundHatchPartMachine machinePart) {
-
-                        var context = state.getMatchContext();
-                        List<SoundHatchPartMachine> hatches = context.getOrCreate("SoundHatches", ArrayList::new);
-                        if (!hatches.contains(machinePart)) {
-                            hatches.add(machinePart);
-                        }
-                        return true;
-                    }
-                    return false;
-                },
-                // FIX: Tell the multiblock which blocks are valid candidates
-                () -> {
-                    List<BlockInfo> candidates = new ArrayList<>();
-                    // Add all tiers of your 3 hatch types to the candidate list
-                    for (var machine : PhoenixMachines.DISC_HATCH) {
-                        if (machine != null) {
-                            candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
-                        }
-                    }
-                    for (var machine : PhoenixMachines.LIBRARY_HATCH) {
-                        if (machine != null) {
-                            candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
-                        }
-                    }
-                    for (var machine : PhoenixMachines.STREAM_HATCH) {
-                        if (machine != null) {
-                            candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
-                        }
-                    }
-                    return candidates.toArray(new BlockInfo[0]);
-                });
-    }
-
-    public static TraceabilityPredicate tieredSpeakers() {
-        return new TraceabilityPredicate(blockWorldState -> {
-            BlockState state = blockWorldState.getBlockState();
-            if (state.getBlock() instanceof SpeakerBlock speakerBlock) {
-                ISpeakerType type = speakerBlock.getSpeakerType();
-
-                // Increment range bonus
-                blockWorldState.getMatchContext().increment("TotalSpeakerRange", type.getRangeBonus());
-
-                // Resonance logic (increment works with integers)
-                int resonanceInt = (int) (type.getResonanceAmplifier() * 100);
-                blockWorldState.getMatchContext().increment("ResonancePower", resonanceInt);
-
-                return true;
-            }
-            return false;
-        },
-                // CANDIDATES FIX: Provide all registered speaker blocks
-                () -> net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get() != null ?
-                        new BlockInfo[] {
-                                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get()
-                                        .defaultBlockState()),
-                                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_MV.get()
-                                        .defaultBlockState()),
-                                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_HV.get()
-                                        .defaultBlockState())
-                        } : new BlockInfo[0]);
+        return Predicates.custom(info -> {
+            if (info.getBlockState().getBlock() instanceof SpeakerBlock) return null;
+            return new PlaceholderError(info.getBlockPos(), List.of(candidates));
+        }, candidates);
     }
 }

@@ -2,7 +2,7 @@ package net.phoenix.core.datagen.models;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.registry.registrate.MachineBuilder;
-import com.gregtechceu.gtceu.common.machine.electric.ChargerMachine;
+import com.gregtechceu.gtceu.common.machine.electric.BatteryBufferMachine;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -68,7 +68,7 @@ public class PhoenixMachineModels {
     public static MachineBuilder.ModelInitializer createWirelessChargerModel() {
         return (ctx, prov, builder) -> {
             builder.forAllStatesModels(renderState -> {
-                ChargerMachine.State state = renderState.getValue(CHARGER_STATE);
+                BatteryBufferMachine.State state = renderState.getValue(CHARGER_STATE);
 
                 BlockModelBuilder model = prov.models().nested()
                         .parent(prov.models().getExistingFile(SIDED_SIDED_OVERLAY_MODEL));

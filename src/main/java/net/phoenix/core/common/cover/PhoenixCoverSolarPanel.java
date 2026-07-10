@@ -52,7 +52,7 @@ public class PhoenixCoverSolarPanel extends CoverBehavior {
 
     protected void update() {
         Level level = coverHolder.getLevel();
-        BlockPos blockPos = coverHolder.getPos();
+        BlockPos blockPos = coverHolder.getBlockPos();
         if (GTUtil.canSeeSunClearly(level, blockPos)) {
             IEnergyContainer energyContainer = getEnergyContainer();
             if (energyContainer != null) {
@@ -63,6 +63,6 @@ public class PhoenixCoverSolarPanel extends CoverBehavior {
 
     @Nullable
     protected IEnergyContainer getEnergyContainer() {
-        return GTCapabilityHelper.getEnergyContainer(coverHolder.getLevel(), coverHolder.getPos(), attachedSide);
+        return GTCapabilityHelper.getEnergyContainer(coverHolder.getLevel(), coverHolder.getBlockPos(), attachedSide);
     }
 }

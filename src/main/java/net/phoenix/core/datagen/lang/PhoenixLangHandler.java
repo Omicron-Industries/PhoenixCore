@@ -145,6 +145,17 @@ public class PhoenixLangHandler {
         for (var i = 0; i < values.length; i++) {
             provider.add(getSubKey(key, i), values[i]);
         }
+
+        // Axiom Research (Conflux)
+        provider.add("phoenixcore.research.multiblock_locked", "Research required: unlock this machine before it can form.");
+        provider.add("phoenixcore.condition.axiom_research", "Requires research: %s");
+        provider.add("phoenixcore.research.discipline.none", "No Discipline");
+        provider.add("phoenixcore.research.discipline.committed", "Committed");
+        provider.add("phoenixcore.research.discipline.can_switch", "Switch Discipline");
+        provider.add("phoenixcore.research.discipline.switch_cost", "Cost to abandon:");
+        provider.add("phoenixcore.research.discipline.locked", "You are permanently committed to your Discipline.");
+        provider.add("phoenixcore.research.discipline.abandon_success", "Discipline abandoned. You may now choose a new path.");
+        provider.add("phoenixcore.research.discipline.abandon_failed", "Cannot abandon Discipline: insufficient resources or already committed.");
     }
 
     protected static void multilineLang(RegistrateLangProvider provider, String key, String multiline) {

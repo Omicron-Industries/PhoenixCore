@@ -27,7 +27,7 @@ public abstract class WorkableMultiblockMachineMixin {
         }
 
         if (machine.getLevel() instanceof ServerLevel serverLevel) {
-            SoulGrowthHook.handle(recipe, serverLevel, machine.getPos());
+            SoulGrowthHook.handle(recipe, serverLevel, machine.getBlockPos());
         }
     }
 }

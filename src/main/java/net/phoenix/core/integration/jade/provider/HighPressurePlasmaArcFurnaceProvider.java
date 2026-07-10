@@ -1,6 +1,6 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -16,7 +16,7 @@ import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
 
 public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProvider,
-                                                  IServerDataProvider<BlockAccessor> {
+        IServerDataProvider<BlockAccessor> {
 
     public static final ResourceLocation UID = PhoenixCore.id("plasma_furnace_info");
 
@@ -24,7 +24,14 @@ public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProv
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         if (!config.get(UID)) return;
 
+        // FIXED FOR 8.0.0: Ensure we are dealing with our target machine block entity type
+        if (!(accessor.getBlockEntity() instanceof HighPressurePlasmaArcFurnaceMachine)) {
+            return;
+        }
+
         CompoundTag data = accessor.getServerData();
+        if (data == null || data.isEmpty()) return;
+
         Shield.ShieldTypes shieldType = null;
 
         if (data.contains("shieldKey")) {
@@ -76,8 +83,8 @@ public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProv
 
     @Override
     public void appendServerData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
-        if (blockAccessor.getBlockEntity() instanceof MetaMachineBlockEntity meta_machine_be &&
-                meta_machine_be.getMetaMachine() instanceof HighPressurePlasmaArcFurnaceMachine machine &&
+        // FIXED FOR 8.0.0: HighPressurePlasmaArcFurnaceMachine is now the BlockEntity directly.
+        if (blockAccessor.getBlockEntity() instanceof HighPressurePlasmaArcFurnaceMachine machine &&
                 machine.isFormed()) {
 
             compoundTag.putInt("shieldKey", machine.getShieldType().key);

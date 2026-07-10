@@ -2,6 +2,7 @@ package net.phoenix.core.common.data.materials;
 
 import com.gregtechceu.gtceu.api.data.chemical.Element;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import net.minecraft.resources.ResourceLocation;
 
 public class PhoenixElements {
 
@@ -110,14 +111,21 @@ public class PhoenixElements {
         ICY_STEEL_MATRIX = create("icy_steel_matrix", 8, 118, "❆Is<>");
     }
 
-    private static Element create(String name, long protons, long neutrons, String symbol) {
-        return create(name, protons, neutrons, -1L, (String) null, name, symbol, false);
+    // Change long to int here for the 4-arg shortcut:
+    private static Element create(String name, int protons, int neutrons, String symbol) {
+        return create(name, (long) protons, (long) neutrons, -1L, (String) null, name, symbol, false);
     }
 
     private static Element create(String id, long protons, long neutrons, long halfLife, String decayTo, String name,
                                   String symbol, boolean isIsotope) {
         Element element = new Element(protons, neutrons, halfLife, decayTo, name, symbol, isIsotope);
-        GTRegistries.ELEMENTS.register(id, element);
+
+        // FIXED FOR 8.0.0: Form the unique ResourceLocation using your mod ID
+        ResourceLocation registryId = new ResourceLocation("phoenixcore", id);
+
+        // FIXED FOR 8.0.0: Call .register directly on the GTRegistry.RL field instance!
+        GTRegistries.ELEMENTS.register(registryId, element);
+
         return element;
     }
 }

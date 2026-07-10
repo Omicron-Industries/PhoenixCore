@@ -4,6 +4,7 @@ import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
 
 import net.minecraft.core.registries.Registries;
@@ -77,12 +78,12 @@ public class PhoenixBeeRecipeGenerator {
             case "resonant_ender" -> PhoenixProgressionMaterials.RESONANT_ENDER;
             case "source_gem" -> PhoenixProgressionMaterials.SOURCE_GEM;
             case "prismarine" -> PhoenixProgressionMaterials.PRISMARINE;
-            default -> GTCEuAPI.materialManager.getMaterial(id);
+            default -> GTRegistries.MATERIALS.get(id);
         };
 
         if (mat == null && !id.isEmpty()) {
             String cap = id.substring(0, 1).toUpperCase() + id.substring(1);
-            mat = GTCEuAPI.materialManager.getMaterial(cap);
+            mat = GTRegistries.MATERIALS.get(cap);
         }
         return mat;
     }

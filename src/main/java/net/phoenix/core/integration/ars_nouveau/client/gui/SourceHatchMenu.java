@@ -49,7 +49,7 @@ public class SourceHatchMenu extends AbstractContainerMenu {
         return new SourceHatchMenu(id, inv, pos, data);
     }
 
-    public BlockPos getPos() {
+    public BlockPos getBlockPos() {
         return pos;
     }
 

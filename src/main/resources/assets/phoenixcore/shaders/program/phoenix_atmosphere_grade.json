@@ -1,0 +1,20 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "one",
+    "dstrgb": "zero"
+  },
+  "vertex": "phoenixcore:phoenix_atmosphere_grade",
+  "fragment": "phoenixcore:phoenix_atmosphere_grade",
+  "samplers": [
+    { "name": "InSampler" }
+  ],
+  "uniforms": [
+    { "name": "OutSize",         "type": "float", "count": 2, "values": [1.0, 1.0] },
+    { "name": "Saturation",      "type": "float", "count": 1, "values": [1.0] },
+    { "name": "TintStrength",    "type": "float", "count": 1, "values": [0.0] },
+    { "name": "TintColor",       "type": "float", "count": 3, "values": [0.0, 0.0, 0.0] },
+    { "name": "VignetteStrength","type": "float", "count": 1, "values": [0.0] },
+    { "name": "Brightness",      "type": "float", "count": 1, "values": [1.0] }
+  ]
+}

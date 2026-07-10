@@ -1,6 +1,7 @@
 package net.phoenix.core.client.renderer.machine;
 
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
+
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
 
@@ -107,7 +108,7 @@ public class EngineGearboxRenderer extends DynamicRender<BioAethericEngineMachin
 
     @Override
     public @NotNull AABB getRenderBoundingBox(BioAethericEngineMachine m) {
-        return new AABB(m.getPos()).inflate(5.0);
+        return new AABB(m.getBlockPos()).inflate(5.0);
     }
 
     private static class GearParticle {

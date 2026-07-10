@@ -1,0 +1,18 @@
+{
+    "blend": { "func": "add", "srcrgb": "one", "dstrgb": "zero" },
+    "vertex":   "phoenixcore:axiom_blit",
+    "fragment": "phoenixcore:axiom_sculk",
+    "attributes": [ "Position" ],
+    "samplers": [ { "name": "DiffuseSampler" } ],
+    "uniforms": [
+        { "name": "ProjMat",        "type": "matrix4x4", "count": 16, "values": [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ] },
+        { "name": "OutSize",        "type": "float",     "count": 2,  "values": [ 1.0, 1.0 ] },
+        { "name": "Time",           "type": "float",     "count": 1,  "values": [ 0.0 ] },
+        { "name": "ScreenSize",     "type": "float",     "count": 2,  "values": [ 1920.0, 1080.0 ] },
+        { "name": "RippleCount",    "type": "int",       "count": 1,  "values": [ 0 ] },
+        { "name": "RippleOrigins",  "type": "float",     "count": 8,  "values": [ 0,0, 0,0, 0,0, 0,0 ] },
+        { "name": "RippleAge",      "type": "float",     "count": 4,  "values": [ 0,0,0,0 ] },
+        { "name": "NodeCount",      "type": "int",       "count": 1,  "values": [ 0 ] },
+        { "name": "NodePositions",  "type": "float",     "count": 16, "values": [ 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0 ] }
+    ]
+}

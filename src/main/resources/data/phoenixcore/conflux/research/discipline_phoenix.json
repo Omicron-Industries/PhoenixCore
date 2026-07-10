@@ -1,0 +1,134 @@
+{
+  "title": "The Phoenix",
+  "description": "Rebirth through consumption. Every ending is an ignition. The Phoenix does not endure — it transcends.",
+  "discipline": "phoenix",
+  "switch_cost": { "energetic": 50000, "material": 25000 },
+  "nodes": [
+    {
+      "id": "phoenixcore:px_core",
+      "title": "Ember Awakening",
+      "lore": "The first flame is always the hardest to kindle. Once lit, it cannot be unlit.",
+      "icon": "minecraft:blaze_powder",
+      "position": [0, 0],
+      "prerequisites": [],
+      "cost": { "energetic": 500 },
+      "unlocks": [
+        { "type": "flag", "value": "px_awakened" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_ring1_a",
+      "title": "Combustion Theory",
+      "lore": "Fire is not destruction. It is conversion — matter becoming something that can no longer be held.",
+      "icon": "minecraft:fire_charge",
+      "position": [0, 1],
+      "prerequisites": ["phoenixcore:px_core"],
+      "cost": { "energetic": 1200, "material": 400 },
+      "unlocks": [
+        { "type": "flag", "value": "px_combustion" },
+        { "type": "recipe_tag", "value": "phoenixcore:research/px_combustion" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_ring1_b",
+      "title": "Ash Memory",
+      "lore": "What remains after fire is not nothing. It remembers what it was.",
+      "icon": "minecraft:bone_meal",
+      "position": [1, 1],
+      "prerequisites": ["phoenixcore:px_core"],
+      "cost": { "energetic": 800, "material": 600 },
+      "unlocks": [
+        { "type": "flag", "value": "px_ash_memory" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_ring1_c",
+      "title": "Thermal Recursion",
+      "lore": "Heat feeds heat. The system that produces energy must first consume it.",
+      "icon": "gtceu:hot_tungsten_steel_ingot",
+      "position": [2, 1],
+      "prerequisites": ["phoenixcore:px_core"],
+      "cost": { "energetic": 1500 },
+      "unlocks": [
+        { "type": "flag", "value": "px_thermal_recursion" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_ring2_a",
+      "title": "The Molten Path",
+      "lore": "You cannot forge iron at room temperature. Some things only become themselves under pressure and heat.",
+      "icon": "gtceu:molten_iron_bucket",
+      "position": [0, 2],
+      "prerequisites": ["phoenixcore:px_ring1_a", "phoenixcore:px_ring1_b"],
+      "cost": { "energetic": 3000, "material": 1200 },
+      "unlocks": [
+        { "type": "flag", "value": "px_molten_path" },
+        { "type": "recipe_tag", "value": "phoenixcore:research/px_molten" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_ring2_b",
+      "title": "Feather Lattice",
+      "lore": "The Phoenix sheds what it no longer needs. Each discarded feather becomes a seed.",
+      "icon": "minecraft:feather",
+      "position": [1, 2],
+      "prerequisites": ["phoenixcore:px_ring1_b", "phoenixcore:px_ring1_c"],
+      "cost": { "material": 2000, "biological": 800 },
+      "unlocks": [
+        { "type": "flag", "value": "px_feather_lattice" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_ring2_c",
+      "title": "Solar Recursion",
+      "lore": "Stars do not burn. They fall inward constantly, and the falling is what makes the light.",
+      "icon": "minecraft:nether_star",
+      "position": [2, 2],
+      "prerequisites": ["phoenixcore:px_ring1_c"],
+      "cost": { "energetic": 5000, "arcane": 1000 },
+      "unlocks": [
+        { "type": "flag", "value": "px_solar_recursion" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_commitment",
+      "title": "The Pyre",
+      "lore": "You step into the flame. Not as sacrifice — as transformation. There is no Phoenix who did not first burn completely.",
+      "icon": "minecraft:magma_block",
+      "position": [1, 3],
+      "prerequisites": ["phoenixcore:px_ring2_a", "phoenixcore:px_ring2_b", "phoenixcore:px_ring2_c"],
+      "commitment": true,
+      "cost": { "energetic": 15000, "material": 5000, "arcane": 2000 },
+      "unlocks": [
+        { "type": "flag", "value": "px_committed" },
+        { "type": "multiblock", "value": "phoenixcore:solar_crucible" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_apex_a",
+      "title": "Undying Flame",
+      "lore": "The fire that cannot be extinguished is not the hottest flame — it is the most patient.",
+      "icon": "minecraft:end_crystal",
+      "position": [0, 4],
+      "prerequisites": ["phoenixcore:px_commitment"],
+      "cost": { "energetic": 30000, "arcane": 8000 },
+      "unlocks": [
+        { "type": "flag", "value": "px_undying_flame" },
+        { "type": "multiblock", "value": "phoenixcore:eternal_furnace" }
+      ]
+    },
+    {
+      "id": "phoenixcore:px_apex_b",
+      "title": "Rebirth Protocol",
+      "lore": "The final secret of the Phoenix: it does not fear death because it has already died completely, once, and chosen to return.",
+      "icon": "minecraft:totem_of_undying",
+      "position": [2, 4],
+      "prerequisites": ["phoenixcore:px_commitment"],
+      "cost": { "energetic": 25000, "material": 10000, "arcane": 10000 },
+      "unlocks": [
+        { "type": "flag", "value": "px_rebirth" },
+        { "type": "multiblock", "value": "phoenixcore:rebirth_chamber" }
+      ]
+    }
+  ]
+}

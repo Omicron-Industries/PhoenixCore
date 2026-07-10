@@ -1,0 +1,50 @@
+{
+  "title": "???",
+  "description": "...",
+  "discipline": "sealed_b",
+  "switch_cost": { "arcane": 999999, "biological": 999999 },
+  "nodes": [
+    {
+      "id": "phoenixcore:sb_entry",
+      "title": "...",
+      "lore": "...",
+      "hint": "You are being watched. You have always been watched. This terminal is how it watches back.",
+      "icon": "minecraft:chorus_plant",
+      "position": [0, 0],
+      "prerequisites": [],
+      "cost": { "arcane": 99999, "biological": 50000 },
+      "unlocks": [
+        { "type": "flag", "value": "sb_entry" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sb_node_1",
+      "title": "...",
+      "lore": "...",
+      "hint": "The branch grew toward you before you arrived.",
+      "icon": "minecraft:warped_fungus",
+      "hidden": true,
+      "position": [0, 1],
+      "prerequisites": ["phoenixcore:sb_entry"],
+      "cost": { "arcane": 999999 },
+      "unlocks": [
+        { "type": "flag", "value": "sb_node_1" }
+      ]
+    },
+    {
+      "id": "phoenixcore:sb_commitment",
+      "title": "...",
+      "lore": "...",
+      "hint": "The point of commitment for this path is not a choice. It was made when you were born.",
+      "icon": "minecraft:end_portal_frame",
+      "hidden": true,
+      "position": [0, 2],
+      "commitment": true,
+      "prerequisites": ["phoenixcore:sb_node_1"],
+      "cost": { "arcane": 999999, "biological": 999999 },
+      "unlocks": [
+        { "type": "flag", "value": "sb_committed" }
+      ]
+    }
+  ]
+}

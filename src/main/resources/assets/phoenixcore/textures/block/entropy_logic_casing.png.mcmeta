@@ -1,5 +1,5 @@
 {
-    "ldlib": {
-        "connection": "kubejs:block/entropy_logic_casing_ctm"
+    "gtceu": {
+        "connection_texture": "kubejs:block/entropy_logic_casing_ctm"
     }
 }

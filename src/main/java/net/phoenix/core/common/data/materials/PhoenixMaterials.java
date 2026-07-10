@@ -1,14 +1,15 @@
 package net.phoenix.core.common.data.materials;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.*;
 import com.gregtechceu.gtceu.api.fluids.FluidBuilder;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKey;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.api.item.tool.PhoenixToolType;
 import net.phoenix.core.common.data.recipe.generated.BeePrefixHelper;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static net.phoenix.core.common.data.materials.PhoenixOres.*;
-import static net.phoenix.core.common.data.materials.PhoenixOres.IGNISIUM;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
 
 public class PhoenixMaterials {
@@ -59,11 +59,14 @@ public class PhoenixMaterials {
 
     @NotNull
     public static Material get(String name) {
-        var mat = PhoenixAPI.materialManager.getMaterial(name);
+        // FIXED FOR 8.0.0: Unified material lookup replaces the old local addon manager.
+        // Assuming custom addon materials are under your "phoenixcore" namespace.
+        // If searching a vanilla material string, use "gtceu" as the namespace variant.
+        Material mat = GTRegistries.MATERIALS.get(new ResourceLocation("phoenixcore", name));
 
         if (mat == null) {
             PhoenixAPI.LOGGER.warn("{} is not a known Material", name);
-            return GTMaterials.NULL;
+            return GTMaterials.get(null); // FIXED FOR 8.0.0: Replaced GTMaterials.NULL
         }
         return mat;
     }
@@ -101,7 +104,6 @@ public class PhoenixMaterials {
                 Garnierite,
                 Cooperite, Palladium,
                 Tungsten
-        // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
         );
 
         // --- Bee Comb Flags ---
@@ -119,7 +121,6 @@ public class PhoenixMaterials {
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, PhoenixOres.IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE
-        // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
         );
 
         // --- Tier One Bee Flags ---
@@ -137,10 +138,10 @@ public class PhoenixMaterials {
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, PhoenixOres.IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE
-        // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
         );
 
-        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+        // FIXED FOR 8.0.0: .getRegisteredMaterials() was renamed to .values()
+        for (Material material : GTRegistries.MATERIALS.values()) {
             ToolProperty toolProperty = material.getProperty(PropertyKey.TOOL);
 
             if (toolProperty != null && toolProperty.hasType(GTToolType.SCREWDRIVER_LV)) {
@@ -183,7 +184,6 @@ public class PhoenixMaterials {
             if (toolProperty != null && toolProperty.hasType(GTToolType.DRILL_LV)) {
                 toolProperty.addTypes(PhoenixToolType.DRILL_LUV, PhoenixToolType.DRILL_ZPM);
             }
-
         }
     }
 }

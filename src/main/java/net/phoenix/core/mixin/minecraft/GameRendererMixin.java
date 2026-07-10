@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.PostPass;
 import net.phoenix.core.mixin.accessor.PostChainAccessor;
+import net.phoenix.core.client.worldfx.WorldFXManager;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
+
+    // ── Existing: inject uniforms into the vanilla PostChain (soul_vision, etc.) ──
 
     @Inject(method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;process(F)V"))
@@ -29,6 +32,18 @@ public class GameRendererMixin {
                     }
                 }
             }
+        }
+    }
+
+    // ── Phoenix screen effects — run after vanilla PostChain finishes ──────────
+
+    @Inject(method = "render",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/PostChain;process(F)V",
+                    shift = At.Shift.AFTER))
+    private void phoenixcore$runScreenEffects(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
+        if (renderLevel) {
+            WorldFXManager.applyScreenEffects(partialTicks);
         }
     }
 }

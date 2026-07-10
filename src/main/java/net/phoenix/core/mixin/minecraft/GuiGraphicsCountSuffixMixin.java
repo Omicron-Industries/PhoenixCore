@@ -1,5 +1,13 @@
 package net.phoenix.core.mixin.minecraft;
 
+import brachy.modularui.screen.ModularPanel;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.layout.Flow;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.utils.Alignment;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.FormattedCharSequence;

@@ -1,5 +1,5 @@
 {
-    "ldlib": {
-        "connection": "kubejs:block/quasi_stable_fusion_casing_ctm"
+    "gtceu": {
+        "connection_texture": "kubejs:block/quasi_stable_fusion_casing_ctm"
     }
 }

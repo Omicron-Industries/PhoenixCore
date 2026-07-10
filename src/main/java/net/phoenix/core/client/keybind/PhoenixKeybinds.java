@@ -45,24 +45,10 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_R,
             "key.categories.phoenixcore");
 
-    /** Hold W (or rebind) while hovering a multiblock controller item to open its Ponder. */
-    public static final KeyMapping OPEN_PONDER = new KeyMapping(
-            "key.phoenixcore.open_ponder",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_W,
-            "key.categories.phoenixcore");
 
-    public static final KeyMapping OPEN_PHANTASIA_MENU = new KeyMapping(
-            "key.phoenixcore.phantasia_menu",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_P,
-            "key.categories.phoenixcore");
 
-    public static final KeyMapping OPEN_GUILDS = new KeyMapping(
-            "key.phoenixcore.guilds",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_G,
-            "key.categories.phoenixcore");
+
+
 
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
@@ -72,8 +58,6 @@ public class PhoenixKeybinds {
         event.register(MANIPULATOR_MENU);
         event.register(OPEN_RECIPE_BUILDER);
         event.register(SPRAY_CAN_MENU);
-        event.register(OPEN_PONDER);
-        event.register(OPEN_PHANTASIA_MENU);
-        event.register(OPEN_GUILDS);
+
     }
 }

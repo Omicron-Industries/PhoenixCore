@@ -1,6 +1,6 @@
 {
-    "ldlib": {
-        "connection": "phoenixcore:block/true_gravi_stable_coil_block_bloom_ctm"
+    "gtceu": {
+        "connection_texture": "phoenixcore:block/true_gravi_stable_coil_block_bloom_ctm"
     },
     "animation": {
         "frametime": 1,

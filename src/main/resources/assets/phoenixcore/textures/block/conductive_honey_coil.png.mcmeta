@@ -1,6 +1,6 @@
 {
-    "ldlib": {
-        "connection": "kubejs:block/conductive_honey_coil_ctm"
+    "gtceu": {
+        "connection_texture": "kubejs:block/conductive_honey_coil_ctm"
     },
     "animation":{
       "interpolate": true,

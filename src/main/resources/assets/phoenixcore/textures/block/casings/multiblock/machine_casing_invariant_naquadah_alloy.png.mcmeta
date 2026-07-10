@@ -1,5 +1,5 @@
 {
-    "ldlib": {
-        "connection": "phoenixcore:block/casings/multiblock/machine_casing_invariant_naquadah_alloy_ctm"
+    "gtceu": {
+        "connection_texture": "phoenixcore:block/casings/multiblock/machine_casing_invariant_naquadah_alloy_ctm"
     }
 }
