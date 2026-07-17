@@ -1,10 +1,11 @@
 package net.phoenix.core.common.machine.multiblock.api;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
@@ -73,7 +74,7 @@ public class PhoenixPartAppearance {
      * All parts show the casing texture except those with one of the listed abilities,
      * which show their own hatch model.  Convenience wrapper for the most common pattern.
      */
-    public static TriFunction<MultiblockControllerMachine, IMultiPart, Direction, BlockState>
+    public static TriFunction<MultiblockControllerMachine, MultiblockPartMachine, Direction, BlockState>
             casingExceptAbilities(Supplier<? extends Block> casing, PartAbility... abilities) {
         return rules().ownTextureForAbilities(abilities).build(casing);
     }
@@ -107,7 +108,7 @@ public class PhoenixPartAppearance {
          * Resolves the appearance.  Return {@code null} to show the part's own texture.
          * This is called only when the enclosing rule has already matched.
          */
-        @Nullable BlockState apply(MultiblockControllerMachine ctrl, IMultiPart part, Direction side);
+        @Nullable BlockState apply(MultiblockControllerMachine ctrl, MultiblockPartMachine part, Direction side);
     }
 
     // ── Rule interface ────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ public class PhoenixPartAppearance {
      */
     @FunctionalInterface
     public interface AppearanceRule {
-        RuleMatch apply(MultiblockControllerMachine ctrl, IMultiPart part, Direction side);
+        RuleMatch apply(MultiblockControllerMachine ctrl, MultiblockPartMachine part, Direction side);
     }
 
     /**
@@ -201,8 +202,8 @@ public class PhoenixPartAppearance {
          */
         public Builder forWorldFace(Direction face, AppearanceResult result) {
             return when((ctrl, part, side) -> {
-                if (!(part instanceof MetaMachine mm)) return RuleMatch.SKIP;
-                return dominantFace(ctrl, mm) == face
+                if (part == null) return RuleMatch.SKIP;
+                return dominantFace(ctrl, part) == face
                         ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP;
             });
         }
@@ -223,9 +224,9 @@ public class PhoenixPartAppearance {
          */
         public Builder forRelativeFace(RelativeMultiblockFace face, AppearanceResult result) {
             return when((ctrl, part, side) -> {
-                if (!(part instanceof MetaMachine mm)) return RuleMatch.SKIP;
+                if (part == null) return RuleMatch.SKIP;
                 Direction worldFace = face.toWorldDirection(ctrl.getFrontFacing());
-                return dominantFace(ctrl, mm) == worldFace
+                return dominantFace(ctrl, part) == worldFace
                         ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP;
             });
         }
@@ -244,9 +245,9 @@ public class PhoenixPartAppearance {
          */
         public Builder forRelativeY(int yOffset, AppearanceResult result) {
             return when((ctrl, part, side) -> {
-                if (!(part instanceof MetaMachine mm)) return RuleMatch.SKIP;
+                if (part == null) return RuleMatch.SKIP;
                 int target = ctrl.self().getBlockPos().getY() + yOffset;
-                return mm.getBlockPos().getY() == target
+                return part.getBlockPos().getY() == target
                         ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP;
             });
         }
@@ -284,7 +285,7 @@ public class PhoenixPartAppearance {
          *     .build(MY_CASING))
          * }</pre>
          */
-        public TriFunction<MultiblockControllerMachine, IMultiPart, Direction, BlockState> build(
+        public TriFunction<MultiblockControllerMachine, MultiblockPartMachine, Direction, BlockState> build(
                 Supplier<? extends Block> defaultCasing) {
             List<AppearanceRule> frozen = List.copyOf(rules);
             return (ctrl, part, side) -> {
@@ -326,9 +327,11 @@ public class PhoenixPartAppearance {
 
     // ── Internal helpers ──────────────────────────────────────────────────────
 
-    private static boolean hasAbility(IMultiPart part, PartAbility[] abilities) {
-        if (!(part instanceof MetaMachine mm) || mm.getLevel() == null) return false;
-        var block = mm.getLevel().getBlockState(mm.getBlockPos()).getBlock();
+    private static boolean hasAbility(MultiblockPartMachine part, PartAbility[] abilities) {
+        // If there is no part, it definitely doesn't have the ability
+        if (part == null) return false;
+
+        var block = part.getLevel().getBlockState(part.getBlockPos()).getBlock();
         return Arrays.stream(abilities).anyMatch(a -> a.getAllBlocks().contains(block));
     }
 

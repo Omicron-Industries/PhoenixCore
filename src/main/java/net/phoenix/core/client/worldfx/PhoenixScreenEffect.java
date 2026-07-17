@@ -1,6 +1,8 @@
 package net.phoenix.core.client.worldfx;
 
-import net.minecraft.client.shader.ShaderInstance;
+
+import lombok.Setter;
+import net.minecraft.client.renderer.ShaderInstance;
 
 /**
  * A full-screen shader pass applied AFTER the entire world (sky + terrain + entities)
@@ -18,6 +20,7 @@ import net.minecraft.client.shader.ShaderInstance;
  * <p>The manager handles framebuffer management and the fullscreen quad draw — you
  * only need to worry about the shader and its uniforms.
  */
+@Setter
 public abstract class PhoenixScreenEffect {
 
     protected float intensity = 1.0f;
@@ -27,10 +30,6 @@ public abstract class PhoenixScreenEffect {
     public void onAdd() {}
 
     public void onRemove() {}
-
-    public void setIntensity(float intensity) {
-        this.intensity = intensity;
-    }
 
     // ── Per-frame ─────────────────────────────────────────────────────────────
 

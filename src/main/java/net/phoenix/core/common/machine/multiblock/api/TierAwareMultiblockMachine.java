@@ -2,9 +2,10 @@ package net.phoenix.core.common.machine.multiblock.api;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.sync_system.annotations.RerenderOnChanged;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
@@ -22,60 +23,61 @@ import java.util.function.Predicate;
  * multi-tier formation state tracking with two complementary detection mechanisms:
  *
  * <ol>
- *   <li><b>{@link IMultiblockTierProvider}</b> — implement on any custom part/hatch you own.</li>
- *   <li><b>Tier conditions</b> — predicates registered in the controller's constructor for
- *       standard GTM parts (input hatches, output buses, etc.) that you can't modify.</li>
+ * <li><b>{@link IMultiblockTierProvider}</b> — implement on any custom part/hatch you own.</li>
+ * <li><b>Tier conditions</b> — predicates registered in the controller's constructor for
+ * standard GTM parts (input hatches, output buses, etc.) that you can't modify.</li>
  * </ol>
  *
  * <h2>Minimal custom-hatch usage</h2>
  * <pre>{@code
  * // Hatch:
  * public class MyHatch extends MultiblockPartMachine implements IMultiblockTierProvider {
- *     @Override public int getFormationTier() { return 1; }
+ * @Override public int getFormationTier() { return 1; }
  * }
  *
  * // Controller:
  * public class MyMachine extends TierAwareMultiblockMachine {
- *     public MyMachine(BlockEntityCreationInfo info, int tier) {
- *         super(info, tier, 1); // maxTier = 1
- *     }
+ * public MyMachine(BlockEntityCreationInfo info) {
+ * // Pass in the required RecipeLogic (e.g., MultiblockRecipeLogic) and the maxTier
+ * super(info, new MultiblockRecipeLogic(this), 1);
+ * }
  * }
  * }</pre>
  *
  * <h2>Standard-part detection via tier conditions</h2>
  * <pre>{@code
  * public class MyMachine extends TierAwareMultiblockMachine {
- *     public MyMachine(BlockEntityCreationInfo info, int tier) {
- *         super(info, tier, 1);
+ * public MyMachine(BlockEntityCreationInfo info) {
+ * super(info, new MultiblockRecipeLogic(this), 1);
  *
- *         // Tier 1 if a PlasmaHatchPartMachine is present:
- *         registerTierCondition(1, TierConditions.hasPartOfClass(PlasmaHatchPartMachine.class));
+ * // Tier 1 if a PlasmaHatchPartMachine is present:
+ * registerTierCondition(1, TierConditions.hasPartOfClass(PlasmaHatchPartMachine.class));
  *
- *         // Tier 2 if a specific definition ID is present:
- *         registerTierCondition(2, TierConditions.hasDefinition(MY_ULTRA_HATCH));
+ * // Tier 2 if a specific definition ID is present:
+ * registerTierCondition(2, TierConditions.hasDefinition(MY_ULTRA_HATCH));
  *
- *         // Compose with AND / OR:
- *         registerTierCondition(2,
- *             TierConditions.hasPartOfClass(PlasmaHatchPartMachine.class)
- *                 .and(TierConditions.hasPartAbility(MY_CUSTOM_ABILITY)));
- *     }
+ * // Compose with AND / OR:
+ * registerTierCondition(2,
+ * TierConditions.hasPartOfClass(PlasmaHatchPartMachine.class)
+ * .and(TierConditions.hasPartAbility(MY_CUSTOM_ABILITY)));
+ * }
  * }
  * }</pre>
  *
  * <h2>Builder wiring</h2>
  * <pre>{@code
  * REGISTRATE.multiblock("my_machine", MyMachine::new)
- *     .modelProperty(PhoenixMultiblockProperties.FORMATION_TIER, 0)
- *     .build();
+ * .modelProperty(PhoenixMultiblockProperties.FORMATION_TIER, 0)
+ * .build();
  * }</pre>
  *
  * <h2>Blockstate JSON</h2>
  * <pre>{@code
  * {
- *   "variants": {
- *     "formation_tier=0": { "model": "phoenixcore:block/my_machine_formed" },
- *     "formation_tier=1": { "model": "phoenixcore:block/my_machine_enhanced" }
- *   }
+ * "variants": {
+ * "formation_tier=0": { "model": "phoenixcore:block/my_machine_formed" },
+ * "formation_tier=1": { "model": "phoenixcore:block/my_machine_enhanced" }
+ * }
  * }
  * }</pre>
  */
@@ -99,8 +101,8 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
 
     // ── Construction ──────────────────────────────────────────────────────────
 
-    public TierAwareMultiblockMachine(BlockEntityCreationInfo info, int machineTier, int maxTier) {
-        super(info, machineTier);
+    public TierAwareMultiblockMachine(BlockEntityCreationInfo info, int maxTier) {
+        super(info); // This is all WorkableElectricMultiblockMachine actually needs!
         this.maxTier = maxTier;
     }
 
@@ -117,7 +119,7 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
      * @param tier      the tier to activate when {@code condition} passes (must be ≥ 1)
      * @param condition predicate over the formed part list
      */
-    protected void registerTierCondition(int tier, Predicate<Collection<IMultiPart>> condition) {
+    protected void registerTierCondition(int tier, Predicate<Collection<MultiblockPartMachine>> condition) {
         tierConditions.add(new TierEntry(tier, condition));
     }
 
@@ -148,10 +150,10 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
      * automatic scanning and layer extra logic on top of it).
      */
     protected int scanTier() {
-        Collection<IMultiPart> parts = getParts();
+        Collection<MultiblockPartMachine> parts = getParts();
         int best = 0;
 
-        for (IMultiPart part : parts) {
+        for (MultiblockPartMachine part : parts) {
             if (part instanceof IMultiblockTierProvider provider) {
                 best = Math.max(best, provider.getFormationTier());
             }
@@ -202,19 +204,19 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
 
     // ── Internal record ───────────────────────────────────────────────────────
 
-    private record TierEntry(int tier, Predicate<Collection<IMultiPart>> condition) {}
+    private record TierEntry(int tier, Predicate<Collection<MultiblockPartMachine>> condition) {}
 
     // ── Built-in condition factories ──────────────────────────────────────────
 
     /**
      * Static factory methods for the most common tier-condition patterns.
-     * All methods return {@code Predicate<Collection<IMultiPart>>} so they compose
+     * All methods return {@code Predicate<Collection<MultiblockPartMachine>>} so they compose
      * naturally with {@link Predicate#and}, {@link Predicate#or}, and {@link Predicate#negate}.
      *
      * <pre>{@code
      * registerTierCondition(1,
-     *     TierConditions.hasPartOfClass(PlasmaHatchPartMachine.class)
-     *         .and(TierConditions.hasPartAbility(MY_SPECIAL_ABILITY)));
+     * TierConditions.hasPartOfClass(PlasmaHatchPartMachine.class)
+     * .and(TierConditions.hasPartAbility(MY_SPECIAL_ABILITY)));
      * }</pre>
      */
     public static final class TierConditions {
@@ -229,7 +231,7 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
          * registerTierCondition(1, TierConditions.hasPartOfClass(FluidHatchPartMachine.class));
          * }</pre>
          */
-        public static Predicate<Collection<IMultiPart>> hasPartOfClass(Class<?> clazz) {
+        public static Predicate<Collection<MultiblockPartMachine>> hasPartOfClass(Class<?> clazz) {
             return parts -> parts.stream().anyMatch(clazz::isInstance);
         }
 
@@ -240,7 +242,7 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
          * registerTierCondition(2, TierConditions.hasPartOfClassAtLeast(2, EnergyHatchPartMachine.class));
          * }</pre>
          */
-        public static Predicate<Collection<IMultiPart>> hasPartOfClassAtLeast(int minCount, Class<?> clazz) {
+        public static Predicate<Collection<MultiblockPartMachine>> hasPartOfClassAtLeast(int minCount, Class<?> clazz) {
             return parts -> parts.stream().filter(clazz::isInstance).count() >= minCount;
         }
 
@@ -252,10 +254,9 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
          * registerTierCondition(1, TierConditions.hasDefinition(PhoenixMachines.PLASMA_HATCH[GTValues.IV]));
          * }</pre>
          */
-        public static Predicate<Collection<IMultiPart>> hasDefinition(MachineDefinition definition) {
+        public static Predicate<Collection<MultiblockPartMachine>> hasDefinition(MachineDefinition definition) {
             return parts -> parts.stream()
-                    .anyMatch(p -> p instanceof com.gregtechceu.gtceu.api.machine.MetaMachine mm
-                            && mm.getDefinition() == definition);
+                    .anyMatch(p -> p != null && p.getDefinition() == definition);
         }
 
         /**
@@ -267,13 +268,14 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
          * registerTierCondition(1, TierConditions.hasPartAbility(PartAbility.IMPORT_FLUIDS));
          * }</pre>
          */
-        public static Predicate<Collection<IMultiPart>> hasPartAbility(PartAbility ability) {
+        public static Predicate<Collection<MultiblockPartMachine>> hasPartAbility(PartAbility ability) {
             return parts -> {
                 var abilityBlocks = ability.getAllBlocks();
                 return parts.stream().anyMatch(p -> {
-                    if (!(p instanceof com.gregtechceu.gtceu.api.machine.MetaMachine mm)) return false;
-                    return abilityBlocks.contains(mm.getBlockPos() == null ? null
-                            : mm.getLevel() != null ? mm.getLevel().getBlockState(mm.getBlockPos()).getBlock() : null);
+                    // Safe, flattened null check and block retrieval without redundant instanceof
+                    if (p == null || p.getLevel() == null || p.getBlockPos() == null) return false;
+                    var block = p.getLevel().getBlockState(p.getBlockPos()).getBlock();
+                    return abilityBlocks.contains(block);
                 });
             };
         }
@@ -282,7 +284,7 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
          * Passes when none of the parts match the given predicate.
          * Useful for "only upgrade if the forbidden part is absent."
          */
-        public static Predicate<Collection<IMultiPart>> noneMatch(Predicate<IMultiPart> partPredicate) {
+        public static Predicate<Collection<MultiblockPartMachine>> noneMatch(Predicate<MultiblockPartMachine> partPredicate) {
             return parts -> parts.stream().noneMatch(partPredicate);
         }
     }

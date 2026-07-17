@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.phoenix.core.common.worldgen.PhoenixTerrainNoise;
 import net.phoenix.core.common.worldgen.PhoenixTerrainPresets;
 import net.phoenix.core.common.worldgen.TerrainProfile;
 import net.phoenix.core.common.worldgen.TerrainSampler;
@@ -21,50 +22,66 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.LongFunction;
+import java.util.stream.IntStream;
 
 @OnlyIn(Dist.CLIENT)
 public class TerrainPreviewScreen extends Screen {
 
-    // ── layout constants ──────────────────────────────────────────────────────
-    private static final double PREVIEW_FRAC = 0.65; // left fraction for terrain image
+    // ── layout ────────────────────────────────────────────────────────────────
+    private static final double PREVIEW_FRAC = 0.65;
     private static final int PANEL_PAD = 8;
     private static final int CTRL_H = 20;
     private static final int CTRL_GAP = 4;
 
-    // ── GPU texture ───────────────────────────────────────────────────────────
+    // ── texture ───────────────────────────────────────────────────────────────
     private static final ResourceLocation TEXTURE_RL =
             new ResourceLocation("phoenixcore", "terrain_preview");
     private DynamicTexture dynamicTexture;
     private NativeImage nativeImage;
     private final AtomicBoolean generating = new AtomicBoolean(false);
     private volatile boolean textureNeedsUpload = false;
+    private volatile boolean closed = false;
 
-    // ── preview image size (set in init) ──────────────────────────────────────
     private int previewW;
     private int previewH;
 
-    // ── current profile ───────────────────────────────────────────────────────
+    // ── state ─────────────────────────────────────────────────────────────────
     private TerrainProfile currentProfile;
+    private boolean showVeins = true;
 
-    // ── preset selector ───────────────────────────────────────────────────────
+    // ── presets ───────────────────────────────────────────────────────────────
     private final List<Map.Entry<String, LongFunction<TerrainProfile>>> presets =
             PhoenixTerrainPresets.all();
     private int presetIndex = 0;
 
-    // ── controls (initialised in init) ────────────────────────────────────────
+    // ── controls ──────────────────────────────────────────────────────────────
     private PreviewSlider sliderBaseY;
     private PreviewSlider sliderAmplitude;
     private PreviewSlider sliderFrequency;
     private PreviewSlider sliderOctaves;
     private ToggleCheckbox cbCaves;
     private ToggleCheckbox cbVolumetric;
+    private ToggleCheckbox cbVeins;
     private EditBox seedField;
 
     // ── export overlay ────────────────────────────────────────────────────────
     private boolean showExport = false;
     private String exportCode = "";
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── ore layers ────────────────────────────────────────────────────────────
+    private record OreLayer(String name, int minY, int maxY, int argb, double scale, double threshold, long seedOff) {}
+
+    private static final OreLayer[] ORE_LAYERS = {
+        new OreLayer("Coal",           -1, 256, 0xFF555555, 0.08, 0.130, 10L),
+        new OreLayer("Iron",          -24,  56, 0xFFD4916A, 0.10, 0.115, 20L),
+        new OreLayer("Copper",        -16, 112, 0xFFE07830, 0.09, 0.120, 30L),
+        new OreLayer("Gold",          -64,  32, 0xFFFFD700, 0.12, 0.080, 40L),
+        new OreLayer("Lapis",         -32,  64, 0xFF3355CC, 0.13, 0.070, 50L),
+        new OreLayer("Diamond",       -64,  16, 0xFF40EEEE, 0.14, 0.065, 60L),
+        new OreLayer("Ancient Debris",  8,  22, 0xFFAA44AA, 0.18, 0.055, 70L),
+    };
+
+    // ── init ──────────────────────────────────────────────────────────────────
 
     public TerrainPreviewScreen() {
         super(Component.literal("Terrain Preview"));
@@ -73,43 +90,40 @@ public class TerrainPreviewScreen extends Screen {
 
     @Override
     protected void init() {
+        closed = false;
         previewW = (int) (this.width * PREVIEW_FRAC);
         previewH = this.height;
 
-        // Allocate / reallocate the NativeImage & DynamicTexture
         if (nativeImage != null) nativeImage.close();
         nativeImage = new NativeImage(NativeImage.Format.RGBA, previewW, previewH, false);
 
         if (dynamicTexture == null) {
             dynamicTexture = new DynamicTexture(nativeImage);
             Minecraft.getInstance().getTextureManager().register(TEXTURE_RL, dynamicTexture);
+        } else {
+            dynamicTexture.setPixels(nativeImage);
         }
 
         int panelX = previewW + PANEL_PAD;
         int panelW = this.width - panelX - PANEL_PAD;
-        int cy = PANEL_PAD + 20; // start below title
+        int cy = PANEL_PAD + 20;
 
-        // ── Preset selector ──
+        // ── Preset arrows ──
         int arrowW = 20;
         int presetLabelW = panelW - arrowW * 2 - 4;
         addRenderableWidget(Button.builder(Component.literal("<"), b -> {
             presetIndex = (presetIndex - 1 + presets.size()) % presets.size();
             applyPreset();
         }).bounds(panelX, cy, arrowW, CTRL_H).build());
-
         addRenderableWidget(Button.builder(Component.literal(">"), b -> {
             presetIndex = (presetIndex + 1) % presets.size();
             applyPreset();
         }).bounds(panelX + arrowW + presetLabelW + 4, cy, arrowW, CTRL_H).build());
-
         cy += CTRL_H + CTRL_GAP + 2;
 
         // ── Sliders ──
-        int totalYRange = currentProfile.maxY() - currentProfile.minY();
-
         sliderBaseY = new PreviewSlider(panelX, cy, panelW, CTRL_H,
-                "Base Y", currentProfile.minY(), currentProfile.maxY(),
-                currentProfile.baseY());
+                "Base Y", currentProfile.minY(), currentProfile.maxY(), currentProfile.baseY());
         addRenderableWidget(sliderBaseY);
         cy += CTRL_H + CTRL_GAP;
 
@@ -137,11 +151,23 @@ public class TerrainPreviewScreen extends Screen {
         cbVolumetric = new ToggleCheckbox(panelX, cy, panelW, CTRL_H,
                 Component.literal("Volumetric"), currentProfile.volumetric());
         addRenderableWidget(cbVolumetric);
+        cy += CTRL_H + CTRL_GAP;
+
+        // Veins checkbox re-renders immediately since it doesn't change the terrain sampler
+        cbVeins = new ToggleCheckbox(panelX, cy, panelW, CTRL_H,
+                Component.literal("Show Veins"), showVeins) {
+            @Override
+            public void onPress() {
+                super.onPress();
+                showVeins = isChecked();
+                scheduleRender(currentProfile);
+            }
+        };
+        addRenderableWidget(cbVeins);
         cy += CTRL_H + CTRL_GAP + 4;
 
-        // ── Seed field ──
-        seedField = new EditBox(this.font, panelX, cy, panelW, CTRL_H,
-                Component.literal("Seed"));
+        // ── Seed ──
+        seedField = new EditBox(this.font, panelX, cy, panelW, CTRL_H, Component.literal("Seed"));
         seedField.setMaxLength(20);
         seedField.setValue(String.valueOf(currentProfile.seed()));
         addRenderableWidget(seedField);
@@ -155,74 +181,55 @@ public class TerrainPreviewScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("Export Code"), b -> openExport())
                 .bounds(panelX, cy, panelW, CTRL_H).build());
 
-        // Kick off initial render
         scheduleRender(currentProfile);
     }
 
-    // ── Preset application ────────────────────────────────────────────────────
+    // ── preset / regenerate ───────────────────────────────────────────────────
 
     private void applyPreset() {
         long seed = parseSeed();
         TerrainProfile preset = presets.get(presetIndex).getValue().apply(seed);
         currentProfile = preset;
-
-        // Sync controls
         sliderBaseY.setRawValue(preset.baseY());
         sliderAmplitude.setRawValue(preset.amplitude());
         sliderFrequency.setRawValue(preset.frequency() * 1000.0);
         sliderOctaves.setRawValue(preset.octaves());
         cbCaves.setValue(preset.caves());
         cbVolumetric.setValue(preset.volumetric());
-
         scheduleRender(preset);
     }
 
-    // ── Regenerate from controls ──────────────────────────────────────────────
-
     private void regenerate() {
         long seed = parseSeed();
-        double baseY = sliderBaseY.getRawValue();
-        double amplitude = sliderAmplitude.getRawValue();
-        double frequency = sliderFrequency.getRawValue() / 1000.0;
-        int octaves = (int) Math.round(sliderOctaves.getRawValue());
-        boolean caves = cbCaves.isChecked();
-        boolean volumetric = cbVolumetric.isChecked();
-
         currentProfile = TerrainProfile.builder(presets.get(presetIndex).getKey())
                 .seed(seed)
-                .minY(currentProfile.minY())
-                .maxY(currentProfile.maxY())
-                .seaLevel(currentProfile.seaLevel())
-                .baseY(baseY)
-                .amplitude(amplitude)
-                .frequency(frequency)
-                .octaves(octaves)
-                .caves(caves)
-                .volumetric(volumetric)
+                .minY(currentProfile.minY()).maxY(currentProfile.maxY()).seaLevel(currentProfile.seaLevel())
+                .baseY(sliderBaseY.getRawValue())
+                .amplitude(sliderAmplitude.getRawValue())
+                .frequency(sliderFrequency.getRawValue() / 1000.0)
+                .octaves((int) Math.round(sliderOctaves.getRawValue()))
+                .caves(cbCaves.isChecked())
+                .volumetric(cbVolumetric.isChecked())
                 .build();
-
         scheduleRender(currentProfile);
     }
 
     private long parseSeed() {
-        try {
-            return Long.parseLong(seedField.getValue().trim());
-        } catch (NumberFormatException e) {
-            return seedField.getValue().hashCode();
-        }
+        try { return Long.parseLong(seedField.getValue().trim()); }
+        catch (NumberFormatException e) { return seedField.getValue().hashCode(); }
     }
 
-    // ── Async render ──────────────────────────────────────────────────────────
+    // ── async render ──────────────────────────────────────────────────────────
 
     private void scheduleRender(TerrainProfile profile) {
-        if (generating.getAndSet(true)) return; // debounce
-
+        if (generating.getAndSet(true)) return;
         int imgW = previewW;
         int imgH = previewH;
+        boolean veins = this.showVeins;
 
         CompletableFuture.runAsync(() -> {
             try {
-                renderTerrainToImage(profile, imgW, imgH);
+                renderTerrainToImage(profile, imgW, imgH, veins);
                 textureNeedsUpload = true;
             } finally {
                 generating.set(false);
@@ -230,107 +237,128 @@ public class TerrainPreviewScreen extends Screen {
         });
     }
 
-    private void renderTerrainToImage(TerrainProfile profile, int imgW, int imgH) {
+    private void renderTerrainToImage(TerrainProfile profile, int imgW, int imgH, boolean withVeins) {
         TerrainSampler sampler = profile.sampler();
-        int minY = profile.minY();
-        int maxY = profile.maxY();
-        int seaLevel = profile.seaLevel();
+        int minY = profile.minY(), maxY = profile.maxY(), seaLevel = profile.seaLevel();
         int yRange = maxY - minY;
 
-        // X axis: -128 to +128 mapped across imgW pixels
-        // Y axis: maxY at top, minY at bottom
-
-        // First pass: find the surface Y for each column (for colouring)
-        int[] surfaceY = new int[imgW];
-        for (int px = 0; px < imgW; px++) {
-            int worldX = (int) (px / (double) imgW * 256) - 128;
-            surfaceY[px] = minY; // default if nothing solid
-            for (int worldY = maxY; worldY >= minY; worldY--) {
-                if (sampler.sample(worldX, worldY, 0) > 0) {
-                    surfaceY[px] = worldY;
-                    break;
-                }
+        // Build vein samplers once per render (not per pixel)
+        final TerrainSampler[] veinSamplers;
+        if (withVeins) {
+            veinSamplers = new TerrainSampler[ORE_LAYERS.length];
+            for (int i = 0; i < ORE_LAYERS.length; i++) {
+                veinSamplers[i] = PhoenixTerrainNoise.vein(
+                        profile.seed() + ORE_LAYERS[i].seedOff(),
+                        ORE_LAYERS[i].scale(),
+                        ORE_LAYERS[i].threshold());
             }
+        } else {
+            veinSamplers = null;
         }
 
-        // Second pass: colour each pixel
+        // Write to int[] in parallel (each column is independent)
+        int[] pixels = new int[imgW * imgH];
+
+        IntStream.range(0, imgW).parallel().forEach(px -> {
+            int worldX = (int) (px / (double) imgW * 256) - 128;
+
+            // Single downward pass: track surface + build solid[] simultaneously
+            boolean[] solidCol = new boolean[imgH];
+            int surf = minY;
+            boolean foundSurface = false;
+
+            for (int py = 0; py < imgH; py++) {
+                int worldY = maxY - (int) (py / (double) imgH * yRange);
+                solidCol[py] = sampler.sample(worldX, worldY, 0) > 0;
+                if (!foundSurface && solidCol[py]) {
+                    surf = worldY;
+                    foundSurface = true;
+                }
+            }
+
+            // Color pass — no sampler calls, uses precomputed solid[]
+            final int surfFinal = surf;
+            for (int py = 0; py < imgH; py++) {
+                int worldY = maxY - (int) (py / (double) imgH * yRange);
+                pixels[py * imgW + px] = colorPixel(worldX, worldY, solidCol[py],
+                        surfFinal, seaLevel, minY, maxY, veinSamplers);
+            }
+        });
+
+        // Bulk-copy to NativeImage (single-threaded section)
         NativeImage img = nativeImage;
-        if (img == null) return;
-
+        if (img == null || closed) return;
         synchronized (img) {
-            for (int px = 0; px < imgW; px++) {
-                int worldX = (int) (px / (double) imgW * 256) - 128;
-                int surf = surfaceY[px];
-
-                for (int py = 0; py < imgH; py++) {
-                    // py=0 is top (maxY), py=imgH-1 is bottom (minY)
-                    int worldY = maxY - (int) (py / (double) imgH * yRange);
-
-                    boolean solid = sampler.sample(worldX, worldY, 0) > 0;
-                    int abgr;
-
-                    if (!solid) {
-                        // Air
-                        if (worldY >= seaLevel) {
-                            // Sky gradient: deep sky blue at top, lighter lower
-                            float t = (float) (worldY - seaLevel) / (maxY - seaLevel);
-                            // #87CEEB at top, #C0E8F8 at sea level
-                            int r = (int) (0x87 + (0xC0 - 0x87) * (1 - t));
-                            int g = (int) (0xCE + (0xE8 - 0xCE) * (1 - t));
-                            int b = (int) (0xEB + (0xF8 - 0xEB) * (1 - t));
-                            abgr = toABGR(255, r, g, b);
-                        } else {
-                            // Underwater: dark blue #1A3A6B
-                            float depth = (float) (seaLevel - worldY) / (seaLevel - minY);
-                            int r = (int) (0x1A * (1 - depth * 0.5f));
-                            int g = (int) (0x3A * (1 - depth * 0.4f));
-                            int b = (int) (0x6B + (0x40) * depth);
-                            abgr = toABGR(200, r, g, b);
-                        }
-                    } else {
-                        // Solid
-                        int distFromSurface = surf - worldY;
-                        int totalDepth = surf - minY;
-                        float depthFrac = totalDepth > 0 ? (float) distFromSurface / totalDepth : 0;
-
-                        if (distFromSurface == 0) {
-                            // Surface: green #5A7C3A
-                            abgr = toABGR(255, 0x5A, 0x7C, 0x3A);
-                        } else if (distFromSurface <= 4) {
-                            // Near-surface: brown/dirt #7B5231
-                            float blend = distFromSurface / 4.0f;
-                            int r = (int) (0x7B);
-                            int g = (int) (0x52 - blend * 10);
-                            int b = (int) (0x31 - blend * 5);
-                            abgr = toABGR(255, r, g, b);
-                        } else if (depthFrac < 0.8f) {
-                            // Mid-depth: gray gradient #888888 → #444444
-                            float t = depthFrac / 0.8f;
-                            int v = (int) (0x88 - (0x88 - 0x44) * t);
-                            abgr = toABGR(255, v, v, v);
-                        } else {
-                            // Very deep: near-black with slight red tint
-                            float t = (depthFrac - 0.8f) / 0.2f;
-                            int r = (int) (0x44 - 0x22 * t + 0x22 * t); // slight red
-                            int gv = (int) (0x44 - 0x30 * t);
-                            int bv = (int) (0x44 - 0x30 * t);
-                            r = (int) (0x44 - 0x10 * t + 0x20 * t);
-                            abgr = toABGR(255, Math.max(0, r), Math.max(0, gv), Math.max(0, bv));
-                        }
-                    }
-
-                    img.setPixelRGBA(px, py, abgr);
+            if (closed) return;
+            for (int py = 0; py < imgH; py++) {
+                for (int px = 0; px < imgW; px++) {
+                    img.setPixelRGBA(px, py, pixels[py * imgW + px]);
                 }
             }
         }
     }
 
-    /** Pack r,g,b,a into ABGR int (NativeImage RGBA format stores as ABGR in memory). */
+    private int colorPixel(int worldX, int worldY, boolean solid, int surfY,
+                            int seaLevel, int minY, int maxY, TerrainSampler[] veinSamplers) {
+        if (!solid) {
+            if (worldY >= seaLevel) {
+                float t = (float) (worldY - seaLevel) / (maxY - seaLevel);
+                int r = (int) (0x87 + (0xC0 - 0x87) * (1 - t));
+                int gv = (int) (0xCE + (0xE8 - 0xCE) * (1 - t));
+                int b = (int) (0xEB + (0xF8 - 0xEB) * (1 - t));
+                return toABGR(255, r, gv, b);
+            } else {
+                float depth = (float) (seaLevel - worldY) / Math.max(1, seaLevel - minY);
+                return toABGR(200,
+                        (int) (0x1A * (1 - depth * 0.5f)),
+                        (int) (0x3A * (1 - depth * 0.4f)),
+                        (int) (0x6B + 0x40 * depth));
+            }
+        }
+
+        // Vein overlay — checked before terrain color so ore pixels pop visually
+        if (veinSamplers != null) {
+            for (int i = 0; i < ORE_LAYERS.length; i++) {
+                OreLayer ore = ORE_LAYERS[i];
+                if (worldY >= ore.minY() && worldY <= ore.maxY()
+                        && veinSamplers[i].sample(worldX, worldY, 0) < 0) {
+                    return argbToABGR(ore.argb());
+                }
+            }
+        }
+
+        // Terrain depth shading
+        int distFromSurface = surfY - worldY;
+        int totalDepth = surfY - minY;
+        float depthFrac = totalDepth > 0 ? (float) distFromSurface / totalDepth : 0;
+
+        if (distFromSurface == 0) {
+            return toABGR(255, 0x5A, 0x7C, 0x3A);
+        } else if (distFromSurface <= 4) {
+            float blend = distFromSurface / 4.0f;
+            return toABGR(255, 0x7B, (int) (0x52 - blend * 10), (int) (0x31 - blend * 5));
+        } else if (depthFrac < 0.8f) {
+            float t = depthFrac / 0.8f;
+            int v = (int) (0x88 - (0x88 - 0x44) * t);
+            return toABGR(255, v, v, v);
+        } else {
+            float t = (depthFrac - 0.8f) / 0.2f;
+            int r = (int) (0x44 + 0x10 * t);
+            int gv = (int) (0x44 - 0x30 * t);
+            int bv = (int) (0x44 - 0x30 * t);
+            return toABGR(255, Math.max(0, r), Math.max(0, gv), Math.max(0, bv));
+        }
+    }
+
     private static int toABGR(int a, int r, int g, int b) {
         return (a & 0xFF) << 24 | (b & 0xFF) << 16 | (g & 0xFF) << 8 | (r & 0xFF);
     }
 
-    // ── Export ────────────────────────────────────────────────────────────────
+    private static int argbToABGR(int argb) {
+        return toABGR((argb >> 24) & 0xFF, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
+    }
+
+    // ── export ────────────────────────────────────────────────────────────────
 
     private void openExport() {
         TerrainProfile p = currentProfile;
@@ -349,11 +377,10 @@ public class TerrainPreviewScreen extends Screen {
         showExport = true;
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── render ────────────────────────────────────────────────────────────────
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Upload texture if background thread finished
         if (textureNeedsUpload && !generating.get()) {
             textureNeedsUpload = false;
             synchronized (nativeImage) {
@@ -361,13 +388,9 @@ public class TerrainPreviewScreen extends Screen {
             }
         }
 
-        // Dark background for whole screen
         g.fill(0, 0, this.width, this.height, 0xFF101010);
-
-        // ── Preview pane ──
         g.blit(TEXTURE_RL, 0, 0, 0, 0, previewW, previewH, previewW, previewH);
 
-        // "Generating..." overlay
         if (generating.get()) {
             g.fill(0, 0, previewW, 12, 0xAA000000);
             g.drawString(this.font, "Generating...", 4, 2, 0xFFFF55);
@@ -376,28 +399,41 @@ public class TerrainPreviewScreen extends Screen {
         // Sea level line
         TerrainProfile p = currentProfile;
         int seaLineY = (int) ((double) (p.maxY() - p.seaLevel()) / (p.maxY() - p.minY()) * previewH);
-        g.fill(0, seaLineY, previewW, seaLineY + 1, 0x880066FF);
+        g.fill(0, seaLineY, previewW, seaLineY + 1, 0xAA0066FF);
 
-        // ── Right panel background ──
+        // Right panel
         int panelX = previewW;
         g.fill(panelX, 0, this.width, this.height, 0xCC1A1A2E);
+        g.drawCenteredString(this.font, "§b§lTerrain Preview",
+                panelX + (this.width - panelX) / 2, PANEL_PAD, 0xFFFFFF);
 
-        // Title
-        g.drawCenteredString(this.font, "§b§lTerrain Preview", panelX + (this.width - panelX) / 2, PANEL_PAD, 0xFFFFFF);
-
-        // Preset name centred between arrows
+        // Preset name
         int panelW = this.width - panelX - PANEL_PAD;
         int arrowW = 20;
         String presetName = presets.get(presetIndex).getKey();
-        int presetLabelX = panelX + arrowW + 2 + PANEL_PAD;
         int presetLabelW = panelW - arrowW * 2 - 4;
-        g.drawCenteredString(this.font, presetName, panelX + PANEL_PAD + arrowW + presetLabelW / 2 + 2,
+        g.drawCenteredString(this.font, presetName,
+                panelX + PANEL_PAD + arrowW + presetLabelW / 2 + 2,
                 PANEL_PAD + 20 + 6, 0xFFFFAA);
 
-        // Render children (buttons, sliders, etc.)
         super.render(g, mouseX, mouseY, partialTick);
 
-        // ── Export overlay ──
+        // Ore legend (below buttons, only when veins on)
+        if (showVeins) {
+            int legendY = this.height - ORE_LAYERS.length * 10 - 6;
+            for (OreLayer ore : ORE_LAYERS) {
+                int oreR = (ore.argb() >> 16) & 0xFF;
+                int oreG = (ore.argb() >> 8) & 0xFF;
+                int oreB = ore.argb() & 0xFF;
+                int swatchColor = 0xFF000000 | (oreR << 16) | (oreG << 8) | oreB;
+                g.fill(panelX + PANEL_PAD, legendY, panelX + PANEL_PAD + 6, legendY + 8, swatchColor);
+                g.drawString(this.font, ore.name() + " [" + ore.minY() + "→" + ore.maxY() + "]",
+                        panelX + PANEL_PAD + 9, legendY, swatchColor);
+                legendY += 10;
+            }
+        }
+
+        // Export overlay
         if (showExport) {
             int ox = 20, oy = 20, ow = this.width - 40, oh = this.height - 40;
             g.fill(ox, oy, ox + ow, oy + oh, 0xEE0A0A14);
@@ -412,7 +448,7 @@ public class TerrainPreviewScreen extends Screen {
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         if (showExport) {
-            if (key == 256) { showExport = false; return true; } // Esc
+            if (key == 256) { showExport = false; return true; }
             return false;
         }
         return super.keyPressed(key, scan, mods);
@@ -423,7 +459,7 @@ public class TerrainPreviewScreen extends Screen {
 
     @Override
     public void onClose() {
-        // Clean up GPU resources
+        closed = true;
         if (dynamicTexture != null) {
             Minecraft.getInstance().getTextureManager().release(TEXTURE_RL);
             dynamicTexture = null;
@@ -435,16 +471,15 @@ public class TerrainPreviewScreen extends Screen {
         super.onClose();
     }
 
-    // ── Inner widgets ─────────────────────────────────────────────────────────
+    // ── inner widgets ─────────────────────────────────────────────────────────
 
-    /** Slider that holds a raw double value in [min, max]. */
     private static class PreviewSlider extends AbstractSliderButton {
         private final String label;
         private final double min;
         private final double max;
 
-        PreviewSlider(int x, int y, int w, int h, String label, double min, double max, double initialValue) {
-            super(x, y, w, h, Component.empty(), (initialValue - min) / (max - min));
+        PreviewSlider(int x, int y, int w, int h, String label, double min, double max, double initial) {
+            super(x, y, w, h, Component.empty(), (initial - min) / (max - min));
             this.label = label;
             this.min = min;
             this.max = max;
@@ -454,50 +489,33 @@ public class TerrainPreviewScreen extends Screen {
         @Override
         protected void updateMessage() {
             double v = getRawValue();
-            String display;
-            if (max - min <= 10) {
-                display = String.format("%.0f", v);
-            } else if (max - min <= 300) {
-                display = String.format("%.1f", v);
-            } else {
-                display = String.format("%.3f", v);
-            }
-            setMessage(Component.literal(label + ": " + display));
+            String fmt = (max - min <= 10) ? "%.0f" : (max - min <= 300) ? "%.1f" : "%.3f";
+            setMessage(Component.literal(label + ": " + String.format(fmt, v)));
         }
 
         @Override
-        protected void applyValue() {
-            // No-op — value read on demand via getRawValue()
-        }
+        protected void applyValue() {}
 
-        public double getRawValue() {
-            return min + this.value * (max - min);
-        }
+        public double getRawValue() { return min + this.value * (max - min); }
 
         public void setRawValue(double v) {
-            this.value = (v - min) / (max - min);
-            this.value = Math.max(0, Math.min(1, this.value));
+            this.value = Math.max(0, Math.min(1, (v - min) / (max - min)));
             updateMessage();
         }
     }
 
-    /** Simple checkbox-style button toggle. */
     private static class ToggleCheckbox extends Button {
         private boolean checked;
 
         ToggleCheckbox(int x, int y, int w, int h, Component label, boolean initial) {
-            super(x, y, w, h, buildMsg(label.getString(), initial), b -> {
-                // handled in onPress override
-            }, DEFAULT_NARRATION);
+            super(x, y, w, h, buildMsg(label.getString(), initial), b -> {}, DEFAULT_NARRATION);
             this.checked = initial;
         }
 
         @Override
         public void onPress() {
             checked = !checked;
-            // rebuild message
             String raw = getMessage().getString();
-            // strip the checkbox prefix
             String labelPart = raw.length() > 4 ? raw.substring(4) : raw;
             setMessage(buildMsg(labelPart.trim(), checked));
         }
@@ -508,8 +526,6 @@ public class TerrainPreviewScreen extends Screen {
 
         public boolean isChecked() { return checked; }
 
-        public void setValue(boolean v) {
-            if (checked != v) onPress();
-        }
+        public void setValue(boolean v) { if (checked != v) onPress(); }
     }
 }

@@ -36,16 +36,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class AetherCrucibleMachine extends TierAwareMultiblockMachine {
 
     public AetherCrucibleMachine(BlockEntityCreationInfo info) {
-        // maxFormationTier=2 — this machine has three states: 0 (base), 1 (aetheric), 2 (resonant).
-        super(info, 0, 2);
+        // Passes info up, and sets maxTier to 2
+        super(info, 2);
 
-        // TIER 1 — part we DON'T own (standard GTM class, can't touch its source).
-        // Use registerTierCondition() with a TierConditions predicate to detect it by class.
+        // TIER 1 registration stays the same
         registerTierCondition(1, TierConditions.hasPartOfClass(FluidHatchPartMachine.class));
-
-        // TIER 2 — part we DO own (AetherCatalystHatch below).
-        // No call needed here: IMultiblockTierProvider on the hatch handles it automatically.
-        // The base class scans all parts for that interface after every structure check.
     }
 
     // ── Recipe modifier ───────────────────────────────────────────────────────
@@ -55,12 +50,19 @@ public class AetherCrucibleMachine extends TierAwareMultiblockMachine {
      * formation tier. Register this via {@code .recipeModifiers(AetherCrucibleMachine::recipeModifier)}
      * in the machine definition.
      */
-    public static @Nullable ModifierFunction recipeModifier(@NotNull RecipeModifier.RecipeModifierContext ctx) {
-        if (!(ctx.machine() instanceof AetherCrucibleMachine machine)) {
-            return RecipeModifier.nullWrongType(AetherCrucibleMachine.class, ctx.machine());
+    /**
+     * Returns a recipe modifier that scales speed and efficiency based on the active
+     * formation tier. Register this via {@code .recipeModifiers(AetherCrucibleMachine::recipeModifier)}
+     * in the machine definition.
+     */
+    public static ModifierFunction recipeModifier(com.gregtechceu.gtceu.api.machine.MetaMachine machine, com.gregtechceu.gtceu.api.recipe.GTRecipe recipe) {
+        // 1. Safe cast to your custom machine type
+        if (!(machine instanceof AetherCrucibleMachine aetherMachine)) {
+            return ModifierFunction.IDENTITY;
         }
 
-        return switch (machine.getFormationTier()) {
+        // 2. Scale your parameters based on the active formation tier
+        return switch (aetherMachine.getFormationTier()) {
             case 2 -> // Resonant — fastest + 2× parallel
                     ModifierFunction.builder()
                             .durationMultiplier(0.70)
@@ -70,8 +72,8 @@ public class AetherCrucibleMachine extends TierAwareMultiblockMachine {
                     ModifierFunction.builder()
                             .durationMultiplier(0.85)
                             .build();
-            default -> // Standard — baseline, no bonus
-                    null;
+            default -> // Standard — baseline, no bonus (identity makes no changes)
+                    ModifierFunction.IDENTITY;
         };
     }
 
@@ -90,7 +92,7 @@ public class AetherCrucibleMachine extends TierAwareMultiblockMachine {
             implements net.phoenix.core.common.machine.multiblock.api.IMultiblockTierProvider {
 
         public AetherCatalystHatch(BlockEntityCreationInfo info, int tier) {
-            super(info, tier);
+            super(info);
         }
 
         @Override

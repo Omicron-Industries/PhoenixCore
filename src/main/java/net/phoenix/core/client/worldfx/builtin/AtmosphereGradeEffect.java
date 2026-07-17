@@ -1,11 +1,12 @@
 package net.phoenix.core.client.worldfx.builtin;
 
+import brachy.modularui.utils.FloatSupplier;
 import net.minecraft.client.renderer.ShaderInstance;
 
 import net.phoenix.core.client.worldfx.PhoenixScreenEffect;
 import net.phoenix.core.client.worldfx.WorldFXShaders;
 
-import java.util.function.FloatSupplier;
+
 
 /**
  * Full-screen colour grading driven by a live float parameter (e.g. "soul level").

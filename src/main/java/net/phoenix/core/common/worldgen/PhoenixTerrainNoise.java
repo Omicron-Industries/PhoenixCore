@@ -65,6 +65,23 @@ public final class PhoenixTerrainNoise {
         };
     }
 
+    /**
+     * Tube-vein noise: returns negative where a vein blob is present.
+     * Combine with solid terrain: vein is only visible inside a solid block.
+     *
+     * <p>{@code scale} controls vein frequency (higher = smaller/more frequent veins).
+     * {@code threshold} controls vein thickness (higher = thicker veins).
+     */
+    public static TerrainSampler vein(long seed, double scale, double threshold) {
+        SimplexNoise n1 = makeNoise(seed);
+        SimplexNoise n2 = makeNoise(seed ^ 0xCAFEBABEL);
+        return (x, y, z) -> {
+            double a = Math.abs(n1.getValue(x * scale, y * scale * 0.5, z * scale));
+            double b = Math.abs(n2.getValue(x * scale + 31.7, y * scale * 0.5 + 17.3, z * scale - 41.2));
+            return (a + b) * 0.5 - threshold;
+        };
+    }
+
     // --- internal helpers ---
 
     private static SimplexNoise makeNoise(long seed) {

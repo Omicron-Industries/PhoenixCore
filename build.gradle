@@ -282,20 +282,4 @@ tasks.register('exportAxiomSprites', JavaExec) {
 
 tasks.named('build') {
     dependsOn("spotlessApply")
-
-    doLast {
-        def localPath = "C:/Users/conno/Desktop/PFT Core/Phoenix-Forge-Technologies/mods"
-
-        if (System.getProperty('os.name').toLowerCase().contains('windows') && new File(localPath).exists()) {
-            copy {
-                from "build/libs"
-                into localPath
-                include "${archives_base_name}-${version}*.jar"
-                exclude "*-sources.jar", "*-javadoc.jar"
-            }
-            println "SUCCESS: Spotless applied and Jar moved to local mods folder!"
-        } else {
-            println "Build complete. Local copy skipped (Not Windows or directory missing)."
-        }
-    }
 }
