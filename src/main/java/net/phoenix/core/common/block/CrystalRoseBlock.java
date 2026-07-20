@@ -22,7 +22,7 @@ public class CrystalRoseBlock extends MaterialBlock {
 
     public CrystalRoseBlock(BlockBehaviour.Properties properties, TagPrefix tagPrefix, Material material) {
         super(BlockBehaviour.Properties.of()
-                .noCollission() // Matches your environment's spelling
+                .noCollission()
                 .instabreak()
                 .noOcclusion()
                 .sound(SoundType.GRASS),
