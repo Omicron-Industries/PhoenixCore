@@ -100,7 +100,6 @@ public class PhoenixCore {
 
     public PhoenixCore() {
         PhoenixCore.init();
-        CrystalRoseIndicatorGenerator.register();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);
@@ -143,6 +142,7 @@ public class PhoenixCore {
         ManipulaterItems.init();
         PhoenixMaterialFlags.init();
         PhoenixDatagen.init();
+        CrystalRoseIndicatorGenerator.register();
     }
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES,
@@ -181,9 +181,6 @@ public class PhoenixCore {
         });
     }
 
-    // Runs on both client and server — safe because JukeDebugCommand contains
-    // no client-only classes (it only references S2CPlaySoundPacket and
-    // PhoenixNetwork, both of which are dist-neutral).
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         // JukeDebugCommand.register(event.getDispatcher());
@@ -229,49 +226,72 @@ public class PhoenixCore {
         PhoenixCore.LOGGER.info("🔥 Running Phantasia Blast Furnace & Vacuum Freezer Property Scan...");
         int blastCount = 0;
 
-        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
-            if (material.hasProperty(PropertyKey.BLAST)) {
-                BlastProperty blastProps = material.getProperty(PropertyKey.BLAST);
+        try {
+            for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+                if (material.hasProperty(PropertyKey.BLAST)) {
+                    BlastProperty blastProps = material.getProperty(PropertyKey.BLAST);
+                    if (blastProps == null) continue;
 
-                // 1. Core properties matching source getters
-                int blastTemp = blastProps.getBlastTemperature();
-                int durationOverride = blastProps.getDurationOverride();
-                int eutOverride = blastProps.getEUtOverride();
-                int vacuumDuration = blastProps.getVacuumDurationOverride();
-                int vacuumEUt = blastProps.getVacuumEUtOverride();
+                    // 1. Core properties matching source getters with dynamic error mitigation
+                    int blastTemp = blastProps.getBlastTemperature();
+                    int durationOverride = -1;
+                    int eutOverride = -1;
+                    int vacuumDuration = -1;
+                    int vacuumEUt = -1;
 
-                // 2. Parse Gas Tier and matching automated recipe ingredients safely
-                BlastProperty.GasTier gasTierEnum = blastProps.getGasTier();
-                String gasTierName = (gasTierEnum != null) ? gasTierEnum.name() : "NONE";
-                String requiredGasFluid = "None";
-
-                if (gasTierEnum != null) {
                     try {
-                        // Retrieves the underlying ingredient description (e.g. "1000mB Nitrogen")
-                        var fluidIngredient = gasTierEnum.getFluid();
-                        if (fluidIngredient != null && !fluidIngredient.isEmpty()) {
-                            requiredGasFluid = fluidIngredient.toString();
-                        }
-                    } catch (Exception e) {
-                        requiredGasFluid = "Error resolving gas fluid";
-                    }
-                }
+                        durationOverride = blastProps.getDurationOverride();
+                    } catch (NoSuchMethodError | Exception ignored) {}
+                    try {
+                        eutOverride = blastProps.getEUtOverride();
+                    } catch (NoSuchMethodError | Exception ignored) {}
+                    try {
+                        vacuumDuration = blastProps.getVacuumDurationOverride();
+                    } catch (NoSuchMethodError | Exception ignored) {}
+                    try {
+                        vacuumEUt = blastProps.getVacuumEUtOverride();
+                    } catch (NoSuchMethodError | Exception ignored) {}
 
-                // 3. Log everything cleanly
-                PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
-                        "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
-                        "| Gas Tier: {} | Gas Input Required: {} " +
-                        "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
-                        material.getName(),
-                        blastTemp,
-                        eutOverride,
-                        durationOverride,
-                        gasTierName,
-                        requiredGasFluid,
-                        vacuumEUt,
-                        vacuumDuration);
-                blastCount++;
+                    // 2. Parse Gas Tier and matching automated recipe ingredients safely
+                    String gasTierName = "NONE";
+                    String requiredGasFluid = "None";
+
+                    try {
+                        BlastProperty.GasTier gasTierEnum = blastProps.getGasTier();
+                        if (gasTierEnum != null) {
+                            gasTierName = gasTierEnum.name();
+                            try {
+                                var fluidIngredient = gasTierEnum.getFluid();
+                                if (fluidIngredient != null && !fluidIngredient.isEmpty()) {
+                                    requiredGasFluid = fluidIngredient.toString();
+                                }
+                            } catch (Throwable t) {
+                                requiredGasFluid = "Error resolving gas fluid: " + t.getMessage();
+                            }
+                        }
+                    } catch (NoSuchMethodError | Exception ignored) {
+                        gasTierName = "UNSUPPORTED_OR_MISSING";
+                    }
+
+                    // 3. Log everything cleanly
+                    PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
+                            "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
+                            "| Gas Tier: {} | Gas Input Required: {} " +
+                            "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
+                            material.getName(),
+                            blastTemp,
+                            eutOverride,
+                            durationOverride,
+                            gasTierName,
+                            requiredGasFluid,
+                            vacuumEUt,
+                            vacuumDuration);
+                    blastCount++;
+                }
             }
+        } catch (Throwable t) {
+            PhoenixCore.LOGGER.error(
+                    "❌ Failed to scan thermodynamic Blast/Vacuum properties due to a compatibility problem: ", t);
         }
         PhoenixCore.LOGGER.info("🔥 Blast Scan complete. Successfully logged {} thermodynamic properties.", blastCount);
     }

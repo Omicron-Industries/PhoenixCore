@@ -1,113 +1,87 @@
-
 import net.neoforged.moddevgradle.legacyforge.tasks.RemapJar
 plugins {
-
     id "idea"
     id "eclipse"
     id "maven-publish"
     id 'net.neoforged.moddev.legacyforge' version '2.0.91'
     id 'com.diffplug.spotless' version '7.0.2'
-
 }
-
-
 
 configurations {
-
 }
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.compilerArgs += "-Xlint:-deprecation"
 }
 
-
-
 def generatedResources = file("src/generated")
 
-
 sourceSets {
-
     main.resources {
-
         srcDir 'src/main/resources'
         srcDir 'src/generated/resources'
-
     }
-
 }
 
 repositories {
-
     mavenLocal()
     mavenCentral()
-    maven { //GTM maven
+    maven { // GTM maven
         name = 'GTCEu Maven'
         url = 'https://maven.gtceu.com'
         content {
             includeGroup 'com.gregtechceu.gtceu'
             includeGroup 'appeng'
             includeGroup 'lu.kolja'
-
         }
     }
 
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
-    maven {
-// 'Ars'
+    maven { // 'Ars'
         url 'https://maven.blamejared.com'
     }
-
-
-
 
     maven {
         name 'FirstDarkDev'
         url "https://maven.firstdarkdev.xyz/snapshots/"
     }
-    maven {
-// latvian.dev Maven (KubeJS and Rhino)
+    maven { // latvian.dev Maven (KubeJS and Rhino)
         url = "https://maven.latvian.dev/releases"
     }
     maven { // Registrate
         url = "https://maven.tterrag.com/"
-        content {
-// need to be specific here due to version overlaps
+        content { // need to be specific here due to version overlaps
             includeGroup("com.tterrag.registrate")
         }
     }
-    maven {
-// Patchouli, JEI
+    maven { // Patchouli, JEI
         name = "BlameJared"
         url = "https://maven.blamejared.com/"
     }
     maven {
         url = "https://maven.theillusivec4.top/"
     }
-    maven {
-// Curse Forge File
+    maven { // Curse Forge File
         url "https://cursemaven.com/"
         content {
             includeGroup "curse.maven"
         }
     }
-    maven {
-// EMI
+    maven { // EMI
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
     }
-
     maven {
         url = "https://maven.architectury.dev"
     }
     maven {
         url = "https://thedarkcolour.github.io/KotlinForForge/"
     }
-    maven {
-// 'Curios'
+    maven { // 'Curios'
         url "https://maven.blamejared.com"
     }
-    maven {
-// Geckolib
+    maven { // Geckolib
         url "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
     }
     maven {
@@ -116,32 +90,11 @@ repositories {
     }
 }
 
-
 version = mod_version
 group = maven_group
 base { archivesName = archives_base_name }
 java { sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-// jcodec and jlayer are not Forge mods so moddevgradle's classloader won't find them via
-// `implementation` alone. We extract their class files into a dedicated directory and add
-// that directory to the sourceSet output. Forge's mod classloader then sees the classes as
-// part of the mod itself — both in dev (sourceSet output) and production (jar contents).
-def extractedLibsDir = file("${buildDir}/extractedLibs")
-
-tasks.register('extractLibraries', Copy) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from {
-        configurations.jarJar.resolvedConfiguration.resolvedArtifacts.collect { zipTree(it.file) }
-    }
-    into extractedLibsDir
-    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/MANIFEST.MF'
-    exclude 'META-INF/maven/**', 'META-INF/LICENSE*', 'META-INF/NOTICE*', 'META-INF/license/**'
-}
-
-sourceSets.main.output.dir(extractedLibsDir, builtBy: 'extractLibraries')
-tasks.named('compileJava').configure { dependsOn 'extractLibraries' }
-
 
 legacyForge {
     version = project.minecraft_version + '-' + project.forge_version
@@ -153,16 +106,10 @@ legacyForge {
 
     runs {
         configureEach {
-// Recommended logging data for a userdev environment
-// The markers can be added/remove as needed separated by commas.
-// "SCAN": For mods scan.
-// "REGISTRIES": For firing of registry events.
-// "REGISTRYDUMP": For getting the contents of all registries.
+            // Recommended logging data for a userdev environment
             systemProperty 'forge.logging.markers', 'REGISTRIES'
 
-// Recommended logging level for the console
-// You can set various levels here.
-// Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+            // Recommended logging level for the console
             logLevel = org.slf4j.event.Level.DEBUG
             sourceSet = sourceSets.main
         }
@@ -190,56 +137,44 @@ legacyForge {
             systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
             programArguments.addAll('--nogui', '--world', 'world-extra')
         }
-
-
         data {
             data()
-
-            // REMOVE the refresh-dependencies line from here
             programArguments.addAll('--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath())
             programArguments.addAll('--existing-mod', 'gtceu')
         }
     }
 
-
     mods {
-// define mod <-> source bindings
-// these are used to tell the game which sources are for which mod
-// mostly optional in a single mod project
-// but multi mod projects should define one per mod
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
     }
 }
 
-
-jar {
+tasks.named('jar', Jar).configure {
+    archiveClassifier.set('slim')
     manifest {
         attributes([
-                // Use a comma-separated list for multiple configs
                 "MixinConfigs": "phoenixcore.mixins.json",
                 "Implementation-Vendor" : mod_author,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
+    finalizedBy 'reobfJar'
 }
 
 mixin {
-// MixinGradle Settings
     add sourceSets.main, 'mixins.phoenixcore.refmap.json'
     config 'phoenixcore.mixins.json'
 }
 
 apply from: "$rootDir/gradle/scripts/spotless.gradle"
 
-
 dependencies {
     compileOnly("org.jetbrains:annotations:26.0.1")
-
     annotationProcessor('org.spongepowered:mixin:0.8.5:processor')
 
-// JEI, EMI, Jade
+    // JEI, EMI, Jade
     modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
     modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
@@ -256,18 +191,14 @@ dependencies {
     modRuntimeOnly("curse.maven:jade-324717:5390389")
     modCompileOnly("curse.maven:jade-324717:5390389")
 
+    // Let JarJar natively handle your non-mod dependencies
     implementation 'javazoom:jlayer:1.0.1'
     jarJar('javazoom:jlayer:1.0.1')
 
     implementation 'org.jcodec:jcodec:0.2.5'
     jarJar('org.jcodec:jcodec:0.2.5')
 
-
-
-   // modImplementation "curse.maven:crazy-ae2-addons-1223804:7250497"
-
-
-// GregTech and dependencies
+    // GregTech and dependencies
     modImplementation "software.bernie.geckolib:geckolib-neoforge-1.20.1:${geckolib_version}"
     modImplementation "top.theillusivec4.curios:curios-forge:${curios_version}"
     modImplementation "com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_nouveau_version}"
@@ -280,12 +211,9 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-library-forge:${ftblibrary_version}")
     modCompileOnly("dev.ftb.mods:ftb-teams-forge:${ftbteams_version}")
 
-// lombok
+    // lombok
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
-
-    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0'
-
 }
 
 configurations.configureEach {
@@ -293,7 +221,6 @@ configurations.configureEach {
         cacheChangingModulesFor 0, 'seconds'
     }
 }
-
 
 tasks.named('processResources', ProcessResources).configure {
     var properties = [
@@ -315,26 +242,13 @@ tasks.named('processResources', ProcessResources).configure {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-
-
-tasks.named('jar', Jar).configure {
-    archiveClassifier.set('slim')
-    finalizedBy 'reobfJar'
-    dependsOn 'extractLibraries'
-    from(extractedLibsDir)
-}
-
-
 tasks.named('build') {
     dependsOn("spotlessApply")
 
     doLast {
-        // Use a standard String path
         def localPath = "C:/Users/conno/Desktop/PFT Core/Phoenix-Forge-Technologies/mods"
 
-        // 1. Check if we are on Windows FIRST
-        // 2. Then check if the directory exists
-        if (System.getProperty('os.name').toLowerCase().contains('windows') && new File(localPath).exists()) {
+        if (System.getProperty('os.name').toLowerCase().contains('windows') && file(localPath).exists()) {
             copy {
                 from "build/libs"
                 into localPath
