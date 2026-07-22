@@ -71,7 +71,7 @@ public class PhoenixMaterials {
     public static void modifyMaterials() {
         // --- Crystal Rose Flags ---
         CrystalRoseHelper.addCrystalRoseFlags(
-                Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond,
+                Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond, PERMAFROST, DORMANT_EMBER,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
                 Lead, Lepidolite, Malachite, Nickel, Opal, Pitchblende, Pyrope, Realgar,
                 Ruby, Salt, Sapphire, Scheelite, Silicon, Silver, Steel, Stibnite, Topaz,

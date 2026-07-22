@@ -291,7 +291,7 @@ public class PhoenixProgressionMaterials {
 
         // Superconductors
         MAGMATIC_MANGANESE_LEAD = new Material.Builder(PhoenixCore.id("magmatic_manganese_lead")).ingot().fluid()
-                .color(0x8B4513).cableProperties(GTValues.V[LV], 2, 2).buildAndRegister();
+                .color(0x8B4513).cableProperties(GTValues.V[LV], 2, 0, true).buildAndRegister();
         CRYOGENIC_ALUMINUM_STRAND = new Material.Builder(PhoenixCore.id("cryogenic_aluminum_strand")).ingot().fluid()
                 .color(0xADD8E6).cableProperties(GTValues.V[GTValues.MV], 4, 0, true).buildAndRegister();
         ICY_STEEL_MATRIX = new Material.Builder(PhoenixCore.id("icy_steel_matrix")).ingot().fluid().color(0xE0FFFF)
