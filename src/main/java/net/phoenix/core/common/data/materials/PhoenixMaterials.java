@@ -81,7 +81,7 @@ public class PhoenixMaterials {
                 TricalciumPhosphate, Tungstate, Zinc,
                 Barite, Bastnasite, Bismuth, Chromite, Graphite, Molybdenum, Oilsands, Platinum,
                 Pyrochlore, Pyrolusite, Sphalerite, Sulfur, Tantalite, Tetrahedrite, Thorium,
-                Titanium, VanadiumMagnetite,
+                Titanium, VanadiumMagnetite, PERMAFROST, DORMANT_EMBER,
                 NetherQuartz, RockSalt, Sodalite,
                 Coal, Redstone, Tin, Obsidian, Netherite, CertusQuartz, NetherQuartz, VOIDGLASS_SHARD, Saltpeter,
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, IGNISIUM,
