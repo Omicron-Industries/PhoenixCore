@@ -345,7 +345,7 @@ public class PhoenixProgressionMaterials {
                 .fluid().color(0x808080).cableProperties(GTValues.V[GTValues.UV], 64, 8, true)
                 .blastTemp(1700, MID, GTValues.VA[GTValues.UV], 850000).flags(GENERATE_PLATE).buildAndRegister();
         EXOTIC_VANADIUM_COMPOSITE = new Material.Builder(PhoenixCore.id("exotic_vanadium_composite")).ingot().fluid()
-                .color(0xFFA07A).cableProperties(GTValues.V[GTValues.UV], 32, 4, true)
+                .color(0xFFA07A).cableProperties(GTValues.V[GTValues.UV], 32, 4, false)
                 .blastTemp(1400, MID, GTValues.VA[GTValues.UV], 780000).flags(GENERATE_PLATE).buildAndRegister();
         DARK_MATTER_PLATED_IRIDIUM = new Material.Builder(PhoenixCore.id("dark_matter_plated_iridium")).ingot().fluid()
                 .color(0x191970).cableProperties(GTValues.V[GTValues.UV], 128, 16, true)

@@ -5,8 +5,6 @@ import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialEvent;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialRegistryEvent;
 import com.gregtechceu.gtceu.api.data.chemical.material.event.PostMaterialEvent;
-import com.gregtechceu.gtceu.api.data.chemical.material.properties.BlastProperty;
-import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -27,7 +25,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -172,7 +169,6 @@ public class PhoenixCore {
     public void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             PhoenixNetwork.init();
-            net.phoenix.core.integration.phoenix_chronicles.ChroniclesTheme.loadThemes();
 
             MapIngredientTypeManager.registerMapIngredient(Shield.ShieldTypes.class, MapShieldIngredient::from);
             MapIngredientTypeManager.registerMapIngredient(
@@ -217,78 +213,6 @@ public class PhoenixCore {
         PhoenixBeeMachines.init();
         PhoenixResearchMachines.init();
         PhoenixTeslaMachines.init();
-    }
-
-    @SubscribeEvent
-    public void onServerAboutToStart(ServerAboutToStartEvent event) {
-        PhoenixCore.LOGGER.info("🔥 Running Phantasia Blast Furnace & Vacuum Freezer Property Scan...");
-        int blastCount = 0;
-
-        try {
-            for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
-                if (material.hasProperty(PropertyKey.BLAST)) {
-                    BlastProperty blastProps = material.getProperty(PropertyKey.BLAST);
-                    if (blastProps == null) continue;
-
-                    int blastTemp = blastProps.getBlastTemperature();
-                    int durationOverride = -1;
-                    int eutOverride = -1;
-                    int vacuumDuration = -1;
-                    int vacuumEUt = -1;
-
-                    try {
-                        durationOverride = blastProps.getDurationOverride();
-                    } catch (NoSuchMethodError | Exception ignored) {}
-                    try {
-                        eutOverride = blastProps.getEUtOverride();
-                    } catch (NoSuchMethodError | Exception ignored) {}
-                    try {
-                        vacuumDuration = blastProps.getVacuumDurationOverride();
-                    } catch (NoSuchMethodError | Exception ignored) {}
-                    try {
-                        vacuumEUt = blastProps.getVacuumEUtOverride();
-                    } catch (NoSuchMethodError | Exception ignored) {}
-
-                    String gasTierName = "NONE";
-                    String requiredGasFluid = "None";
-
-                    try {
-                        BlastProperty.GasTier gasTierEnum = blastProps.getGasTier();
-                        if (gasTierEnum != null) {
-                            gasTierName = gasTierEnum.name();
-                            try {
-                                var fluidIngredient = gasTierEnum.getFluid();
-                                if (fluidIngredient != null && !fluidIngredient.isEmpty()) {
-                                    requiredGasFluid = fluidIngredient.toString();
-                                }
-                            } catch (Throwable t) {
-                                requiredGasFluid = "Error resolving gas fluid: " + t.getMessage();
-                            }
-                        }
-                    } catch (NoSuchMethodError | Exception ignored) {
-                        gasTierName = "UNSUPPORTED_OR_MISSING";
-                    }
-
-                    PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
-                            "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
-                            "| Gas Tier: {} | Gas Input Required: {} " +
-                            "| Vacuum EU/t Override: {} | Vacuum Duration Override: {}",
-                            material.getName(),
-                            blastTemp,
-                            eutOverride,
-                            durationOverride,
-                            gasTierName,
-                            requiredGasFluid,
-                            vacuumEUt,
-                            vacuumDuration);
-                    blastCount++;
-                }
-            }
-        } catch (Throwable t) {
-            PhoenixCore.LOGGER.error(
-                    "❌ Failed to scan thermodynamic Blast/Vacuum properties due to a compatibility problem: ", t);
-        }
-        PhoenixCore.LOGGER.info("🔥 Blast Scan complete. Successfully logged {} thermodynamic properties.", blastCount);
     }
 
     public static ResourceLocation id(String path) {

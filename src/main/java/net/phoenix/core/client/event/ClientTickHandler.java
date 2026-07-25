@@ -60,11 +60,6 @@ public class ClientTickHandler {
             }
         }
 
-        while (PhoenixKeybinds.OPEN_GUILDS.consumeClick()) {
-            if (mc.screen == null)
-                mc.setScreen(new net.phoenix.core.integration.phoenix_guilds.client.GuildScreen());
-        }
-
         while (PhoenixKeybinds.TESLA_MODE.consumeClick()) {
             ItemStack chestItem = mc.player.getItemBySlot(EquipmentSlot.CHEST);
             if (!chestItem.isEmpty() &&

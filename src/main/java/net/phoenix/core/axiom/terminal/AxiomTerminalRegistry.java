@@ -22,29 +22,21 @@ public final class AxiomTerminalRegistry {
     private static final DeferredRegister<BlockEntityType<?>> BES = DeferredRegister
             .create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
 
-    public static final RegistryObject<ResearchTerminalBlock> TERMINAL;
-    public static final RegistryObject<BlockEntityType<ResearchTerminalBlockEntity>> TERMINAL_BE;
+    public static final RegistryObject<Block> TERMINAL = BLOCKS.register("research_terminal",
+            () -> new ResearchTerminalBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3f, 12f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
 
-    static {
-        @SuppressWarnings("unchecked")
-        RegistryObject<BlockEntityType<ResearchTerminalBlockEntity>>[] beHolder = new RegistryObject[1];
+    public static final RegistryObject<BlockEntityType<ResearchTerminalBlockEntity>> TERMINAL_BE = BES.register(
+            "research_terminal",
+            () -> BlockEntityType.Builder.of(
+                    ResearchTerminalBlockEntity::new,
+                    TERMINAL.get()).build(null));
 
-        TERMINAL = BLOCKS.register("research_terminal",
-                () -> new ResearchTerminalBlock(BlockBehaviour.Properties.of()
-                        .mapColor(MapColor.METAL)
-                        .strength(3f, 12f)
-                        .sound(SoundType.METAL)
-                        .noOcclusion()));
-
-        TERMINAL_BE = BES.register("research_terminal",
-                () -> BlockEntityType.Builder.of(
-                        (pos, state) -> new ResearchTerminalBlockEntity(beHolder[0].get(), pos, state),
-                        TERMINAL.get()).build(null));
-
-        beHolder[0] = TERMINAL_BE;
-
-        ITEMS.register("research_terminal", () -> new BlockItem(TERMINAL.get(), new Item.Properties()));
-    }
+    public static final RegistryObject<Item> TERMINAL_ITEM = ITEMS.register("research_terminal",
+            () -> new BlockItem(TERMINAL.get(), new Item.Properties()));
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);

@@ -2,6 +2,7 @@ package net.phoenix.core.client;
 
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderManager;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -22,6 +23,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.phoenix.core.PhoenixCore;
+import net.phoenix.core.axiom.client.ResearchTerminalScreen;
+import net.phoenix.core.axiom.terminal.ResearchTerminalBlockEntity;
 import net.phoenix.core.client.particle.PhoenixParticles;
 import net.phoenix.core.client.renderer.machine.*;
 import net.phoenix.core.common.block.PhoenixBlocks;
@@ -61,6 +64,10 @@ public class PhoenixClient {
             if (event.phase != TickEvent.Phase.END) return;
             VocalVibrancyClient.tick();
         }
+    }
+
+    public static void openResearchTerminalScreen(ResearchTerminalBlockEntity terminal) {
+        Minecraft.getInstance().setScreen(new ResearchTerminalScreen(terminal));
     }
 
     @SubscribeEvent

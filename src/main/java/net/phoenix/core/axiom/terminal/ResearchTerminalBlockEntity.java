@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -25,8 +24,8 @@ public class ResearchTerminalBlockEntity extends BlockEntity {
     private final Map<AxiomDataType, Long> stored = new EnumMap<>(AxiomDataType.class);
     private final LazyOptional<IAxiomMultiHandler> handlerOpt;
 
-    public ResearchTerminalBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
+    public ResearchTerminalBlockEntity(BlockPos pos, BlockState state) {
+        super(AxiomTerminalRegistry.TERMINAL_BE.get(), pos, state);
         for (AxiomDataType dt : AxiomDataType.values()) stored.put(dt, 0L);
         handlerOpt = LazyOptional.of(this::buildHandler);
     }
