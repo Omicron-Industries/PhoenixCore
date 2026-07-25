@@ -60,17 +60,14 @@ public class SourceTankFancyUIWidget extends FancyMachineUIWidget {
                 new ColorRectTexture(BUTTON_BG),
                 new ColorBorderTexture(1, PURPLE_ACCENT));
 
-        // FIX 1: Safely isolate the client-side screen closure using DistExecutor
         addWidget(new ButtonWidget(bx, by, bw, bh, bg, cd -> {
             net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(
                     net.minecraftforge.api.distmarker.Dist.CLIENT,
                     () -> () -> Minecraft.getInstance().setScreen(null));
         }));
 
-        // FIX 2: Avoid calling Minecraft.getInstance().font on the server.
-        // Hardcode the approximate dimensions for the text "Exit"
-        int textWidth = 22; // Standard width of "Exit"
-        int textHeight = 9; // Standard font height
+        int textWidth = 22; 
+        int textHeight = 9; 
         int tx = bx + (bw - textWidth) / 2;
         int ty = by + (bh - textHeight) / 2;
 

@@ -18,32 +18,30 @@ public class EntityInteractionHandler {
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ItemStack stack = event.getItemStack();
 
-        // 1. Intercept immediately if they are holding our spray can tool
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
 
-            // 2. Check if the targeted entity is a Wolf or Cat
             if (event.getTarget() instanceof Wolf wolf) {
-                // Only allow color changes if the wolf is actually tamed!
+                
                 if (wolf.isTame()) {
                     DyeColor currentColor = ChameleonSprayCanBehaviour.getColor(stack);
                     if (currentColor != null) {
                         if (!event.getLevel().isClientSide()) {
                             wolf.setCollarColor(currentColor);
                         }
-                        // Successfully intercepted! Cancel the event so they don't sit down.
+                        
                         event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
                         event.setCanceled(true);
                     }
                 }
             } else if (event.getTarget() instanceof Cat cat) {
-                // Only allow color changes if the cat is actually tamed!
+                
                 if (cat.isTame()) {
                     DyeColor currentColor = ChameleonSprayCanBehaviour.getColor(stack);
                     if (currentColor != null) {
                         if (!event.getLevel().isClientSide()) {
                             cat.setCollarColor(currentColor);
                         }
-                        // Successfully intercepted! Cancel the event so they don't stand up/sit down.
+                        
                         event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
                         event.setCanceled(true);
                     }

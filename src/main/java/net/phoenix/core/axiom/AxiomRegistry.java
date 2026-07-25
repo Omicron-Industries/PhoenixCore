@@ -31,21 +31,15 @@ public final class AxiomRegistry {
     private static final DeferredRegister<BlockEntityType<?>> BES = DeferredRegister
             .create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
 
-    // ── Pipe blocks ───────────────────────────────────────────────────────────
-
     public static final Map<AxiomDataType, RegistryObject<AxiomPipeBlock>> PIPES = new EnumMap<>(AxiomDataType.class);
     public static final Map<AxiomDataType, RegistryObject<BlockEntityType<AxiomPipeBlockEntity>>> PIPE_BES = new EnumMap<>(
             AxiomDataType.class);
 
     static {
         for (AxiomDataType type : AxiomDataType.values()) {
-            // Skip soft-dep types if mod absent — registration still happens (so
-            // resource packs can provide assets) but the block won't appear in
-            // creative tabs or recipes when the dep is missing.
+
             String id = type.id() + "_data_pipe";
 
-            // Forward-ref: BE type needs the block, block needs the BE type supplier.
-            // Solve with a holder array to break the cycle.
             @SuppressWarnings("unchecked")
             RegistryObject<BlockEntityType<AxiomPipeBlockEntity>>[] beHolder = new RegistryObject[1];
 
@@ -62,12 +56,9 @@ public final class AxiomRegistry {
             PIPES.put(type, block);
             PIPE_BES.put(type, be);
 
-            // BlockItem
             ITEMS.register(id, () -> new BlockItem(block.get(), new Item.Properties()));
         }
     }
-
-    // ── Registration entry point ──────────────────────────────────────────────
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
@@ -80,8 +71,6 @@ public final class AxiomRegistry {
         AxiomDataCapability.register(event);
         AxiomMultiHandlerCapability.register(event);
     }
-
-    // ── Block properties per type ─────────────────────────────────────────────
 
     private static BlockBehaviour.Properties pipeProps(AxiomDataType type) {
         return BlockBehaviour.Properties.of()

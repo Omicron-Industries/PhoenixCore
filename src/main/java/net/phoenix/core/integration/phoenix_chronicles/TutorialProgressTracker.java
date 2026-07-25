@@ -9,28 +9,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Client-side store for per-quest tutorial step progress.
- *
- * <p>
- * Step index semantics:
- * <ul>
- * <li>0 (default) = not yet started / at first step
- * <li>N = currently on step N
- * <li>-1 = dismissed or all steps completed
- * </ul>
- *
- * <p>
- * Progress is persisted to {@code config/phoenix_chronicles/tutorial_progress.dat}
- * (binary NBT) so it survives restarts without any server-side plumbing.
- */
 public class TutorialProgressTracker {
 
     private static final Map<String, Integer> STEPS = new HashMap<>();
     private static Path dataFile;
     private static boolean initialized = false;
-
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     public static void init(Path chroniclesConfigDir) {
         dataFile = chroniclesConfigDir.resolve("tutorial_progress.dat");
@@ -42,9 +25,6 @@ public class TutorialProgressTracker {
         return initialized;
     }
 
-    // ── Accessors ─────────────────────────────────────────────────────────────
-
-    /** Current step index, or 0 if never started, or -1 if dismissed/completed. */
     public static int getStep(String questId) {
         return STEPS.getOrDefault(questId, 0);
     }
@@ -52,8 +32,6 @@ public class TutorialProgressTracker {
     public static boolean isDismissed(String questId) {
         return STEPS.getOrDefault(questId, 0) < 0;
     }
-
-    // ── Mutations (each saves to disk) ────────────────────────────────────────
 
     public static void advance(String questId, int totalSteps) {
         int next = getStep(questId) + 1;
@@ -75,8 +53,6 @@ public class TutorialProgressTracker {
         STEPS.remove(questId);
         save();
     }
-
-    // ── Persistence ───────────────────────────────────────────────────────────
 
     private static void load() {
         if (dataFile == null || !Files.exists(dataFile)) return;

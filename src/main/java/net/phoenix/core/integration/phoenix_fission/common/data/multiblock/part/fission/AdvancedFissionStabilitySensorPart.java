@@ -22,17 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Advanced Fission Stability Sensor.
- *
- * Like the basic sensor but the emitted signal strength is user-configured
- * rather than proportional to heat. When heat is in the configured range
- * this hatch always emits exactly the chosen strength (1–15).
- *
- * This lets the player precisely match the output to an Advanced SCRAM
- * Hatch's threshold setting, turning the redstone puzzle into a deliberate
- * tuning exercise rather than a variable-signal juggling act.
- */
 public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
 
     public static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
@@ -51,7 +40,6 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
     @Setter
     private boolean inverted = false;
 
-    /** Fixed signal strength emitted when heat is in range. */
     @Persisted
     @Getter
     @Setter
@@ -66,8 +54,6 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
         return MANAGED_FIELD_HOLDER;
     }
 
-    // ── UI ────────────────────────────────────────────────────────────────────
-
     @Override
     public boolean shouldOpenUI(Player player, InteractionHand hand, BlockHitResult hit) {
         return true;
@@ -79,7 +65,6 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
 
         group.addWidget(new LabelWidget(10, 8, "§lAdvanced Fission Stability Sensor"));
 
-        // Live readout
         group.addWidget(new LabelWidget(10, 24, () -> {
             var controller = getController();
             if (controller instanceof FissionWorkableElectricMultiblockMachine fission) {
@@ -93,25 +78,21 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
 
         group.addWidget(new LabelWidget(10, 40, "§7─────────────────────────────"));
 
-        // Min %
         group.addWidget(new LabelWidget(10, 52, "§fMin Heat %:"));
         group.addWidget(new IntInputWidget(90, 47, 90, 20,
                 () -> minPercent,
                 val -> minPercent = Mth.clamp(val, 0, 200)));
 
-        // Max %
         group.addWidget(new LabelWidget(10, 76, "§fMax Heat %:"));
         group.addWidget(new IntInputWidget(90, 71, 90, 20,
                 () -> maxPercent,
                 val -> maxPercent = Mth.clamp(val, 0, 200)));
 
-        // Fixed emit strength
         group.addWidget(new LabelWidget(10, 100, "§fEmit Strength §7(1–15):"));
         group.addWidget(new IntInputWidget(90, 95, 90, 20,
                 () -> emitStrength,
                 val -> emitStrength = Mth.clamp(val, 1, 15)));
 
-        // Invert toggle
         group.addWidget(new LabelWidget(10, 124, "§fInvert output:"));
         group.addWidget(new ToggleButtonWidget(
                 100, 119, 18, 18,
@@ -127,8 +108,6 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
         return group;
     }
 
-    // ── Signal logic ──────────────────────────────────────────────────────────
-
     @Override
     public int getOutputSignal(@Nullable Direction direction) {
         if (direction != null && direction != getFrontFacing().getOpposite()) return 0;
@@ -141,9 +120,8 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
 
         double heatPct = (fission.getHeat() / maxSafe) * 100.0;
         boolean inRange = heatPct >= minPercent && heatPct <= maxPercent;
-        boolean emit = inverted != inRange; // clean XOR
+        boolean emit = inverted != inRange; 
 
-        // Always emit the user-chosen fixed strength — never a variable value.
         return emit ? Mth.clamp(emitStrength, 1, 15) : 0;
     }
 }

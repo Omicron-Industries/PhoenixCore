@@ -13,18 +13,11 @@ import dev.emi.emi.api.widget.WidgetHolder;
 
 import java.util.List;
 
-/**
- * One EMI recipe card per breeder blanket type.
- * Shows stats and an in-world technical log entry.
- * Register one instance per BreederBlanketTypes value.
- */
 public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
 
     private static final int W = 220;
     private static final int H = 150;
 
-    // Flavour text per blanket — written as field-log / spec-sheet entries.
-    // Index mirrors BreederBlanketTypes.values() ordinal.
     private static final String[] LOGS = {
             "LOG-B001 // Primary fertile blanket. Thorium matrix absorbs thermal neutrons " +
                     "with high efficiency. Long cycle time; output is predictable. " +
@@ -88,11 +81,9 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
     public void addWidgets(WidgetHolder widgets) {
         int y = 6;
 
-        // ── Item slot ────────────────────────────────────────────────────────
         widgets.addSlot(FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + blanket.getName()), 6, y)
                 .drawBack(true);
 
-        // ── Name ─────────────────────────────────────────────────────────────
         String displayName = blanket.getName().replace("_", " ").toUpperCase();
         widgets.addText(
                 Component.literal(displayName)
@@ -107,13 +98,11 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
 
         y += 24;
 
-        // ── Horizontal rule ──────────────────────────────────────────────────
         final int ruleY = y;
         widgets.addDrawable(6, ruleY, W - 12, 1,
                 (gui, mx, my, dt) -> gui.fill(0, 0, W - 12, 1, 0x44AAAAAA));
         y += 6;
 
-        // ── Stats block ──────────────────────────────────────────────────────
         int col1 = 6, col2 = 114;
 
         int durationSec = blanket.getDurationTicks() / 20;
@@ -123,7 +112,6 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
                 String.valueOf(blanket.getAmountPerCycle()), ChatFormatting.WHITE);
         y += 16;
 
-        // Output summary — list output keys and instabilities
         var outputs = blanket.getOutputs();
         int ox = col1;
         int maxInstability = 0;
@@ -137,7 +125,6 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
                 String.valueOf(maxInstability), instColor(maxInstability));
         y += 16;
 
-        // Output item slots in a row
         for (var o : outputs) {
             widgets.addSlot(FuelRodEmiRecipe.getEmiStackFromId(o.key()), ox, y)
                     .drawBack(true)
@@ -149,13 +136,11 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
         }
         y += 22;
 
-        // ── Horizontal rule ──────────────────────────────────────────────────
         final int ruleY2 = y;
         widgets.addDrawable(6, ruleY2, W - 12, 1,
                 (gui, mx, my, dt) -> gui.fill(0, 0, W - 12, 1, 0x33AAAAAA));
         y += 6;
 
-        // ── Log entry ────────────────────────────────────────────────────────
         widgets.addText(
                 Component.literal("// FIELD LOG").withStyle(ChatFormatting.DARK_GRAY),
                 6, y, 0xFFFFFF, false);
@@ -169,8 +154,6 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
             y += 9;
         }
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private void statLine(WidgetHolder w, int x, int y,
                           String label, String value, ChatFormatting valueColor) {
@@ -193,7 +176,6 @@ public class BreederBlanketInfoEmiRecipe implements EmiRecipe {
         return ChatFormatting.DARK_RED;
     }
 
-    /** Naive word-wrap to ~charWidth characters. */
     private static List<String> wrapText(String text, int charWidth) {
         java.util.List<String> lines = new java.util.ArrayList<>();
         String[] words = text.split(" ");

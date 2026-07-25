@@ -11,20 +11,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Per-player Axiom research state: which nodes are unlocked, which are locked out
- * by prior exclusion choices, and which string flags have been granted.
- *
- * Attached as a Forge capability via {@link PlayerResearchCapability}.
- */
 public class PlayerResearchData {
 
     private final Set<ResourceLocation> unlocked = new HashSet<>();
     private final Set<ResourceLocation> lockedOut = new HashSet<>();
-    /** String flags granted by "flag" unlock entries. Queryable by external systems. */
+    
     private final Set<String> flags = new HashSet<>();
-
-    // ── Queries ───────────────────────────────────────────────────────────────
 
     public boolean isUnlocked(ResourceLocation nodeId) {
         return unlocked.contains(nodeId);
@@ -50,13 +42,6 @@ public class PlayerResearchData {
         return node.canUnlock(unlocked, lockedOut);
     }
 
-    // ── Unlock ────────────────────────────────────────────────────────────────
-
-    /**
-     * Attempt to unlock a node, spending data from the given terminal.
-     *
-     * @return true if the unlock succeeded (prerequisites met, not locked out, costs paid)
-     */
     public boolean tryUnlock(ResearchNode node, ResearchTerminalBlockEntity terminal,
                              ResearchTreeRegistry registry) {
         if (!canUnlock(node)) return false;
@@ -64,13 +49,11 @@ public class PlayerResearchData {
 
         unlocked.add(node.id);
 
-        // Apply unlocks
         for (ResearchUnlock unlock : node.unlocks) {
             if (unlock.type().equals("flag")) flags.add(unlock.value());
-            // "recipe_tag" unlocks are checked dynamically against this data — no action needed here
+            
         }
 
-        // Apply mutual exclusion: lock out siblings in the same exclusion group
         if (node.exclusionGroup != null) {
             registry.getAllNodes().stream()
                     .filter(n -> node.exclusionGroup.equals(n.exclusionGroup))
@@ -81,12 +64,6 @@ public class PlayerResearchData {
         return true;
     }
 
-    // ── Recipe unlock check ───────────────────────────────────────────────────
-
-    /**
-     * Returns true if the player has any unlock of type "recipe_tag" matching the given tag.
-     * Used by AxiomRecipeCondition to gate GT recipes behind research.
-     */
     public boolean hasRecipeTag(String recipeTag, ResearchTreeRegistry registry) {
         for (ResourceLocation nodeId : unlocked) {
             ResearchNode node = registry.getNode(nodeId).orElse(null);
@@ -97,8 +74,6 @@ public class PlayerResearchData {
         }
         return false;
     }
-
-    // ── NBT ───────────────────────────────────────────────────────────────────
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
@@ -136,9 +111,6 @@ public class PlayerResearchData {
                     .forEach(t -> flags.add(t.getAsString()));
     }
 
-    // ── Sync helper ───────────────────────────────────────────────────────────
-
-    /** Copies state from another instance (used when syncing server→client). */
     public void copyFrom(PlayerResearchData other) {
         unlocked.clear();
         unlocked.addAll(other.unlocked);

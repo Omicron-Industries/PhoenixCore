@@ -683,7 +683,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             return newStorage;
         }
 
-        /** Overloaded fill for long (standard GTCEu hatches) **/
         public long fill(long amount) {
             BigInteger filled = fill(BigInteger.valueOf(amount));
             return filled.longValue();
@@ -713,7 +712,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             return toFill;
         }
 
-        /** Overloaded drain for long **/
         public long drain(long amount) {
             BigInteger drained = drain(BigInteger.valueOf(amount));
             return drained.longValue();

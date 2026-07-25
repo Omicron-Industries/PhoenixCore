@@ -7,23 +7,11 @@ import net.phoenix.core.integration.vocal_vibrancy.WorldAcousticSensor;
 
 import java.util.function.Supplier;
 
-/**
- * Client → Server: real-time FFT data for sounds playing near one or more sensors.
- *
- * The packet now targets a {@code soundPos} (where the sound originated) rather than
- * a specific machine pos. {@link WorldAcousticSensor#onSoundData} fans the data out to
- * every registered sensor within range, so any machine — not just the jukebox — can
- * react to ambient world audio.
- *
- * Also carries {@code mid} and {@code treble} bands so {@link
- * net.phoenix.core.integration.vocal_resonance.ingredient.SoundIngredient} can match
- * on "high sounds" as well as bass.
- */
 public class C2SSoundMetadataPacket {
 
-    private final BlockPos soundPos;    // where the sound originated in the world
-    private final float soundRange;     // how far the sound propagates (blocks)
-    private final int durationTicks;    // -1 = live update only, don't reset countdown
+    private final BlockPos soundPos;    
+    private final float soundRange;     
+    private final int durationTicks;    
     private final float bass;
     private final float mid;
     private final float treble;
@@ -65,7 +53,6 @@ public class C2SSoundMetadataPacket {
             var player = ctx.get().getSender();
             if (player == null) return;
 
-            // Clamp all values to prevent client exploits
             float safeBass = Math.max(0f, Math.min(msg.bass, 10f));
             float safeMid = Math.max(0f, Math.min(msg.mid, 10f));
             float safeTreble = Math.max(0f, Math.min(msg.treble, 10f));

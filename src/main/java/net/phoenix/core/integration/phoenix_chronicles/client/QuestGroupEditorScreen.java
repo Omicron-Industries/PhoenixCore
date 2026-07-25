@@ -14,23 +14,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 
-/**
- * Popup screen for creating or editing a {@link QuestGroup}.
- *
- * <ul>
- * <li>If {@code existing} is {@code null}, a new group is created at the given canvas position.</li>
- * <li>If {@code existing} is provided, that group is edited in-place.</li>
- * </ul>
- */
 public class QuestGroupEditorScreen extends Screen {
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int DIALOG_W = 220;
     private static final int DIALOG_H = 180;
     private static final int ROW_H = 22;
     private static final int FIELD_H = 14;
 
-    // ── Palette ───────────────────────────────────────────────────────────────
     private static final int C_BG = 0xFF14141A;
     private static final int C_BORDER = 0xFF8844AA;
     private static final int C_HEADER = 0xFF09090D;
@@ -38,7 +28,6 @@ public class QuestGroupEditorScreen extends Screen {
     private static final int C_TEXT_DIM = 0xFF7A7A8A;
     private static final int C_LABEL = 0xFF5A5A7A;
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final Screen parent;
     private final String category;
     @Nullable
@@ -70,7 +59,6 @@ public class QuestGroupEditorScreen extends Screen {
         int fieldW = DIALOG_W - 20;
         int row = dy + 30;
 
-        // Label field
         labelBox = new EditBox(font, fieldX, row, fieldW, FIELD_H, Component.empty());
         labelBox.setHint(Component.literal("§8Group label…"));
         labelBox.setMaxLength(48);
@@ -78,7 +66,6 @@ public class QuestGroupEditorScreen extends Screen {
         addRenderableWidget(labelBox);
         row += ROW_H;
 
-        // Color (fill) field
         colorBox = new EditBox(font, fieldX, row, fieldW, FIELD_H, Component.empty());
         colorBox.setHint(Component.literal("§8#AARRGGBB fill color"));
         colorBox.setMaxLength(10);
@@ -86,7 +73,6 @@ public class QuestGroupEditorScreen extends Screen {
         addRenderableWidget(colorBox);
         row += ROW_H;
 
-        // Border color field
         borderColorBox = new EditBox(font, fieldX, row, fieldW, FIELD_H, Component.empty());
         borderColorBox.setHint(Component.literal("§8#AARRGGBB border color"));
         borderColorBox.setMaxLength(10);
@@ -95,18 +81,14 @@ public class QuestGroupEditorScreen extends Screen {
         addRenderableWidget(borderColorBox);
         row += ROW_H;
 
-        // Category label (read-only info row — no editable field)
-        row += 6; // a little spacer
+        row += 6; 
 
-        // Buttons
         int btnY = dy + DIALOG_H - 24;
         int btnW = existing != null ? (DIALOG_W - 30) / 3 : (DIALOG_W - 20) / 2;
 
-        // Save
         addRenderableWidget(Button.builder(Component.literal("§aSave"), b -> onSave())
                 .bounds(dx + 10, btnY, btnW, 14).build());
 
-        // Delete (only when editing an existing group)
         if (existing != null) {
             addRenderableWidget(Button.builder(Component.literal("§cDelete"), b -> onDelete())
                     .bounds(dx + 10 + btnW + 5, btnY, btnW, 14).build());
@@ -188,20 +170,18 @@ public class QuestGroupEditorScreen extends Screen {
         int dx = (width - DIALOG_W) / 2;
         int dy = (height - DIALOG_H) / 2;
 
-        // Dialog background
         g.fill(dx, dy, dx + DIALOG_W, dy + DIALOG_H, C_BG);
-        // Border
+        
         g.fill(dx, dy, dx + DIALOG_W, dy + 1, C_BORDER);
         g.fill(dx, dy + DIALOG_H - 1, dx + DIALOG_W, dy + DIALOG_H, C_BORDER);
         g.fill(dx, dy, dx + 1, dy + DIALOG_H, C_BORDER);
         g.fill(dx + DIALOG_W - 1, dy, dx + DIALOG_W, dy + DIALOG_H, C_BORDER);
-        // Header bar
+        
         g.fill(dx + 1, dy + 1, dx + DIALOG_W - 1, dy + 16, C_HEADER);
         g.drawCenteredString(font, "§d" + this.title.getString(), dx + DIALOG_W / 2, dy + 4, C_TEXT);
 
         int row = dy + 30;
 
-        // Field labels
         g.drawString(font, "§8Label", dx + 10, row - 11, C_LABEL);
         row += ROW_H;
         g.drawString(font, "§8Fill color  §7(#AARRGGBB)", dx + 10, row - 11, C_LABEL);
@@ -209,10 +189,8 @@ public class QuestGroupEditorScreen extends Screen {
         g.drawString(font, "§8Border color  §7(#AARRGGBB)", dx + 10, row - 11, C_LABEL);
         row += ROW_H;
 
-        // Category display
         g.drawString(font, "§8Chapter: §7" + friendlyCategory(), dx + 10, row + 2, C_TEXT_DIM);
 
-        // Error message
         if (!errorMsg.isEmpty()) {
             g.drawCenteredString(font, "§c" + errorMsg, dx + DIALOG_W / 2, dy + DIALOG_H - 36, 0xFFCC4444);
         }

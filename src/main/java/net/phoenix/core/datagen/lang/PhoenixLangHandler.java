@@ -5,7 +5,7 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 public class PhoenixLangHandler {
 
     public static void init(RegistrateLangProvider provider) {
-        // Tool Renaming & General Items
+        
         provider.add("metaarmor.message.step_assist.disabled", "PhoenixTech™ Suite: StepAssist Disabled");
         provider.add("metaarmor.message.step_assist.enabled", "PhoenixTech™ Suite: StepAssist Enabled");
         provider.add("item.gtceu.tool.ev_screwdriver", "%s Electric Screwdriver (EV)");
@@ -31,16 +31,13 @@ public class PhoenixLangHandler {
         provider.add("item.gtceu.tool.luv_wirecutter", "%s Wire Cutters (LuV)");
         provider.add("item.gtceu.tool.zpm_wirecutter", "%s Wire Cutters  (ZPM)");
 
-        // Shield States
         provider.add("shield.phoenixcore.type.normal", "Normal");
         provider.add("shield.phoenixcore.type.inactive", "Inactive");
         provider.add("shield.phoenixcore.type.decayed", "Decayed");
         provider.add("shield.phoenixcore.current_shield", "Shield Status: %s");
 
-        // Ponder system
         provider.add("phoenixcore.ponder.hint", "View structure guide");
 
-        // EBF
         provider.add("phoenixcore.ponder.ebf.title", "Electric Blast Furnace");
         provider.add("phoenixcore.ponder.ebf.step1_overview",
                 "The Electric Blast Furnace smelts metals at extreme temperatures using heating coils.");
@@ -55,14 +52,12 @@ public class PhoenixLangHandler {
         provider.add("phoenixcore.ponder.ebf.step6_hatches",
                 "Place at least one Input Bus, Output Bus, Energy Hatch, and Muffler Hatch on the outer casing.");
 
-        // Vacuum Freezer
         provider.add("phoenixcore.ponder.freezer.title", "Vacuum Freezer");
         provider.add("phoenixcore.ponder.freezer.step1_overview",
                 "The Vacuum Freezer cools materials to extremely low temperatures.");
         provider.add("phoenixcore.ponder.freezer.step2_hatches",
                 "Place your hatches on the outer casing — any face except the controller.");
 
-        // Large Chemical Reactor
         provider.add("phoenixcore.ponder.lcr.title", "Large Chemical Reactor");
         provider.add("phoenixcore.ponder.lcr.step1_overview",
                 "The Large Chemical Reactor processes chemical recipes with higher efficiency than its single-block counterpart.");
@@ -77,7 +72,6 @@ public class PhoenixLangHandler {
         provider.add("phoenixcore.ponder.lcr.step5_hatches",
                 "Hatches go on the outer casing faces. You need energy, item, and fluid IO.");
 
-        // Lore & General Tooltips
         provider.add("tooltip.phoenixcore.crystal_rose.generic", "A crystalline flower of immense power.");
         provider.add("tooltip.phoenixcore.crystal_rose.made_from", "Forged from %s.");
         provider.add("tooltip.phoenixcore.nanites.generic", "Microscopic machines swarming with potential.");
@@ -85,23 +79,19 @@ public class PhoenixLangHandler {
         provider.add("metaarmor.tooltip.wings", "Contains Phoenix Wings");
         provider.add("metaarmor.tooltip.tesla_connection", "Controls Tesla Network Connection");
 
-        // Jade Threaded Output Tooltips
         provider.add("gtceu.top.recipe_output", "Predicted Output:");
         provider.add("item.phoenixcore.jade.thread_header", "Alchemical Thread #%s: %s%%");
         provider.add("item.phoenixcore.jade.threads_active", "Active Alchemical Threads:");
         provider.add("gtceu.gui.content.range", "%s - %s");
         provider.add("gtceu.gui.content.times_item", "x %s");
 
-        // General Source Machine Tooltips
         provider.add("jade.phoenixcore.source_container", "Source Energy");
         provider.add("config.jade.plugin_phoenixcore.phantasia_jade", "Phantasia Info");
 
-        // Specialized Tank Tooltips
         provider.add("jade.phoenixcore.source_tank_header", "Source Tank Content");
         provider.add("jade.phoenixcore.source_tank_format", "Capacity %s / %s - %d%%");
         provider.add("config.jade.plugin_phoenixcore.source_tank_info", "Source Tank Info");
 
-        // Keybinds
         provider.add("key.categories.phoenixcore", "PhoenixCore");
         provider.add("key.phoenixcore.wing_flight_gui", "Wing Flight Settings");
         provider.add("key.phoenixcore.tesla_mode", "Enable Tesla Mode");
@@ -112,28 +102,25 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.recipe_builder", "Open Recipe Builder");
         provider.add("key.phoenixcore.spray_can_menu", "Open Spray Can Menu");
 
-        // Chameleon Spray Can & Materials
         provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
-        provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint"); // Registers the material fluid name
+        provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint"); 
         provider.add("gui.phoenixcore.color_select.title", "Select Color");
         provider.add("behaviour.paintspray.chameleon.status.color", "§7Mode: §f%s");
         provider.add("behaviour.paintspray.chameleon.status.solvent", "§7Mode: §dSolvent");
         provider.add("behaviour.paintspray.chameleon.tooltip.current_color", "Current Color: %s");
         provider.add("behaviour.paintspray.chameleon.tooltip.solvent", "Current: Solvent");
         provider.add("behaviour.paintspray.chameleon.tooltip.info", "Scroll or use the Keybind to change color.");
-        provider.add("behaviour.paintspray.chameleon.tooltip.fluid", "§7Paint: %s / %s mB"); // Formats: current / max
-                                                                                             // fluid units
+        provider.add("behaviour.paintspray.chameleon.tooltip.fluid", "§7Paint: %s / %s mB"); 
+                                                                                             
         provider.add("behaviour.paintspray.chameleon.message.out_of_paint", "§cOut of Prismatic Paint!");
         provider.add("behaviour.paintspray.solvent.short", "Solvent");
 
-        // Tesla Binder Item
         provider.add("item.phoenixcore.tesla_binder.linked", "§aLinked to: §f%s");
         provider.add("item.phoenixcore.tesla_binder.unlinked", "§cNot Linked");
         provider.add("item.phoenixcore.tesla_binder.frequency", "§7Frequency: §b%s");
 
         provider.add("item.phoenixcore.chameleon_spray_can.with_color", "%s (%s)");
 
-        // Placeholder/System Info
         multiLang(provider, "gtceu.placeholder_info.shieldStability",
                 "Returns the stability of the shield.",
                 "Note that not having a shield projected may result in nonsense values of integrity.",

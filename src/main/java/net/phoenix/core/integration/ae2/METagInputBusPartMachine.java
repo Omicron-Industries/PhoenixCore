@@ -238,10 +238,6 @@ public class METagInputBusPartMachine extends MEBusPartMachine
         return group;
     }
 
-    /**
-     * Specialized widget that renders the icons from previewStacks
-     * but pulls quantity from previewAmounts (Long).
-     */
     private static class LargeAmountPreviewWidget extends Widget {
 
         private final int index;

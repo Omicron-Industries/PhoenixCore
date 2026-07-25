@@ -32,8 +32,6 @@ public abstract class SensorHatchPartMachine extends TieredPartMachine {
         return MANAGED_FIELD_HOLDER;
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
     @Override
     public void onLoad() {
         super.onLoad();
@@ -58,8 +56,6 @@ public abstract class SensorHatchPartMachine extends TieredPartMachine {
         signalUpdateHandler.updateSubscription();
     }
 
-    // ── Redstone ──────────────────────────────────────────────────────────────
-
     @Override
     public boolean canConnectRedstone(@NotNull Direction side) {
         return side == getFrontFacing().getOpposite();
@@ -67,15 +63,11 @@ public abstract class SensorHatchPartMachine extends TieredPartMachine {
 
     public abstract int getOutputSignal(@Nullable Direction direction);
 
-    // ── Signal update ─────────────────────────────────────────────────────────
-
     public void updateSignal() {
         if (getLevel() != null && !getLevel().isClientSide) {
             getLevel().updateNeighborsAt(getPos(), getHolder().getSelf().getBlockState().getBlock());
         }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     public @Nullable IMultiController getController() {
         if (getControllers().isEmpty()) return null;

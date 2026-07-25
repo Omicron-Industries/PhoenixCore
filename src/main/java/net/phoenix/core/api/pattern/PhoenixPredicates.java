@@ -200,20 +200,15 @@ public class PhoenixPredicates {
                 .addTooltips(Component.translatable("phoenix.multiblock.pattern.info.multiple_moderators"));
     }
 
-    // Add to PhoenixPredicates.java
-
     public static TraceabilityPredicate msrCoreLiner() {
         return new TraceabilityPredicate(blockWorldState -> {
             BlockState state = blockWorldState.getBlockState();
 
-            // Match against your brand-new custom block class
             if (state.getBlock() instanceof MSRCoreLinerBlock linerBlock) {
                 int tier = linerBlock.getLinerType().getTier();
 
-                // Track total parallels (1 parallel count per core liner block placed)
                 blockWorldState.getMatchContext().increment("MSRLinerCount", 1);
 
-                // Track bottlenecks: Core operates at the tier level of its weakest block
                 int currentMinTier = blockWorldState.getMatchContext().getOrDefault("MSRMinTier", Integer.MAX_VALUE);
                 blockWorldState.getMatchContext().set("MSRMinTier", Math.min(currentMinTier, tier));
 
@@ -221,11 +216,10 @@ public class PhoenixPredicates {
             }
             return false;
         },
-                // Automatically fetch your enum types to construct the multiblock structure ghost-view preview
+                
                 () -> Arrays.stream(MSRCoreLinerBlock.MSRLinerTypes.values())
                         .map(type -> {
-                            // This generates preview info if your blocks are directly registered or instantiated
-                            // Fallback to empty if registration references require complex object supplier getters
+
                             return BlockInfo.EMPTY;
                         })
                         .toArray(BlockInfo[]::new));
@@ -251,10 +245,10 @@ public class PhoenixPredicates {
                     }
                     return false;
                 },
-                // FIX: Tell the multiblock which blocks are valid candidates
+                
                 () -> {
                     List<BlockInfo> candidates = new ArrayList<>();
-                    // Add all tiers of your 3 hatch types to the candidate list
+                    
                     for (var machine : PhoenixMachines.DISC_HATCH) {
                         if (machine != null) {
                             candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
@@ -280,10 +274,8 @@ public class PhoenixPredicates {
             if (state.getBlock() instanceof SpeakerBlock speakerBlock) {
                 ISpeakerType type = speakerBlock.getSpeakerType();
 
-                // Increment range bonus
                 blockWorldState.getMatchContext().increment("TotalSpeakerRange", type.getRangeBonus());
 
-                // Resonance logic (increment works with integers)
                 int resonanceInt = (int) (type.getResonanceAmplifier() * 100);
                 blockWorldState.getMatchContext().increment("ResonancePower", resonanceInt);
 
@@ -291,7 +283,7 @@ public class PhoenixPredicates {
             }
             return false;
         },
-                // CANDIDATES FIX: Provide all registered speaker blocks
+                
                 () -> net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get() != null ?
                         new BlockInfo[] {
                                 BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get()

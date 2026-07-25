@@ -7,49 +7,11 @@ import net.minecraft.world.entity.player.Player;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider;
 
-/**
- * Task that completes when an external event is fired via
- * {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI#fireExternalEvent}.
- *
- * SNBT shape:
- * 
- * <pre>
- * {type: "external_trigger", trigger_id: "mymod:sun_eaten", required: 3}
- * </pre>
- *
- * The {@code trigger_id} matches the string passed to {@code QuestAPI.fireExternalEvent()}.
- * Each matching call increments progress by 1; the task completes when {@code required} is reached.
- * Defaults to {@code required: 1} (single event = done).
- *
- * ── KubeJS usage (server_scripts/quest_triggers.js) ──────────────────────────
- * 
- * <pre>
- * // Any time a player kills a dragon, signal the quest system:
- * ForgeEvents.onEvent('net.minecraftforge.event.entity.living.LivingDeathEvent', event => {
- *   if (event.entity.type.registryName.equals('minecraft:ender_dragon')) {
- *     Java.loadClass('net.phoenix.core.integration.phoenix_chronicles.QuestAPI')
- *         .fireExternalEvent(event.source.entity, 'mypack:killed_dragon', null)
- *   }
- * })
- * </pre>
- *
- * ── Java mod usage ────────────────────────────────────────────────────────────
- * 
- * <pre>
- * {@literal @}SubscribeEvent
- * public static void onDragonKill(LivingDeathEvent event) {
- *     if (event.getEntity() instanceof EnderDragonEntity
- *             && event.getSource().getEntity() instanceof ServerPlayer player) {
- *         QuestAPI.fireExternalEvent(player, "mypack:killed_dragon", null);
- *     }
- * }
- * </pre>
- */
 public class ExternalTriggerTask extends QuestTask {
 
     private String triggerId = "";
     private int required = 1;
-    /** For KubeJS-registered subtypes: the alias type id used in the registry. Null = use "external_trigger". */
+    
     private String kjsTypeId = null;
 
     public ExternalTriggerTask(ResourceLocation taskId, Component description, String triggerId, int required) {
@@ -85,14 +47,10 @@ public class ExternalTriggerTask extends QuestTask {
         return required == 1 ? (current >= 1 ? "Done" : "Pending") : current + "/" + required;
     }
 
-    /**
-     * Called by {@link net.phoenix.core.integration.phoenix_chronicles.QuestAPI} when a matching event fires.
-     * Increments progress and marks complete if threshold reached.
-     */
     public void onExternalEvent(Player player, net.minecraft.nbt.CompoundTag eventData) {
         player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
             CompoundTag nbt = data.getOrCreateTaskProgress(getTaskId());
-            if (nbt.getInt("current") >= required) return; // already done
+            if (nbt.getInt("current") >= required) return; 
             int next = Math.min(nbt.getInt("current") + 1, required);
             nbt.putInt("current", next);
         });

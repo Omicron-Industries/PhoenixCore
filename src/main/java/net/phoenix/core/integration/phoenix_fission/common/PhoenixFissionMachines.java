@@ -64,7 +64,7 @@ public class PhoenixFissionMachines {
             "fission_stability_sensor", "Fission Stability Sensor", GTValues.HV, GTValues.UV);
 
     private static MachineDefinition[] registerScramHatches(String name, String displayName, int minTier, int maxTier) {
-        // Scram is an "Input" (Redstone In), so we use Input overlays
+        
         final String ioOverlay = "overlay_pipe_in_emissive";
         final String emissiveOverlay = OVERLAY_PLASMA_HATCH_TEX;
 
@@ -105,7 +105,7 @@ public class PhoenixFissionMachines {
 
     private static MachineDefinition[] registerStabilitySensors(String name, String displayName, int minTier,
                                                                 int maxTier) {
-        // Sensor is an "Output" (Redstone Out), so we use Output overlays
+        
         final String ioOverlay = "overlay_pipe_out_emissive";
         final String emissiveOverlay = OVERLAY_PLASMA_HATCH_TEX;
 
@@ -123,8 +123,7 @@ public class PhoenixFissionMachines {
 
     private static MachineDefinition[] registerAdvancedScramHatches(String name, String displayName, int minTier,
                                                                     int maxTier) {
-        // Still an input (reads redstone in), but visually distinct from basic —
-        // using the emissive input overlay signals "this one does more"
+
         final String ioOverlay = "overlay_pipe_in_emissive";
         final String emissiveOverlay = OVERLAY_PLASMA_HATCH_TEX;
 
@@ -176,7 +175,7 @@ public class PhoenixFissionMachines {
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                             .or(Predicates.abilities(PartAbility.SUBSTATION_OUTPUT_ENERGY).setMaxGlobalLimited(2))
                             .or(Predicates.autoAbilities(definition.getRecipeTypes()))
-                            // Add new hatches here:
+                            
                             .or(Predicates.abilities(PhoenixPartAbility.FISSION_SCRAM).setMaxGlobalLimited(1))
                             .or(Predicates.abilities(PhoenixPartAbility.FISSION_SENSOR).setMaxGlobalLimited(2)))
                     .where('D', blocks(PhoenixFissionBlocks.FISSILE_HEAT_SAFE_CASING.get()))
@@ -336,8 +335,6 @@ public class PhoenixFissionMachines {
                 return shapeInfos;
             })
             .register();
-
-    // Fission Parts
 
     public static void init() {}
 }

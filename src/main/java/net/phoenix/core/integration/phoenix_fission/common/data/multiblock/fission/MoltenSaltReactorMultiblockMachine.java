@@ -32,7 +32,6 @@ public class MoltenSaltReactorMultiblockMachine extends FissionWorkableElectricM
 
     protected int structuralLinerCount = 0;
 
-    // Direct block reference handling all calculation stats natively
     protected @Nullable IMSRCoreLinerType coreLinerSpec = null;
 
     public MoltenSaltReactorMultiblockMachine(IMachineBlockEntity holder) {
@@ -52,7 +51,6 @@ public class MoltenSaltReactorMultiblockMachine extends FissionWorkableElectricM
             this.coreLinerSpec = context.get("MSRWeakestLiner") instanceof IMSRCoreLinerType type ? type : null;
         }
 
-        // Parent initialization hook bypassing structural wipes
         this.activeCoolers = getListFromContext("CoolerTypes");
         this.persistedCoolerIDs = new ArrayList<>(
                 this.activeCoolers.stream().map(IFissionCoolerType::getName).toList());
@@ -113,7 +111,6 @@ public class MoltenSaltReactorMultiblockMachine extends FissionWorkableElectricM
                 this.heat += heatProduced;
                 this.lastHeatGainedPerTick = heatProduced;
 
-                // Off-gassing checks
                 if (continuousBurnTicks % 20 == 0 && xenonPoisonLevel > 0.10) {
                     int xenonVolume = Math.max(1, (int) (saltToProcess * 0.1));
 
@@ -160,8 +157,6 @@ public class MoltenSaltReactorMultiblockMachine extends FissionWorkableElectricM
         tickMeltdown();
     }
 
-    /* ==================== FLUID UTILITY METHODS ==================== */
-
     protected boolean canConvertFuelSalt(@NotNull String inFluid, @NotNull String outFluid, int mb) {
         if (mb <= 0) return true;
         return canConsumeFluidId(inFluid, mb);
@@ -192,7 +187,7 @@ public class MoltenSaltReactorMultiblockMachine extends FissionWorkableElectricM
 
     @Override
     protected void tickFuelConsumptionMachineDriven(int parallels) {
-        // No-Op
+        
     }
 
     @Override

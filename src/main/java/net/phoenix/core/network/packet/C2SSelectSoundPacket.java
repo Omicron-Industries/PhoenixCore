@@ -44,7 +44,6 @@ public class C2SSelectSoundPacket {
 
             if (msg.soundLoc.length() > 256 || msg.streamUrl.length() > 512) return;
 
-            // If the audio track changed, flush out old telemetry immediately
             if (!jukebox.selectedLibrarySound.equals(msg.soundLoc) || !jukebox.currentStreamUrl.equals(msg.streamUrl)) {
                 jukebox.resetAcousticData();
             }

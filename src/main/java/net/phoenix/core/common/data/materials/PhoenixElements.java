@@ -104,7 +104,6 @@ public class PhoenixElements {
         EVENT_HORIZON_MATTER = create("event_horizon_matter", -1, -1, "EHM");
         ANTIMATTER = create("antimatter", -1, -1, "aM");
 
-        // Special
         ZIRCALLOY = create("zircalloy", 77, 125, "Zr⁷BiHf³");
         SOURCE_IMBUED_TITANIUM = create("source_imbued_titanium", 10, 118, "✨C✨Ti");
         ICY_STEEL_MATRIX = create("icy_steel_matrix", 8, 118, "❆Is<>");

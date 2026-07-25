@@ -7,9 +7,6 @@ import net.phoenix.core.integration.phoenix_chronicles.ChroniclesTheme;
 import net.phoenix.core.integration.phoenix_chronicles.QuestChroniclesSettings;
 import net.phoenix.core.integration.phoenix_chronicles.QuestChroniclesSettings.*;
 
-/**
- * Settings screen for Quest Chronicles.
- */
 public class SettingsScreen extends Screen {
 
     private int C_BG = 0xFF0B0B0F;
@@ -56,15 +53,13 @@ public class SettingsScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
-        // Background
+        
         g.fill(0, 0, width, height, C_BG);
 
-        // Header
         g.fill(0, 0, width, HEADER_H, C_HEADER);
         g.fill(0, HEADER_H - 1, width, HEADER_H, C_BORDER);
         g.drawCenteredString(font, "§fQuest Chronicles Settings", width / 2, 9, C_TEXT);
 
-        // Content area
         int contentTop = HEADER_H + MARGIN;
         int contentH = height - HEADER_H - MARGIN - FOOTER_H - MARGIN;
 
@@ -74,14 +69,12 @@ public class SettingsScreen extends Screen {
         int x = MARGIN;
         int w = width - MARGIN * 2;
 
-        // Settings rows
         y = renderSetting(g, x, y, w, "§fText Scale", settings.getTextScale().name(), mx, my) + ROW_GAP;
         y = renderSetting(g, x, y, w, "§fTheme", settings.getTheme().name(), mx, my) + ROW_GAP;
         y = renderSetting(g, x, y, w, "§fLayout Density", settings.getDensity().name(), mx, my) + ROW_GAP;
         y = renderSetting(g, x, y, w, "§fShow Dev Info by Default",
                 settings.isShowDevInfoByDefault() ? "§aYes" : "§cNo", mx, my) + ROW_GAP * 2;
 
-        // Theme Editor link row
         boolean themeHov = mx >= x && mx < x + w && my >= y && my < y + ROW_H;
         if (themeHov) g.fill(x, y, x + w, y + ROW_H, 0x10FFFFFF);
         int textY = y + (ROW_H - 8) / 2;
@@ -107,7 +100,6 @@ public class SettingsScreen extends Screen {
 
         g.disableScissor();
 
-        // Footer
         int footerY = height - FOOTER_H;
         g.fill(0, footerY, width, height, C_HEADER);
         g.fill(0, footerY, width, footerY + 1, C_BORDER);
@@ -116,7 +108,6 @@ public class SettingsScreen extends Screen {
         int btnGap = 8;
         int btnY = footerY + 5;
 
-        // Save button
         boolean saveHov = mx >= width / 2 - btnW - btnGap / 2 && mx < width / 2 - btnGap / 2 && my >= btnY &&
                 my < btnY + 18;
         g.fill(width / 2 - btnW - btnGap / 2, btnY, width / 2 - btnGap / 2, btnY + 18,
@@ -124,7 +115,6 @@ public class SettingsScreen extends Screen {
         if (saveHov) g.fill(width / 2 - btnW - btnGap / 2, btnY, width / 2 - btnGap / 2, btnY + 1, C_OK);
         g.drawCenteredString(font, "§a✓ Save", width / 2 - btnW / 2 - btnGap / 2, btnY + 6, saveHov ? C_OK : C_TEXT);
 
-        // Cancel button
         boolean cancelHov = mx >= width / 2 + btnGap / 2 && mx < width / 2 + btnW + btnGap / 2 && my >= btnY &&
                 my < btnY + 18;
         g.fill(width / 2 + btnGap / 2, btnY, width / 2 + btnW + btnGap / 2, btnY + 18,
@@ -142,7 +132,6 @@ public class SettingsScreen extends Screen {
         boolean rowHov = mx >= x && mx < x + w && my >= y && my < y + ROW_H;
         if (rowHov) g.fill(x, y, x + w, y + ROW_H, 0x10FFFFFF);
 
-        // Two arrow buttons flush to the right
         int rArrowX = x + w - ARROW_W;
         int lArrowX = rArrowX - ARROW_GAP - ARROW_W;
         boolean leftHov = mx >= lArrowX && mx < lArrowX + ARROW_W && my >= y && my < y + ROW_H;
@@ -152,7 +141,6 @@ public class SettingsScreen extends Screen {
         g.drawCenteredString(font, "§7<", lArrowX + ARROW_W / 2, textY, leftHov ? C_ACCENT : C_TEXT_DIM);
         g.drawCenteredString(font, "§7>", rArrowX + ARROW_W / 2, textY, rightHov ? C_ACCENT : C_TEXT_DIM);
 
-        // Label left, value right-aligned just before arrows
         g.drawString(font, label, x + 4, textY, C_TEXT, false);
         int valueX = lArrowX - 6 - font.width(value);
         g.drawString(font, value, valueX, textY, C_TEXT_DIM, false);
@@ -167,20 +155,17 @@ public class SettingsScreen extends Screen {
         int btnGap = 8;
         int btnY = footerY + 5;
 
-        // Save button
         if (mx >= width / 2 - btnW - btnGap / 2 && mx < width / 2 - btnGap / 2 && my >= btnY && my < btnY + 18) {
             settings.save();
             if (minecraft != null) minecraft.setScreen(parent);
             return true;
         }
 
-        // Cancel button
         if (mx >= width / 2 + btnGap / 2 && mx < width / 2 + btnW + btnGap / 2 && my >= btnY && my < btnY + 18) {
             if (minecraft != null) minecraft.setScreen(parent);
             return true;
         }
 
-        // Settings navigation
         int contentTop = HEADER_H + MARGIN;
         int contentH = height - HEADER_H - MARGIN - FOOTER_H - MARGIN;
 
@@ -189,7 +174,6 @@ public class SettingsScreen extends Screen {
             int x = MARGIN;
             int w = width - MARGIN * 2;
 
-            // Text Scale
             if (handleSettingClick(x, y, w, mx, my)) {
                 TextScale[] scales = TextScale.values();
                 int idx = settings.getTextScale().ordinal();
@@ -199,7 +183,6 @@ public class SettingsScreen extends Screen {
             }
             y += ROW_H + ROW_GAP;
 
-            // Theme
             if (handleSettingClick(x, y, w, mx, my)) {
                 Theme[] themes = Theme.values();
                 int idx = settings.getTheme().ordinal();
@@ -208,7 +191,6 @@ public class SettingsScreen extends Screen {
             }
             y += ROW_H + ROW_GAP;
 
-            // Density
             if (handleSettingClick(x, y, w, mx, my)) {
                 Density[] densities = Density.values();
                 int idx = settings.getDensity().ordinal();
@@ -218,23 +200,20 @@ public class SettingsScreen extends Screen {
             }
             y += ROW_H + ROW_GAP;
 
-            // Show Dev Info
             if (handleSettingClick(x, y, w, mx, my)) {
                 settings.setShowDevInfoByDefault(!settings.isShowDevInfoByDefault());
                 return true;
             }
             y += ROW_H + ROW_GAP * 2;
 
-            // Theme Editor
             if (my >= y && my < y + ROW_H && mx >= x && mx < x + w) {
                 if (minecraft != null) minecraft.setScreen(new ChroniclesThemeEditorScreen(this));
                 return true;
             }
             y += ROW_H + ROW_GAP * 2;
 
-            y += ROW_H + ROW_GAP; // Skip HUD Settings label
+            y += ROW_H + ROW_GAP; 
 
-            // HUD Position
             if (handleSettingClick(x, y, w, mx, my)) {
                 HUDPosition[] positions = HUDPosition.values();
                 int idx = settings.getHudPosition().ordinal();
@@ -244,7 +223,6 @@ public class SettingsScreen extends Screen {
             }
             y += ROW_H + ROW_GAP;
 
-            // HUD Opacity
             if (handleSettingClick(x, y, w, mx, my)) {
                 float opacity = settings.getHudOpacity();
                 opacity += isRightArrow(x, w, mx) ? 0.1f : -0.1f;
@@ -253,28 +231,24 @@ public class SettingsScreen extends Screen {
             }
             y += ROW_H + ROW_GAP;
 
-            // Show HUD Title
             if (handleSettingClick(x, y, w, mx, my)) {
                 settings.setShowHUDTitle(!settings.isShowHUDTitle());
                 return true;
             }
             y += ROW_H + ROW_GAP;
 
-            // Show HUD Progress
             if (handleSettingClick(x, y, w, mx, my)) {
                 settings.setShowHUDProgress(!settings.isShowHUDProgress());
                 return true;
             }
             y += ROW_H + ROW_GAP;
 
-            // Show HUD Rewards
             if (handleSettingClick(x, y, w, mx, my)) {
                 settings.setShowHUDRewards(!settings.isShowHUDRewards());
                 return true;
             }
             y += ROW_H + ROW_GAP;
 
-            // Line settings moved to right-click context menu on the quest canvas.
         }
 
         return super.mouseClicked(mx, my, btn);

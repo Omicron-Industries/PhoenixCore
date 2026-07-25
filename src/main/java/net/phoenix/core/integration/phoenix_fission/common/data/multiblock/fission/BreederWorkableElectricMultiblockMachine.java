@@ -95,30 +95,21 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
                 .orElse(null);
     }
 
-    /**
-     * Updated Breeder gate to ensure blankets and fuel are both checked.
-     */
     @Override
     protected boolean shouldRunReactor() {
         if (!isFormed()) return false;
         if (activeFuelRods == null || activeFuelRods.isEmpty()) return false;
         if (isScramActive()) return false;
 
-        // The reactor runs as long as it has driver fuel available!
         return hasFuelAvailableForNextTick();
     }
 
-    /**
-     * The logic in handleReactorLogic already respects the 'running' boolean.
-     * If shouldRunReactor() is false, this won't produce heat or consume items.
-     */
     @Override
     protected void handleReactorLogic(boolean running) {
         if (running) {
             lastParallels = Math.max(1, computeParallels());
         }
 
-        // Only calls super (heat/fuel) and processBreeding if running is true
         super.handleReactorLogic(running);
 
         if (running && isFormed() && primaryBlanket != null) {
@@ -151,15 +142,13 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         IFissionBlanketType primary = primaryBlanket != null ? primaryBlanket : activeBlankets.get(0);
         IFissionFuelRodType activeFuel = getFuelRodForConsumption();
 
-        // TIER CHECK: If there's no fuel, or the fuel tier is lower than the primary blanket tier, skip breeding
         int fuelTier = activeFuel != null ? activeFuel.getTier() : 0;
         if (fuelTier < primary.getTier()) {
-            return; // Breeding is inert, but reactor keeps running
+            return; 
         }
 
         int duration = Math.max(1, primary.getDurationTicks());
 
-        // GATING CHECK FOR NON-ADDITIVE USAGE: Verify item is present before progressing the cycle
         if (!cfg.blanketUsageAdditive) {
             double burnMul = getBurnMultiplier();
             int p = Math.max(1, parallels);
@@ -167,7 +156,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             int amount = (int) Math.ceil(basePerCycle * p * burnMul);
 
             if (amount > 0 && !canConsumeResource(primary.getInputKey(), amount)) {
-                return; // Missing breeding inputs, pause progression
+                return; 
             }
         }
 
@@ -198,7 +187,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         }
 
         for (var blanket : activeBlankets) {
-            // TIER CHECK FOR ADDITIVE INDIVIDUAL BLANKETS:
+            
             if (fuelTier < blanket.getTier()) continue;
 
             int basePerCycle = Math.max(0, blanket.getAmountPerCycle());
@@ -283,8 +272,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         return b.build();
     }
 
-    // 1. Use the Parent's helper (ensure it's not returning AIR)
-
     @Nullable
     protected ItemStack resolveKeyToItem(String key, int amount) {
         if (amount <= 0) return ItemStack.EMPTY;
@@ -292,10 +279,8 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         ResourceLocation rl = ResourceLocation.tryParse(key);
         if (rl == null) return ItemStack.EMPTY;
 
-        // Strictly Forge Registry - bypasses GregTech Material logic
         Item item = ForgeRegistries.ITEMS.getValue(rl);
 
-        // Forge returns AIR if not found.
         if (item == null || item == net.minecraft.world.item.Items.AIR) {
             return ItemStack.EMPTY;
         }
@@ -312,10 +297,8 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
                     .outputItems(is)
                     .buildRawRecipe();
 
-            // Push to GT Output Buses
             var result = RecipeHelper.handleRecipeIO(this, dummy, IO.OUT, getRecipeLogic().getChanceCaches());
 
-            // If buses are full or IO fails, eject at controller pos
             if (!result.isSuccess()) {
                 net.minecraft.world.Containers.dropItemStack(
                         getLevel(),
@@ -325,8 +308,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         }
     }
 
-    // 3. Fix the "roulettePick" and "sampleOutputs"
-    // Ensure these call the local tryOutputResource so they benefit from the fix
     private void outputBatch(Map<String, Integer> outputs) {
         for (var e : outputs.entrySet()) {
             tryOutputResource(e.getKey(), e.getValue());
@@ -396,7 +377,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
     }
 
     private List<WeightedKey> buildAdjustedDistribution(IFissionBlanketType blanket, int spectrumBias) {
-        // Normalize bias to a -1.0 to 1.0 range
+        
         double normalizedBias = spectrumBias / 100.0;
 
         List<WeightedKey> out = new ArrayList<>();
@@ -405,10 +386,8 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             int baseWeight = Math.max(0, bo.weight());
             if (baseWeight <= 0) continue;
 
-            // Linear scaling: Bias shifts weight based on instability.
-            // If bias is positive and instability is high, weight increases.
             double factor = 1.0 + (normalizedBias * bo.instability() * 0.5);
-            double adjustedWeight = baseWeight * Math.max(0.1, factor); // Clamp to 10% minimum weight
+            double adjustedWeight = baseWeight * Math.max(0.1, factor); 
 
             out.add(new WeightedKey(bo.key(), adjustedWeight, bo.instability()));
         }
@@ -433,7 +412,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         double totalWeight = dist.stream().mapToDouble(WeightedKey::weight).sum();
         if (totalWeight <= 0.0) return result;
 
-        // Use a frequency-based approach for large batches (Parallels)
         for (int i = 0; i < amount; i++) {
             double selector = rng.nextDouble() * totalWeight;
             double runningSum = 0.0;
@@ -448,7 +426,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
                 }
             }
 
-            // Fallback to avoid "lost" items due to precision errors
             if (!picked) {
                 result.merge(dist.get(rng.nextInt(dist.size())).key(), 1, Integer::sum);
             }

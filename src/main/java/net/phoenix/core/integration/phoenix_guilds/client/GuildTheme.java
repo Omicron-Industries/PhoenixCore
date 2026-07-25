@@ -16,8 +16,6 @@ import java.util.Set;
 
 public class GuildTheme {
 
-    // ── ThemeColor ────────────────────────────────────────────────────────────
-
     public static class ThemeColor {
 
         public String hex;
@@ -55,11 +53,7 @@ public class GuildTheme {
         }
     }
 
-    // ── Fields (structural/stylistic colors only) ─────────────────────────────
-
     public ThemeColor bg, panel, header, border, accent, ally, text, dim, faint;
-
-    // ── Registry ──────────────────────────────────────────────────────────────
 
     public static final Map<String, GuildTheme> REGISTRY = new LinkedHashMap<>();
     private static GuildTheme active = null;
@@ -72,8 +66,6 @@ public class GuildTheme {
             .excludeFieldsWithModifiers(Modifier.TRANSIENT)
             .create();
     private static final Path THEMES_FILE = Paths.get("config", "phoenix_guilds_themes.json");
-
-    // ── Constructors ──────────────────────────────────────────────────────────
 
     public GuildTheme() {}
 
@@ -94,8 +86,6 @@ public class GuildTheme {
         return new GuildTheme(bg.hex, panel.hex, header.hex, border.hex,
                 accent.hex, ally.hex, text.hex, dim.hex, faint.hex);
     }
-
-    // ── Static API ────────────────────────────────────────────────────────────
 
     public static GuildTheme current() {
         if (REGISTRY.isEmpty()) loadThemes();
@@ -136,8 +126,6 @@ public class GuildTheme {
         return true;
     }
 
-    // ── Persistence ───────────────────────────────────────────────────────────
-
     private static class ThemeSave {
 
         String active = "DARK";
@@ -160,7 +148,6 @@ public class GuildTheme {
     public static void loadThemes() {
         REGISTRY.clear();
 
-        // bg panel header border accent ally text dim faint
         REGISTRY.put("DARK", new GuildTheme("BE050510", "FF0C0C1A", "FF060614", "FF202048", "FF4422AA", "FF2277BB",
                 "FFDDDDFF", "FF7777AA", "FF383858"));
         REGISTRY.put("OCEAN", new GuildTheme("BE020810", "FF091520", "FF040C18", "FF1A2E44", "FF1177CC", "FF22AADD",

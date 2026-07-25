@@ -183,7 +183,7 @@ public class PhoenixCore {
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        // JukeDebugCommand.register(event.getDispatcher());
+        
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {}
@@ -232,7 +232,6 @@ public class PhoenixCore {
                     BlastProperty blastProps = material.getProperty(PropertyKey.BLAST);
                     if (blastProps == null) continue;
 
-                    // 1. Core properties matching source getters with dynamic error mitigation
                     int blastTemp = blastProps.getBlastTemperature();
                     int durationOverride = -1;
                     int eutOverride = -1;
@@ -252,7 +251,6 @@ public class PhoenixCore {
                         vacuumEUt = blastProps.getVacuumEUtOverride();
                     } catch (NoSuchMethodError | Exception ignored) {}
 
-                    // 2. Parse Gas Tier and matching automated recipe ingredients safely
                     String gasTierName = "NONE";
                     String requiredGasFluid = "None";
 
@@ -273,7 +271,6 @@ public class PhoenixCore {
                         gasTierName = "UNSUPPORTED_OR_MISSING";
                     }
 
-                    // 3. Log everything cleanly
                     PhoenixCore.LOGGER.info("🏭 [BLAST DISCOVERY] Material: {} " +
                             "| Blast Temp: {}K | EBF EU/t Override: {} | EBF Duration Override: {} " +
                             "| Gas Tier: {} | Gas Input Required: {} " +

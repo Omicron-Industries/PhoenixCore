@@ -34,6 +34,5 @@ public class ChronicleClientEvents {
     public static void onClientStopping(net.minecraftforge.event.GameShuttingDownEvent event) {
         QuestFileSaver.saveAllQuestsToDisk();
     }
-    // QuestHudOverlay is a @Mod.EventBusSubscriber itself — it self-registers.
-    // No explicit registration needed here; Forge scans the annotation automatically.
+
 }

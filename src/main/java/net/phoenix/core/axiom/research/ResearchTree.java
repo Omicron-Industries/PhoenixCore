@@ -10,22 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * A named collection of {@link ResearchNode}s forming one discipline's tree.
- *
- * Trees are loaded from datapacks at {@code data/<ns>/axiom/research/<id>.json}.
- * Multiple trees can coexist (e.g. one per AxiomDataType, or cross-discipline trees).
- *
- * JSON schema:
- * 
- * <pre>
- * {
- *   "title": "Material Science",
- *   "description": "The study of matter and alloys.",
- *   "nodes": [ { ...ResearchNode... }, ... ]
- * }
- * </pre>
- */
 public class ResearchTree {
 
     public final ResourceLocation id;
@@ -41,8 +25,6 @@ public class ResearchTree {
         nodeList.forEach(n -> nodes.put(n.id, n));
     }
 
-    // ── Accessors ─────────────────────────────────────────────────────────────
-
     public Optional<ResearchNode> getNode(ResourceLocation nodeId) {
         return Optional.ofNullable(nodes.get(nodeId));
     }
@@ -54,8 +36,6 @@ public class ResearchTree {
     public List<ResearchNode> getRoots() {
         return nodes.values().stream().filter(ResearchNode::isRoot).toList();
     }
-
-    // ── JSON ──────────────────────────────────────────────────────────────────
 
     public static ResearchTree fromJson(ResourceLocation id, JsonObject obj) {
         String title = obj.has("title") ? obj.get("title").getAsString() : id.getPath();

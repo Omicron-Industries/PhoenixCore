@@ -30,7 +30,6 @@ public class ParentSelectorScreen extends Screen {
         this.editingNode = editingNode;
         this.onSelectionComplete = onSelectionComplete;
 
-        // Cache all valid nodes (excluding the node currently being edited to prevent self-recursion loops)
         for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
             if (this.editingNode == null || !node.getId().equals(this.editingNode.getId())) {
                 this.allAvailableNodes.add(node);
@@ -44,14 +43,12 @@ public class ParentSelectorScreen extends Screen {
         this.clearWidgets();
         int midX = this.width / 2;
 
-        // 1. Search Bar Field Input
         this.searchBox = new EditBox(this.font, midX - 100, 35, 200, 16, Component.literal("Search..."));
         this.searchBox.setHint(Component.literal("§8Type to filter nodes..."));
         this.searchBox.setResponder(this::updateSearchFilter);
         this.addRenderableWidget(this.searchBox);
         this.setInitialFocus(this.searchBox);
 
-        // 2. Generate Clickable Select Rows dynamically based on the filtered results
         int startY = 60;
         int maxRows = Math.min(this.filteredNodes.size(), 8);
 
@@ -65,7 +62,6 @@ public class ParentSelectorScreen extends Screen {
             }).bounds(midX - 110, startY + (i * 22), 220, 18).build());
         }
 
-        // 3. Abort / Return Back Controls
         this.addRenderableWidget(Button.builder(Component.literal("§c[ CANCEL ]"), b -> {
             if (this.minecraft != null) this.minecraft.setScreen(this.parentScreen);
         }).bounds(midX - 50, this.height - 28, 100, 20).build());
@@ -83,7 +79,7 @@ public class ParentSelectorScreen extends Screen {
                 this.filteredNodes.add(node);
             }
         }
-        // Force workspace layout regeneration to redraw filtered button listings
+        
         this.rebuildWidgets();
     }
 
@@ -92,7 +88,6 @@ public class ParentSelectorScreen extends Screen {
         this.renderBackground(graphics);
         int midX = this.width / 2;
 
-        // Screen Frame Box Boundary Backdrop
         graphics.fill(midX - 130, 10, midX + 130, this.height - 6, 0xED050505);
         graphics.renderOutline(midX - 130, 10, 260, this.height - 16, 0xFF00AA00);
 

@@ -16,45 +16,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-/**
- * Reads flags exported from KubeJS startup scripts.
- *
- * Because KubeJS runs as part of game startup, KubeJS scripts can write a JSON
- * file before any quests are evaluated. This provider reads that file.
- *
- * ── KubeJS startup script (startup_scripts/phoenix_flags.js) ─────────────────
- *
- * const flags = {
- * expert_mode: Platform.isLoaded("ftbquests"),
- * has_create: Platform.isLoaded("create"),
- * has_tech: Platform.isLoaded("create") || Platform.isLoaded("mekanism"),
- * pack_tier: 3,
- * pack_mode: "expert"
- * }
- * const file = new java.io.File("config/phoenix_chronicles/kjs_flags.json")
- * file.getParentFile().mkdirs()
- * file.text = JSON.stringify(flags, null, 2)
- *
- * ── Quest SNBT ───────────────────────────────────────────────────────────────
- *
- * enable_if: "kjs:expert_mode"
- * enable_if: "kjs:pack_tier>=2"
- * enable_if: "kjs:pack_mode=expert"
- * enable_if: "kjs:has_create,kjs:has_tech"
- *
- * ── File location ─────────────────────────────────────────────────────────────
- *
- * config/phoenix_chronicles/kjs_flags.json
- *
- * Flat JSON object only — nested objects are supported using dot-path keys.
- * Arrays are stored as their JSON string representation.
- *
- * ── Cache ─────────────────────────────────────────────────────────────────────
- *
- * Re-read every 10 seconds so that changes made during a dev session
- * (e.g. hot-reloading KubeJS) take effect without a full restart.
- * Call {@link #invalidate()} on world load to flush immediately.
- */
 public class KubeJsFlagProvider implements QuestFlagProvider {
 
     private static final String FLAGS_FILE = "kjs_flags.json";
@@ -77,8 +38,6 @@ public class KubeJsFlagProvider implements QuestFlagProvider {
     public void invalidate() {
         cachedFlags = null;
     }
-
-    // ── File loading ──────────────────────────────────────────────────────────
 
     private Map<String, String> getFlags(@Nullable MinecraftServer server) {
         if (cachedFlags != null && System.currentTimeMillis() - loadedAt < CACHE_TTL_MS) {

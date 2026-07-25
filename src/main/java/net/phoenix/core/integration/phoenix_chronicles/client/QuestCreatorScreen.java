@@ -25,12 +25,10 @@ import java.util.List;
 
 public class QuestCreatorScreen extends Screen {
 
-    // ── Colours ───────────────────────────────────────────────────────────────
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_TEXT_DIM, C_TEXT_FAINT, C_OK;
     private static final int C_ERR = 0xFFCC4444;
     private static final int C_SHAPE_SEL = 0x775533AA;
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int HEADER_H = 32;
     private static final int FOOTER_H = 32;
     private static final int MARGIN = 14;
@@ -38,17 +36,15 @@ public class QuestCreatorScreen extends Screen {
     private static final int LABEL_H = 8;
     private static final int FIELD_H = 16;
     private static final int ROW_GAP = 10;
-    private static final int STRIDE = LABEL_H + 3 + FIELD_H + ROW_GAP; // 37
-    private static final int DIV_H = 14; // divider between sections
+    private static final int STRIDE = LABEL_H + 3 + FIELD_H + ROW_GAP; 
+    private static final int DIV_H = 14; 
     private static final int EDIT_W = 20;
     private static final int COL_GAP = 8;
-    private static final int SEC_PAD = 6;  // panel padding around section rows
+    private static final int SEC_PAD = 6;  
 
-    // ── Tabs ──────────────────────────────────────────────────────────────────
     private static final String[] TAB_LABELS = { "Info", "Settings", "Advanced" };
     private static final int TAB_H = 20;
 
-    // ── Shapes ───────────────────────────────────────────────────────────────
     private record ShapeMeta(String id, String glyph) {}
 
     private static final ShapeMeta[] SHAPES = {
@@ -59,7 +55,6 @@ public class QuestCreatorScreen extends Screen {
             new ShapeMeta("CROSS", "✚"),
     };
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final Screen parent;
     private final QuestNode editingNode;
 
@@ -84,25 +79,19 @@ public class QuestCreatorScreen extends Screen {
     private int cachedPosX = 40;
     private int cachedPosY = 70;
 
-    // Widgets
     private EditBox titleBox, descBox, subtitleBox, categoryBox, idBox, posXBox, posYBox;
 
-    // Dropdowns
     private boolean visibilityDropdownOpen = false;
     private boolean categoryDropdownOpen = false;
     private static final QuestNode.Visibility[] VISIBILITIES = QuestNode.Visibility.values();
 
-    // Status
     private String statusMsg = "";
     private boolean statusIsErr = false;
 
-    // Computed geometry (set in init, used in render + mouseClicked)
-    private int cx, cw;                    // content x and width
-    private int[] fieldY;                  // field top y for each row (0-8)
-    private int secPanelTop, secPanelBot;  // active tab section panel bounds
-    private int activeTab = 0;             // 0=Info 1=Settings 2=Advanced
-
-    // ── Constructors ──────────────────────────────────────────────────────────
+    private int cx, cw;                    
+    private int[] fieldY;                  
+    private int secPanelTop, secPanelBot;  
+    private int activeTab = 0;             
 
     public QuestCreatorScreen(Screen parent) {
         super(Component.literal("New Quest"));
@@ -140,8 +129,6 @@ public class QuestCreatorScreen extends Screen {
         initialized = true;
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
-
     @Override
     protected void init() {
         ChroniclesTheme t = ChroniclesTheme.current();
@@ -163,7 +150,6 @@ public class QuestCreatorScreen extends Screen {
 
         fieldY = new int[12];
 
-        // ── Tab buttons ───────────────────────────────────────────────────────
         String[] tabTooltips = {
                 "Title, description, category, icon and shape",
                 "Visibility, prerequisites, completion gate and parent quest",
@@ -182,7 +168,6 @@ public class QuestCreatorScreen extends Screen {
                     .tooltip(Tooltip.create(Component.literal(tabTooltips[i]))).build());
         }
 
-        // ── Adaptive content geometry ─────────────────────────────────────────
         int contentTop = HEADER_H + TAB_H + 4;
         int contentBottom = height - FOOTER_H - 4;
         int tabRows = 4;
@@ -192,9 +177,8 @@ public class QuestCreatorScreen extends Screen {
         int y = contentTop + SEC_PAD;
         secPanelTop = contentTop;
 
-        // ── Tab 0: Basic Info ─────────────────────────────────────────────────
         if (activeTab == 0) {
-            // Row 0: Title
+            
             fieldY[0] = y + LABEL_H + 2;
             titleBox = new EditBox(font, cx, fieldY[0], cw - EDIT_W - 2, FIELD_H, Component.empty());
             titleBox.setMaxLength(64);
@@ -217,7 +201,6 @@ public class QuestCreatorScreen extends Screen {
                     .bounds(cx + cw - EDIT_W, fieldY[0], EDIT_W, FIELD_H).build());
             y += dynStride;
 
-            // Row 1: Description
             fieldY[1] = y + LABEL_H + 2;
             descBox = new EditBox(font, cx, fieldY[1], cw - EDIT_W - 2, FIELD_H, Component.empty());
             descBox.setMaxLength(512);
@@ -235,7 +218,6 @@ public class QuestCreatorScreen extends Screen {
                     .bounds(cx + cw - EDIT_W, fieldY[1], EDIT_W, FIELD_H).build());
             y += dynStride;
 
-            // Row 2: Category (55%) | Subtitle (45%)
             fieldY[2] = y + LABEL_H + 2;
             int catW = (int) (cw * 0.55f);
             int subW = cw - catW - COL_GAP;
@@ -279,7 +261,6 @@ public class QuestCreatorScreen extends Screen {
                     .bounds(subX + subW - EDIT_W, fieldY[2], EDIT_W, FIELD_H).build());
             y += dynStride;
 
-            // Row 3: Icon (35%) | Shape (65%)
             fieldY[3] = y + LABEL_H + 2;
             int iconColW = (int) (cw * 0.35f);
             int shapeColW = cw - iconColW - COL_GAP;
@@ -314,9 +295,8 @@ public class QuestCreatorScreen extends Screen {
             secPanelBot = fieldY[3] + FIELD_H + SEC_PAD;
         }
 
-        // ── Tab 1: Quest Settings ──────────────────────────────────────────────
         if (activeTab == 1) {
-            // Row 4: Visibility | Prereq gate | [Blocks children]
+            
             fieldY[4] = y + LABEL_H + 2;
             int visW = 90;
             addRenderableWidget(Button.builder(
@@ -347,7 +327,6 @@ public class QuestCreatorScreen extends Screen {
             }
             y += dynStride;
 
-            // Row 5: Task completion gate
             fieldY[5] = y + LABEL_H + 2;
             boolean anyMode = cachedTaskMinCount > 0;
             String gateLabel = anyMode ? "§e◑ Complete any " + cachedTaskMinCount + " task(s)" :
@@ -368,7 +347,6 @@ public class QuestCreatorScreen extends Screen {
             }
             y += dynStride;
 
-            // Row 6: Parent (60%) | enable_if (40%)
             fieldY[6] = y + LABEL_H + 2;
             int parentW = (int) (cw * 0.60f);
             int enableIfW = cw - parentW - COL_GAP;
@@ -396,7 +374,6 @@ public class QuestCreatorScreen extends Screen {
             addRenderableWidget(enableIfBox);
             y += dynStride;
 
-            // Row 7 (new): Repeat mode + cooldown hours
             fieldY[9] = y + LABEL_H + 2;
             boolean hasCooldown = cachedRepeatMode == QuestNode.RepeatMode.COOLDOWN;
             int repeatBtnW = hasCooldown ? (int) (cw * 0.50f) : cw;
@@ -429,9 +406,8 @@ public class QuestCreatorScreen extends Screen {
             secPanelBot = fieldY[9] + FIELD_H + SEC_PAD;
         }
 
-        // ── Tab 2: Advanced ───────────────────────────────────────────────────
         if (activeTab == 2) {
-            // Row 7: Quest ID
+            
             fieldY[7] = y + LABEL_H + 2;
             int lockW = 36;
             idBox = new EditBox(font, cx, fieldY[7], cw - lockW - 2, FIELD_H, Component.empty());
@@ -456,7 +432,6 @@ public class QuestCreatorScreen extends Screen {
                     }).bounds(cx + cw - lockW, fieldY[7], lockW, FIELD_H).build());
             y += dynStride;
 
-            // Row 8: Tasks & Rewards
             fieldY[8] = y + LABEL_H + 2;
             addRenderableWidget(Button.builder(Component.literal("§7⊞ Tasks & Rewards…"), b -> {
                 categoryDropdownOpen = false;
@@ -472,7 +447,6 @@ public class QuestCreatorScreen extends Screen {
             }).bounds(cx, fieldY[8], cw, FIELD_H).build());
             y += dynStride;
 
-            // Row (new): Canvas position X / Y
             fieldY[10] = y + LABEL_H + 2;
             int halfPosW = (cw - COL_GAP) / 2;
             posXBox = new EditBox(font, cx, fieldY[10], halfPosW, FIELD_H, Component.empty());
@@ -497,7 +471,6 @@ public class QuestCreatorScreen extends Screen {
             addRenderableWidget(posYBox);
             y += dynStride;
 
-            // Row (new): Hide dep line + children count (read-only)
             fieldY[11] = y + LABEL_H + 2;
             int hdepW = (int) (cw * 0.48f);
             String depToggleLabel = cachedHideDepLine ? "§e⊖ Hide dep lines" : "§7⊕ Show dep lines";
@@ -513,7 +486,6 @@ public class QuestCreatorScreen extends Screen {
             secPanelBot = fieldY[11] + FIELD_H + SEC_PAD;
         }
 
-        // ── Footer buttons ────────────────────────────────────────────────────
         int fbtnY = height - FOOTER_H + (FOOTER_H - 16) / 2;
         int halfW = (cw - COL_GAP) / 2;
         addRenderableWidget(Button.builder(Component.literal("§a✓ Save quest"),
@@ -525,8 +497,6 @@ public class QuestCreatorScreen extends Screen {
                 .tooltip(Tooltip.create(Component.literal("Discard unsaved changes and return"))).build());
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void renderBackground(@NotNull GuiGraphics g) {}
 
@@ -534,7 +504,6 @@ public class QuestCreatorScreen extends Screen {
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
         g.fill(0, 0, width, height, C_BG);
 
-        // Active tab section panel
         int panelL = cx - SEC_PAD;
         int panelR = cx + cw + SEC_PAD;
         if (secPanelBot > secPanelTop) {
@@ -542,24 +511,20 @@ public class QuestCreatorScreen extends Screen {
             drawBorder(g, panelL, secPanelTop, panelR - panelL, secPanelBot - secPanelTop, C_BORDER);
         }
 
-        // Header
         g.fill(0, 0, width, HEADER_H, C_HEADER);
         g.fill(0, HEADER_H - 1, width, HEADER_H, C_BORDER);
         String heading = editingNode != null ? "§fEdit Quest  §8— §7" + editingNode.getId().getPath() : "§fNew Quest";
         g.drawCenteredString(font, heading, width / 2, (HEADER_H - 8) / 2, C_TEXT);
 
-        // Tab strip background + active underline
         g.fill(0, HEADER_H, width, HEADER_H + TAB_H, C_HEADER);
         g.fill(0, HEADER_H + TAB_H - 1, width, HEADER_H + TAB_H, C_BORDER);
         int tabW = cw / TAB_LABELS.length;
         g.fill(cx + activeTab * tabW, HEADER_H + TAB_H - 2,
                 cx + activeTab * tabW + tabW - 2, HEADER_H + TAB_H - 1, C_ACCENT);
 
-        // Footer
         g.fill(0, height - FOOTER_H, width, height, C_HEADER);
         g.fill(0, height - FOOTER_H, width, height - FOOTER_H + 1, C_BORDER);
 
-        // Row labels for active tab only
         int[] labelY = new int[12];
         for (int i = 0; i < 12; i++) labelY[i] = fieldY[i] > 0 ? fieldY[i] - LABEL_H - 2 : 0;
 
@@ -572,7 +537,7 @@ public class QuestCreatorScreen extends Screen {
             int iconColW2 = (int) (cw * 0.35f);
             g.drawString(font, "§8Icon", cx, labelY[3], C_TEXT_FAINT, false);
             g.drawString(font, "§8Shape  §7" + cachedShape, cx + iconColW2 + COL_GAP, labelY[3], C_TEXT_FAINT, false);
-            // Shape highlight + icon preview
+            
             int shapeColW2 = cw - iconColW2 - COL_GAP;
             int shapeX2 = cx + iconColW2 + COL_GAP;
             int slotW = shapeColW2 / SHAPES.length;
@@ -624,7 +589,6 @@ public class QuestCreatorScreen extends Screen {
             }
         }
 
-        // Status
         if (!statusMsg.isEmpty()) {
             g.drawCenteredString(font, (statusIsErr ? "§c" : "§a") + statusMsg,
                     width / 2, height - FOOTER_H - 12, statusIsErr ? C_ERR : C_OK);
@@ -632,7 +596,6 @@ public class QuestCreatorScreen extends Screen {
 
         super.render(g, mx, my, partial);
 
-        // Dropdowns — elevated z
         g.pose().pushPose();
         g.pose().translate(0, 0, 300);
 
@@ -674,8 +637,6 @@ public class QuestCreatorScreen extends Screen {
 
         g.pose().popPose();
     }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
@@ -737,8 +698,6 @@ public class QuestCreatorScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
-    // ── Save ──────────────────────────────────────────────────────────────────
 
     private void save() {
         String id = cachedId.trim().toLowerCase().replaceAll("[^a-z0-9/._-]", "");
@@ -827,8 +786,6 @@ public class QuestCreatorScreen extends Screen {
             statusIsErr = true;
         }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private List<String> buildExistingCategories() {
         List<String> cats = new ArrayList<>();

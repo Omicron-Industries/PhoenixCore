@@ -26,7 +26,6 @@ public class WingFlightScreen extends Screen {
     private static final int H = 220;
     private static final int STEPS = 10;
 
-    // Colors
     private static final int COLOR_TITLE = 0xBF00FF;
     private static final int COLOR_LABEL = 0xAAAAAA;
     private static final int COLOR_BASIC = 0x00FF88;
@@ -53,24 +52,20 @@ public class WingFlightScreen extends Screen {
         int top = (height - H) / 2;
         this.clearWidgets();
 
-        // 1. Mode Button
         addRenderableWidget(Button.builder(Component.literal("Mode: " + getModeDisplayName()), btn -> {
             cycleMode();
             sendUpdate();
             rebuildWidgets();
         }).bounds(left + 5, top + 72, W - 10, 20).build());
 
-        // Visibility Logic
         boolean isCreativeType = flightMode.startsWith("creative");
         boolean showSpeed = isCreativeType || flightMode.equals("powered");
         boolean showDrift = isCreativeType;
 
-        // 2. Speed Controls
         if (showSpeed) {
             createSliderRow(left, top + 118, true);
         }
 
-        // 3. Drift Controls
         if (showDrift) {
             createSliderRow(left, top + 168, false);
         }
@@ -150,7 +145,6 @@ public class WingFlightScreen extends Screen {
             int xPos = x + (i * segW);
             int color = step <= val ? COLOR_FILLED : COLOR_EMPTY;
 
-            // Draw segment
             gfx.fill(xPos, y, xPos + segW - 2, y + 18, color);
 
             if (step == val) {

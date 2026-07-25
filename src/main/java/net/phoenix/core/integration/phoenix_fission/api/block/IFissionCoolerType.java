@@ -34,9 +34,6 @@ public interface IFissionCoolerType {
         return getRequiredCoolantMaterialId();
     }
 
-    /**
-     * Defines how much coolant is consumed per tick (mB/t).
-     */
     int getCoolantUsagePerTick();
 
     default int getCoolantPerTick() {

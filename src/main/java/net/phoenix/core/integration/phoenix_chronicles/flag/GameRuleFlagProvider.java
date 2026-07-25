@@ -10,21 +10,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-/**
- * Evaluates Minecraft game rule flags.
- *
- * Quest SNBT:
- * enable_if: "rule:doDaylightCycle" // boolean rule — truthy check
- * enable_if: "rule:doDaylightCycle=true" // explicit equality
- * enable_if: "rule:randomTickSpeed>=3" // numeric comparison
- * enable_if: "rule:maxEntityCramming!=24" // not-equal
- *
- * Rules are resolved by name (e.g. "randomTickSpeed") via reflection over the
- * GameRules class's static Key fields. Unknown rule names return false.
- *
- * Returns true when server is null (client-side display pass); the server
- * enforces the real value at completion time.
- */
 public class GameRuleFlagProvider implements QuestFlagProvider {
 
     @Override
@@ -56,8 +41,6 @@ public class GameRuleFlagProvider implements QuestFlagProvider {
         return expr.test(actualStr);
     }
 
-    // ── Rule-key lookup via reflection ────────────────────────────────────────
-
     private static volatile Map<String, GameRules.Key<?>> ruleKeys = null;
     private static final java.util.Set<String> warnedRules = java.util.Collections
             .newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
@@ -72,7 +55,7 @@ public class GameRuleFlagProvider implements QuestFlagProvider {
         synchronized (GameRuleFlagProvider.class) {
             if (ruleKeys != null) return ruleKeys;
             Map<String, GameRules.Key<?>> map = new LinkedHashMap<>();
-            // Find the String id field inside GameRules.Key (first String field)
+            
             Field idField = null;
             for (Field f : GameRules.Key.class.getDeclaredFields()) {
                 if (f.getType() == String.class) {

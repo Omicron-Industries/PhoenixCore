@@ -51,7 +51,6 @@ public class FissionFuelRodBlock extends ActiveBlock {
         tooltip.add(Component.translatable("block.phoenixcore.fission_fuel_rod.info_header")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
 
-        // Fuel and Output Info
         tooltip.add(
                 Component.translatable("phoenixcore.fuel_required", getRegistryDisplayName(fuelRodType.getFuelKey()))
                         .withStyle(ChatFormatting.WHITE));
@@ -60,7 +59,6 @@ public class FissionFuelRodBlock extends ActiveBlock {
                 Component.translatable("phoenixcore.depleted_fuel", getRegistryDisplayName(fuelRodType.getOutputKey()))
                         .withStyle(ChatFormatting.DARK_GRAY));
 
-        // Stats from Config
         tooltip.add(Component.translatable("phoenixcore.heat_production",
                 Component.literal(String.valueOf(fuelRodType.getBaseHeatProduction()))
                         .withStyle(ChatFormatting.RED))
@@ -142,11 +140,11 @@ public class FissionFuelRodBlock extends ActiveBlock {
         @Getter
         private final int tier;
         private final int defaultDuration;
-        private final int defaultAmount; // New internal default
+        private final int defaultAmount; 
         @NotNull
-        private final String defaultFuelKey; // New internal default
+        private final String defaultFuelKey; 
         @NotNull
-        private final String defaultOutputKey; // New internal default
+        private final String defaultOutputKey; 
         @Getter
         private final int tintColor;
 

@@ -10,12 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Central registry for all loaded {@link ChapterDefinition} objects.
- *
- * Chapters are kept in insertion order so the sidebar renders them in the
- * order they were loaded (which matches filesystem sort order).
- */
 public class ChapterRegistry {
 
     private static final Map<ResourceLocation, ChapterDefinition> CHAPTERS = new LinkedHashMap<>();

@@ -21,7 +21,6 @@ public class PhoenixBeeMaterials {
     public static Material HONEY_CATALYST, HONEY_COMB_BASE_MIXTURE, POLLEN_CONCENTRATE_FLUID, WAX_MELTING_CATALYST;
     public static Material AURUM_WOOD, INVERT_SUGAR_SOLUTION, HONEY, SUPERCONDUCTIVE_HONEY;
 
-    // Bee Pipeline Fluids
     public static Material IMPURE_WAX, IMPURE_HONEY;
 
     public static final Map<String, Material> HONEYED_MATERIALS = new HashMap<>();
@@ -92,7 +91,7 @@ public class PhoenixBeeMaterials {
     }
 
     private static void registerAllBeeMineralMaterials() {
-        // Defining the color map from your KJS script
+        
         Map<String, int[]> colors = new HashMap<>();
         colors.put("pitchblende", new int[] { 0xffd647, 0x0d1e2f });
         colors.put("steel", new int[] { 0x3b3b3b, 0x727272 });
@@ -181,7 +180,6 @@ public class PhoenixBeeMaterials {
             int baseColor = entry.getValue()[0];
             int secColor = entry.getValue()[1];
 
-            // Create Honeyed Fluid
             Material honeyed = new Material.Builder(PhoenixCore.id("honeyed_" + name))
                     .fluid()
                     .color(baseColor)
@@ -190,7 +188,6 @@ public class PhoenixBeeMaterials {
                     .buildAndRegister();
             HONEYED_MATERIALS.put(name, honeyed);
 
-            // Create Raw Wax Dust
             Material rawWax = new Material.Builder(PhoenixCore.id("raw_" + name + "_wax"))
                     .dust()
                     .color(baseColor)

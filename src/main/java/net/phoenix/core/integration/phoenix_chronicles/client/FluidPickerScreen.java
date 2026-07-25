@@ -17,10 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Fluid picker — mirrors ItemPickerScreen but browses ForgeRegistries.FLUIDS.
- * Callback receives the chosen fluid's ResourceLocation id string.
- */
 public class FluidPickerScreen extends Screen {
 
     private static final int COL_BG = 0xFF0F0F13;
@@ -44,7 +40,7 @@ public class FluidPickerScreen extends Screen {
     private static final int ROW_H = 20;
 
     private final Screen parent;
-    private final Consumer<String> onPick; // receives fluid registry id
+    private final Consumer<String> onPick; 
 
     private final List<Fluid> displayFluids = new ArrayList<>();
     private int scrollOffset = 0;
@@ -96,7 +92,7 @@ public class FluidPickerScreen extends Screen {
             if (fluid == Fluids.EMPTY) continue;
             ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
             if (id == null) continue;
-            // Only show "source" fluids, skip flowing variants
+            
             if (id.getPath().contains("flowing")) continue;
             if (!q.isEmpty() && !id.toString().contains(q) &&
                     !fluid.getFluidType().getDescription().getString().toLowerCase().contains(q))
@@ -123,7 +119,6 @@ public class FluidPickerScreen extends Screen {
 
         super.render(g, mx, my, partial);
 
-        // Fluid list
         int listTop = panelTop + HEADER_H + SEARCH_H + 4;
         int listBottom = footerY - (selectedFluid != null ? 20 : 2);
         int visRows = Math.max(1, (listBottom - listTop) / ROW_H);
@@ -148,12 +143,10 @@ public class FluidPickerScreen extends Screen {
                 g.fill(panelLeft + 2, ry, panelLeft + PANEL_W - 2, ry + ROW_H, COL_HOVER);
             }
 
-            // Fluid colour swatch (16×16)
             int swatchColor = getFluidColor(fluid);
             g.fill(panelLeft + 4, ry + 2, panelLeft + 20, ry + ROW_H - 2, swatchColor | 0xFF000000);
             drawBorder(g, panelLeft + 4, ry + 2, 16, ROW_H - 4, 0xFF444455);
 
-            // Label: fluid description + registry id
             String name = fluid.getFluidType().getDescription().getString();
             ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
             String idStr = id != null ? "§8" + id : "";
@@ -168,7 +161,6 @@ public class FluidPickerScreen extends Screen {
         }
         g.disableScissor();
 
-        // Selection preview strip above footer
         if (selectedFluid != null) {
             int prevY = footerY - 18;
             g.fill(panelLeft, prevY - 1, panelLeft + PANEL_W, prevY, COL_BORDER);
@@ -215,7 +207,7 @@ public class FluidPickerScreen extends Screen {
             IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluid);
             return ext.getTintColor();
         } catch (Exception e) {
-            return 0x3355FF; // fallback blue
+            return 0x3355FF; 
         }
     }
 

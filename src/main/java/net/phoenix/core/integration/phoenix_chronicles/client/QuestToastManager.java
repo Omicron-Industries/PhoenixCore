@@ -11,18 +11,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-/**
- * Manages animated toast notifications for quest state changes.
- *
- * Two toast types:
- * UNLOCKED — small blue banner: "Quest Unlocked: <title>"
- * COMPLETED — gold banner: "Quest Complete! <title>"
- *
- * Toasts slide in from the right, stay visible for ~4 s, then fade out.
- * Up to 3 toasts visible simultaneously; excess entries queue behind them.
- *
- * Call from the client HUD overlay renderer (ChronicleClientEvents or QuestHudOverlay).
- */
 public class QuestToastManager {
 
     public enum ToastType {
@@ -35,7 +23,7 @@ public class QuestToastManager {
     private static final int MARGIN_R = 2;
     private static final int GAP = 3;
     private static final int SLIDE_TICKS = 8;
-    private static final int STAY_TICKS = 80; // 4 s at 20 tps
+    private static final int STAY_TICKS = 80; 
     private static final int FADE_TICKS = 12;
     private static final int MAX_VISIBLE = 3;
 
@@ -60,7 +48,6 @@ public class QuestToastManager {
         queue.addLast(new ToastEntry(node, type));
     }
 
-    /** Call once per client tick to advance animations and promote queued toasts. */
     public void tick() {
         active.removeIf(t -> t.ticksAlive > SLIDE_TICKS + STAY_TICKS + FADE_TICKS);
         while (active.size() < MAX_VISIBLE && !queue.isEmpty()) {
@@ -69,10 +56,9 @@ public class QuestToastManager {
         for (ActiveToast t : active) t.ticksAlive++;
     }
 
-    /** Render all active toasts — call from HUD overlay post-render. */
     public void render(GuiGraphics g, int screenW, int screenH) {
         Font font = Minecraft.getInstance().font;
-        int slotY = screenH / 4; // start at ~1/4 from top so they don't clash with the pinned quest widget
+        int slotY = screenH / 4; 
 
         for (ActiveToast t : active) {
             float progress = computeX(t);
@@ -87,12 +73,10 @@ public class QuestToastManager {
             int bar = (t.entry.type == ToastType.COMPLETED) ? C_BAR_DONE : C_BAR_UNLOCK;
             int titleCol = (t.entry.type == ToastType.COMPLETED) ? C_TITLE_DONE : C_TITLE_UNLOCK;
 
-            // Background
             g.fill(x, y, x + TOAST_W, y + TOAST_H, (bg & 0x00FFFFFF) | a);
-            // Left accent bar
+            
             g.fill(x, y, x + 3, y + TOAST_H, (bar & 0x00FFFFFF) | a);
 
-            // Icon
             QuestNode node = t.entry.node;
             int textX = x + 6;
             if (node.getIconItem() != null && node.getIconItem() != net.minecraft.world.item.Items.AIR) {
@@ -100,7 +84,6 @@ public class QuestToastManager {
                 textX = x + 24;
             }
 
-            // Labels
             String label = (t.entry.type == ToastType.COMPLETED) ? "Quest Complete!" : "Quest Unlocked";
             g.drawString(font, "§7" + label, textX, y + 5, (C_LABEL & 0x00FFFFFF) | a, false);
             String titleStr = font.width(node.getTitle().getString()) > TOAST_W - textX - x - 8 ?

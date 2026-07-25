@@ -59,7 +59,6 @@ public class ChronicleDataLoader extends SimpleJsonResourceReloadListener {
                 }
                 node.setCategory(category);
 
-                // FIXED: Matched up coordinates to the explicit layout setters on QuestNode
                 if (json.has("layout_x") && json.has("layout_y")) {
                     node.setCustomX(json.get("layout_x").getAsInt());
                     node.setCustomY(json.get("layout_y").getAsInt());
@@ -105,7 +104,6 @@ public class ChronicleDataLoader extends SimpleJsonResourceReloadListener {
                         String type = taskJson.get("type").getAsString();
                         boolean isOptional = taskJson.has("optional") && taskJson.get("optional").getAsBoolean();
 
-                        // SAFE EXTRACTION: Reads the common JSON parameter if available
                         boolean defaultConsume = !taskJson.has("consume") || taskJson.get("consume").getAsBoolean();
 
                         QuestTask addedTask = null;
@@ -242,7 +240,6 @@ public class ChronicleDataLoader extends SimpleJsonResourceReloadListener {
 
         LOGGER.info("Successfully loaded {} chronicle branches into memory.", rootNodes.size());
 
-        // Also load editor-created quests from config/*.snbt (additive — won't overwrite datapack quests).
         MinecraftServer server = ChronicleEvents.getCachedServer();
         if (server != null) {
             java.nio.file.Path configDir = server.getServerDirectory().toPath()

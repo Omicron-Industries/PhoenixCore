@@ -19,40 +19,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-/**
- * Server-to-Client packet that safely transfers server-verified quest configurations
- * and hierarchy maps to the player's client-side registry instance.
- *
- * Wire format per quest node (in order):
- * ResourceLocation id
- * Component title
- * Component description
- * String category
- * String shapeType
- * String iconItemId ("" = no icon)
- * int customX
- * int customY
- * int childCount
- * ResourceLocation childIds[childCount]
- * int prereqCount
- * ResourceLocation prereqIds[prereqCount]
- * int taskCount
- * CompoundTag tasksNbt[taskCount]
- * Each CompoundTag contains:
- * "task_id" : String (ResourceLocation.toString())
- * "description" : String (Component JSON)
- * + all type-specific fields written by QuestTask.serializeNBT()
- *
- * Root detection in Phase 2:
- * A node is a root iff its id does not appear in any snapshot's childIds list.
- * registerBareQuestNode only touches ALL_QUESTS; we call registerRootChapter()
- * for true roots so getRootChapters() is populated and the canvas renders.
- */
 public class S2CSyncQuestsPacket {
 
     private final Map<ResourceLocation, QuestSnapshot> snapshotMap;
-
-    // ── Server-side constructor ───────────────────────────────────────────────
 
     public S2CSyncQuestsPacket(Map<ResourceLocation, QuestNode> serverRegistry) {
         this.snapshotMap = new HashMap<>();
@@ -60,8 +29,6 @@ public class S2CSyncQuestsPacket {
             snapshotMap.put(entry.getKey(), new QuestSnapshot(entry.getValue()));
         }
     }
-
-    // ── Decode constructor ────────────────────────────────────────────────────
 
     public S2CSyncQuestsPacket(FriendlyByteBuf buf) {
         this.snapshotMap = new HashMap<>();
@@ -111,8 +78,6 @@ public class S2CSyncQuestsPacket {
         }
     }
 
-    // ── Encode ────────────────────────────────────────────────────────────────
-
     public void encode(FriendlyByteBuf buf) {
         buf.writeInt(snapshotMap.size());
         for (QuestSnapshot snap : snapshotMap.values()) {
@@ -147,15 +112,11 @@ public class S2CSyncQuestsPacket {
         }
     }
 
-    // ── Handle ────────────────────────────────────────────────────────────────
-
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
                 () -> () -> ClientPayloadProcessor.processQuestTree(snapshotMap)));
         ctx.get().setPacketHandled(true);
     }
-
-    // ── Snapshot ──────────────────────────────────────────────────────────────
 
     private static class QuestSnapshot {
 
@@ -167,24 +128,23 @@ public class S2CSyncQuestsPacket {
         final String iconItemId;
         final int customX;
         final int customY;
-        // Extended metadata
+        
         final String subtitle;
-        final String visibility;   // enum name
-        final String enableIf;     // flag expression, empty string = none
+        final String visibility;   
+        final String enableIf;     
         final int taskMinCount;
         final boolean requireAllPrerequisites;
         final List<ResourceLocation> childIds;
         final List<ResourceLocation> prereqIds;
-        /** parallel to prereqIds: true = required, false = optional */
+        
         final List<Boolean> prereqRequired;
-        /** parallel to prereqIds: true = forbidden (must NOT be completed) */
+        
         final List<Boolean> prereqForbidden;
-        /** parallel to prereqIds: true = alt+drag link edge */
+        
         final List<Boolean> prereqLink;
         final int optionalPrereqMinCount;
-        final List<CompoundTag> tasksNbt;  // each tag has "optional" boolean injected
+        final List<CompoundTag> tasksNbt;  
 
-        /** Server-side: capture everything from a live QuestNode. */
         QuestSnapshot(QuestNode node) {
             this.id = node.getId();
             this.title = node.getTitle();
@@ -227,7 +187,6 @@ public class S2CSyncQuestsPacket {
             }
         }
 
-        /** Client-side: populated from decoded wire data. */
         QuestSnapshot(ResourceLocation id, Component title, Component description,
                       String category, String shapeType, String iconItemId,
                       int customX, int customY,
@@ -260,18 +219,11 @@ public class S2CSyncQuestsPacket {
         }
     }
 
-    // ── Client-side processor ─────────────────────────────────────────────────
-
-    /**
-     * Isolated in a static inner class so the server JVM never loads client-only
-     * class references when scanning the outer packet class's method signatures.
-     */
     private static class ClientPayloadProcessor {
 
         static void processQuestTree(Map<ResourceLocation, QuestSnapshot> snapshots) {
             QuestTreeRegistry.clear();
 
-            // ── Phase 1: Reconstruct every node and register it barefoot ─────
             for (QuestSnapshot snap : snapshots.values()) {
                 QuestNode node = new QuestNode(snap.id, snap.title, snap.description);
                 node.setCategory(snap.category);
@@ -299,12 +251,9 @@ public class S2CSyncQuestsPacket {
                     }
                 }
 
-                // Bare registration — only ALL_QUESTS for now; ROOT_NODES populated in Phase 2
                 QuestTreeRegistry.registerBareQuestNode(node);
             }
 
-            // ── Phase 2: Wire parent→child, prerequisites, and roots ─────────
-            // Any node whose id appears in another snapshot's childIds is not a root
             Set<ResourceLocation> hasParent = new HashSet<>();
             for (QuestSnapshot snap : snapshots.values())
                 hasParent.addAll(snap.childIds);
@@ -335,7 +284,6 @@ public class S2CSyncQuestsPacket {
                     }
                 }
 
-                // Register as root so the canvas can find it via getRootChapters()
                 if (!hasParent.contains(snap.id)) {
                     QuestTreeRegistry.registerRootChapter(node);
                 }
@@ -344,14 +292,6 @@ public class S2CSyncQuestsPacket {
             System.out.println("[Phoenix Chronicles] Client synced " + snapshots.size() + " quest(s) from server.");
         }
 
-        /**
-         * Reconstructs a QuestTask from its full serialized CompoundTag.
-         *
-         * We create a minimal stub instance (with placeholder field values) and
-         * then call deserializeNBT() to overwrite them with the real data from
-         * the tag. This avoids a generic factory interface and keeps each task
-         * class's own deserializeNBT as the single source of truth.
-         */
         private static QuestTask deserializeTask(CompoundTag tag) {
             if (!tag.contains("type") || !tag.contains("task_id")) return null;
             QuestTask task = net.phoenix.core.integration.phoenix_chronicles.PhoenixTaskRegistry.deserialize(tag);

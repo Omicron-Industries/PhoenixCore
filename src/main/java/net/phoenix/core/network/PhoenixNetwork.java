@@ -28,7 +28,7 @@ public class PhoenixNetwork {
     private static int id = 0;
 
     public static void init() {
-        // ── Existing packets ──────────────────────────────────────────────────
+        
         CHANNEL.registerMessage(id++,
                 SelectColorPacket.class,
                 SelectColorPacket::encode,
@@ -43,7 +43,6 @@ public class PhoenixNetwork {
                 C2STeslaDischargePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
-        // Append this registration right inside the bottom of your existing init() method:
         CHANNEL.registerMessage(id++,
                 S2CSyncQuestsPacket.class,
                 S2CSyncQuestsPacket::encode,
@@ -79,7 +78,6 @@ public class PhoenixNetwork {
                 CPacketManipulatorAction::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
-        // ── Recipe Builder ────────────────────────────────────────────────────
         CHANNEL.registerMessage(id++,
                 PacketRecipeBuilderGenerate.class,
                 PacketRecipeBuilderGenerate::encode,
@@ -94,9 +92,6 @@ public class PhoenixNetwork {
                 SelectChromaticCodePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
-        // ── Vocal Resonance ───────────────────────────────────────────────────
-
-        // Client selects a sound or stream URL from the console screen → server
         CHANNEL.registerMessage(id++,
                 C2SSelectSoundPacket.class,
                 C2SSelectSoundPacket::encode,
@@ -104,8 +99,6 @@ public class PhoenixNetwork {
                 C2SSelectSoundPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
-        // Client reports live FFT bass / sound duration back to the machine → server
-        // Client → Server: Client audio engine sends real-time frequency, duration, and BPM data to the server machine
         CHANNEL.registerMessage(id++,
                 C2SSoundMetadataPacket.class,
                 C2SSoundMetadataPacket::encode,
@@ -113,7 +106,6 @@ public class PhoenixNetwork {
                 C2SSoundMetadataPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
-        // Server tells nearby clients to play a library sound
         CHANNEL.registerMessage(id++,
                 S2CPlaySoundPacket.class,
                 S2CPlaySoundPacket::encode,
@@ -121,8 +113,6 @@ public class PhoenixNetwork {
                 S2CPlaySoundPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
-        // Server tells nearby clients to start a radio stream
-        // NOTE: encoder is ::encode — the old ::toBytes name was renamed in the fixed packet
         CHANNEL.registerMessage(id++,
                 S2CPlayStreamPacket.class,
                 S2CPlayStreamPacket::encode,
@@ -130,11 +120,10 @@ public class PhoenixNetwork {
                 S2CPlayStreamPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
-        // ── Tesla Mode Toggling ───────────────────────────────────────────────
         CHANNEL.registerMessage(id++,
                 C2SToggleTeslaModePacket.class,
                 C2SToggleTeslaModePacket::encode,
-                C2SToggleTeslaModePacket::new, // Reuses the FriendlyByteBuf constructor
+                C2SToggleTeslaModePacket::new, 
                 C2SToggleTeslaModePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
@@ -159,7 +148,6 @@ public class PhoenixNetwork {
                 S2CSyncPlayerProgressPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
-        // ── Phoenix Guilds ────────────────────────────────────────────────────
         CHANNEL.registerMessage(id++,
                 C2SGuildActionPacket.class,
                 C2SGuildActionPacket::encode,

@@ -10,11 +10,6 @@ import net.phoenix.core.integration.phoenix_chronicles.QuestChroniclesSettings.*
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Full dependency-line settings screen.
- * Global controls: line shape (SPLINE/STRAIGHT) and visual style (THIN/NORMAL/THICK/GLOW)
- * with a live preview. Per-quest section: hide/show dep lines per quest node.
- */
 public class DepLineSettingsScreen extends Screen {
 
     private final ChronicleOverviewScreen parent;
@@ -24,7 +19,7 @@ public class DepLineSettingsScreen extends Screen {
 
     private static final int MARGIN = 8;
     private static final int HEADER_H = 28;
-    private static final int SEARCH_H = 22;   // sticky search bar below header
+    private static final int SEARCH_H = 22;   
     private static final int FOOTER_H = 28;
     private static final int ROW_H = 22;
     private static final int ROW_GAP = 3;
@@ -76,9 +71,6 @@ public class DepLineSettingsScreen extends Screen {
         addRenderableWidget(searchBox);
     }
 
-    // ── Layout helpers ─────────────────────────────────────────────────────────
-
-    /** Computes how many pixels from contentTop each section starts (scrollY not applied). */
     private static final int GLOBAL_SECTION_LABEL_H = 10 + ROW_GAP;
     private static final int GLOBAL_ROW_COUNT = 3;
     private static final int PREVIEW_H = 40;
@@ -94,18 +86,14 @@ public class DepLineSettingsScreen extends Screen {
         return globalEnd() + DIVIDER_H + PER_QUEST_LABEL_H;
     }
 
-    // ── Render ─────────────────────────────────────────────────────────────────
-
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
         g.fill(0, 0, width, height, C_BG);
 
-        // Header
         g.fill(0, 0, width, HEADER_H, C_HEADER);
         g.fill(0, HEADER_H - 1, width, HEADER_H, C_BORDER);
         g.drawCenteredString(font, "§fDependency Line Settings", width / 2, 9, C_TEXT);
 
-        // Draw the sticky search bar strip
         g.fill(0, HEADER_H, width, HEADER_H + SEARCH_H, C_HEADER);
         g.fill(0, HEADER_H + SEARCH_H - 1, width, HEADER_H + SEARCH_H, C_BORDER);
 
@@ -116,7 +104,6 @@ public class DepLineSettingsScreen extends Screen {
         g.enableScissor(0, contentTop, width, contentTop + contentH);
         int y = contentTop - scrollY;
 
-        // ── Global ────────────────────────────────────────────────────────────
         g.drawString(font, "§8GLOBAL APPEARANCE:", x, y, C_TEXT_FAINT, false);
         y += GLOBAL_SECTION_LABEL_H;
 
@@ -124,7 +111,6 @@ public class DepLineSettingsScreen extends Screen {
         y = renderCycleRow(g, x, y, w, "§fLine Style", lineVisual.name(), mx, my) + ROW_GAP;
         y = renderCycleRow(g, x, y, w, "§fDot Speed", lineAnimSpeed.name(), mx, my) + ROW_GAP;
 
-        // Preview box
         y += 4;
         g.fill(x, y, x + w, y + PREVIEW_H, C_PANEL);
         g.fill(x, y, x + w, y + 1, C_BORDER);
@@ -135,7 +121,6 @@ public class DepLineSettingsScreen extends Screen {
         drawPreviewLines(g, x + 4, y + 12, w - 8, PREVIEW_H - 16);
         y += PREVIEW_H + PREVIEW_GAP;
 
-        // ── Per-quest ─────────────────────────────────────────────────────────
         g.fill(x, y, x + w, y + 1, C_BORDER);
         y += DIVIDER_H;
 
@@ -164,7 +149,6 @@ public class DepLineSettingsScreen extends Screen {
             if (font.width(name) > nameMaxW) name = font.plainSubstrByWidth(name, Math.max(0, nameMaxW - 6)) + "…";
             g.drawString(font, "§7" + name, x + 4, y + 7, C_TEXT_DIM, false);
 
-            // Toggle button
             g.fill(btnX, btnY, btnX + btnW, btnY + ROW_H - 4, btnHov ? 0x33FFFFFF : 0x11FFFFFF);
             g.fill(btnX, btnY, btnX + btnW, btnY + 1, hidden ? 0xFF444455 : C_DONE);
             g.drawCenteredString(font, hidden ? "§8HIDDEN" : "§aVISIBLE",
@@ -181,7 +165,6 @@ public class DepLineSettingsScreen extends Screen {
 
         g.disableScissor();
 
-        // Footer
         int footerY = height - FOOTER_H;
         g.fill(0, footerY, width, height, C_HEADER);
         g.fill(0, footerY, width, footerY + 1, C_BORDER);
@@ -202,15 +185,12 @@ public class DepLineSettingsScreen extends Screen {
         g.drawCenteredString(font, "§7✕ Close", closeX + fbtnW / 2, fbtnY + 6, closeHov ? 0xFFCCCCCC : C_TEXT);
     }
 
-    // ── Preview drawing ────────────────────────────────────────────────────────
-
     private void drawPreviewLines(GuiGraphics g, int x, int y, int w, int h) {
         boolean spline = lineShape == LineStyle.SPLINE;
         int midX = x + w / 2;
         int ty = y + h / 4;
         int by = y + 3 * h / 4;
 
-        // Stagger control points to show spline curve
         drawPreviewLine(g, x, ty, midX, by, 0xFF00CC66, spline);
         drawPreviewLine(g, midX, by, x + w, ty, 0xFFFFAA00, spline);
 
@@ -262,7 +242,7 @@ public class DepLineSettingsScreen extends Screen {
                     g.fill(px - 2, py - 2, px + 3, py + 3, rgb | 0xAA000000);
                     g.fill(px - 1, py - 1, px + 2, py + 2, col);
                 }
-                default -> {  // NORMAL
+                default -> {  
                     g.fill(px - 1, py - 1, px + 2, py + 2, col);
                     g.fill(px - 2, py - 1, px - 1, py + 2, rgb | 0x33000000);
                     g.fill(px + 2, py - 1, px + 3, py + 2, rgb | 0x33000000);
@@ -270,8 +250,6 @@ public class DepLineSettingsScreen extends Screen {
             }
         }
     }
-
-    // ── Cycle row ──────────────────────────────────────────────────────────────
 
     private int renderCycleRow(GuiGraphics g, int x, int y, int w, String label, String value, int mx, int my) {
         int textY = y + (ROW_H - 8) / 2;
@@ -291,8 +269,6 @@ public class DepLineSettingsScreen extends Screen {
 
         return y + ROW_H;
     }
-
-    // ── Input ──────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
@@ -319,10 +295,8 @@ public class DepLineSettingsScreen extends Screen {
         int x = MARGIN, w = width - MARGIN * 2;
         int y = contentTop - scrollY;
 
-        // Skip global label
         y += GLOBAL_SECTION_LABEL_H;
 
-        // Line Shape
         if (hitArrows(x, y, w, mx, my)) {
             LineStyle[] vals = LineStyle.values();
             lineShape = vals[(lineShape.ordinal() + (isRight(x, w, mx) ? 1 : -1) + vals.length) % vals.length];
@@ -330,7 +304,6 @@ public class DepLineSettingsScreen extends Screen {
         }
         y += ROW_H + ROW_GAP;
 
-        // Line Style
         if (hitArrows(x, y, w, mx, my)) {
             LineVisualStyle[] vals = LineVisualStyle.values();
             lineVisual = vals[(lineVisual.ordinal() + (isRight(x, w, mx) ? 1 : -1) + vals.length) % vals.length];
@@ -338,7 +311,6 @@ public class DepLineSettingsScreen extends Screen {
         }
         y += ROW_H + ROW_GAP;
 
-        // Dot Speed
         if (hitArrows(x, y, w, mx, my)) {
             QuestChroniclesSettings.LineAnimSpeed[] vals = QuestChroniclesSettings.LineAnimSpeed.values();
             lineAnimSpeed = vals[(lineAnimSpeed.ordinal() + (isRight(x, w, mx) ? 1 : -1) + vals.length) % vals.length];
@@ -346,12 +318,10 @@ public class DepLineSettingsScreen extends Screen {
         }
         y += ROW_H + ROW_GAP;
 
-        // Skip preview box
         y += 4 + PREVIEW_H + PREVIEW_GAP;
-        // Skip divider + per-quest label
+        
         y += DIVIDER_H + PER_QUEST_LABEL_H;
 
-        // Per-quest toggle buttons (same filter as render)
         List<QuestNode> quests = QuestTreeRegistry.getAllQuests().values().stream()
                 .filter(n -> category.equals(n.getCategory()))
                 .filter(n -> searchQuery.isEmpty() || n.getTitle().getString().toLowerCase().contains(searchQuery) ||
@@ -400,7 +370,7 @@ public class DepLineSettingsScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        if (key == 256) {  // ESC
+        if (key == 256) {  
             if (searchBox != null && searchBox.isFocused() && !searchQuery.isEmpty()) {
                 searchBox.setValue("");
                 return true;

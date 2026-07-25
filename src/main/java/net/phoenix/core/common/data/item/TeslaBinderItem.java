@@ -193,30 +193,26 @@ public class TeslaBinderItem extends ComponentItem
         return super.use(level, player, hand);
     }
 
-    // Handles the linking of the player/team data onto the Telsa Binder.
     private void bindToPlayer(Player player, ItemStack stack) {
-        // 1. Resolve the correct ID (Party ID or Player ID)
+        
         UUID resolvedId = TeamUtils.getTeamIdOrPlayerFallback(player.getUUID());
         var tag = stack.getOrCreateTag();
 
-        // 2. Get the actual name of the team (e.g., "Phoenix" or "PlayerA")
         String teamName = TeamUtils.getTeamName(resolvedId);
 
         tag.putUUID("TargetTeam", resolvedId);
         tag.putString("TeamName", teamName);
-        // Keeping track of who last synchronized the binder
+        
         tag.putString("OwnerName", player.getName().getString());
 
         if (player.level() instanceof ServerLevel server) {
-            // 3. Initialize the shared data entry if it doesn't exist
+            
             TeslaTeamEnergyData.get(server).getOrCreate(resolvedId);
 
-            // Visual/Audio feedback
             server.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + 1.1, player.getZ(), 20, 0.2, 0.2,
                     0.2, 0.02);
             player.playSound(SoundEvents.PLAYER_LEVELUP, 0.5f, 1.5f);
 
-            // 4. Clearer messaging so players know they are sharing a network
             player.sendSystemMessage(Component.literal("Tesla frequency linked to: ")
                     .withStyle(ChatFormatting.GREEN)
                     .append(Component.literal(teamName).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)));
@@ -234,7 +230,6 @@ public class TeslaBinderItem extends ComponentItem
         return super.getName(stack);
     }
 
-    // Handles the naming of linked binders, and the name/team name fields on the tooltip.
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
@@ -270,7 +265,6 @@ public class TeslaBinderItem extends ComponentItem
         return (r << 16) | (g << 8) | b;
     }
 
-    // The main ui of the binder.
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
         ItemStack stack = holder.getHeld();
@@ -449,7 +443,6 @@ public class TeslaBinderItem extends ComponentItem
         String colorCode;
         String sign;
 
-        // 1. Parse the flow value to determine if it's a generator or consumer
         String transferRaw = data.getString("transfer");
         long flowVal = 0;
         try {
@@ -458,7 +451,7 @@ public class TeslaBinderItem extends ComponentItem
 
         switch (type) {
             case "hatch" -> {
-                boolean isInput = data.getBoolean("isOut"); // [I] is Uplink, [O] is Downlink
+                boolean isInput = data.getBoolean("isOut"); 
                 typeLabel = isInput ? "[I]" : "[O]";
                 colorCode = isInput ? "§a" : "§c";
                 sign = isInput ? "+" : "-";
@@ -468,7 +461,7 @@ public class TeslaBinderItem extends ComponentItem
                 colorCode = "§b";
                 sign = "-";
             }
-            default -> { // Soul-linked machines
+            default -> { 
                 typeLabel = "[S]";
                 if (flowVal < 0) {
                     colorCode = "§a";
@@ -601,7 +594,6 @@ public class TeslaBinderItem extends ComponentItem
             tag.putString("NetInput", String.valueOf(team.lastNetInput));
             tag.putString("NetOutput", String.valueOf(team.lastNetOutput));
 
-            // 1. Sync Hatch Data
             ListTag hatchList = new ListTag();
             for (TeslaTeamEnergyData.HatchInfo hatch : globalData.getHatches(teamUUID)) {
                 if (hatch == null || hatch.pos == null || hatch.dimension == null) continue;
@@ -615,7 +607,6 @@ public class TeslaBinderItem extends ComponentItem
             }
             tag.put("HatchData", hatchList);
 
-            // 2. Sync Machine Data (EV Lathes, etc)
             ListTag machineList = new ListTag();
             for (BlockPos mPos : team.soulLinkedMachines) {
                 if (mPos == null) continue;
@@ -649,7 +640,6 @@ public class TeslaBinderItem extends ComponentItem
             }
             tag.put("MachineData", machineList);
 
-            // 3. Sync Chargers
             ListTag chargerList = new ListTag();
             for (BlockPos cPos : team.activeChargers) {
                 if (cPos == null) continue;

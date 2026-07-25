@@ -17,14 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Loads Axiom research trees from datapacks.
- *
- * Files live at: {@code data/<namespace>/axiom/research/<tree_id>.json}
- *
- * Call {@link #getTree} / {@link #getAllNodes} at runtime; the registry is
- * repopulated on every datapack reload (including {@code /reload}).
- */
 public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
 
     public static final ResearchTreeRegistry INSTANCE = new ResearchTreeRegistry();
@@ -50,8 +42,6 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
         });
     }
 
-    // ── Queries ───────────────────────────────────────────────────────────────
-
     public Optional<ResearchTree> getTree(ResourceLocation id) {
         return Optional.ofNullable(trees.get(id));
     }
@@ -73,8 +63,6 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
                 .flatMap(t -> t.getNodes().stream())
                 .toList();
     }
-
-    // ── Registration ──────────────────────────────────────────────────────────
 
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(INSTANCE);

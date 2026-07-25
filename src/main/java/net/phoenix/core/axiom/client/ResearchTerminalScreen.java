@@ -8,10 +8,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.phoenix.core.axiom.AxiomDataType;
 import net.phoenix.core.axiom.terminal.ResearchTerminalBlockEntity;
 
-/**
- * Research Terminal GUI — shows accumulated data per type and the research tree.
- * Tree canvas and node rendering will be added in the next pass.
- */
 @OnlyIn(Dist.CLIENT)
 public class ResearchTerminalScreen extends Screen {
 
@@ -27,7 +23,6 @@ public class ResearchTerminalScreen extends Screen {
         renderBackground(g);
         super.render(g, mx, my, pt);
 
-        // Data summary — placeholder until the full tree canvas is built
         int y = 20;
         g.drawCenteredString(font, "§bAxiom Research Terminal", width / 2, y, 0xFFFFFF);
         y += 16;

@@ -22,12 +22,10 @@ public class GuildThemeEditorScreen extends Screen {
 
     private final Screen parent;
 
-    // ── Editor fields ─────────────────────────────────────────────────────────
     private final List<FieldEntry> fields = new ArrayList<>();
     private final List<CategoryLabel> categories = new ArrayList<>();
     private EditBox nameInput;
 
-    // ── Undo ─────────────────────────────────────────────────────────────────
     private record Snapshot(String bg, String panel, String header, String border,
                             String accent, String ally, String text, String dim,
                             String faint, String name) {}
@@ -39,16 +37,13 @@ public class GuildThemeEditorScreen extends Screen {
     private String lastThemeName = null;
     private boolean isUndoing = false;
 
-    // ── Pending deletions (deferred to onClose) ───────────────────────────────
     private final List<String> pendingDeletions = new ArrayList<>();
 
-    // ── Confirm-before-discard logic ──────────────────────────────────────────
     private boolean confirmActive = false;
     private String pendingAction = null;
 
-    // ── Scroll for theme list ─────────────────────────────────────────────────
     private int scrollOffset = 0;
-    private int lastListItemY = 200; // synced each render so mouseClicked matches
+    private int lastListItemY = 200; 
 
     public GuildThemeEditorScreen(Screen parent) {
         super(Component.literal("Guild Theme Editor"));
@@ -150,8 +145,6 @@ public class GuildThemeEditorScreen extends Screen {
                 .findFirst().orElse(fallback);
     }
 
-    // ── Save ─────────────────────────────────────────────────────────────────
-
     private void save() {
         String id = nameInput.getValue().trim().toUpperCase(Locale.ROOT);
         if (id.isEmpty()) return;
@@ -170,8 +163,6 @@ public class GuildThemeEditorScreen extends Screen {
         pendingAction = null;
         init();
     }
-
-    // ── Undo ─────────────────────────────────────────────────────────────────
 
     private void pushSnap() {
         Snapshot cur = snap(GuildTheme.current(),
@@ -235,8 +226,6 @@ public class GuildThemeEditorScreen extends Screen {
         t.faint.set(s.faint());
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         int sideW = Math.max(175, width / 4);
@@ -269,7 +258,6 @@ public class GuildThemeEditorScreen extends Screen {
         int sideW = Math.max(175, width / 4);
         int leftW = width - sideW - 10;
 
-        // Mini guild panel mockup
         int pTop = 12;
         int pH = height > 360 ? 80 : 60;
         g.fill(15, pTop, leftW, pTop + pH, C_PANEL());
@@ -288,14 +276,12 @@ public class GuildThemeEditorScreen extends Screen {
         ty += 10;
         g.drawString(font, "- Member", 22, ty, C_TEXT(), false);
 
-        // Allied guild badge
         int ax = leftW - 80;
         g.fill(ax, pTop + 24, ax + 60, pTop + pH - 6, C_HEADER());
         g.fill(ax, pTop + 24, ax + 60, pTop + 25, C_BORDER());
         g.drawString(font, "Allied:", ax + 4, pTop + 28, C_DIM(), false);
         g.drawString(font, "Ally Guild", ax + 4, pTop + 40, C_ALLY(), false);
 
-        // Tab bar mockup
         int tabY = pTop + pH + 10;
         String[] tabs = { "Guild", "Allies", "Browse", "Log", "Wiki" };
         int tabW = (leftW - 15) / tabs.length;
@@ -306,7 +292,6 @@ public class GuildThemeEditorScreen extends Screen {
             g.drawCenteredString(font, tabs[i], tx + tabW / 2, tabY + 3, i == 0 ? C_TEXT() : C_DIM());
         }
 
-        // Theme list
         int listTitleY = tabY + 22;
         g.drawString(font, "Available Themes (click to switch):", 15, listTitleY, C_TEXT(), false);
 
@@ -334,8 +319,6 @@ public class GuildThemeEditorScreen extends Screen {
             itemY += 16;
         }
     }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean keyPressed(int kc, int sc, int mod) {
@@ -416,8 +399,6 @@ public class GuildThemeEditorScreen extends Screen {
         pendingDeletions.clear();
         Minecraft.getInstance().setScreen(parent);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private List<String> getVisible() {
         List<String> out = new ArrayList<>();

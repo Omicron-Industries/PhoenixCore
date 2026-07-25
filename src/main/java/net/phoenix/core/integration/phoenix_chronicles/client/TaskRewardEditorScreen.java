@@ -24,72 +24,58 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Full-screen task & reward editor — left column tasks, right column rewards.
- */
 public class TaskRewardEditorScreen extends Screen {
 
-    // ── Colours ───────────────────────────────────────────────────────────────
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_TEXT_DIM, C_TEXT_FAINT, C_OK;
     private static final int C_ROW_HOVER = 0x22FFFFFF;
     private static final int C_FORM_BG = 0x33000000;
     private static final int C_SPLIT = 0xFF2A2A3A;
     private static final int C_TOOLTIP_BG = 0xFF0E0E16;
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int HEADER_H = 28;
     private static final int FOOTER_H = 28;
     private static final int MARGIN = 10;
-    private static final int COL_GAP = 6;    // gap between the two columns
-    private static final int ROW_H = 26;   // task/reward list row height (2 lines)
-    private static final int FIELD_H = 15;   // form field height
-    private static final int FIELD_GAP = 3;    // gap between fields
-    private static final int FORM_ROWS = 4;    // max form field rows to reserve
+    private static final int COL_GAP = 6;    
+    private static final int ROW_H = 26;   
+    private static final int FIELD_H = 15;   
+    private static final int FIELD_GAP = 3;    
+    private static final int FORM_ROWS = 4;    
 
-    // Derived — set in init()
-    private int splitX;        // x where right column begins
-    private int colW;          // width of each column (they're equal)
-    private int listTop;       // y where list area begins
-    private int listBottom;    // y where list area ends (form starts)
-    private int formTop;       // y where add-form begins
-    private int formBottom;    // y where footer begins (== height - FOOTER_H)
+    private int splitX;        
+    private int colW;          
+    private int listTop;       
+    private int listBottom;    
+    private int formTop;       
+    private int formBottom;    
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final Screen parent;
     private final QuestNode questNode;
 
     private final List<QuestTask> tasks = new ArrayList<>();
     private final List<QuestReward> rewards = new ArrayList<>();
 
-    // Task form
     private String taskType = "kill_entity";
     private boolean taskConsume = true;
     private boolean taskOptional = false;
     private boolean taskTypeDropOpen = false;
     private EditBox taskDescBox, taskTargetBox, taskCountBox, taskSecondaryBox;
 
-    // Reward form
     private String rewardType = "item";
     private boolean rewardTypeDropOpen = false;
     private ItemStack rewardPickedItem = null;
     private EditBox rewardCountBox, rewardCommandBox;
 
-    // Hover tracking
     private int hoveredTaskRow = -1;
     private int hoveredRewardRow = -1;
     private int hoveredDropRow = -1;
 
-    // Task clipboard
     private static CompoundTag copiedTaskNBT = null;
 
-    // Undo history — each entry is a snapshot of [tasks, rewards] before a mutation
     private final java.util.Deque<Object[]> undoHistory = new java.util.ArrayDeque<>();
     private static final int MAX_UNDO = 30;
 
     private static final String[] REWARD_TYPES = { "item", "xp", "command", "loot_table", "script_event" };
     private EditBox rewardEventDataBox;
-
-    // ── Constructor ───────────────────────────────────────────────────────────
 
     public TaskRewardEditorScreen(Screen parent, QuestNode questNode) {
         super(Component.literal("Tasks & Rewards"));
@@ -98,8 +84,6 @@ public class TaskRewardEditorScreen extends Screen {
         this.tasks.addAll(questNode.getTasks());
         this.rewards.addAll(questNode.getRewards());
     }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     @Override
     protected void init() {
@@ -114,13 +98,12 @@ public class TaskRewardEditorScreen extends Screen {
         C_TEXT_FAINT = th.textFaint.getColor();
         C_OK = th.done.getColor();
 
-        // Geometry
         colW = (width - MARGIN * 2 - COL_GAP) / 2;
         splitX = MARGIN + colW + COL_GAP;
         formBottom = height - FOOTER_H;
         formTop = formBottom - MARGIN - FORM_ROWS * (FIELD_H + FIELD_GAP) - 8;
-        listTop = HEADER_H + 22; // 22px for column sub-header
-        listBottom = formTop - 22; // leave room for the form panel header
+        listTop = HEADER_H + 22; 
+        listBottom = formTop - 22; 
 
         rebuildWidgets();
     }
@@ -128,18 +111,15 @@ public class TaskRewardEditorScreen extends Screen {
     protected void rebuildWidgets() {
         clearWidgets();
 
-        // ── Done button ───────────────────────────────────────────────────────
         addRenderableWidget(Button.builder(Component.literal("§7‹ Done"), b -> {
             flushToQuestNode();
             if (minecraft != null) minecraft.setScreen(parent);
         }).bounds(width / 2 - 40, height - FOOTER_H + (FOOTER_H - 14) / 2, 80, 14)
                 .tooltip(Tooltip.create(Component.literal("Save changes and return to quest editor"))).build());
 
-        // ── Task form fields ──────────────────────────────────────────────────
         int tx = MARGIN;
         int fy = formTop + 8;
 
-        // Type selector
         PhoenixTaskRegistry.TaskEntry curMeta = getTaskMeta(taskType);
         String typeTooltip = curMeta != null && curMeta.editorTooltip() != null ?
                 curMeta.editorTooltip().split("\n")[0] : "Choose the type of task to add";
@@ -153,7 +133,6 @@ public class TaskRewardEditorScreen extends Screen {
                 .tooltip(Tooltip.create(Component.literal(typeTooltip))).build());
         fy += FIELD_H + FIELD_GAP;
 
-        // Field visibility logic (unchanged from original)
         boolean isInfo = taskType.equals("info");
         boolean needsTarget = switch (taskType) {
             case "experience", "dimension", "checkmark" -> false;
@@ -181,7 +160,6 @@ public class TaskRewardEditorScreen extends Screen {
             default -> false;
         };
 
-        // Description
         taskDescBox = new EditBox(font, tx, fy, colW, FIELD_H, Component.empty());
         taskDescBox.setHint(Component.literal("§8Task label shown to player"));
         taskDescBox.setMaxLength(128);
@@ -253,7 +231,6 @@ public class TaskRewardEditorScreen extends Screen {
             fy += FIELD_H + FIELD_GAP;
         }
 
-        // Bottom row: count | consume | optional | add
         int rowY = formBottom - FIELD_H - 4;
         if (needsCount) {
             String countHint = switch (taskType) {
@@ -300,7 +277,6 @@ public class TaskRewardEditorScreen extends Screen {
                 .bounds(tx + colW - 46, rowY, 46, FIELD_H)
                 .tooltip(Tooltip.create(Component.literal("Add this task to the quest (Ctrl+Z to undo)"))).build());
 
-        // ── Reward form fields ────────────────────────────────────────────────
         int rx = splitX;
         int rfy = formTop + 8;
 
@@ -351,7 +327,7 @@ public class TaskRewardEditorScreen extends Screen {
             rewardEventDataBox.setMaxLength(256);
             addRenderableWidget(rewardEventDataBox);
         } else {
-            // command / loot_table
+            
             String hint = rewardType.equals("loot_table") ? "§8Loot table id  (e.g. minecraft:chests/simple_dungeon)" :
                     "§8/give %player% …";
             rewardCommandBox = new EditBox(font, rx, rfy, colW, FIELD_H, Component.empty());
@@ -365,8 +341,6 @@ public class TaskRewardEditorScreen extends Screen {
                 .bounds(rx + colW - 80, formBottom - FIELD_H - 4, 80, FIELD_H)
                 .tooltip(Tooltip.create(Component.literal("Add this reward to the quest (Ctrl+Z to undo)"))).build());
     }
-
-    // ── Undo ─────────────────────────────────────────────────────────────────
 
     private void pushUndo() {
         undoHistory.push(new Object[] { new ArrayList<>(tasks), new ArrayList<>(rewards) });
@@ -383,8 +357,6 @@ public class TaskRewardEditorScreen extends Screen {
         rewards.addAll((List<QuestReward>) snap[1]);
         rebuildWidgets();
     }
-
-    // ── Commit ────────────────────────────────────────────────────────────────
 
     private void commitTaskFromForm() {
         String desc = taskDescBox != null ? taskDescBox.getValue().trim() : "";
@@ -516,16 +488,12 @@ public class TaskRewardEditorScreen extends Screen {
         }
     }
 
-    // ── Flush ─────────────────────────────────────────────────────────────────
-
     private void flushToQuestNode() {
         questNode.clearTasks();
         for (QuestTask t : tasks) questNode.addTask(t);
         questNode.clearRewards();
         for (QuestReward r : rewards) questNode.addReward(r);
     }
-
-    // ── Render ────────────────────────────────────────────────────────────────
 
     @Override
     public void renderBackground(@NotNull GuiGraphics g) {}
@@ -539,7 +507,6 @@ public class TaskRewardEditorScreen extends Screen {
             g.fill(0, 0, width, height, C_BG);
         }
 
-        // Header
         g.fill(0, 0, width, HEADER_H, C_HEADER);
         g.fill(0, HEADER_H - 1, width, HEADER_H, C_BORDER);
         String repeatBadge = switch (questNode.getRepeatMode()) {
@@ -551,7 +518,6 @@ public class TaskRewardEditorScreen extends Screen {
         g.drawCenteredString(font, "§fTasks & Rewards  §8— §7" + questNode.getId().getPath() + repeatBadge,
                 width / 2, (HEADER_H - 8) / 2, C_TEXT);
 
-        // Column sub-headers
         g.fill(0, HEADER_H, width, listTop - 1, C_PANEL);
         g.fill(0, listTop - 1, width, listTop, C_BORDER);
         String taskSubHeader;
@@ -568,14 +534,12 @@ public class TaskRewardEditorScreen extends Screen {
                     false);
         g.drawString(font, "§8REWARDS  §7" + rewards.size(), splitX + 4, HEADER_H + 6, C_TEXT_FAINT, false);
 
-        // Centre column divider
         g.fill(splitX - COL_GAP / 2, HEADER_H, splitX - COL_GAP / 2 + 1, height - FOOTER_H, C_SPLIT);
 
-        // Form zone background + separator
         int formPanelTop = formTop - 20;
         g.fill(0, formPanelTop, width, formBottom, C_PANEL);
         g.fill(0, formPanelTop, width, formPanelTop + 1, C_BORDER);
-        // Column form panels
+        
         g.fill(MARGIN, formPanelTop + 2, MARGIN + colW, formBottom - 2, C_FORM_BG);
         drawBorder(g, MARGIN, formPanelTop + 2, colW, formBottom - 2 - (formPanelTop + 2), C_BORDER);
         g.fill(splitX, formPanelTop + 2, splitX + colW, formBottom - 2, C_FORM_BG);
@@ -583,11 +547,9 @@ public class TaskRewardEditorScreen extends Screen {
         g.drawString(font, "§8ADD TASK", MARGIN + 6, formPanelTop + 6, C_TEXT_FAINT, false);
         g.drawString(font, "§8ADD REWARD", splitX + 6, formPanelTop + 6, C_TEXT_FAINT, false);
 
-        // Footer
         g.fill(0, height - FOOTER_H, width, height, C_HEADER);
         g.fill(0, height - FOOTER_H, width, height - FOOTER_H + 1, C_BORDER);
 
-        // ── Task list ─────────────────────────────────────────────────────────
         g.enableScissor(0, listTop, splitX - COL_GAP / 2, listBottom);
         hoveredTaskRow = -1;
         int ty = listTop;
@@ -599,7 +561,7 @@ public class TaskRewardEditorScreen extends Screen {
                 g.fill(MARGIN, ty, splitX - COL_GAP, ty + ROW_H, C_ROW_HOVER);
                 hoveredTaskRow = i;
             }
-            // Accent stripe: green = optional, accent = required
+            
             g.fill(MARGIN, ty + 2, MARGIN + 2, ty + ROW_H - 2,
                     task.isOptional() ? 0xFF22AA55 : C_ACCENT);
             PhoenixTaskRegistry.TaskEntry meta = getTaskMetaByClass(task);
@@ -620,7 +582,7 @@ public class TaskRewardEditorScreen extends Screen {
             String line1Color = task.isOptional() ? "§8" : "§7";
             g.drawString(font, line1Color + wrapped[0], textX, ty + 4, C_TEXT_DIM, false);
             if (wrapped[1] != null) {
-                // description overflowed — second line continues it; no room for detail
+                
                 g.drawString(font, "§8" + wrapped[1], textX, ty + 15, C_TEXT_FAINT, false);
             } else if (detail != null) {
                 String dl = detail;
@@ -637,7 +599,6 @@ public class TaskRewardEditorScreen extends Screen {
             g.drawString(font, "§8No tasks yet — add one below.", MARGIN + 6, listTop + 5, C_TEXT_FAINT, false);
         g.disableScissor();
 
-        // ── Reward list ───────────────────────────────────────────────────────
         g.enableScissor(splitX, listTop, width, listBottom);
         hoveredRewardRow = -1;
         int ry = listTop;
@@ -690,7 +651,6 @@ public class TaskRewardEditorScreen extends Screen {
 
         super.render(g, mx, my, partial);
 
-        // ── Dropdowns ─────────────────────────────────────────────────────────
         g.pose().pushPose();
         g.pose().translate(0, 0, 300);
 
@@ -749,12 +709,10 @@ public class TaskRewardEditorScreen extends Screen {
         g.pose().popPose();
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         boolean ctrl = (mods & 2) != 0;
-        if (ctrl && key == 90) { // Ctrl+Z — undo
+        if (ctrl && key == 90) { 
             undoLastChange();
             return true;
         }
@@ -803,19 +761,19 @@ public class TaskRewardEditorScreen extends Screen {
                 rewardTypeDropOpen = false;
                 return true;
             }
-            // Copy task
+            
             if (hoveredTaskRow >= 0 && mx >= splitX - COL_GAP - 28 && mx < splitX - COL_GAP - 14) {
                 copiedTaskNBT = tasks.get(hoveredTaskRow).serializeNBT();
                 return true;
             }
-            // Delete task
+            
             if (hoveredTaskRow >= 0 && mx >= splitX - COL_GAP - 14 && mx < splitX - COL_GAP) {
                 pushUndo();
                 tasks.remove(hoveredTaskRow);
                 hoveredTaskRow = -1;
                 return true;
             }
-            // Delete reward
+            
             if (hoveredRewardRow >= 0 && mx >= width - MARGIN - 14 && mx < width - MARGIN) {
                 pushUndo();
                 rewards.remove(hoveredRewardRow);
@@ -836,8 +794,6 @@ public class TaskRewardEditorScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     @Nullable
     private static QuestTask deserializeTask(CompoundTag nbt) {
@@ -894,7 +850,6 @@ public class TaskRewardEditorScreen extends Screen {
         return null;
     }
 
-    /** Splits text at the last word boundary that fits within maxW pixels. Returns [line1, line2_or_null]. */
     private String[] wordWrap(String text, int maxW) {
         if (font.width(text) <= maxW) return new String[] { text, null };
         String sub = font.plainSubstrByWidth(text, maxW);

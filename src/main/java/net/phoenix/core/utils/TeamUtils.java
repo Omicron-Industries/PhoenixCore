@@ -14,7 +14,6 @@ public final class TeamUtils {
     public static UUID getTeamIdOrPlayerFallback(UUID playerUUID) {
         if (playerUUID == null) return null;
 
-        // FIX: Verify if the FTB Teams manager is loaded before calling getManager()
         if (!FTBTeamsAPI.api().isManagerLoaded()) {
             return playerUUID;
         }
@@ -32,7 +31,6 @@ public final class TeamUtils {
     public static String getTeamName(UUID teamId) {
         if (teamId == null) return "Unknown";
 
-        // FIX: Safety guard for the team manager
         if (!FTBTeamsAPI.api().isManagerLoaded()) {
             return "Player: " + teamId.toString().substring(0, 8);
         }
@@ -44,7 +42,7 @@ public final class TeamUtils {
 
     public static boolean isPlayerOnTeam(Player player, UUID teamUUID) {
         if (player instanceof ServerPlayer) {
-            // FIX: Safety guard for the team manager
+            
             if (!FTBTeamsAPI.api().isManagerLoaded()) {
                 return player.getUUID().equals(teamUUID);
             }

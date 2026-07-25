@@ -45,7 +45,6 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_R,
             "key.categories.phoenixcore");
 
-    /** Hold W (or rebind) while hovering a multiblock controller item to open its Ponder. */
     public static final KeyMapping OPEN_PONDER = new KeyMapping(
             "key.phoenixcore.open_ponder",
             InputConstants.Type.KEYSYM,

@@ -7,13 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider;
 
-/**
- * A cosmetic/instructional task — displays a text tip or image URL.
- * The player manually acknowledges it by clicking "Mark as read" in the task screen.
- * Useful for tutorial steps, lore blurbs, and warnings in quest chains.
- *
- * SNBT shape: { type: "info", body: "Some tip text here." }
- */
 public class InfoTask extends QuestTask {
 
     private String body;
@@ -27,7 +20,6 @@ public class InfoTask extends QuestTask {
         return body;
     }
 
-    /** Call from the task screen's "Mark as read" button. */
     public static void acknowledge(Player player, ResourceLocation taskId) {
         player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
                 .ifPresent(data -> data.getOrCreateTaskProgress(taskId).putBoolean("acknowledged", true));

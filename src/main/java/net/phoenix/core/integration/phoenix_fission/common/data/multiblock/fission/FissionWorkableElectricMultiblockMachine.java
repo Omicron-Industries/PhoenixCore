@@ -55,7 +55,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
     private void logEvery20(String msg) {
         if ((debugTick++ % 20) == 0) {
-            // PhoenixAPI.LOGGER.info("[FISSION][{}] {}", getPos(), msg);
+            
         }
     }
 
@@ -285,9 +285,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         this.primaryFuelRodType = getPrimaryFuelRod(this.activeFuelRods);
     }
 
-    /**
-     * Runs every tick while formed, regardless of having a GTRecipe.
-     */
     protected void reactorTick() {
         if (getLevel() == null || getLevel().isClientSide) return;
         if (!isFormed()) return;
@@ -314,10 +311,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         return false;
     }
 
-    /**
-     * Drives updateSignal() on every sensor hatch each reactor tick so their
-     * redstone output stays current with the reactor's heat level.
-     */
     protected void tickSensorHatches() {
         for (var part : getParts()) {
             if (part instanceof SensorHatchPartMachine sensor) {
@@ -326,11 +319,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         }
     }
 
-    /**
-     * Drives the sustain timer on every advanced scram hatch each reactor tick.
-     * Without this, the sustain counter only increments on neighbour-change
-     * events, which are unreliable for tick-accurate timing.
-     */
     protected void tickAdvancedScramHatches() {
         for (var part : getParts()) {
             if (part instanceof AdvancedFissionScramHatchPart advanced) {
@@ -339,20 +327,15 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         }
     }
 
-    /**
-     * Updated to act as a safety gate. If fuel is missing for the current
-     * parallel count, it returns false, causing the reactor to stall safely.
-     */
     protected boolean shouldRunReactor() {
         if (!isFormed()) return false;
         if (activeFuelRods.isEmpty()) return false;
         if (isScramActive()) return false;
 
-        // Check Coolant if required
         if (cfg().coolingRequiresCoolant && !activeCoolers.isEmpty()) {
             boolean ok = canConsumeCoolantForThisTickMachineDriven();
             if (!ok) {
-                // Effectively stalls the reactor if coolant is empty
+                
                 return false;
             }
         }
@@ -364,15 +347,11 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         return true;
     }
 
-    /**
-     * Ensures fuel consumption is handled safely.
-     */
     protected void consumeFuel(IFissionFuelRodType fuelType, int parallels) {
         String itemId = fuelType.getFuelKey();
         int amountPerCycle = Math.max(0, fuelType.getAmountPerCycle());
         if (amountPerCycle <= 0 || itemId == null || itemId.isEmpty()) return;
 
-        // Calculate total needed for this tick
         double totalNeeded = amountPerCycle;
         if (cfg().fuelUsageScalesWithRodCount) totalNeeded *= activeFuelRods.size();
         if (cfg().fuelUsageScalesWithParallels) totalNeeded *= parallels;
@@ -566,7 +545,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             continuousBurnTicks = 0;
         }
 
-        // 1. Heat Production (Only if Running)
         if (running && !activeFuelRods.isEmpty()) {
             lastParallels = Math.max(1, computeParallels());
             applyParallelsToRecipeLogic(lastParallels);
@@ -586,7 +564,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             }
         }
 
-        // 2. Cooling Calculation
         int totalCooling = activeCoolers.stream()
                 .mapToInt(IFissionCoolerType::getCoolerTemperature)
                 .sum();
@@ -597,7 +574,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
             lastHasCoolant = canConsumeCoolantForThisTickMachineDriven() && consumeCoolantForThisTickMachineDriven();
         }
 
-        // 3. Apply Cooling (Even when Off!)
         double removed = 0.0;
         if (!cfg().coolingRequiresCoolant || lastHasCoolant) {
             double aboveMin = Math.max(0.0, heat - cfg().minHeat);
@@ -614,10 +590,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         tickMeltdown();
     }
 
-    /**
-     * Slow-burn reward multiplier.
-     * Ramps from 1.0 to 1.0 + (burnBonusMaxPercent/100) over burnBonusRampSeconds.
-     */
     protected double getBurnMultiplier() {
         var cfg = PhoenixConfigs.INSTANCE.fission;
 
@@ -674,9 +646,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         return (base + (rods * moderatorMult)) * p * burn;
     }
 
-    /**
-     * Steam machines should override this to do nothing.
-     */
     protected void tickPowerGeneration(boolean running) {
         var cfg = cfg();
 
@@ -790,8 +759,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
         FluidStack fs = resolveFluidStack(fluidId, mb);
         if (fs.isEmpty()) {
-            // PhoenixAPI.LOGGER.warn("[FISSION][{}] Unknown fluid id '{}' (Forge registry lookup failed)", getPos(),
-            // fluidId);
+
             return false;
         }
 
@@ -954,11 +922,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         return RecipeHelper.handleRecipeIO(this, dummy, IO.IN, getRecipeLogic().getChanceCaches()).isSuccess();
     }
 
-    /**
-     * COMPAT: If you haven't renamed IFissionFuelRodType yet:
-     * - preferred: getFuelItemId()
-     * - fallback: getFuelKey()
-     */
     protected String getFuelItemIdCompat(IFissionFuelRodType rod) {
         try {
             Method m = rod.getClass().getMethod("getFuelItemId");
@@ -973,9 +936,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         }
     }
 
-    /**
-     * Steam machines override to output steam (and possibly consume water).
-     */
     protected void tickMachineOutputs(int parallels) {}
 
     protected void tickMeltdown() {
@@ -989,7 +949,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 meltdownTimerTicks = minTicks;
             }
         } else if (meltdownTimerTicks > 0) {
-            // While scrammed the countdown is frozen.
+            
             if (!isScramActive()) {
                 meltdownTimerTicks -= 1;
             }
@@ -1050,7 +1010,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
             this.onStructureInvalid();
 
-            // TARGETED VAPORIZATION
             if (cfg().explosion.destructiveExplosion) {
                 for (BlockPos structurePos : structureBlocks) {
                     if (structurePos.equals(controllerPos)) continue;
@@ -1058,7 +1017,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                     var blockState = world.getBlockState(structurePos);
                     var block = blockState.getBlock();
 
-                    // Check for your specific targets
                     boolean shouldVaporize = blockState.is(PhoenixFissionBlocks.FISSILE_HEAT_SAFE_CASING.get()) ||
                             blockState.is(PhoenixFissionBlocks.FISSILE_REACTION_SAFE_CASING.get()) ||
                             blockState.is(PhoenixFissionBlocks.FISSILE_SAFE_GEARBOX_CASING.get()) ||
@@ -1293,9 +1251,6 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         return Component.translatable("phoenixcore." + name);
     }
 
-    /**
-     * Formats EU into GregTech tiers (ULV, LV, MV...) with color
-     */
     private Component getVoltageFormattedOutput(long euOut) {
         int tier = 0;
 

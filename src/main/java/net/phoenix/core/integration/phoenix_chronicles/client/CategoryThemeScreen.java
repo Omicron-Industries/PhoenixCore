@@ -8,15 +8,6 @@ import net.minecraft.network.chat.Component;
 
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Inline popup for editing the background theme of a chapter category.
- * Opened from the context menu in ChronicleOverviewScreen.
- *
- * Lets the user choose:
- * - Background style (DOT_GRID / GRID_LINES / HEX_GRID / DIAGONAL / SOLID / CUSTOM)
- * - Background color tint (hex RRGGBB, no alpha — we add our own alpha)
- * - Custom texture resource location (only relevant for CUSTOM style)
- */
 public class CategoryThemeScreen extends Screen {
 
     private static final int PANEL_W = 300;
@@ -67,13 +58,11 @@ public class CategoryThemeScreen extends Screen {
         int fw = PANEL_W - MARGIN * 2;
         int y = panelTop + 28;
 
-        // Style button
         addRenderableWidget(Button.builder(
                 Component.literal("§8Style: §7" + selectedStyle.name() + " §8▾"),
                 b -> styleDropOpen = !styleDropOpen).bounds(fx, y, fw, FIELD_H).build());
         y += STRIDE;
 
-        // Color
         colorBox = new EditBox(font, fx, y + 9, fw, FIELD_H, Component.empty());
         colorBox.setMaxLength(7);
         colorBox.setHint(Component.literal("§8#RRGGBB  (empty = default)"));
@@ -88,7 +77,6 @@ public class CategoryThemeScreen extends Screen {
         addRenderableWidget(colorBox);
         y += STRIDE + 10;
 
-        // Texture (CUSTOM style only — always shown for simplicity)
         textureBox = new EditBox(font, fx, y + 9, fw, FIELD_H, Component.empty());
         textureBox.setMaxLength(128);
         textureBox.setHint(Component.literal("§8modid:textures/gui/bg.png  (CUSTOM style only)"));
@@ -97,10 +85,8 @@ public class CategoryThemeScreen extends Screen {
         addRenderableWidget(textureBox);
         y += STRIDE + 10;
 
-        // Preview swatch row (static colored row)
         y += 8;
 
-        // Buttons
         int btnY = panelTop + PANEL_H - 10 - 18;
         int half = (fw - 6) / 2;
         addRenderableWidget(Button.builder(Component.literal("§aSave"), b -> save())
@@ -124,18 +110,16 @@ public class CategoryThemeScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(@NotNull GuiGraphics g) { /* parent renders behind us */ }
+    public void renderBackground(@NotNull GuiGraphics g) {  }
 
     @Override
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
         if (parent != null) parent.render(g, -1, -1, partial);
         g.fill(0, 0, width, height, 0x70000000);
 
-        // Panel
         g.fill(panelLeft, panelTop, panelLeft + PANEL_W, panelTop + PANEL_H, COL_PANEL);
         drawBorder(g, panelLeft, panelTop, PANEL_W, PANEL_H, COL_BORDER);
 
-        // Header
         g.fill(panelLeft, panelTop, panelLeft + PANEL_W, panelTop + 22, COL_HDR);
         g.fill(panelLeft, panelTop + 21, panelLeft + PANEL_W, panelTop + 22, COL_BORDER);
         g.drawCenteredString(font, "§dTheme — §7" + category, panelLeft + PANEL_W / 2, panelTop + 7, COL_TEXT);
@@ -144,23 +128,20 @@ public class CategoryThemeScreen extends Screen {
         int fw = PANEL_W - MARGIN * 2;
         int y = panelTop + 28;
 
-        // Labels
         y += STRIDE;
         g.drawString(font, "§8Background color tint", fx, y, COL_FAINT);
         y += STRIDE + 10;
         g.drawString(font, "§8Custom texture (resource location)", fx, y, COL_FAINT);
 
-        // Preview strip at bottom of the form area
         int previewY = panelTop + 28 + STRIDE * 2 + 24 + 8;
         int bg = (cachedColor != 0) ? (0xFF000000 | cachedColor) : 0xFF0B0B0F;
         g.fill(fx, previewY, fx + fw, previewY + 22, bg);
         drawBorder(g, fx, previewY, fw, 22, 0xFF333344);
-        // Draw mini background preview based on selected style
+        
         renderStylePreview(g, fx + 1, previewY + 1, fw - 2, 20);
 
         super.render(g, mx, my, partial);
 
-        // Style dropdown (elevated z)
         if (styleDropOpen) {
             g.pose().pushPose();
             g.pose().translate(0, 0, 300);
@@ -179,7 +160,6 @@ public class CategoryThemeScreen extends Screen {
         }
     }
 
-    /** Renders a tiny preview of what the selected style looks like in the swatch strip. */
     private void renderStylePreview(GuiGraphics g, int x, int y, int w, int h) {
         switch (selectedStyle) {
             case DOT_GRID -> {
@@ -192,7 +172,7 @@ public class CategoryThemeScreen extends Screen {
                 for (int py = y; py < y + h; py += 10) g.fill(x, py, x + w, py + 1, 0x22FFFFFF);
             }
             case HEX_GRID -> {
-                // Simplified hex preview: staggered dots
+                
                 for (int row = 0; row < 3; row++) {
                     int ox = (row % 2 == 0) ? 0 : 6;
                     for (int col = 0; col < 5; col++) {
@@ -206,7 +186,7 @@ public class CategoryThemeScreen extends Screen {
                 for (int d = 0; d < w + h; d += 8) {
                     int x0 = x + d, y0 = y;
                     int x1 = x, y1 = y + d;
-                    // simplified single pixel diagonal
+                    
                     int len = Math.min(d, Math.min(w, h));
                     for (int i = 0; i < len; i++) {
                         int px = x0 - i, py = y0 + i;
@@ -215,7 +195,7 @@ public class CategoryThemeScreen extends Screen {
                     }
                 }
             }
-            case SOLID -> {} // just the background color, nothing drawn
+            case SOLID -> {} 
             case CUSTOM -> g.drawCenteredString(font, "§8custom", x + w / 2, y + h / 2 - 4, 0xFF555566);
         }
     }

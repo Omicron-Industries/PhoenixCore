@@ -21,7 +21,6 @@ import java.util.function.Consumer;
 @OnlyIn(Dist.CLIENT)
 public class QuestTextInputScreen extends Screen {
 
-    // ── Chronicles palette ────────────────────────────────────────────────────
     private static final int C_BG = 0xFF0B0B0F;
     private static final int C_PANEL = 0xFF14141A;
     private static final int C_BORDER = 0xFF353548;
@@ -32,7 +31,6 @@ public class QuestTextInputScreen extends Screen {
     private static final int C_BTN_HOV = 0xFF22222E;
     private static final int C_GREEN = 0xFF1A2A1A;
 
-    // ── Standard Minecraft color codes ────────────────────────────────────────
     private static final char[] COLOR_CODES = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'r'
     };
@@ -78,29 +76,24 @@ public class QuestTextInputScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
-        // Render just the quest graph backdrop — no widgets, no scissors.
-        // Walk up the parent chain to find ChronicleOverviewScreen; using full
-        // parent.render() causes widget bleed because those screens' EditBoxes
-        // and buttons draw at their absolute positions into our panel area.
+
         ChronicleOverviewScreen overview = findOverview();
         if (overview != null) {
             overview.renderBackdrop(g);
         } else {
             g.fill(0, 0, width, height, 0xFF0B0B0F);
         }
-        // Dark overlay so the panel reads clearly over the canvas
+        
         g.fill(0, 0, width, height, 0xBB000000);
 
-        // Panel
         g.fill(px, py, px + pw, py + ph, C_PANEL);
         g.fill(px, py, px + pw, py + 1, C_BORDER);
         g.fill(px, py + ph - 1, px + pw, py + ph, C_BORDER);
         g.fill(px, py, px + 1, py + ph, C_BORDER);
         g.fill(px + pw - 1, py, px + pw, py + ph, C_BORDER);
-        // Accent top stripe
+        
         g.fill(px + 1, py, px + pw - 1, py + 2, C_ACCENT);
 
-        // Title
         g.drawCenteredString(font, "§f" + fieldLabel, px + pw / 2, py + 7, C_TEXT);
 
         super.render(g, mx, my, partial);
@@ -150,18 +143,17 @@ public class QuestTextInputScreen extends Screen {
         if (super.mouseClicked(mx, my, btn)) return true;
 
         int half = pw / 2 - 6;
-        // Confirm
+        
         if (mx >= px + 6 && mx < px + 6 + half && my >= btnY && my < btnY + 16) {
             confirm();
             return true;
         }
-        // Cancel
+        
         if (mx >= px + pw / 2 + 3 && mx < px + pw - 3 && my >= btnY && my < btnY + 16) {
             Minecraft.getInstance().setScreen(parent);
             return true;
         }
 
-        // Color picker
         String label = "Colors: ";
         int labelW = font.width(label);
         int boxX = px + 8 + labelW;
@@ -202,7 +194,6 @@ public class QuestTextInputScreen extends Screen {
         return false;
     }
 
-    /** Walks the parent chain to find ChronicleOverviewScreen for backdrop rendering. */
     private ChronicleOverviewScreen findOverview() {
         Screen s = parent;
         while (s != null) {
@@ -218,8 +209,6 @@ public class QuestTextInputScreen extends Screen {
         }
         return null;
     }
-
-    // ── Inner text area ───────────────────────────────────────────────────────
 
     private class CustomTextArea extends AbstractWidget {
 
@@ -289,10 +278,8 @@ public class QuestTextInputScreen extends Screen {
                 if (full.endsWith("\n")) lines.add(new LinePos(full.length(), full.length(), ""));
             }
 
-            // Recompute hovered word from mouse position
             updateHoverWord(mx, my, textX, textY, full);
 
-            // Hover-word highlight (blue tint, no selection active)
             if (!textField.hasSelection() && hoverWordStart >= 0 && hoverWordEnd > hoverWordStart) {
                 for (int i = 0; i < lines.size(); i++) {
                     LinePos line = lines.get(i);
@@ -303,7 +290,7 @@ public class QuestTextInputScreen extends Screen {
                         int x1 = textX + QuestTextInputScreen.this.font.width(line.text.substring(0, a));
                         int x2 = textX + QuestTextInputScreen.this.font.width(line.text.substring(0, b));
                         g.fill(x1, lineY, x2, lineY + 9, C_HOVER_FILL);
-                        // outline
+                        
                         g.fill(x1, lineY, x2, lineY + 1, C_HOVER_OUTLINE);
                         g.fill(x1, lineY + 8, x2, lineY + 9, C_HOVER_OUTLINE);
                         g.fill(x1, lineY, x1 + 1, lineY + 9, C_HOVER_OUTLINE);
@@ -312,7 +299,6 @@ public class QuestTextInputScreen extends Screen {
                 }
             }
 
-            // Selection highlight — blue fill + blue outline
             if (textField.hasSelection()) {
                 String sel = textField.getSelectedText();
                 int selStart = full.indexOf(sel);
@@ -334,7 +320,6 @@ public class QuestTextInputScreen extends Screen {
                 }
             }
 
-            // Text + caret
             for (int i = 0; i < lines.size(); i++) {
                 LinePos line = lines.get(i);
                 int lineY = textY + i * 9;
@@ -359,7 +344,7 @@ public class QuestTextInputScreen extends Screen {
             if (lineIdx < 0 || lineIdx >= lines.size()) return;
             LinePos line = lines.get(lineIdx);
             int localX = mx - textX;
-            // find char offset under mouse
+            
             int offset = 0;
             while (offset < line.text.length()) {
                 char ch = line.text.charAt(offset);
@@ -372,7 +357,7 @@ public class QuestTextInputScreen extends Screen {
             }
             int absPos = line.start + offset;
             if (absPos >= full.length()) return;
-            // expand left to word boundary
+            
             int ws = absPos;
             while (ws > 0 && !Character.isWhitespace(full.charAt(ws - 1))) ws--;
             int we = absPos;
@@ -394,9 +379,9 @@ public class QuestTextInputScreen extends Screen {
                     int localX = (int) (mx - (getX() + 6));
                     int rawOffset = 0;
                     while (rawOffset < line.text.length()) {
-                        // skip formatting codes without comparing the § char directly
+                        
                         char ch = line.text.charAt(rawOffset);
-                        if (ch == 167 && rawOffset + 1 < line.text.length()) { // 167 == section sign §
+                        if (ch == 167 && rawOffset + 1 < line.text.length()) { 
                             rawOffset += 2;
                             continue;
                         }

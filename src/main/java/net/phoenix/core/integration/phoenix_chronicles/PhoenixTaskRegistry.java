@@ -8,21 +8,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-/**
- * Central registry for quest task types.
- *
- * Java mod authors register a type id → deserializer mapping with optional editor metadata:
- * 
- * <pre>
- * PhoenixTaskRegistry.register("mymod:eat_sun", EatSunTask::fromTag)
- *         .label("Eat the Sun").icon("§c☀").tooltip("Eat a star.\nTarget: star registry id.")
- *         .register();
- * </pre>
- *
- * KubeJS authors use the PhoenixEvents.registerTask() builder (see PhoenixKubeJSPlugin).
- *
- * Built-in types are registered via {@link #registerBuiltins()} at mod load time.
- */
 public final class PhoenixTaskRegistry {
 
     public record FieldDef(String id, String label, FieldType type, @Nullable String hint) {
@@ -78,13 +63,9 @@ public final class PhoenixTaskRegistry {
         }
     }
 
-    // ── Storage ───────────────────────────────────────────────────────────────
-
     private static final Map<String, TaskEntry> REGISTRY = new LinkedHashMap<>();
-    // Ordered list for editor dropdown (insertion-order, built-ins first)
+    
     private static final List<TaskEntry> EDITOR_ORDER = new ArrayList<>();
-
-    // ── Registration API ──────────────────────────────────────────────────────
 
     public static Builder register(String typeId, Function<CompoundTag, QuestTask> deserializer) {
         return new Builder(typeId, deserializer);
@@ -132,19 +113,15 @@ public final class PhoenixTaskRegistry {
         }
     }
 
-    // ── Lookup ────────────────────────────────────────────────────────────────
-
     @Nullable
     public static TaskEntry get(String typeId) {
         return REGISTRY.get(typeId);
     }
 
-    /** All types with editor metadata, in registration order (built-ins first). */
     public static List<TaskEntry> getEditorTypes() {
         return Collections.unmodifiableList(EDITOR_ORDER);
     }
 
-    /** Deserialize a task from NBT using the registry. Returns null if type is unknown. */
     @Nullable
     public static QuestTask deserialize(CompoundTag tag) {
         String typeId = tag.getString("type");
@@ -158,8 +135,6 @@ public final class PhoenixTaskRegistry {
             return null;
         }
     }
-
-    // ── Built-in registration ─────────────────────────────────────────────────
 
     private static boolean builtinsRegistered = false;
 
@@ -357,8 +332,6 @@ public final class PhoenixTaskRegistry {
                 .field(FieldDef.integer("required", "Count (times fired)"))
                 .register();
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static net.minecraft.resources.ResourceLocation taskId(CompoundTag tag) {
         try {

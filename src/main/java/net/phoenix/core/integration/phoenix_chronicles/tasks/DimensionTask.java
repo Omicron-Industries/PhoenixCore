@@ -10,14 +10,8 @@ import net.minecraft.world.level.Level;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider;
 
-/**
- * Task: Travel to a specific dimension.
- * SNBT shape: { type: "dimension", target: "minecraft:the_nether" }
- * Migrated to player-capability data layers to safely isolate multi-player progress states.
- */
 public class DimensionTask extends QuestTask {
 
-    // REMOVED final: Must be assignable by the data loader inside deserializeNBT()
     private ResourceKey<Level> targetDimension;
 
     public DimensionTask(ResourceLocation taskId, Component description, ResourceKey<Level> targetDimension) {
@@ -35,7 +29,6 @@ public class DimensionTask extends QuestTask {
                 .map(data -> data.getOrCreateTaskProgress(this.getTaskId()).getBoolean("completed")).orElse(false);
     }
 
-    /** Call this from the PlayerEvent.PlayerChangedDimensionEvent hook */
     public void onChangedDimension(Player player, ResourceKey<Level> dimension) {
         if (targetDimension == null) return;
 
@@ -55,7 +48,7 @@ public class DimensionTask extends QuestTask {
         tag.putString("type", "dimension");
         tag.putString("target",
                 targetDimension != null ? targetDimension.location().toString() : "minecraft:overworld");
-        // REMOVED: tag.putBoolean("completed", this.completed);
+        
         return tag;
     }
 

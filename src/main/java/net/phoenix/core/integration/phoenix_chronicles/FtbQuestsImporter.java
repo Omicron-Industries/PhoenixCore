@@ -11,53 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-/**
- * Converts an FTB Quests chapter SNBT file into PhoenixCore quest SNBT files.
- *
- * Usage (dev mode, in-game):
- * Drop the chapter .snbt file into config/phoenix_chronicles/ftb_import/
- * Click "Import FTB" in the Chronicle dev gear menu — each quest becomes its own
- * .snbt file in config/phoenix_chronicles/ ready for immediate reload.
- *
- * Coordinate scale: FTB uses floating-point grid units. PhoenixCore uses logical
- * integer pixels. Multiplying by COORD_SCALE (80) spreads a typical 10×10 chapter
- * across 800 logical units, which is comfortable at default zoom.
- *
- * Shape mapping:
- * FTB square / rsquare / "" → SQUARE
- * FTB gear → STAR
- * FTB circle → CIRCLE
- * FTB diamond → DIAMOND
- * FTB hexagon → HEXAGON
- * FTB pentagon → PENTAGON
- *
- * Item task mapping:
- * FTB type "item" → PhoenixCore type "item_check" (ItemRequirementTask, consume=false)
- * FTB type "checkmark" → PhoenixCore type "checkmark"
- * Other task types → skipped (no PhoenixCore equivalent)
- *
- * Prereq wiring:
- * dependency_requirement: "one_completed" or min_required_dependencies present → require_all_prereqs: false
- * Otherwise → require_all_prereqs: true
- * min_required_dependencies → optional_prereq_min_count (quests where you need N of M deps)
- *
- * Reward mapping:
- * FTB type "item" → PhoenixCore type "item", item_id, count
- * FTB type "choice" → skipped (no direct equivalent)
- */
 public class FtbQuestsImporter {
 
     private static final float COORD_SCALE = 80f;
 
-    // ── Public API ────────────────────────────────────────────────────────────
-
     public record ImportResult(int imported, int skipped, String category, List<String> warnings) {}
 
-    /**
-     * Imports all .snbt files found in {@code importDir} into {@code outputDir}.
-     * Each file is treated as a single FTB chapter.
-     * Returns a combined result covering all chapters processed.
-     */
     public static ImportResult importDirectory(Path importDir, Path outputDir) {
         if (!Files.exists(importDir)) return new ImportResult(0, 0, "", List.of("Import dir not found: " + importDir));
         int totalImported = 0, totalSkipped = 0;
@@ -83,14 +42,10 @@ public class FtbQuestsImporter {
         return new ImportResult(totalImported, totalSkipped, lastCat, warnings);
     }
 
-    /**
-     * Converts one FTB chapter SNBT string into PhoenixCore quest files written to {@code outputDir}.
-     */
     public static ImportResult importChapter(String snbt, Path outputDir) throws Exception {
         List<String> warnings = new ArrayList<>();
         CompoundTag chapter = TagParser.parseTag(snbt);
 
-        // Derive category from chapter title
         String rawTitle = chapter.contains("title") ? chapter.getString("title") : "Imported";
         String category = slugify(stripFormatting(rawTitle)).toUpperCase();
         if (category.isEmpty()) category = "IMPORTED";
@@ -98,7 +53,6 @@ public class FtbQuestsImporter {
         ListTag quests = chapter.getList("quests", Tag.TAG_COMPOUND);
         if (quests.isEmpty()) return new ImportResult(0, 0, category, warnings);
 
-        // Phase 1 — build FTB hex-ID → PhoenixCore path slug mapping (de-dup by path)
         Map<String, String> idToPath = new LinkedHashMap<>();
         Set<String> usedPaths = new HashSet<>();
         for (int i = 0; i < quests.size(); i++) {
@@ -110,7 +64,6 @@ public class FtbQuestsImporter {
             usedPaths.add(path);
         }
 
-        // Phase 2 — convert and write each quest
         Files.createDirectories(outputDir);
         int imported = 0, skipped = 0;
         for (int i = 0; i < quests.size(); i++) {
@@ -131,41 +84,31 @@ public class FtbQuestsImporter {
         return new ImportResult(imported, skipped, category, warnings);
     }
 
-    // ── Quest conversion ──────────────────────────────────────────────────────
-
     private static String convertQuest(CompoundTag q, Map<String, String> idToPath, String category) {
         StringBuilder sb = new StringBuilder("{\n");
 
         String path = idToPath.get(q.getString("id"));
 
-        // id (path only — loader prepends "phoenixcore:")
         append(sb, "id", path);
 
-        // title
         String title = stripFormatting(q.getString("title"));
         if (!title.isEmpty()) append(sb, "title", escape(title));
 
-        // subtitle
         String subtitle = stripFormatting(q.getString("subtitle"));
         if (!subtitle.isEmpty()) append(sb, "subtitle", escape(subtitle));
 
-        // description — join the array, strip FTB markers
         String desc = buildDescription(q.getList("description", Tag.TAG_STRING));
         if (!desc.isEmpty()) append(sb, "description", escape(desc));
 
-        // category
         append(sb, "category", category);
 
-        // shape
         append(sb, "shape", mapShape(q.getString("shape")));
 
-        // position (scale FTB doubles → PhoenixCore ints)
         int px = q.contains("x") ? (int) Math.round(q.getDouble("x") * COORD_SCALE) : 40;
         int py = q.contains("y") ? (int) Math.round(q.getDouble("y") * COORD_SCALE) : 70;
         sb.append("    positionX: ").append(px).append("\n");
         sb.append("    positionY: ").append(py).append("\n");
 
-        // icon
         if (q.contains("icon")) {
             String iconId = extractItemId(q.get("icon"));
             if (!iconId.isEmpty() && !iconId.equals("minecraft:air")) {
@@ -173,7 +116,6 @@ public class FtbQuestsImporter {
             }
         }
 
-        // prerequisites
         ListTag deps = q.getList("dependencies", Tag.TAG_STRING);
         if (!deps.isEmpty()) {
             sb.append("    prerequisites: [\n");
@@ -186,18 +128,15 @@ public class FtbQuestsImporter {
             sb.append("    ]\n");
         }
 
-        // require_all_prereqs
         boolean oneCompleted = "one_completed".equals(q.getString("dependency_requirement"));
         boolean hasMinDeps = q.contains("min_required_dependencies");
         boolean requireAll = !oneCompleted && !hasMinDeps;
         sb.append("    require_all_prereqs: ").append(requireAll).append("\n");
 
-        // optional_prereq_min_count (maps from min_required_dependencies)
         if (hasMinDeps) {
             sb.append("    optional_prereq_min_count: ").append(q.getInt("min_required_dependencies")).append("\n");
         }
 
-        // tasks
         ListTag ftbTasks = q.getList("tasks", Tag.TAG_COMPOUND);
         if (!ftbTasks.isEmpty()) {
             sb.append("    tasks: [\n");
@@ -208,7 +147,6 @@ public class FtbQuestsImporter {
             sb.append("    ]\n");
         }
 
-        // rewards
         ListTag ftbRewards = q.getList("rewards", Tag.TAG_COMPOUND);
         if (!ftbRewards.isEmpty()) {
             sb.append("    rewards: [\n");
@@ -223,8 +161,6 @@ public class FtbQuestsImporter {
         return sb.toString();
     }
 
-    // ── Task conversion ───────────────────────────────────────────────────────
-
     private static String convertTask(CompoundTag t, String questPath, int idx) {
         String type = t.getString("type");
         String taskId = "phoenixcore:" + questPath + "_task_" + idx;
@@ -236,7 +172,7 @@ public class FtbQuestsImporter {
                 String itemId = itemTag != null ? extractItemId(itemTag) : "minecraft:air";
                 long count = t.contains("count") ? t.getLong("count") : 1L;
                 if (count <= 0) count = 1;
-                // Optional custom title overrides description
+                
                 String desc = t.contains("title") ? stripFormatting(t.getString("title")) :
                         itemId.substring(itemId.lastIndexOf(':') + 1).replace('_', ' ');
                 yield "{type: \"item_check\", task_id: \"" + taskId + "\"" + ", item_id: \"" + itemId + "\"" +
@@ -247,15 +183,13 @@ public class FtbQuestsImporter {
                 String desc = t.contains("title") ? stripFormatting(t.getString("title")) : "Complete";
                 yield "{type: \"checkmark\", task_id: \"" + taskId + "\"" + ", description: \"" + escape(desc) + "\"}";
             }
-            default -> null; // unsupported task type — skip
+            default -> null; 
         };
     }
 
-    // ── Reward conversion ─────────────────────────────────────────────────────
-
     private static String convertReward(CompoundTag r) {
         String type = r.getString("type");
-        if (!"item".equals(type)) return null; // skip "choice" (loot tables), etc.
+        if (!"item".equals(type)) return null; 
         String itemId = r.getString("item");
         if (itemId.isEmpty()) return null;
         int count = r.contains("count") ? r.getInt("count") : 1;
@@ -263,9 +197,6 @@ public class FtbQuestsImporter {
         return "{type: \"item\", item_id: \"" + itemId + "\", count: " + count + "}";
     }
 
-    // ── Item extraction ───────────────────────────────────────────────────────
-
-    /** Extracts the best item ID from an FTB item tag (string, compound, or itemfilters). */
     private static String extractItemId(Tag tag) {
         if (tag == null) return "minecraft:air";
         if (tag.getId() == Tag.TAG_STRING) return tag.getAsString();
@@ -274,27 +205,24 @@ public class FtbQuestsImporter {
         CompoundTag ct = (CompoundTag) tag;
         String id = ct.getString("id");
 
-        // itemfilters:or → first matching item
         if ("itemfilters:or".equals(id)) {
             ListTag items = ct.getCompound("tag").getList("items", Tag.TAG_COMPOUND);
             if (!items.isEmpty()) return items.getCompound(0).getString("id");
         }
-        // itemfilters:tag → tag string (can't resolve at import time, use air)
+        
         if ("itemfilters:tag".equals(id)) {
             String tagValue = ct.getCompound("tag").getString("value");
-            return tagValue.isEmpty() ? "minecraft:air" : "minecraft:air"; // tag refs unsupported
+            return tagValue.isEmpty() ? "minecraft:air" : "minecraft:air"; 
         }
         return id.isEmpty() ? "minecraft:air" : id;
     }
-
-    // ── Description builder ───────────────────────────────────────────────────
 
     private static String buildDescription(ListTag lines) {
         if (lines == null || lines.isEmpty()) return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.getString(i);
-            // Drop FTB-specific markers
+            
             if (line.startsWith("{@pagebreak}") || line.startsWith("{image:")) continue;
             line = stripFormatting(line).trim();
             if (line.isEmpty()) {
@@ -307,8 +235,6 @@ public class FtbQuestsImporter {
         return sb.toString().trim();
     }
 
-    // ── Shape mapping ─────────────────────────────────────────────────────────
-
     private static String mapShape(String ftb) {
         return switch (ftb == null ? "" : ftb.toLowerCase()) {
             case "gear" -> "STAR";
@@ -316,18 +242,15 @@ public class FtbQuestsImporter {
             case "diamond" -> "DIAMOND";
             case "hexagon" -> "HEXAGON";
             case "pentagon" -> "PENTAGON";
-            default -> "SQUARE"; // square, rsquare, ""
+            default -> "SQUARE"; 
         };
     }
 
-    // ── Slug / ID helpers ─────────────────────────────────────────────────────
-
-    /** Derives a unique, valid ResourceLocation path from an FTB hex ID + quest title. */
     private static String uniquePath(String hexId, String title, Set<String> usedPaths) {
         String base = titleSlug(title);
         if (base.isEmpty()) base = "q_" + hexId.toLowerCase();
         if (!usedPaths.contains(base)) return base;
-        // Collision: append a short hex suffix
+        
         String candidate = base + "_" + hexId.substring(0, 4).toLowerCase();
         int n = 2;
         while (usedPaths.contains(candidate)) candidate = base + "_" + (n++);
@@ -349,23 +272,18 @@ public class FtbQuestsImporter {
                 .replaceAll("^_|_$", "");
     }
 
-    // ── Formatting ────────────────────────────────────────────────────────────
-
-    /** Strips FTB color/style codes (&X and &#RRGGBB) from a string. */
     public static String stripFormatting(String s) {
         if (s == null) return "";
         return s.replaceAll("&#[0-9A-Fa-f]{6}", "")
                 .replaceAll("&[0-9a-fklmnorA-FKLMNORxX]", "")
-                .replaceAll(">\\?", "") // stray FTB markers
+                .replaceAll(">\\?", "") 
                 .trim();
     }
 
-    /** Escapes a string for inclusion in SNBT (backslash and double-quote). */
     private static String escape(String s) {
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
-    /** Appends a string key–value pair to the SNBT builder. */
     private static void append(StringBuilder sb, String key, String value) {
         sb.append("    ").append(key).append(": \"").append(value).append("\"\n");
     }

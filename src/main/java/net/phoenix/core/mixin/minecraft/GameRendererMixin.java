@@ -21,8 +21,7 @@ public class GameRendererMixin {
         if (mc.gameRenderer.currentEffect() instanceof PostChainAccessor accessor) {
             for (PostPass pass : accessor.getPasses()) {
                 if (pass.getEffect().getName().equals("phoenixcore:soul_vision")) {
-                    // --- ALWAYS-ON SHADER TEST ---
-                    // Hardcode saturation to 0.0 for grayscale.
+
                     Uniform uniform = pass.getEffect().getUniform("Saturation");
                     if (uniform != null) {
                         uniform.set(0.0f);

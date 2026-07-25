@@ -19,8 +19,6 @@ public class GuildManager extends SavedData {
     private final Map<UUID, Guild> guilds = new LinkedHashMap<>();
     private final Map<UUID, UUID> memberIndex = new LinkedHashMap<>();
 
-    // ── SavedData factory ─────────────────────────────────────────────────────
-
     public static GuildManager get(ServerLevel overworld) {
         return overworld.getDataStorage().computeIfAbsent(
                 GuildManager::load, GuildManager::new, SAVE_KEY);
@@ -45,8 +43,6 @@ public class GuildManager extends SavedData {
         return tag;
     }
 
-    // ── Query ─────────────────────────────────────────────────────────────────
-
     public Optional<Guild> getGuildFor(UUID playerUUID) {
         UUID gid = memberIndex.get(playerUUID);
         return gid == null ? Optional.empty() : Optional.ofNullable(guilds.get(gid));
@@ -67,8 +63,6 @@ public class GuildManager extends SavedData {
     public boolean isInGuild(UUID playerUUID) {
         return memberIndex.containsKey(playerUUID);
     }
-
-    // ── Member mutations ──────────────────────────────────────────────────────
 
     public Guild createGuild(String name, UUID ownerUUID) {
         Guild g = new Guild(UUID.randomUUID(), name, ownerUUID);
@@ -117,9 +111,6 @@ public class GuildManager extends SavedData {
         setDirty();
     }
 
-    // ── Rank mutations ────────────────────────────────────────────────────────
-
-    /** Returns error key or "ok". */
     public String promotePlayer(UUID guildId, UUID promoterUUID, UUID targetUUID) {
         Guild g = guilds.get(guildId);
         if (g == null) return "not_in_guild";
@@ -128,7 +119,7 @@ public class GuildManager extends SavedData {
         GuildRank current = g.getRank(targetUUID);
         if (current == GuildRank.OWNER) return "already_owner";
         if (current == GuildRank.OFFICER) {
-            // Promote to owner = transfer
+            
             g.setOwner(targetUUID);
         } else {
             g.getMemberRanks().put(targetUUID, GuildRank.OFFICER);
@@ -159,8 +150,6 @@ public class GuildManager extends SavedData {
         setDirty();
         return "ok";
     }
-
-    // ── Guild settings mutations ───────────────────────────────────────────────
 
     public boolean setMotd(UUID guildId, UUID playerUUID, String motd) {
         Guild g = guilds.get(guildId);
@@ -196,8 +185,6 @@ public class GuildManager extends SavedData {
         return true;
     }
 
-    // ── Wiki mutations ────────────────────────────────────────────────────────
-
     public String setWikiPage(UUID guildId, UUID playerUUID, String title, String content) {
         Guild g = guilds.get(guildId);
         if (g == null) return "not_in_guild";
@@ -216,8 +203,6 @@ public class GuildManager extends SavedData {
         setDirty();
         return "ok";
     }
-
-    // ── Alliance mutations ────────────────────────────────────────────────────
 
     public String sendAllyRequest(UUID requesterGuildId, String targetName) {
         Guild requester = guilds.get(requesterGuildId);

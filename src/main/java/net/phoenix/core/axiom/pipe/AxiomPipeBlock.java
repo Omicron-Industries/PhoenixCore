@@ -24,17 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 
-/**
- * A typed data-pipe block. One block class serves all five disciplines;
- * the {@link AxiomDataType} is baked in at registration time.
- *
- * Connection state is stored as six {@link BooleanProperty} flags (one per direction).
- * A side is "connected" when the neighbour exposes {@link IAxiomDataHandler} of the
- * same type, OR is another pipe of the same type.
- */
 public class AxiomPipeBlock extends BaseEntityBlock {
-
-    // ── Connection properties ─────────────────────────────────────────────────
 
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
     public static final BooleanProperty SOUTH = BooleanProperty.create("south");
@@ -51,8 +41,6 @@ public class AxiomPipeBlock extends BaseEntityBlock {
             Direction.UP, UP,
             Direction.DOWN, DOWN));
 
-    // ── Shapes ────────────────────────────────────────────────────────────────
-
     private static final VoxelShape CORE = Block.box(5, 5, 5, 11, 11, 11);
     private static final Map<Direction, VoxelShape> ARM = new EnumMap<>(Map.of(
             Direction.NORTH, Block.box(5, 5, 0, 11, 11, 5),
@@ -61,8 +49,6 @@ public class AxiomPipeBlock extends BaseEntityBlock {
             Direction.WEST, Block.box(0, 5, 5, 5, 11, 11),
             Direction.UP, Block.box(5, 11, 5, 11, 16, 11),
             Direction.DOWN, Block.box(5, 0, 5, 11, 5, 11)));
-
-    // ── Type ──────────────────────────────────────────────────────────────────
 
     private final AxiomDataType dataType;
     private final java.util.function.Supplier<BlockEntityType<AxiomPipeBlockEntity>> beTypeSupplier;
@@ -86,8 +72,6 @@ public class AxiomPipeBlock extends BaseEntityBlock {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
     }
 
-    // ── Connection logic ──────────────────────────────────────────────────────
-
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         return computeConnections(defaultBlockState(), ctx.getLevel(), ctx.getClickedPos());
@@ -109,9 +93,9 @@ public class AxiomPipeBlock extends BaseEntityBlock {
 
     private boolean canConnect(LevelAccessor level, BlockPos neighbourPos, Direction fromSide) {
         BlockState ns = level.getBlockState(neighbourPos);
-        // Same pipe type — always connect
+        
         if (ns.getBlock() instanceof AxiomPipeBlock other && other.dataType == dataType) return true;
-        // Any block exposing our data handler capability on the face toward us
+        
         if (level instanceof net.minecraft.world.level.Level lvl) {
             BlockEntity be = lvl.getBlockEntity(neighbourPos);
             if (be != null) {
@@ -123,8 +107,6 @@ public class AxiomPipeBlock extends BaseEntityBlock {
         return false;
     }
 
-    // ── Shape ─────────────────────────────────────────────────────────────────
-
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         VoxelShape shape = CORE;
@@ -135,8 +117,6 @@ public class AxiomPipeBlock extends BaseEntityBlock {
         }
         return shape;
     }
-
-    // ── Block entity ──────────────────────────────────────────────────────────
 
     @Nullable
     @Override

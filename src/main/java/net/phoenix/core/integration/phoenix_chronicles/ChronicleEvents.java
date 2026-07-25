@@ -47,16 +47,13 @@ public class ChronicleEvents {
         event.addListener(new ChronicleDataLoader());
     }
 
-    // Handles the initial server start — apply() runs before the server exists on integrated servers,
-    // so getCachedServer() returns null there. ServerStartingEvent fires after datapacks are applied
-    // and the server instance is guaranteed available.
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
         java.nio.file.Path configDir = event.getServer().getServerDirectory().toPath()
                 .resolve("config").resolve("phoenix_chronicles");
         PhoenixTaskRegistry.registerBuiltins();
-        KubeJsTaskTypeLoader.load(configDir); // register KubeJS-defined task types after builtins
-        PhoenixQuestFlags.invalidateCaches(); // flush file-backed flag caches before quest load
+        KubeJsTaskTypeLoader.load(configDir); 
+        PhoenixQuestFlags.invalidateCaches(); 
         CategoryFlagRegistry.load(configDir);
         QuestFileLoader.loadAdditiveFromDisk(configDir);
     }
@@ -77,11 +74,11 @@ public class ChronicleEvents {
 
                 for (QuestTask task : node.getTasks()) {
                     if (task instanceof CraftItemTask craftTask) {
-                        // FIXED: Passing player instance context safely down to mutable capability layers
+                        
                         craftTask.onItemCrafted(player, itemId, amount);
                     }
                 }
-                // Check if this crafting event satisfied the remaining conditions for the quest
+                
                 QuestProgressTracker.checkAndTryComplete(player, node);
             }
         });
@@ -102,7 +99,7 @@ public class ChronicleEvents {
 
                     for (QuestTask task : node.getTasks()) {
                         if (task instanceof KillEntityTask killTask) {
-                            // FIXED: Added player context to comply with refactored stateless parameters
+                            
                             killTask.onEntityKilled(player, entityId);
                         }
                     }
@@ -124,9 +121,6 @@ public class ChronicleEvents {
         Player player = event.getEntity();
         Block clicked = event.getLevel().getBlockState(event.getPos()).getBlock();
 
-        // Populate the per-player energy cache for EnergyStorageTask (BLOCK source).
-        // Runs on both sides: client side so the quest UI can read cached values immediately,
-        // server side so server-tick progress checks also work.
         net.phoenix.core.integration.phoenix_chronicles.tasks.EnergyStorageTask.onBlockRightClicked(
                 player, event.getLevel(), event.getPos());
 
@@ -178,10 +172,8 @@ public class ChronicleEvents {
         var dispatcher = event.getDispatcher();
         var questArg = com.mojang.brigadier.arguments.StringArgumentType.string();
 
-        // ── Player-accessible subcommands (no permission required) ────────────
         dispatcher.register(Commands.literal("chronicles")
 
-                // /chronicles status <quest> — check your own quest state
                 .then(Commands.literal("status")
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> {
@@ -219,7 +211,6 @@ public class ChronicleEvents {
                                     return 1;
                                 })))
 
-                // /chronicles emergency <quest> — get emergency items for an active quest
                 .then(Commands.literal("emergency")
                         .then(Commands.argument("quest", questArg)
                                 .executes(ctx -> {
@@ -266,9 +257,6 @@ public class ChronicleEvents {
                                     return 1;
                                 })))
 
-                // ── Op-only subcommands (permission level 2) ──────────────────
-
-                // /chronicles complete <quest> [<player>]
                 .then(Commands.literal("complete")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
@@ -279,7 +267,6 @@ public class ChronicleEvents {
                                                 net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
                                                         "player"))))))
 
-                // /chronicles unlock <quest> [<player>]
                 .then(Commands.literal("unlock")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
@@ -290,7 +277,6 @@ public class ChronicleEvents {
                                                 net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
                                                         "player"))))))
 
-                // /chronicles reset <quest> [<player>]
                 .then(Commands.literal("reset")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
@@ -301,7 +287,6 @@ public class ChronicleEvents {
                                                 net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
                                                         "player"))))))
 
-                // /chronicles active <quest> [<player>]
                 .then(Commands.literal("active")
                         .requires(src -> src.hasPermission(2))
                         .then(Commands.argument("quest", questArg)
@@ -312,12 +297,11 @@ public class ChronicleEvents {
                                                 net.minecraft.commands.arguments.EntityArgument.getPlayer(ctx,
                                                         "player"))))))
 
-                // /chronicles validate — reports load errors + common issues
                 .then(Commands.literal("validate")
                         .requires(src -> src.hasPermission(2))
                         .executes(ctx -> {
                             List<String> errors = QuestFileLoader.LOAD_ERRORS;
-                            // Also check for quests with no tasks (will auto-complete on unlock)
+                            
                             List<String> noTask = new ArrayList<>();
                             for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
                                 if (n.getTasks().isEmpty()) noTask.add(n.getId().getPath());
@@ -370,7 +354,7 @@ public class ChronicleEvents {
                 net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider.PLAYER_QUESTS)
                 .ifPresent(data -> {
                     data.setQuestState(questId, target);
-                    // Sync updated progress back to the client
+                    
                     PhoenixNetwork.CHANNEL.send(
                             net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> fsp),
                             new net.phoenix.core.integration.phoenix_chronicles.network.packet.S2CSyncPlayerProgressPacket(
@@ -385,10 +369,6 @@ public class ChronicleEvents {
         return 1;
     }
 
-    /**
-     * Copies quest progress to the new player entity on death/respawn.
-     * Without this, every death wipes all progress because Forge creates a fresh entity.
-     */
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
         event.getOriginal().reviveCaps();
@@ -413,7 +393,7 @@ public class ChronicleEvents {
             PhoenixNetwork.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> serverPlayer),
                     new S2CSyncQuestsPacket(serverQuests));
-            // Send player progress so the client HUD and screens have live data
+            
             serverPlayer.getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
                     .ifPresent(data -> PhoenixNetwork.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> serverPlayer),

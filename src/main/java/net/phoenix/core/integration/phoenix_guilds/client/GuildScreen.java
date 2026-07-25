@@ -24,7 +24,6 @@ import static net.phoenix.core.integration.phoenix_guilds.client.GuildThemeUtils
 @OnlyIn(Dist.CLIENT)
 public class GuildScreen extends Screen {
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int W = 340;
     private static final int H = 260;
     private static final int HEADER = 28;
@@ -33,7 +32,6 @@ public class GuildScreen extends Screen {
     private static final int CONTENT_TOP = HEADER + TAB_H + 6;
     private int px, py;
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private static final String[] TABS = { "Guild", "Allies", "Browse", "Log", "Wiki" };
     private int activeTab = 0;
     private int scrollOff = 0;
@@ -64,8 +62,6 @@ public class GuildScreen extends Screen {
     public void onDataRefreshed() {
         buildWidgets();
     }
-
-    // ── Widget construction ───────────────────────────────────────────────────
 
     private void buildWidgets() {
         clearWidgets();
@@ -135,8 +131,6 @@ public class GuildScreen extends Screen {
         addRenderableWidget(wikiSearchBox);
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         g.fill(0, 0, width, height, C_BG());
@@ -169,7 +163,7 @@ public class GuildScreen extends Screen {
         String title = ClientGuildCache.isInGuild() ? "  " + ClientGuildCache.guildName : "  GUILDS";
         g.drawCenteredString(font, title, px + W / 2, py + (HEADER - 8) / 2,
                 ClientGuildCache.isInGuild() ? C_GOLD() : C_TEXT());
-        // Theme editor shortcut in top-right corner of the header
+        
         g.drawString(font, "Themes", px + W - 46, py + (HEADER - 8) / 2, C_DIM(), false);
     }
 
@@ -188,8 +182,6 @@ public class GuildScreen extends Screen {
         }
         g.fill(px, py + HEADER + TAB_H, px + W, py + HEADER + TAB_H + 1, C_BORDER());
     }
-
-    // ── Guild tab ─────────────────────────────────────────────────────────────
 
     private void renderGuildTab(GuiGraphics g) {
         int y = py + CONTENT_TOP;
@@ -282,8 +274,6 @@ public class GuildScreen extends Screen {
         g.fill(px, py + H - 34, px + W, py + H - 33, C_BORDER2());
     }
 
-    // ── Allies tab ────────────────────────────────────────────────────────────
-
     private void renderAlliesTab(GuiGraphics g) {
         if (!ClientGuildCache.isInGuild()) {
             g.drawCenteredString(font, "You must be in a guild to form alliances.", px + W / 2, py + 100, C_DIM());
@@ -356,8 +346,6 @@ public class GuildScreen extends Screen {
             g.drawString(font, "Send alliance request:", px + 10, py + H - 70, C_DIM(), false);
     }
 
-    // ── Browse tab ────────────────────────────────────────────────────────────
-
     private void renderBrowseTab(GuiGraphics g) {
         List<S2CGuildSyncPacket.GuildSummary> all = ClientGuildCache.allGuilds;
         int listTop = py + CONTENT_TOP + 14;
@@ -382,8 +370,6 @@ public class GuildScreen extends Screen {
         if (!ClientGuildCache.isInGuild())
             g.drawString(font, "Create a new guild:", px + 10, py + H - 70, C_DIM(), false);
     }
-
-    // ── Log tab ───────────────────────────────────────────────────────────────
 
     private void renderLogTab(GuiGraphics g) {
         if (!ClientGuildCache.isInGuild()) {
@@ -413,8 +399,6 @@ public class GuildScreen extends Screen {
         }
         RenderSystem.disableScissor();
     }
-
-    // ── Wiki tab ──────────────────────────────────────────────────────────────
 
     private static final int WIKI_LIST_W = 114;
 
@@ -514,8 +498,6 @@ public class GuildScreen extends Screen {
         }
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         int tabW = W / TABS.length;
@@ -530,7 +512,7 @@ public class GuildScreen extends Screen {
                 }
             }
         }
-        // Header "Themes" click
+        
         int themesBtnX = px + W - 46;
         int themesBtnY = py + (HEADER - 8) / 2;
         if (mx >= themesBtnX && mx < themesBtnX + 40 && my >= themesBtnY && my < themesBtnY + 8) {
@@ -558,8 +540,6 @@ public class GuildScreen extends Screen {
         scrollOff = (int) Math.max(0, Math.min(Math.max(0, size - 8), scrollOff - delta));
         return true;
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void act(C2SGuildActionPacket.Action action, String arg) {
         boolean needsArg = action != C2SGuildActionPacket.Action.LEAVE &&

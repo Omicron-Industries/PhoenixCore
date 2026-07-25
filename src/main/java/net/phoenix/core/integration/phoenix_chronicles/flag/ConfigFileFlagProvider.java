@@ -17,51 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
-/**
- * Reads flag values from config files in the Minecraft config directory.
- *
- * Supported formats: .toml, .json, .properties
- * Cache TTL: 15 seconds (re-reads automatically; no restart needed for value changes).
- *
- * ── Quest SNBT ───────────────────────────────────────────────────────────────
- *
- * enable_if: "config:packmode.toml#mode=expert"
- * enable_if: "config:mypack/settings.json#features.expert_quests"
- * enable_if: "config:packmode.properties#pack.mode!=easy"
- *
- * ── Expression format ────────────────────────────────────────────────────────
- *
- * config:FILENAME#KEY[OPERATOR VALUE]
- *
- * FILENAME — relative to the Minecraft config directory.
- * Subdirectories are allowed: "mypack/settings.json"
- * KEY — dot-separated path within the file:
- * TOML/JSON: "section.subsection.key"
- * Properties: "my.property.key"
- * OPERATOR — one of = != > >= < <= (omit for a truthy existence check)
- * VALUE — literal string or number to compare against
- *
- * ── TOML example (packmode.toml) ─────────────────────────────────────────────
- *
- * [general]
- * mode = "expert"
- *
- * → enable_if: "config:packmode.toml#general.mode=expert"
- *
- * ── JSON example (mypack/settings.json) ──────────────────────────────────────
- *
- * { "features": { "expert_quests": true, "tier": 3 } }
- *
- * → enable_if: "config:mypack/settings.json#features.expert_quests"
- * → enable_if: "config:mypack/settings.json#features.tier>=2"
- *
- * ── Properties example (packmode.properties) ─────────────────────────────────
- *
- * pack.mode=expert
- * pack.tier=3
- *
- * → enable_if: "config:packmode.properties#pack.mode=expert"
- */
 public class ConfigFileFlagProvider implements QuestFlagProvider {
 
     private static final long CACHE_TTL_MS = 15_000;
@@ -90,8 +45,6 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
         return expr.test(flat.get(expr.key));
     }
 
-    // ── Config loading ────────────────────────────────────────────────────────
-
     private Map<String, String> loadFlat(String filename, @Nullable MinecraftServer server) {
         CachedFile cached = cache.get(filename);
         if (cached != null && System.currentTimeMillis() - cached.loadedAt() < CACHE_TTL_MS) {
@@ -107,7 +60,6 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
         return flat;
     }
 
-    /** Forces all cached files to re-read on the next access (call on world load). */
     public void invalidateCache() {
         cache.clear();
     }
@@ -126,8 +78,6 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
         return Map.of();
     }
 
-    // ── JSON ──────────────────────────────────────────────────────────────────
-
     private Map<String, String> flattenJson(Path file) throws IOException {
         Map<String, String> out = new LinkedHashMap<>();
         try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
@@ -144,7 +94,7 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
             if (v.isJsonObject()) {
                 flattenJsonObject(v.getAsJsonObject(), key, out);
             } else if (v.isJsonArray()) {
-                out.put(key, v.toString()); // arrays stored as-is
+                out.put(key, v.toString()); 
             } else {
                 String raw = v.getAsString();
                 out.put(key, raw);
@@ -152,13 +102,6 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
         }
     }
 
-    // ── TOML ─────────────────────────────────────────────────────────────────
-
-    /**
-     * Minimal TOML reader — handles key=value pairs and [section] headers.
-     * Does not support arrays of tables, multi-line strings, or inline tables,
-     * which are uncommon in simple pack-config files. Use JSON for complex data.
-     */
     private Map<String, String> flattenToml(Path file) throws IOException {
         Map<String, String> out = new LinkedHashMap<>();
         String section = "";
@@ -166,7 +109,6 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
             String line = raw.trim();
             if (line.isEmpty() || line.startsWith("#")) continue;
 
-            // Section header [section] or [section.subsection]
             if (line.startsWith("[") && line.endsWith("]") && !line.startsWith("[[")) {
                 section = line.substring(1, line.length() - 1).trim();
                 continue;
@@ -184,17 +126,15 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
     }
 
     private String stripTomlValue(String raw) {
-        // Strip inline comment
+        
         int comment = raw.indexOf('#');
         if (comment > 0) raw = raw.substring(0, comment).trim();
-        // Strip surrounding quotes
+        
         if ((raw.startsWith("\"") && raw.endsWith("\"")) || (raw.startsWith("'") && raw.endsWith("'"))) {
             raw = raw.substring(1, raw.length() - 1);
         }
         return raw;
     }
-
-    // ── Properties ────────────────────────────────────────────────────────────
 
     private Map<String, String> flattenProperties(Path file) throws IOException {
         Properties props = new Properties();

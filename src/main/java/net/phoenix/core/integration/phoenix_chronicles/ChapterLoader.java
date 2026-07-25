@@ -14,35 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-/**
- * Loads chapter definition files from:
- * config/phoenix_chronicles/chapters/<chapter_id>.yml
- *
- * YAML is parsed with a minimal hand-written reader to avoid adding a
- * library dependency. The format is intentionally simple (no nesting
- * beyond the nodes list).
- *
- * Expected file shape:
- * 
- * <pre>
- * id: chapter_1
- * display_name: "Chapter I — Awakening"
- * category: CHAPTER_1
- *
- * nodes:
- *   - quest: signal_lost
- *     shape: SQUARE
- *     position: 120, 80
- *     visible: true
- *
- *   - quest: restore_power
- *     shape: CIRCLE
- *     position: 200, 80
- *     visible: true
- *     depends_on:
- *       - signal_lost
- * </pre>
- */
 public class ChapterLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChapterLoader.class);
@@ -63,7 +34,7 @@ public class ChapterLoader {
         try (Stream<Path> walk = Files.walk(chaptersFolder)) {
             walk.filter(Files::isRegularFile)
                     .filter(p -> p.toString().endsWith(".yml"))
-                    .sorted() // deterministic load order
+                    .sorted() 
                     .forEach(ChapterLoader::loadChapterFile);
         } catch (IOException e) {
             LOGGER.error("[Chronicles] Failed to walk chapters directory", e);
@@ -83,10 +54,6 @@ public class ChapterLoader {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Minimal YAML parser
-    // -------------------------------------------------------------------------
-
     private static ChapterDefinition parseChapter(List<String> lines, String fileName) {
         String id = null;
         String displayName = null;
@@ -94,7 +61,6 @@ public class ChapterLoader {
 
         List<ChapterDefinition.ChapterNodeEntry> nodes = new ArrayList<>();
 
-        // State for the current node block being parsed
         String currentQuestId = null;
         String currentShape = "SQUARE";
         int currentX = 0, currentY = 0;
@@ -105,19 +71,18 @@ public class ChapterLoader {
         boolean inDependsOn = false;
 
         for (String rawLine : lines) {
-            // Preserve indent level before trimming
+            
             int indent = leadingSpaces(rawLine);
             String line = rawLine.trim();
 
             if (line.isEmpty() || line.startsWith("#")) continue;
 
-            // Top-level keys (indent 0)
             if (indent == 0) {
                 inNodes = false;
                 inDependsOn = false;
 
                 if (line.equals("nodes:")) {
-                    // Flush any in-progress node before switching sections
+                    
                     if (currentQuestId != null) {
                         nodes.add(buildEntry(currentQuestId, currentShape, currentX, currentY, currentVisible,
                                 currentDeps));
@@ -138,14 +103,13 @@ public class ChapterLoader {
                 continue;
             }
 
-            // Node list entries (indent 2 — list item marker "- ")
             if (inNodes && indent == 2 && line.startsWith("- ")) {
-                // Flush the previous node
+                
                 if (currentQuestId != null) {
                     nodes.add(
                             buildEntry(currentQuestId, currentShape, currentX, currentY, currentVisible, currentDeps));
                 }
-                // Start fresh
+                
                 currentQuestId = null;
                 currentShape = "SQUARE";
                 currentX = 0;
@@ -154,7 +118,6 @@ public class ChapterLoader {
                 currentDeps = new ArrayList<>();
                 inDependsOn = false;
 
-                // The "- " marker may carry the first key inline: "- quest: signal_lost"
                 String afterMarker = line.substring(2).trim();
                 String[] kv = splitKV(afterMarker);
                 if (kv != null && kv[0].equals("quest")) {
@@ -163,7 +126,6 @@ public class ChapterLoader {
                 continue;
             }
 
-            // Node properties (indent 4)
             if (inNodes && indent == 4 && currentQuestId != null) {
                 if (line.equals("depends_on:")) {
                     inDependsOn = true;
@@ -188,20 +150,18 @@ public class ChapterLoader {
                 continue;
             }
 
-            // depends_on list entries (indent 6)
             if (inNodes && inDependsOn && indent == 6 && line.startsWith("- ")) {
                 String depId = line.substring(2).trim();
                 currentDeps.add(new ResourceLocation("phoenixcore", depId));
             }
         }
 
-        // Flush last node
         if (currentQuestId != null) {
             nodes.add(buildEntry(currentQuestId, currentShape, currentX, currentY, currentVisible, currentDeps));
         }
 
         if (id == null) {
-            // Fall back to filename without extension
+            
             id = fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
         }
         if (displayName == null) displayName = id;
@@ -222,11 +182,6 @@ public class ChapterLoader {
                 List.copyOf(deps));
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    /** Splits "key: value" into ["key", "value"], or null if not a valid pair. */
     private static String[] splitKV(String line) {
         int colon = line.indexOf(':');
         if (colon < 0) return null;
@@ -236,7 +191,6 @@ public class ChapterLoader {
         return new String[] { key, val };
     }
 
-    /** Strips surrounding double-quotes if present. */
     private static String unquote(String s) {
         if (s.startsWith("\"") && s.endsWith("\"") && s.length() > 1) {
             return s.substring(1, s.length() - 1);

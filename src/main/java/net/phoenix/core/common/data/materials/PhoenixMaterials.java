@@ -69,7 +69,7 @@ public class PhoenixMaterials {
     }
 
     public static void modifyMaterials() {
-        // --- Crystal Rose Flags ---
+        
         CrystalRoseHelper.addCrystalRoseFlags(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond, PERMAFROST, DORMANT_EMBER,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -101,10 +101,9 @@ public class PhoenixMaterials {
                 Garnierite,
                 Cooperite, Palladium,
                 Tungsten
-        // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
+        
         );
 
-        // --- Bee Comb Flags ---
         BeePrefixHelper.addBeeCombFlag(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -119,10 +118,9 @@ public class PhoenixMaterials {
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, PhoenixOres.IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE
-        // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
+        
         );
 
-        // --- Tier One Bee Flags ---
         BeePrefixHelper.addTierOneBeeFlag(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -137,7 +135,7 @@ public class PhoenixMaterials {
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, PhoenixOres.IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE
-        // Rune, ArcaneCrystal, Crystalline, Spacial, Menril, SkySteel, Desh
+        
         );
 
         for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {

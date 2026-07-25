@@ -49,10 +49,8 @@ public class ChroniclesTheme {
         }
     }
 
-    // ── Fields ────────────────────────────────────────────────────────────────
     public ThemeColor bg, panel, header, border, accent, text, textDim, textFaint, done, activeColor, locked;
 
-    // ── Registry ──────────────────────────────────────────────────────────────
     public static final Map<String, ChroniclesTheme> REGISTRY = new LinkedHashMap<>();
     private static ChroniclesTheme active = null;
     private static String activeName = "DARK";
@@ -64,8 +62,6 @@ public class ChroniclesTheme {
             .excludeFieldsWithModifiers(Modifier.TRANSIENT)
             .create();
     private static final Path THEMES_FILE = Paths.get("config", "phoenix_chronicles_themes.json");
-
-    // ── Constructors ──────────────────────────────────────────────────────────
 
     public ChroniclesTheme() {}
 
@@ -85,14 +81,11 @@ public class ChroniclesTheme {
         this.locked = new ThemeColor(locked);
     }
 
-    /** Returns a deep copy so edits in the theme editor never corrupt the live registry entry. */
     public ChroniclesTheme copy() {
         return new ChroniclesTheme(
                 bg.hex, panel.hex, header.hex, border.hex, accent.hex,
                 text.hex, textDim.hex, textFaint.hex, done.hex, activeColor.hex, locked.hex);
     }
-
-    // ── Static API ────────────────────────────────────────────────────────────
 
     public static ChroniclesTheme current() {
         if (REGISTRY.isEmpty()) loadThemes();
@@ -117,13 +110,11 @@ public class ChroniclesTheme {
         }
     }
 
-    /** Adds or replaces a custom theme, then persists everything to disk. */
     public static void saveCustomTheme(String name, ChroniclesTheme theme) {
         REGISTRY.put(name, theme);
         saveAll();
     }
 
-    /** Deletes a custom theme (no-op for builtins). */
     public static boolean deleteCustom(String name) {
         if (isBuiltin(name)) return false;
         REGISTRY.remove(name);
@@ -134,8 +125,6 @@ public class ChroniclesTheme {
         saveAll();
         return true;
     }
-
-    // ── Persistence ───────────────────────────────────────────────────────────
 
     private static class ThemeSave {
 
@@ -159,8 +148,6 @@ public class ChroniclesTheme {
 
     public static void loadThemes() {
         REGISTRY.clear();
-
-        // ── Prebuilt themes ───────────────────────────────────────────────────
 
         REGISTRY.put("DARK", new ChroniclesTheme(
                 "FF0B0B0F", "FF14141A", "FF0C0C10", "FF353548", "FF00AA55",
@@ -186,7 +173,6 @@ public class ChroniclesTheme {
                 "FF100A06", "FF1C120A", "FF100A04", "FF382210", "FFCC6600",
                 "FFF0E0CC", "FFA0785A", "FF604830", "FF44CC77", "FFFFCC22", "FF806040"));
 
-        // ── Load custom themes from disk ──────────────────────────────────────
         String loadedActive = "DARK";
         try {
             if (Files.exists(THEMES_FILE)) {
@@ -202,12 +188,10 @@ public class ChroniclesTheme {
             e.printStackTrace();
         }
 
-        // Apply active — fall back to DARK if the saved name no longer exists
         activeName = loadedActive;
         active = REGISTRY.getOrDefault(activeName, REGISTRY.get("DARK"));
     }
 
-    /** @deprecated Use {@link #saveAll()} for custom themes. */
     @Deprecated
     public static void saveCustom() {
         saveAll();

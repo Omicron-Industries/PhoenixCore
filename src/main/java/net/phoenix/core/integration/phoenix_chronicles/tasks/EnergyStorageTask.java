@@ -19,39 +19,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Checks that a player has sufficient energy stored, supporting both Forge Energy (FE/RF)
- * and GregTech EU as fully separate unit systems.
- *
- * Sources:
- * INVENTORY – sum FE across all IEnergyStorage items in player inventory (FE only)
- * HELD – FE in the currently-held item only (FE only)
- * BLOCK – energy stored in the last right-clicked block entity; reads BOTH FE and GTM EU,
- * matched against whichever energy type this task requires.
- * Populated once per right-click via {@link #onBlockRightClicked} — no per-tick polling.
- *
- * For BLOCK source the quest UI shows the cached reading from the most recent interaction.
- * Players just right-click their battery box / capacitor bank / energy hatch and then open the quest.
- */
 public class EnergyStorageTask extends QuestTask {
 
-    // ── Enums ─────────────────────────────────────────────────────────────────
-
     public enum EnergyType {
-        FE,   // Forge Energy / RF
-        EU,   // GregTech EU
-        ANY   // whichever is non-zero (FE checked first)
+        FE,   
+        EU,   
+        ANY   
     }
 
     public enum Source {
-        INVENTORY,   // sum FE in all player inventory items
-        HELD,        // FE in mainhand item only
-        BLOCK        // cached from last right-clicked energy block
+        INVENTORY,   
+        HELD,        
+        BLOCK        
     }
 
-    // ── Per-session block energy cache ────────────────────────────────────────
-    // Key: player UUID → long[2] { fe_stored, eu_stored }
-    // Populated by onBlockRightClicked(), never polled per-tick.
     private static final Map<UUID, long[]> blockCache = new HashMap<>();
 
     public static void onBlockRightClicked(Player player, Level level, BlockPos pos) {
@@ -60,11 +41,9 @@ public class EnergyStorageTask extends QuestTask {
 
         long fe = 0L, eu = 0L;
 
-        // Forge Energy
         IEnergyStorage feCap = be.getCapability(ForgeCapabilities.ENERGY).orElse(null);
         if (feCap != null) fe = feCap.getEnergyStored();
 
-        // GregTech EU (all faces — null = default direction)
         IEnergyContainer euCap = GTCapabilityHelper.getEnergyContainer(level, pos, null);
         if (euCap != null) eu = euCap.getEnergyStored();
 
@@ -73,12 +52,9 @@ public class EnergyStorageTask extends QuestTask {
         }
     }
 
-    /** Call on player disconnect / world unload to avoid stale data. */
     public static void clearBlockCache(UUID playerId) {
         blockCache.remove(playerId);
     }
-
-    // ── Task state ────────────────────────────────────────────────────────────
 
     private long requiredEnergy;
     private EnergyType energyType;
@@ -103,8 +79,6 @@ public class EnergyStorageTask extends QuestTask {
     public Source getSource() {
         return source;
     }
-
-    // ── Logic ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean isCompletedFor(Player player) {
@@ -152,10 +126,6 @@ public class EnergyStorageTask extends QuestTask {
         };
     }
 
-    /**
-     * Returns a user-facing description of what the task is checking,
-     * shown in the hover tooltip on the main quest screen.
-     */
     public String getSourceHint(Player player) {
         return switch (source) {
             case INVENTORY -> "in inventory";
@@ -170,8 +140,6 @@ public class EnergyStorageTask extends QuestTask {
         };
     }
 
-    // ── Serialization ─────────────────────────────────────────────────────────
-
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
@@ -185,7 +153,7 @@ public class EnergyStorageTask extends QuestTask {
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         this.requiredEnergy = nbt.contains("required_energy") ? nbt.getLong("required_energy") :
-                nbt.contains("required_fe") ? nbt.getLong("required_fe")   // legacy
+                nbt.contains("required_fe") ? nbt.getLong("required_fe")   
                         : nbt.getLong("amount");
 
         if (nbt.contains("energy_type")) {
@@ -195,7 +163,7 @@ public class EnergyStorageTask extends QuestTask {
                 this.energyType = EnergyType.FE;
             }
         } else if (nbt.contains("mode")) {
-            // Legacy migration: old "INVENTORY"/"HELD" modes mapped to source, not type
+            
             this.energyType = EnergyType.FE;
         }
 
@@ -206,13 +174,11 @@ public class EnergyStorageTask extends QuestTask {
                 this.source = Source.INVENTORY;
             }
         } else if (nbt.contains("mode")) {
-            // Legacy migration from old single-enum approach
+            
             String mode = nbt.getString("mode").toUpperCase();
             this.source = mode.equals("HELD") ? Source.HELD : Source.INVENTORY;
         }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     public static String format(long energy, String unit) {
         if (energy >= 1_000_000_000L) return String.format("%.1fG%s", energy / 1_000_000_000.0, unit);

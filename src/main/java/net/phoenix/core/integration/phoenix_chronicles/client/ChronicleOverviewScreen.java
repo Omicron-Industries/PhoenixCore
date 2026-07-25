@@ -29,14 +29,12 @@ import java.util.Deque;
 
 public class ChronicleOverviewScreen extends Screen {
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int SIDEBAR_W = 110;
-    private static final int HEADER_H = 38;  // title bar (22) + search/filter row (16)
-    private static final int TOOLBAR_Y = 22;  // search row starts here
+    private static final int HEADER_H = 38;  
+    private static final int TOOLBAR_Y = 22;  
     private static final int TOOLBAR_H = 16;
     private static final int NODE_SIZE = 32;
 
-    // ── Palette (themed fields are instance vars, set in init via ChroniclesTheme) ──
     private int C_BG = 0xFF0B0B0F;
     private int C_PANEL = 0xFF14141A;
     private int C_PANEL_DARK = 0xFF0E0E12;
@@ -48,7 +46,7 @@ public class ChronicleOverviewScreen extends Screen {
     private static final int C_LINE_LOCKED = 0x38FFFFFF;
     private static final int C_LINE_DONE = 0x9900CC66;
     private static final int C_LINE_ACTIVE = 0x88FFAA00;
-    // Node fill/border — instance fields so they update when the theme changes
+    
     private int C_NODE_LOCKED = 0xFF1A1A24;
     private int C_NODE_UNLOCKED = 0xFF1E1E2C;
     private int C_NODE_ACTIVE = 0xFF221C00;
@@ -75,14 +73,12 @@ public class ChronicleOverviewScreen extends Screen {
     private int C_PROG_FILL = 0xFF00AA55;
     private static final int C_PROG_ACT = 0xFFBB8800;
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private String selectedCategory = "";
     private QuestNode selectedNode = null;
     private boolean isDevMode = false;
     private String feedbackMsg = "";
     private int feedbackTimer = 0;
 
-    // ── Panning & zoom ────────────────────────────────────────────────────────
     private int viewOffX = 0, viewOffY = 0;
     private float zoom = 1.0f;
     private static final float ZOOM_MIN = 0.35f;
@@ -90,16 +86,13 @@ public class ChronicleOverviewScreen extends Screen {
     private static final float ZOOM_STEP = 0.12f;
     private boolean isPanning = false;
 
-    // ── Dev drag ──────────────────────────────────────────────────────────────
     private QuestNode draggedNode = null;
     private int dragGrabX = 0, dragGrabY = 0;
 
-    // ── Group drag ────────────────────────────────────────────────────────────
     @Nullable
     private QuestGroup draggedGroup = null;
     private int groupDragGrabX = 0, groupDragGrabY = 0;
 
-    // ── Context menu (pure-render, no hidden buttons) ─────────────────────────
     private static final int CTX_ROW = 16;
     private static final int CTX_SEP = 5;
     private static final int CTX_W = 128;
@@ -110,88 +103,66 @@ public class ChronicleOverviewScreen extends Screen {
     @Nullable
     private QuestGroup ctxGroup = null;
 
-    // ── New-category inline form ───────────────────────────────────────────────
     private boolean newCatFormOpen = false;
     private EditBox newCatBox = null;
 
-    // Set while a child screen (e.g. QuestTasksScreen compact) renders us as backdrop.
-    // Skips widget rendering and tooltips so they don't bleed over the child's card.
     private boolean renderingAsBackdrop = false;
 
-    // ── State filter (toolbar pills) ─────────────────────────────────────────
     private String stateFilter = "ALL";
     private EditBox searchBox = null;
     private String searchQuery = "";
     private String[] searchWords = new String[0];
-    // Per-node search haystacks — built once per quest, cleared only on rebuild() or screen open.
+    
     final Map<ResourceLocation, String> searchCache = new HashMap<>();
 
-    // ── Phantasia 3D preview widget ───────────────────────────────────────────
-    /** Phantasia 3D preview widget — typed as Object to avoid compile dep on Phantasia. */
     private Object phantasiaPreview = null;
 
-    // ── Multi-select (dev mode) ───────────────────────────────────────────────
     private final Set<ResourceLocation> multiSelection = new LinkedHashSet<>();
 
-    // ── Undo / redo ───────────────────────────────────────────────────────────
     private final Deque<Runnable> undoStack = new ArrayDeque<>();
     private final Deque<Runnable> redoStack = new ArrayDeque<>();
     private static final int MAX_UNDO = 30;
 
-    // ── Tutorial overlay ──────────────────────────────────────────────────────
-    // Button hit-boxes computed each frame in renderTutorialOverlay, used in mouseClicked
     private int[] tutPrevBtn = null;
     private int[] tutNextBtn = null;
     private int[] tutSkipBtn = null;
 
-    // ── Canvas caches ─────────────────────────────────────────────────────────
     private final Map<ResourceLocation, int[]> nodeScreenPos = new LinkedHashMap<>();
     private final Map<ResourceLocation, Button> nodeButtons = new LinkedHashMap<>();
     private final List<int[]> lineCache = new ArrayList<>();
-    /** Parallel to lineCache — stores [parentId, childId] for hover-highlight. */
+    
     private final List<ResourceLocation[]> lineCacheNodes = new ArrayList<>();
-    /** Per-category progress cache; invalidated by rebuild(). */
+    
     private final Map<String, int[]> progressCache = new HashMap<>();
 
-    // ── Bulk-ops extra state ──────────────────────────────────────────────────
     private boolean bulkMoveCatOpen = false;
 
-    // ── Prereq link drag (Alt+drag in dev mode) ───────────────────────────────
     private QuestNode linkDragSource = null;
     private int linkDragX, linkDragY;
 
-    // ── Grid snap (Shift-drag) ────────────────────────────────────────────────
-    private static final int GRID_SNAP = 8; // logical units; nodes snap to this grid
+    private static final int GRID_SNAP = 8; 
 
-    // ── Line right-click context (dev mode) ───────────────────────────────────
     private boolean lineCtxOpen = false;
     private int lineCtxX, lineCtxY;
     private ResourceLocation lineCtxParentId, lineCtxChildId;
 
-    // ── Unlock path visualization ─────────────────────────────────────────────
     private final Set<ResourceLocation> unlockPathHighlight = new HashSet<>();
 
-    // ── Validation panel ─────────────────────────────────────────────────────
     private boolean validationOpen = false;
 
-    // ── Open-fade animation ───────────────────────────────────────────────────
     private long openTimeMs = -1;
     private static final long OPEN_FADE_MS = 120;
 
-    // ── Category accent colors (cycling palette keyed by hash) ────────────────
     private static final int[] CAT_ACCENTS = {
             0xFF5566EE, 0xFF44BB77, 0xFFCC7722, 0xFFAA44CC,
             0xFF22AABB, 0xFFBB4444, 0xFF88AA22, 0xFF448899
     };
 
-    // ── Detail panel ──────────────────────────────────────────────────────────
     private PlayerQuestData playerData = null;
 
     public ChronicleOverviewScreen() {
         super(Component.literal("Chronicle"));
     }
-
-    // ── Capability helpers ────────────────────────────────────────────────────
 
     QuestState getState(QuestNode node) {
         if (playerData == null) return QuestState.LOCKED;
@@ -203,31 +174,19 @@ public class ChronicleOverviewScreen extends Screen {
         return task.isCompletedFor(minecraft.player);
     }
 
-    // ── Category persistence ──────────────────────────────────────────────────
-
-    /**
-     * Returns the path of the flat file that stores stub category names
-     * (categories that exist but have no quests in them yet).
-     */
     private Path categoriesFile() {
         return Minecraft.getInstance().gameDirectory.toPath()
                 .resolve("config").resolve("phoenix_chronicles").resolve("categories.txt");
     }
 
-    /**
-     * Loads stub categories from disk and merges them with whatever categories
-     * are already present in the registry (from quests).
-     */
     List<String> buildCategoryList() {
         List<String> cats = new ArrayList<>();
 
-        // Categories derived from actual quests
         for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
             String c = n.getCategory();
             if (c != null && !cats.contains(c)) cats.add(c);
         }
 
-        // Stub categories persisted to disk (empty categories the dev created)
         try {
             Path f = categoriesFile();
             if (Files.exists(f)) {
@@ -241,12 +200,11 @@ public class ChronicleOverviewScreen extends Screen {
         return cats;
     }
 
-    /** Persists the current set of stub categories (those with no quests) to disk. */
     private void saveStubCategories(List<String> fullCatList) {
         try {
             Path f = categoriesFile();
             Files.createDirectories(f.getParent());
-            // Only write categories that have NO quests — quest-backed ones reload naturally
+            
             Set<String> questCats = new HashSet<>();
             for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
                 if (n.getCategory() != null) questCats.add(n.getCategory());
@@ -260,8 +218,6 @@ public class ChronicleOverviewScreen extends Screen {
             e.printStackTrace();
         }
     }
-
-    // ── Init / rebuild ────────────────────────────────────────────────────────
 
     @Override
     protected void init() {
@@ -281,20 +237,19 @@ public class ChronicleOverviewScreen extends Screen {
         C_TEXT_ACT = t.activeColor.getColor();
         C_PROG_FILL = t.accent.getColor();
 
-        // Node fills — bg tinted toward each state color
         int bg = t.bg.getColor();
         C_NODE_LOCKED = blendColor(bg, t.locked.getColor(), 0.18f);
         C_NODE_UNLOCKED = blendColor(bg, t.border.getColor(), 0.35f);
         C_NODE_ACTIVE = blendColor(bg, t.activeColor.getColor(), 0.22f);
         C_NODE_DONE = blendColor(bg, t.done.getColor(), 0.18f);
-        // Node borders — straight from theme palette
+        
         C_NBORD_LOCKED = blendColor(t.locked.getColor(), 0xFF000000, 0.25f);
         C_NBORD_UNLOCKED = blendColor(t.border.getColor(), 0xFFFFFFFF, 0.15f);
         C_NBORD_ACTIVE = t.activeColor.getColor();
         C_NBORD_DONE = t.done.getColor();
         C_NBORD_DEV = blendColor(t.accent.getColor(), 0xFFCC44FF, 0.5f);
 
-        QuestGroupManager.invalidate(); // force reload from disk each time the screen opens
+        QuestGroupManager.invalidate(); 
         openTimeMs = System.currentTimeMillis();
         rebuild();
     }
@@ -316,7 +271,6 @@ public class ChronicleOverviewScreen extends Screen {
         ctxGroup = null;
         newCatBox = null;
 
-        // Load quest groups (reads from disk only if not already loaded)
         QuestGroupManager.load(groupsConfigPath());
 
         if (minecraft != null && minecraft.player != null) {
@@ -326,9 +280,8 @@ public class ChronicleOverviewScreen extends Screen {
 
         int cl = SIDEBAR_W, cr = width;
 
-        // ── Sidebar category tabs ─────────────────────────────────────────────
         List<String> cats = buildCategoryList();
-        // Auto-select first available category if current selection is gone
+        
         if (!cats.isEmpty() && !cats.contains(selectedCategory)) selectedCategory = cats.get(0);
         int tabY = HEADER_H + 18;
         for (String cat : cats) {
@@ -349,12 +302,6 @@ public class ChronicleOverviewScreen extends Screen {
             tabY += 18;
         }
 
-        // ── Sidebar bottom utilities ──────────────────────────────────────────
-        // Gear button (all users see it; dev-only actions are inside the screen)
-        // Rendered as plain text '⚙' with hover tooltip — no invasive button chrome
-        // The actual click is handled in mouseClicked() below
-
-        // "New category" button + form (dev only)
         if (isDevMode) {
             int newCatY = height - (newCatFormOpen ? 38 : 22);
             addRenderableWidget(Button.builder(
@@ -372,25 +319,19 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Search is now handled by the Ctrl+F overlay — no persistent toolbar search box.
-
-        // ── Quest node buttons ────────────────────────────────────────────────
         for (QuestNode root : QuestTreeRegistry.getRootChapters().values()) {
             if (!catMatches(root)) continue;
             placeNodeRecursive(root, cl, cr);
         }
-        // Second pass: catch nodes whose parent is in a different category (cross-category links).
-        // These nodes are never reached by the root traversal above when their category is selected.
+
         for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
             if (catMatches(n)) placeNodeRecursive(n, cl, cr);
         }
         buildLineCache();
     }
 
-    // ── Node placement (zoom-aware) ───────────────────────────────────────────
-
     private void placeNodeRecursive(QuestNode node, int cl, int cr) {
-        if (nodeButtons.containsKey(node.getId())) return; // already placed (cross-category link)
+        if (nodeButtons.containsKey(node.getId())) return; 
         int cx = node.getCustomX() != 0 ? node.getCustomX() : 20;
         int cy = node.getCustomY() != 0 ? node.getCustomY() : 40;
 
@@ -433,7 +374,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** Called by SearchOverlayScreen to pan the canvas to a quest and select it. */
     void navigateToNode(QuestNode node) {
         if (node.getCategory() != null && !node.getCategory().equals(selectedCategory)) {
             selectedCategory = node.getCategory();
@@ -453,16 +393,14 @@ public class ChronicleOverviewScreen extends Screen {
         for (Map.Entry<ResourceLocation, int[]> e : nodeScreenPos.entrySet()) {
             QuestNode parent = QuestTreeRegistry.getQuest(e.getKey());
             if (parent == null || !catMatches(parent)) continue;
-            // Flag-disabled quests and their dep lines are always invisible (even in dev mode)
+            
             if (parent.isFlagDisabled()) continue;
-            // Per-quest dep-line visibility
+            
             if (parent.isHideDepLine()) continue;
             int[] pPos = e.getValue();
             int px = pPos[0] + sz / 2, py = pPos[1] + sz / 2;
             QuestState ps = getState(parent);
-            // style: 0=locked, 1=done, 2=active, 3=optional-locked, 4=optional-done
-            // 5=forbidden-locked, 6=forbidden-done
-            // 7=link-locked, 8=link-done, 9=link-active
+
             for (QuestNode child : parent.getChildren()) {
                 if (!catMatches(child)) continue;
                 if (child.isHideDepLine()) continue;
@@ -492,9 +430,9 @@ public class ChronicleOverviewScreen extends Screen {
                 lineCache.add(new int[] { px, py, cx2, cy2, col, style });
                 lineCacheNodes.add(new ResourceLocation[] { parent.getId(), child.getId() });
             }
-            // Also emit lines for prerequisites that are NOT already covered by a child→parent link
+            
             for (QuestNode prereq : parent.getPrerequisites()) {
-                if (prereq.getChildren().contains(parent)) continue; // already drawn above
+                if (prereq.getChildren().contains(parent)) continue; 
                 if (!catMatches(prereq)) continue;
                 if (prereq.isFlagDisabled()) continue;
                 int[] prereqPos = nodeScreenPos.get(prereq.getId());
@@ -527,10 +465,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /**
-     * Panning fast-path: shifts all existing node buttons by (dx,dy) without
-     * tearing down and recreating every widget. Much cheaper than rebuild().
-     */
     private void panCanvas(int dx, int dy) {
         int cl = SIDEBAR_W, cr = width;
         int sz = scaledNodeSize();
@@ -550,19 +484,15 @@ public class ChronicleOverviewScreen extends Screen {
         buildLineCache();
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         boolean ctrl = (mods & 2) != 0;
 
-        // ── Ctrl+F — open search overlay ─────────────────────────────────────
         if (key == 70 && ctrl) {
             openSearchOverlay();
             return true;
         }
 
-        // ── L — toggle line style (spline ↔ straight) ────────────────────────
         if (key == 76 && !ctrl) {
             QuestChroniclesSettings s = QuestChroniclesSettings.get();
             boolean nowSpline = s.isSplineLines();
@@ -621,7 +551,7 @@ public class ChronicleOverviewScreen extends Screen {
             fitToCanvas();
             return true;
         }
-        if (key == 47 && isDevMode) { // '?' (slash key with shift = ?)
+        if (key == 47 && isDevMode) { 
             if (minecraft != null) minecraft.setScreen(new DevWikiScreen(this));
             return true;
         }
@@ -635,8 +565,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
         return super.keyPressed(key, scan, mods);
     }
-
-    // ── FTB Quests import ─────────────────────────────────────────────────────
 
     private void runFtbImport() {
         if (minecraft == null) return;
@@ -661,12 +589,10 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    // ── Undo / redo ───────────────────────────────────────────────────────────
-
     private void pushUndo(Runnable action) {
         undoStack.push(action);
         if (undoStack.size() > MAX_UNDO) undoStack.pollLast();
-        redoStack.clear(); // new action clears the redo branch
+        redoStack.clear(); 
     }
 
     private void undo() {
@@ -687,8 +613,6 @@ public class ChronicleOverviewScreen extends Screen {
         action.run();
     }
 
-    // ── Quest duplication ─────────────────────────────────────────────────────
-
     private void duplicateQuest(QuestNode source) {
         Path base = Minecraft.getInstance().gameDirectory.toPath()
                 .resolve("config").resolve("phoenix_chronicles");
@@ -700,23 +624,20 @@ public class ChronicleOverviewScreen extends Screen {
         try {
             String content = Files.readString(srcFile, StandardCharsets.UTF_8);
 
-            // Generate a unique ID by appending _copy (then _copy2, _copy3…)
             String srcPath = source.getId().getPath();
             String newPath = srcPath + "_copy";
             for (int i = 2; Files.exists(base.resolve(newPath + ".snbt")); i++) {
                 newPath = srcPath + "_copy" + i;
             }
 
-            // Replace the id field in the SNBT content
             content = content.replaceFirst("id:\\s*\"[^\"]*\"", "id: \"" + newPath + "\"");
-            // Offset position slightly so the duplicate doesn't sit exactly on top
+            
             content = offsetSnbtCoord(content, "positionX", 48);
             content = offsetSnbtCoord(content, "positionY", 48);
 
             Path destFile = base.resolve(newPath + ".snbt");
             Files.writeString(destFile, content, StandardCharsets.UTF_8);
 
-            // Inject into live registry
             QuestFileLoader.loadAdditiveFromDisk(base);
             rebuild();
             setFeedback("Duplicated → " + newPath);
@@ -732,7 +653,7 @@ public class ChronicleOverviewScreen extends Screen {
         if (!name.isEmpty()) {
             List<String> current = buildCategoryList();
             if (!current.contains(name)) {
-                // Add it to the list and persist to disk immediately
+                
                 current.add(name);
                 saveStubCategories(current);
                 selectedCategory = name;
@@ -752,7 +673,6 @@ public class ChronicleOverviewScreen extends Screen {
         zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom + (float) delta * ZOOM_STEP));
         if (zoom == oldZoom) return true;
 
-        // Anchor zoom to mouse cursor: keep the canvas point under the cursor fixed
         float ratio = zoom / oldZoom;
         int canvasMx = (int) mx - cl;
         int canvasMy = (int) my - HEADER_H;
@@ -770,29 +690,24 @@ public class ChronicleOverviewScreen extends Screen {
         int cl = SIDEBAR_W, cr = width;
 
         if (btn == 0) {
-            // Inspector removed from overview — all quest detail interactions now in QuestTasksScreen
 
-            // ── Toolbar right-side button clicks (Settings, Fit) ──────────────────
             if (my >= TOOLBAR_Y && my < HEADER_H) {
                 int rx = cr - 4;
                 int fitW = font.width("⊞ Fit") + 10;
                 int settingsW = font.width("⚙") + 10;
 
-                // Fit button
                 rx -= fitW + 2;
                 if (mx >= rx && mx < rx + fitW) {
                     fitToCanvas();
                     return true;
                 }
 
-                // Settings button
                 rx -= settingsW + 2;
                 if (mx >= rx && mx < rx + settingsW && minecraft != null) {
                     minecraft.setScreen(new SettingsScreen(this));
                     return true;
                 }
 
-                // Wiki button (dev only)
                 if (isDevMode) {
                     int wikiW = font.width("?") + 10;
                     rx -= wikiW + 2;
@@ -803,7 +718,6 @@ public class ChronicleOverviewScreen extends Screen {
                 }
             }
 
-            // ── Filter pill clicks ─────────────────────────────────────────────
             int[][] pills = filterPillBounds(cl, cr);
             for (int i = 0; i < FILTER_KEYS.length; i++) {
                 int[] b = pills[i];
@@ -815,7 +729,6 @@ public class ChronicleOverviewScreen extends Screen {
                 }
             }
 
-            // ── Gear (utilities) click — left=open editor, right=export lang ──
             if (gearHovered((int) mx, (int) my) && minecraft != null) {
                 minecraft.setScreen(new LangEditorScreen(this));
                 return true;
@@ -830,12 +743,11 @@ public class ChronicleOverviewScreen extends Screen {
             return true;
         }
 
-        // ── Bulk-ops panel clicks ─────────────────────────────────────────────
         if (btn == 0 && isDevMode && multiSelection.size() >= 2) {
             int bx = cl + 4, by = HEADER_H + 4;
             int bh = 38;
             if ((int) mx >= bx && (int) mx <= bx + 360 && (int) my >= by && (int) my <= by + bh) {
-                // Shape picker row hit-test
+                
                 String[] shapeIds = { "SQUARE", "CIRCLE", "DIAMOND", "HEXAGON", "TRIANGLE", "STAR", "PENTAGON",
                         "SHIELD", "CROSS" };
                 int slotW = 14, startX = bx + 6, slotY = by + 24;
@@ -856,12 +768,12 @@ public class ChronicleOverviewScreen extends Screen {
                     }
                 }
                 int actX = startX + shapeIds.length * (slotW + 2) + 8;
-                // "Move cat" toggle
+                
                 if ((int) mx >= actX && (int) mx < actX + 58 && (int) my >= slotY && (int) my < slotY + 12) {
                     bulkMoveCatOpen = !bulkMoveCatOpen;
                     return true;
                 }
-                // Bulk move cat submenu
+                
                 if (bulkMoveCatOpen) {
                     List<String> moveCats = buildCategoryList();
                     moveCats.remove("ALL");
@@ -885,7 +797,7 @@ public class ChronicleOverviewScreen extends Screen {
                         }
                     }
                 }
-                // Delete all selected
+                
                 int delX = actX + 62;
                 if ((int) mx >= delX && (int) mx < delX + 44 && (int) my >= slotY && (int) my < slotY + 12) {
                     int count = multiSelection.size();
@@ -901,11 +813,10 @@ public class ChronicleOverviewScreen extends Screen {
                     setFeedback("Deleted " + count + " quests");
                     return true;
                 }
-                return true; // absorb all clicks on the panel
+                return true; 
             }
         }
 
-        // ── Line context menu ─────────────────────────────────────────────────
         if (lineCtxOpen && btn == 0) {
             handleLineCtxClick((int) mx, (int) my);
             lineCtxOpen = false;
@@ -916,7 +827,6 @@ public class ChronicleOverviewScreen extends Screen {
             return true;
         }
 
-        // ── Context menu ──────────────────────────────────────────────────────
         if (ctxOpen && btn == 0) {
             if (handleCtxClick((int) mx, (int) my)) return true;
             ctxOpen = false;
@@ -924,7 +834,6 @@ public class ChronicleOverviewScreen extends Screen {
             return true;
         }
 
-        // ── Ctrl + left-click = toggle multi-select (dev mode) ───────────────
         if (btn == 0 && isDevMode && hasControlDown() && !hasShiftDown()) {
             for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
                 if (e.getValue().visible && e.getValue().isMouseOver(mx, my)) {
@@ -933,12 +842,11 @@ public class ChronicleOverviewScreen extends Screen {
                     return true;
                 }
             }
-            // Clicking empty canvas clears selection
+            
             multiSelection.clear();
             return true;
         }
 
-        // ── Alt + left-click = start prerequisite link drag (dev mode) ──────
         if (btn == 0 && isDevMode && hasAltDown() && !hasShiftDown()) {
             for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
                 if (e.getValue().visible && e.getValue().isMouseOver(mx, my)) {
@@ -950,14 +858,13 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // ── Shift + left-click = dev node drag (or group drag) ───────────────
         if (btn == 0 && isDevMode && hasShiftDown()) {
-            // Try node first
+            
             for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
                 if (e.getValue().visible && e.getValue().isMouseOver(mx, my)) {
                     draggedNode = QuestTreeRegistry.getQuest(e.getKey());
                     if (draggedNode != null) {
-                        // Capture position before drag so Ctrl+Z can restore it
+                        
                         final int preX = draggedNode.getCustomX(), preY = draggedNode.getCustomY();
                         final QuestNode capturedNode = draggedNode;
                         pushUndo(() -> {
@@ -972,7 +879,7 @@ public class ChronicleOverviewScreen extends Screen {
                     return true;
                 }
             }
-            // Try group label bar
+            
             QuestGroup hitGrp = groupAtLabelBar(mx, my, cl);
             if (hitGrp != null) {
                 draggedGroup = hitGrp;
@@ -984,7 +891,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // ── Shift + right-click = open quest directly ─────────────────────────
         if (btn == 1 && hasShiftDown() && mx > cl && mx < cr) {
             for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
                 if (e.getValue().visible && e.getValue().isMouseOver(mx, my)) {
@@ -998,7 +904,6 @@ public class ChronicleOverviewScreen extends Screen {
             return true;
         }
 
-        // ── Right-click on canvas = dev context menu ──────────────────────────
         if (btn == 1 && isDevMode && mx > cl && mx < cr) {
             QuestNode hit = null;
             for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
@@ -1008,7 +913,7 @@ public class ChronicleOverviewScreen extends Screen {
                 }
             }
             QuestGroup hitGrp = (hit == null) ? groupAtLabelBar(mx, my, cl) : null;
-            // Check if near a line (higher priority than empty-canvas menu)
+            
             if (hit == null && hitGrp == null) {
                 for (int i = 0; i < lineCache.size() && i < lineCacheNodes.size(); i++) {
                     int[] ln = lineCache.get(i);
@@ -1026,7 +931,7 @@ public class ChronicleOverviewScreen extends Screen {
             openCtx((int) mx, (int) my, hit, hitGrp);
             return true;
         }
-        // ── Right-click non-dev: show unlock path for locked quests, dep lines on empty canvas ──
+        
         if (btn == 1 && !isDevMode && mx > cl && mx < cr) {
             boolean hitNode = false;
             for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
@@ -1041,12 +946,11 @@ public class ChronicleOverviewScreen extends Screen {
             }
             if (!hitNode) {
                 unlockPathHighlight.clear();
-                // Empty canvas right-click → open dep line settings
+                
                 if (minecraft != null) minecraft.setScreen(new DepLineSettingsScreen(this, selectedCategory));
             }
         }
 
-        // ── Left-click on canvas = pan start (if no widget consumed it) ───────
         if (btn == 0 && mx > cl && mx < cr && my > HEADER_H) {
             boolean handled = super.mouseClicked(mx, my, btn);
             if (!handled) isPanning = true;
@@ -1059,7 +963,7 @@ public class ChronicleOverviewScreen extends Screen {
     private boolean handleCtxClick(int mx, int my) {
         List<CtxItem> items = buildCtxItems();
         int x = ctxX, y = ctxY + 2;
-        if (ctxNode != null) y += CTX_ROW; // skip title row
+        if (ctxNode != null) y += CTX_ROW; 
 
         for (CtxItem item : items) {
             if (item.isSep) {
@@ -1117,12 +1021,12 @@ public class ChronicleOverviewScreen extends Screen {
                 int cl = SIDEBAR_W;
                 int rawX = (int) mx - dragGrabX;
                 int rawY = (int) my - dragGrabY;
-                // Snap logical position to grid
+                
                 int logX = (int) ((rawX - cl - viewOffX) / zoom);
                 int logY = (int) ((rawY - HEADER_H - viewOffY) / zoom);
                 logX = Math.round((float) logX / GRID_SNAP) * GRID_SNAP;
                 logY = Math.round((float) logY / GRID_SNAP) * GRID_SNAP;
-                // Recompute screen position from snapped logical position
+                
                 int nx = (int) (logX * zoom) + cl + viewOffX;
                 int ny = (int) (logY * zoom) + HEADER_H + viewOffY;
                 Button b = nodeButtons.get(draggedNode.getId());
@@ -1183,8 +1087,6 @@ public class ChronicleOverviewScreen extends Screen {
         return super.mouseReleased(mx, my, btn);
     }
 
-    // ── Context menu construction ─────────────────────────────────────────────
-
     private record CtxItem(String label, String color, boolean isSep, boolean isDanger, Runnable action) {
 
         static CtxItem sep() {
@@ -1197,7 +1099,6 @@ public class ChronicleOverviewScreen extends Screen {
         boolean hasNode = (ctxNode != null);
         boolean hasGroup = (ctxGroup != null);
 
-        // New quest (only on empty canvas, not on existing quest/group)
         if (!hasNode && !hasGroup) {
             items.add(new CtxItem("+ New quest", "§a", false, false,
                     () -> {
@@ -1206,7 +1107,6 @@ public class ChronicleOverviewScreen extends Screen {
                     }));
         }
 
-        // Dependency lines (empty canvas — always shown for all right-click contexts)
         if (!hasNode && !hasGroup) {
             final String cat = selectedCategory;
             items.add(new CtxItem("Dependency lines…", "§b", false, false,
@@ -1216,7 +1116,6 @@ public class ChronicleOverviewScreen extends Screen {
                     }));
         }
 
-        // Group creation & theme (only when right-clicking empty canvas, not on a node/group)
         if (!hasNode && !hasGroup) {
             int cl = SIDEBAR_W;
             items.add(new CtxItem("+ New group here", "§b", false, false,
@@ -1233,7 +1132,6 @@ public class ChronicleOverviewScreen extends Screen {
                     }));
         }
 
-        // Group editing (when right-clicking a group label bar)
         if (hasGroup) {
             items.add(CtxItem.sep());
             QuestGroup grp = ctxGroup;
@@ -1329,7 +1227,7 @@ public class ChronicleOverviewScreen extends Screen {
                     () -> {
                         final QuestNode deleted = ctxNode;
                         final Path snbtBackup = questSnbt(deleted);
-                        // Read file content BEFORE deleting so we can restore it on undo
+                        
                         String snbtContent;
                         try {
                             snbtContent = Files.exists(snbtBackup) ?
@@ -1339,7 +1237,7 @@ public class ChronicleOverviewScreen extends Screen {
                         }
                         final String savedContent = snbtContent;
                         pushUndo(() -> {
-                            // Restore file + re-inject into registry
+                            
                             if (!savedContent.isEmpty()) {
                                 try {
                                     Files.createDirectories(snbtBackup.getParent());
@@ -1380,14 +1278,14 @@ public class ChronicleOverviewScreen extends Screen {
 
     private int menuHeight(List<CtxItem> items) {
         int h = 4;
-        if (ctxNode != null) h += CTX_ROW; // title row
+        if (ctxNode != null) h += CTX_ROW; 
         for (CtxItem i : items) h += i.isSep ? CTX_SEP : CTX_ROW;
         return h;
     }
 
     private int ctxMoveCatY(List<CtxItem> items) {
         int y = ctxY + 2;
-        if (ctxNode != null) y += CTX_ROW; // skip title row
+        if (ctxNode != null) y += CTX_ROW; 
         for (CtxItem item : items) {
             if (!item.isSep && item.label.contains("Move to category")) return y;
             y += item.isSep ? CTX_SEP : CTX_ROW;
@@ -1395,13 +1293,10 @@ public class ChronicleOverviewScreen extends Screen {
         return y;
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
         if (feedbackTimer > 0) feedbackTimer--;
 
-        // Live drag update (same grid-snap logic as mouseDragged)
         if (draggedNode != null) {
             int cl2 = SIDEBAR_W;
             int logX = (int) ((mx - dragGrabX - cl2 - viewOffX) / zoom);
@@ -1425,35 +1320,29 @@ public class ChronicleOverviewScreen extends Screen {
         renderBackground(g);
         g.fill(0, 0, SIDEBAR_W, height, C_PANEL_DARK);
         g.fill(cl, 0, cr, height, C_BG);
-        // Inspector / toggle strip background
+        
         g.fill(cr, 0, width, height, C_PANEL_DARK);
         g.fill(cr, 0, cr + 1, height, C_BORDER);
 
-        // Title bar (row 1)
         g.fill(0, 0, width, TOOLBAR_Y, C_HEADER);
         g.fill(0, TOOLBAR_Y - 1, width, TOOLBAR_Y, C_BORDER);
         g.drawString(font, "§8Chronicle  §8⟫  §7" + friendly(selectedCategory), cl + 8, 7, C_TEXT);
 
-        // Zoom level (title bar right)
         String zoomStr = Math.round(zoom * 100) + "%";
         g.drawString(font, "§8" + zoomStr, cr - font.width(zoomStr) - 8, 7, C_TEXT_DIM);
 
-        // Toolbar row (search + filter pills + zoom) — scissored to header band
         g.enableScissor(0, TOOLBAR_Y, width, HEADER_H);
         renderToolbar(g, mx, my, cl, cr);
         g.disableScissor();
 
-        // Inspector removed — show only in quest detail screen
         PhantasiaCompat.tickPreview(phantasiaPreview);
 
-        // ── Sidebar (clipped to below the header so it can't bleed into title/toolbar) ──
         g.enableScissor(0, HEADER_H, SIDEBAR_W - 1, height);
 
         g.fill(0, HEADER_H, SIDEBAR_W - 1, HEADER_H + 14, C_PANEL_DARK);
         g.drawCenteredString(font, "§8CHAPTERS", SIDEBAR_W / 2, HEADER_H + 3, C_TEXT_FAINT);
         g.fill(0, HEADER_H + 13, SIDEBAR_W - 1, HEADER_H + 14, C_BORDER);
 
-        // Active tab accent + per-chapter progress bars
         List<String> cats = buildCategoryList();
         int tabY = HEADER_H + 16;
         int barW = SIDEBAR_W - 10;
@@ -1482,15 +1371,13 @@ public class ChronicleOverviewScreen extends Screen {
         }
 
         g.disableScissor();
-        // Border between sidebar and canvas — drawn outside scissor so it paints on both edges
+        
         g.fill(SIDEBAR_W - 1, 0, SIDEBAR_W, height, C_BORDER);
 
-        // ── Canvas (clipped strictly to [cl, cr]) ────────────────────────────
         g.enableScissor(cl, HEADER_H, cr, height);
 
         drawBackground(g, cl, HEADER_H, cr, height);
 
-        // Draw quest groups behind lines and nodes
         for (QuestGroup grp : QuestGroupManager.forCategory(selectedCategory)) {
             renderQuestGroup(g, grp, cl, cr);
         }
@@ -1498,7 +1385,6 @@ public class ChronicleOverviewScreen extends Screen {
         long animTick = System.currentTimeMillis();
         for (int[] ln : lineCache) drawBezierLine(g, ln[0], ln[1], ln[2], ln[3], ln[4], ln[5], animTick);
 
-        // Sparks: bright dots traveling along lines connected to ACTIVE nodes
         for (int i = 0; i < lineCache.size() && i < lineCacheNodes.size(); i++) {
             ResourceLocation[] pair = lineCacheNodes.get(i);
             QuestNode pn = QuestTreeRegistry.getQuest(pair[0]);
@@ -1510,7 +1396,6 @@ public class ChronicleOverviewScreen extends Screen {
             drawBezierSpark(g, ln[0], ln[1], ln[2], ln[3], animTick, i);
         }
 
-        // Hover-highlight: find which node the mouse is over and redraw its connected lines brighter
         ResourceLocation hoveredNodeId = null;
         for (Map.Entry<ResourceLocation, Button> e : nodeButtons.entrySet()) {
             if (e.getValue().visible && e.getValue().isMouseOver(mx, my)) {
@@ -1528,7 +1413,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Link drag: draw dashed preview line from source node to cursor
         if (linkDragSource != null) {
             int[] srcPos = nodeScreenPos.get(linkDragSource.getId());
             if (srcPos != null) {
@@ -1539,15 +1423,12 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Widgets (search box, filter pills, node buttons) — rendered outside the canvas scissor
-        // so the search EditBox in the header isn't accidentally clipped.
         g.disableScissor();
         if (!renderingAsBackdrop) super.render(g, mx, my, partial);
         g.enableScissor(cl, HEADER_H, cr, height);
 
         int sz = scaledNodeSize();
 
-        // Node visuals
         for (Map.Entry<ResourceLocation, int[]> entry : nodeScreenPos.entrySet()) {
             QuestNode node = QuestTreeRegistry.getQuest(entry.getKey());
             if (node == null) continue;
@@ -1557,14 +1438,13 @@ public class ChronicleOverviewScreen extends Screen {
             renderNode(g, node, pos[0], pos[1], sz, btn.isMouseOver(mx, my), node == selectedNode);
         }
 
-        // Multi-selection outlines (dev mode) — cyan dashed border around each selected node
         if (isDevMode && !multiSelection.isEmpty()) {
             long dashPhase = (System.currentTimeMillis() / 80) % 6;
             for (ResourceLocation id : multiSelection) {
                 int[] pos = nodeScreenPos.get(id);
                 if (pos == null) continue;
                 int x1 = pos[0] - 2, y1 = pos[1] - 2, x2 = pos[0] + sz + 2, y2 = pos[1] + sz + 2;
-                // Draw dashed rectangular outline
+                
                 int selCol = 0xFF00DDFF;
                 for (int px = x1; px < x2; px++) {
                     if ((px + dashPhase) % 6 < 3) {
@@ -1581,7 +1461,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Node labels + "NEW" badge (separate pass so labels render above arcs)
         for (Map.Entry<ResourceLocation, int[]> entry : nodeScreenPos.entrySet()) {
             QuestNode node = QuestTreeRegistry.getQuest(entry.getKey());
             if (node == null) continue;
@@ -1590,7 +1469,6 @@ public class ChronicleOverviewScreen extends Screen {
             int[] pos = entry.getValue();
             QuestState st = getState(node);
 
-            // "NEW" badge: UNLOCKED quests the player hasn't started yet
             if (st == QuestState.UNLOCKED && sz >= 16) {
                 int badgeX = pos[0] + sz - 2;
                 int badgeY = pos[1] - 1;
@@ -1599,7 +1477,7 @@ public class ChronicleOverviewScreen extends Screen {
             }
 
             if (zoom >= 0.55f) {
-                // Fade label alpha at low zoom; also dim if search active and node doesn't match
+                
                 int baseAlpha = zoom >= 0.75f ? 0xFF : (int) ((zoom - 0.55f) / 0.20f * 0xFF);
                 if (!searchQuery.isEmpty() && !matchesSearch(node)) baseAlpha = baseAlpha * 30 / 100;
                 int lc = st == QuestState.COMPLETED ? C_TEXT_DONE :
@@ -1609,7 +1487,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // End canvas scissor — everything below is full-screen UI (overlays, menus, gear)
         g.disableScissor();
 
         if (feedbackTimer > 0 && !feedbackMsg.isEmpty()) {
@@ -1618,13 +1495,10 @@ public class ChronicleOverviewScreen extends Screen {
             g.drawString(font, "§7" + feedbackMsg, cl + 6, height - 10, C_TEXT_DIM);
         }
 
-        // ── Sidebar gear (utilities) icon ─────────────────────────────────────
         renderSidebarGear(g, mx, my);
 
-        // Tutorial overlay — drawn after widgets, before tooltips
         if (!renderingAsBackdrop) renderTutorialOverlay(g, mx, my);
 
-        // Hover tooltip — drawn last so it's always on top
         if (!renderingAsBackdrop && draggedNode == null && !ctxOpen) {
             for (Map.Entry<ResourceLocation, int[]> entry : nodeScreenPos.entrySet()) {
                 QuestNode node = QuestTreeRegistry.getQuest(entry.getKey());
@@ -1638,7 +1512,6 @@ public class ChronicleOverviewScreen extends Screen {
 
         if (!renderingAsBackdrop && ctxOpen && isDevMode) renderCtxMenu(g, mx, my);
 
-        // Unlock path highlight — bright cyan rings around all ancestors of target
         if (!unlockPathHighlight.isEmpty()) {
             long pulse = System.currentTimeMillis();
             float blink = (float) (Math.sin(pulse / 400.0) * 0.3 + 0.7);
@@ -1655,18 +1528,14 @@ public class ChronicleOverviewScreen extends Screen {
             g.drawString(font, "§bUnlock path — §8Esc to clear", cl + 6, height - 10, 0xFF4488FF, false);
         }
 
-        // Line context menu (right-click on dep line)
         if (lineCtxOpen) renderLineCtxMenu(g, mx, my);
 
-        // Validation panel (V key, dev mode)
         if (validationOpen && isDevMode) renderValidationPanel(g, cl, cr);
 
-        // Bulk-ops panel — appears at top of canvas when 2+ nodes are selected
         if (isDevMode && multiSelection.size() >= 2) {
             renderBulkOpsPanel(g, mx, my, cl, cr);
         }
 
-        // Open-fade: black overlay that fades out over OPEN_FADE_MS after the screen opens
         if (openTimeMs > 0) {
             long elapsed = System.currentTimeMillis() - openTimeMs;
             if (elapsed < OPEN_FADE_MS) {
@@ -1677,25 +1546,20 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    // ── Ctrl+F search overlay ─────────────────────────────────────────────────
-
     private void openSearchOverlay() {
         if (minecraft != null) minecraft.setScreen(new SearchOverlayScreen(this));
     }
 
-    // ── Filter pills ──────────────────────────────────────────────────────────
-
     private static final String[] FILTER_KEYS = { "ALL", "AVAILABLE", "ACTIVE", "COMPLETE", "LOCKED" };
     private static final String[] FILTER_GLYPHS = { "◉", "○", "◑", "✔", "🔒" };
     private static final int[] FILTER_COLORS = {
-            0xFFAAAAAA, // ALL — neutral
-            0xFF55BBFF, // AVAILABLE — blue
-            0xFFFFBB33, // ACTIVE — amber
-            0xFF44CC88, // COMPLETE — green
-            0xFF666688, // LOCKED — muted purple
+            0xFFAAAAAA, 
+            0xFF55BBFF, 
+            0xFFFFBB33, 
+            0xFF44CC88, 
+            0xFF666688, 
     };
 
-    /** Draws compact pill-style filter tabs in the toolbar row. */
     private void drawFilterPills(GuiGraphics g, int mx, int my, int cl, int cr) {
         int px = cl + 4;
         int py = TOOLBAR_Y + 2;
@@ -1708,14 +1572,11 @@ public class ChronicleOverviewScreen extends Screen {
             int pw = font.width(label) + 8;
             boolean hov = mx >= px && mx < px + pw && my >= py && my < py + ph;
 
-            // Background
             int bg = sel ? (FILTER_COLORS[i] & 0x00FFFFFF | 0x33000000) : (hov ? 0x22FFFFFF : 0x00000000);
             if (bg != 0) g.fill(px, py, px + pw, py + ph, bg);
 
-            // Accent underline when selected
             if (sel) g.fill(px, py + ph - 1, px + pw, py + ph, FILTER_COLORS[i]);
 
-            // Label
             int col = sel ? FILTER_COLORS[i] : (hov ? 0xFFCCCCCC : 0xFF666677);
             g.drawString(font, label, px + 4, py + 2, col, false);
 
@@ -1723,7 +1584,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** Returns pill bounds for hit-testing in mouseClicked. [x0,y0,x1,y1] per filter. */
     private int[][] filterPillBounds(int cl, int cr) {
         int px = cl + 4;
         int py = TOOLBAR_Y + 2, ph = TOOLBAR_H - 4;
@@ -1738,18 +1598,13 @@ public class ChronicleOverviewScreen extends Screen {
         return bounds;
     }
 
-    // ── Toolbar ───────────────────────────────────────────────────────────────
-
     private void renderToolbar(GuiGraphics g, int mx, int my, int cl, int cr) {
         int ty = TOOLBAR_Y;
         g.fill(0, ty, width, ty + TOOLBAR_H, C_PANEL_DARK);
         g.fill(0, ty + TOOLBAR_H - 1, width, ty + TOOLBAR_H, C_BORDER);
 
-        // Search box is a widget rendered by super.render() — just leave space for it.
-        // Filter pills follow the search box (offset by SEARCH_BOX_W + gap).
         drawFilterPills(g, mx, my, cl, cr);
 
-        // Settings + Fit controls (right side, before inspector edge)
         int rx = cr - 4;
         rx = drawToolbarBtnR(g, mx, my, rx, ty, "⊞ Fit");
         rx -= 2;
@@ -1760,7 +1615,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
         rx -= 2;
 
-        // DEV badge (indicator only; actions are in right-click context menu)
         if (isDevMode) {
             String devLabel = "DEV";
             int dbx = rx - font.width(devLabel) - 12;
@@ -1780,11 +1634,6 @@ public class ChronicleOverviewScreen extends Screen {
         return bx - 2;
     }
 
-    // ── Inspector removed from overview (shown only in QuestTasksScreen) ───────
-    // All inspector rendering methods have been moved to QuestTasksScreen for a cleaner canvas.
-
-    // ── Sidebar gear ──────────────────────────────────────────────────────────
-
     private static final int GEAR_SIZE = 14;
 
     private int gearY() {
@@ -1801,15 +1650,13 @@ public class ChronicleOverviewScreen extends Screen {
         int gy = gearY();
         boolean hov = gearHovered(mx, my);
 
-        // Subtle separator above utilities area
         g.fill(4, gy - 6, SIDEBAR_W - 4, gy - 5, C_BORDER);
 
-        // Gear glyph
         int col = hov ? 0xFFDDDDE8 : 0xFF555566;
         g.drawString(font, "⚙", gx + 1, gy + 1, col, false);
 
         if (hov) {
-            // Tooltip panel
+            
             int ttW = 200;
             int ttH = isDevMode ? 54 : 30;
             int ttX = gx - ttW - 4;
@@ -1830,8 +1677,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    // ── Bulk-ops panel ────────────────────────────────────────────────────────
-
     private void renderBulkOpsPanel(GuiGraphics g, int mx, int my, int cl, int cr) {
         int n = multiSelection.size();
         int bx = cl + 4, by = HEADER_H + 4;
@@ -1841,12 +1686,11 @@ public class ChronicleOverviewScreen extends Screen {
         g.fill(bx, by, bx + 1, by + bh, C_BORDER_LIT);
         g.fill(bx + bw - 1, by, bx + bw, by + bh, C_BORDER_LIT);
         g.fill(bx, by + bh - 1, bx + bw, by + bh, C_BORDER_LIT);
-        g.fill(bx, by, bx + 2, by + bh, 0xFF00DDFF); // cyan left accent
+        g.fill(bx, by, bx + 2, by + bh, 0xFF00DDFF); 
 
         g.drawString(font, "§b" + n + " selected", bx + 6, by + 4, 0xFF00DDFF);
         g.drawString(font, "§8Ctrl+click to toggle  ·  Esc to clear", bx + 6, by + 14, C_TEXT_FAINT);
 
-        // Shape picker row
         String[] glyphs = { "■", "●", "◆", "⬡", "▲", "★", "⬠", "❖", "✚" };
         String[] shapeIds = { "SQUARE", "CIRCLE", "DIAMOND", "HEXAGON", "TRIANGLE", "STAR", "PENTAGON", "SHIELD",
                 "CROSS" };
@@ -1857,7 +1701,7 @@ public class ChronicleOverviewScreen extends Screen {
             if (hov) g.fill(sx, slotY, sx + slotW, slotY + 12, 0xFF222233);
             g.drawString(font, "§7" + glyphs[i], sx + 2, slotY + 2, hov ? 0xFFFFFFFF : 0xFF888899);
         }
-        // "Move to cat ▸" and "Delete all" labels
+        
         int actX = startX + glyphs.length * (slotW + 2) + 8;
         boolean catHov = mx >= actX && mx < actX + 58 && my >= slotY && my < slotY + 12;
         if (catHov || bulkMoveCatOpen) g.fill(actX, slotY, actX + 58, slotY + 12, 0xFF222233);
@@ -1867,7 +1711,6 @@ public class ChronicleOverviewScreen extends Screen {
         if (delHov) g.fill(delX, slotY, delX + 44, slotY + 12, 0xFF221212);
         g.drawString(font, "§cDel all", delX, slotY + 2, delHov ? 0xFFFF5555 : C_CTX_DANGER);
 
-        // Bulk move submenu
         if (bulkMoveCatOpen) {
             List<String> moveCats = buildCategoryList();
             moveCats.remove("ALL");
@@ -1884,8 +1727,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
     }
-
-    // ── Node rendering (zoom + shape aware) ───────────────────────────────────
 
     private void renderNode(GuiGraphics g, QuestNode node, int x, int y, int sz,
                             boolean hovered, boolean selected) {
@@ -1905,11 +1746,9 @@ public class ChronicleOverviewScreen extends Screen {
         if (selected) border = C_NBORD_SEL;
         if (hovered) fill = blendColor(fill, 0xFFFFFFFF, 0.08f);
 
-        // Selection glow halo
         if (selected)
             g.fill(x - 2, y - 2, x + sz + 2, y + sz + 2, (border & 0x00FFFFFF) | 0x44000000);
 
-        // COMPLETED: soft green bloom — layered expanding fills, each softer
         if (st == QuestState.COMPLETED) {
             int bloomRgb = C_NBORD_DONE & 0x00FFFFFF;
             g.fill(x - 4, y - 4, x + sz + 4, y + sz + 4, 0x0C000000 | bloomRgb);
@@ -1917,7 +1756,6 @@ public class ChronicleOverviewScreen extends Screen {
             g.fill(x - 2, y - 2, x + sz + 2, y + sz + 2, 0x28000000 | bloomRgb);
         }
 
-        // ACTIVE: pulsing outer glow
         if (st == QuestState.ACTIVE) {
             float pulse = (float) (Math.sin(System.currentTimeMillis() / 500.0) * 0.4 + 0.6);
             int baseColor = C_NBORD_ACTIVE & 0x00FFFFFF;
@@ -1929,7 +1767,6 @@ public class ChronicleOverviewScreen extends Screen {
 
         String shape = node.getShapeType() != null ? node.getShapeType().toUpperCase() : "SQUARE";
 
-        // Drop shadow — shape-matched so it doesn't bleed outside non-square nodes
         switch (shape) {
             case "CIRCLE" -> fillCircle(g, x + 2, y + 2, sz, 0x44000000);
             case "DIAMOND" -> fillDiamond(g, x + 2, y + 2, sz, 0x44000000);
@@ -1975,7 +1812,7 @@ public class ChronicleOverviewScreen extends Screen {
                 fillCross(g, x, y, sz, fill);
                 outlineCross(g, x, y, sz, border);
             }
-            default -> {  // SQUARE
+            default -> {  
                 g.fill(x, y, x + sz, y + sz, fill);
                 g.fill(x, y, x + sz, y + 1, border);
                 g.fill(x, y + sz - 1, x + sz, y + sz, border);
@@ -1984,13 +1821,11 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // DISABLED visibility: grayed-out overlay — visible but can't be completed
         if (node.getVisibility() == QuestNode.Visibility.DISABLED) {
             g.fill(x + 1, y + 1, x + sz - 1, y + sz - 1, 0xBB0B0B0F);
             g.drawCenteredString(font, "§8✕", x + sz / 2, y + sz / 2 - 4, 0xFF444444);
         }
 
-        // Flag-disabled (enable_if = false): dev-only dashed purple border + "⚑" glyph
         if (isDevMode && node.isFlagDisabled()) {
             g.fill(x - 2, y - 2, x + sz + 2, y - 1, 0xBB7722BB);
             g.fill(x - 2, y + sz + 1, x + sz + 2, y + sz + 2, 0xBB7722BB);
@@ -2000,15 +1835,13 @@ public class ChronicleOverviewScreen extends Screen {
             g.drawCenteredString(font, "§5⚑", x + sz / 2, y + sz / 2 - 4, 0xFFAA44CC);
         }
 
-        // Search dim: if search is active and this node doesn't match, fade it out
         if (!searchQuery.isEmpty() && !matchesSearch(node)) {
             g.fill(x - 1, y - 1, x + sz + 1, y + sz + 1, 0xCC0B0B0F);
         }
 
-        // LOCKED: diagonal hatch overlay to make inaccessible nodes visually distinct
         if (st == QuestState.LOCKED && !isDevMode) {
             g.fill(x + 1, y + 1, x + sz - 1, y + sz - 1, 0x880B0B0F);
-            // Diagonal hatch lines (every 4px, running top-left to bottom-right)
+            
             for (int d = -(sz); d < sz; d += 4) {
                 for (int i = 0; i < sz - 1; i++) {
                     int hx = x + 1 + i;
@@ -2019,7 +1852,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Progress arc ring around the node (clockwise from top, proportional to tasks done)
         List<QuestTask> tasks = node.getTasks();
         if (!tasks.isEmpty() && sz >= 14) {
             int total = 0, done = 0;
@@ -2038,7 +1870,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // UNLOCKED: small pulsing "ready" dot in top-right corner
         if (st == QuestState.UNLOCKED && sz >= 20) {
             float readyPulse = (float) (Math.sin(System.currentTimeMillis() / 700.0) * 0.35 + 0.65);
             int dotAlpha = (int) (readyPulse * 0xFF) & 0xFF;
@@ -2046,7 +1877,6 @@ public class ChronicleOverviewScreen extends Screen {
             g.fill(x + sz - 6, y + 1, x + sz - 1, y + 6, dotColor);
         }
 
-        // Icon: try custom PNG first, then scaled item, then state glyph
         String questPath = node.getId().getPath();
         ResourceLocation customIcon = QuestIconCache.get(questPath);
         if (customIcon != null && sz >= 8) {
@@ -2083,7 +1913,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Dev-mode validation warning badge — orange ⚠ in bottom-left corner
         if (isDevMode && sz >= 14) {
             List<String> issues = getValidationIssues(node);
             if (!issues.isEmpty()) {
@@ -2094,9 +1923,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    // ── Quest group rendering ─────────────────────────────────────────────────
-
-    /** Height of the label bar at the top of a group rectangle (in screen pixels). */
     private static final int GROUP_LABEL_BAR_H = 11;
 
     private void renderQuestGroup(GuiGraphics g, QuestGroup grp, int cl, int cr) {
@@ -2105,23 +1931,18 @@ public class ChronicleOverviewScreen extends Screen {
         int sw = (int) (grp.getWidth() * zoom);
         int sh = (int) (grp.getHeight() * zoom);
 
-        // Cull if entirely outside the canvas viewport
         if (sx + sw < cl || sx > cr || sy + sh < HEADER_H || sy > height) return;
 
-        // Fill
         g.fill(sx, sy, sx + sw, sy + sh, grp.getColor());
 
-        // 1-pixel border
         int bc = grp.getBorderColor();
         g.fill(sx, sy, sx + sw, sy + 1, bc);
         g.fill(sx, sy + sh - 1, sx + sw, sy + sh, bc);
         g.fill(sx, sy, sx + 1, sy + sh, bc);
         g.fill(sx + sw - 1, sy, sx + sw, sy + sh, bc);
 
-        // Label bar at the top (slightly more opaque tint)
         g.fill(sx + 1, sy + 1, sx + sw - 1, sy + GROUP_LABEL_BAR_H, (grp.getBorderColor() & 0x00FFFFFF) | 0x55000000);
 
-        // Label text (clipped to group width)
         if (sw > 20) {
             String label = grp.getLabel();
             int maxLabelW = sw - 8;
@@ -2132,10 +1953,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /**
-     * Returns the group whose label bar is under (mx, my), or null.
-     * Used for context-menu detection.
-     */
     @Nullable
     private QuestGroup groupAtLabelBar(double mx, double my, int cl) {
         for (QuestGroup grp : QuestGroupManager.forCategory(selectedCategory)) {
@@ -2149,18 +1966,6 @@ public class ChronicleOverviewScreen extends Screen {
         return null;
     }
 
-    // ── Bezier connector lines ────────────────────────────────────────────────
-
-    /**
-     * Draws a cubic bezier S-curve between two node centers at physical pixel precision.
-     *
-     * By pushing scale(1/guiScale) and multiplying all coordinates by guiScale, we render at
-     * 1 physical pixel per sample rather than the default 2×2 GUI-pixel blobs.
-     * Soft edge pixels (4 cardinal neighbours at ~25% alpha) simulate anti-aliasing.
-     *
-     * style: 0 = locked (dotted, faint), 1 = done (solid), 2 = active (marching dashes)
-     * 3 = optional-locked (long dashes, very dim), 4 = optional-done (long dashes, dim-green)
-     */
     private void drawBezierLine(GuiGraphics g, int x1, int y1, int x2, int y2,
                                 int color, int style, long animTick) {
         drawBezierLine(g, x1, y1, x2, y2, color, style, animTick,
@@ -2175,28 +1980,26 @@ public class ChronicleOverviewScreen extends Screen {
         g.pose().pushPose();
         g.pose().scale(s, s, 1f);
 
-        // All positions in physical pixels
         int px1 = (int) Math.round(x1 * gs), py1 = (int) Math.round(y1 * gs);
         int px2 = (int) Math.round(x2 * gs), py2 = (int) Math.round(y2 * gs);
 
-        // Control points: S-curve (spline) or degenerate straight line
         float adx = Math.abs(px2 - px1), ady = Math.abs(py2 - py1);
         float cp1x, cp1y, cp2x, cp2y;
         if (!spline) {
-            // Straight: degenerate bezier with control points at endpoints
+            
             cp1x = px1;
             cp1y = py1;
             cp2x = px2;
             cp2y = py2;
         } else if (adx >= ady) {
-            // Mostly horizontal: control points split at x-midpoint, keep each y endpoint
+            
             float mx = (px1 + px2) / 2f;
             cp1x = mx;
             cp1y = py1;
             cp2x = mx;
             cp2y = py2;
         } else {
-            // Mostly vertical: control points split at y-midpoint, keep each x endpoint
+            
             float my = (py1 + py2) / 2f;
             cp1x = px1;
             cp1y = my;
@@ -2209,13 +2012,10 @@ public class ChronicleOverviewScreen extends Screen {
 
         int alpha = (color >>> 24) & 0xFF;
         int rgb = color & 0x00FFFFFF;
-        // Soft-edge neighbours at ~22% of line alpha (simulates 1px anti-aliasing)
+        
         int softA = Math.max(0, (alpha * 56) >> 8);
         int soft = (softA << 24) | rgb;
 
-        // Dash params:
-        // 0=locked(dots), 1=done(solid), 2=active(marching), 3=opt-locked(long dash), 4=opt-done(long dash)
-        // 5=forbidden-locked(short dash), 6=forbidden-done(solid), 7=link-locked(long gap), 8=link-done, 9=link-active
         boolean isSolid = (style == 1 || style == 6 || style == 8);
         boolean isMarching = (style == 2 || style == 9);
         int dashPeriod, dashOn;
@@ -2246,7 +2046,6 @@ public class ChronicleOverviewScreen extends Screen {
 
         QuestChroniclesSettings.LineVisualStyle vis = QuestChroniclesSettings.get().getLineVisualStyle();
 
-        // Pre-compute glow halos for GLOW mode (two concentric alpha rings)
         int glow1 = 0, glow2 = 0;
         if (vis == QuestChroniclesSettings.LineVisualStyle.GLOW) {
             glow1 = (Math.max(0, (alpha * 38) >> 8) << 24) | rgb;
@@ -2264,7 +2063,7 @@ public class ChronicleOverviewScreen extends Screen {
             switch (vis) {
                 case THIN -> g.fill(bx, by, bx + 1, by + 1, color);
                 case BOLD -> {
-                    // 5px core with soft edge
+                    
                     g.fill(bx - 2, by - 2, bx + 3, by + 3, color);
                     if (softA > 0) {
                         g.fill(bx - 3, by - 2, bx - 2, by + 3, soft);
@@ -2274,33 +2073,33 @@ public class ChronicleOverviewScreen extends Screen {
                     }
                 }
                 case THICK -> {
-                    // Outer halo (faint, extends to 9px total visual)
+                    
                     int haloA = Math.max(0, (alpha * 28) >> 8);
                     if (haloA > 0) {
                         int halo = (haloA << 24) | rgb;
                         g.fill(bx - 4, by - 4, bx + 5, by + 5, halo);
                     }
-                    // Soft mid ring
+                    
                     if (softA > 0) {
                         g.fill(bx - 3, by - 3, bx + 4, by + 4, soft);
                     }
-                    // Hard 7px core
+                    
                     g.fill(bx - 3, by - 3, bx + 4, by + 4, color);
-                    // Bright centre highlight
+                    
                     int hiA = Math.min(0xFF, alpha + 40);
                     g.fill(bx - 1, by - 1, bx + 2, by + 2, (hiA << 24) | rgb);
                 }
                 case WIDE -> {
-                    // Strong 13px halo fading inward, 9px hard core
+                    
                     int outerA = Math.max(0, (alpha * 15) >> 8);
                     if (outerA > 0) g.fill(bx - 6, by - 6, bx + 7, by + 7, (outerA << 24) | rgb);
                     int midA = Math.max(0, (alpha * 30) >> 8);
                     if (midA > 0) g.fill(bx - 5, by - 5, bx + 6, by + 6, (midA << 24) | rgb);
                     int innerA = Math.max(0, (alpha * 50) >> 8);
                     if (innerA > 0) g.fill(bx - 4, by - 4, bx + 5, by + 5, (innerA << 24) | rgb);
-                    // 9px solid core
+                    
                     g.fill(bx - 4, by - 4, bx + 5, by + 5, color);
-                    // Bright 5px highlight
+                    
                     int hiA = Math.min(0xFF, alpha + 50);
                     g.fill(bx - 2, by - 2, bx + 3, by + 3, (hiA << 24) | rgb);
                 }
@@ -2309,7 +2108,7 @@ public class ChronicleOverviewScreen extends Screen {
                     g.fill(bx - 2, by - 2, bx + 3, by + 3, glow1);
                     g.fill(bx - 1, by - 1, bx + 2, by + 2, color);
                 }
-                default -> { // NORMAL
+                default -> { 
                     g.fill(bx - 1, by - 1, bx + 2, by + 2, color);
                     if (softA > 0) {
                         g.fill(bx - 2, by - 1, bx - 1, by + 2, soft);
@@ -2324,7 +2123,6 @@ public class ChronicleOverviewScreen extends Screen {
         g.pose().popPose();
     }
 
-    /** Draws a single bright spark dot traveling from (x1,y1) to (x2,y2) along the S-bezier. */
     private void drawBezierSpark(GuiGraphics g, int x1, int y1, int x2, int y2, long animMs, int lineIdx) {
         float adx = Math.abs(x2 - x1), ady = Math.abs(y2 - y1);
         float cp1x, cp1y, cp2x, cp2y;
@@ -2341,23 +2139,16 @@ public class ChronicleOverviewScreen extends Screen {
             cp2x = x2;
             cp2y = my;
         }
-        // Each line gets its own offset so sparks don't all sync
+        
         float t = ((animMs / 1800f) + lineIdx * 0.37f) % 1f;
         float mt = 1f - t;
         int bx = Math.round(mt * mt * mt * x1 + 3 * mt * mt * t * cp1x + 3 * mt * t * t * cp2x + t * t * t * x2);
         int by = Math.round(mt * mt * mt * y1 + 3 * mt * mt * t * cp1y + 3 * mt * t * t * cp2y + t * t * t * y2);
-        // Bright core + soft halo
+        
         g.fill(bx - 1, by - 1, bx + 2, by + 2, 0xFFFFEE88);
         g.fill(bx - 2, by - 2, bx + 3, by + 3, 0x44FFCC44);
     }
 
-    // ── Progress arc ─────────────────────────────────────────────────────────
-
-    /**
-     * Draws a clockwise progress arc ring at physical pixel resolution.
-     * Renders a 2-physical-pixel-wide ring (inner radius r−1, outer radius r)
-     * so the arc is visible and clean at any GUI scale.
-     */
     private void drawProgressArc(GuiGraphics g, int cx, int cy, int r,
                                  float fraction, int fillColor, int bgColor) {
         double gs = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale();
@@ -2369,11 +2160,10 @@ public class ChronicleOverviewScreen extends Screen {
         int pcx = (int) Math.round(cx * gs);
         int pcy = (int) Math.round(cy * gs);
 
-        // Draw at two radii for a 2-physical-pixel wide ring
         for (int dr = 0; dr <= 1; dr++) {
             int pr = (int) Math.round((r - dr * 0.5) * gs);
             if (pr <= 0) continue;
-            int steps = Math.max(64, pr * 5); // enough steps to hit every pixel once
+            int steps = Math.max(64, pr * 5); 
             for (int i = 0; i < steps; i++) {
                 double angle = (i * 2.0 * Math.PI / steps) - Math.PI / 2.0;
                 int px = (int) Math.round(pcx + pr * Math.cos(angle));
@@ -2387,9 +2177,6 @@ public class ChronicleOverviewScreen extends Screen {
         g.pose().popPose();
     }
 
-    // ── Shape fill primitives ─────────────────────────────────────────────────
-
-    /** Fills every pixel inside a circle inscribed in the [x,y,sz] box. */
     private void fillCircle(GuiGraphics g, int x, int y, int sz, int color) {
         float cx = x + sz / 2f, cy = y + sz / 2f, r = sz / 2f - 0.5f;
         for (int py = y; py < y + sz; py++) {
@@ -2400,7 +2187,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** 1-pixel outline of a circle at physical-pixel precision (1px at any GUI scale). */
     private void outlineCircle(GuiGraphics g, int x, int y, int sz, int color) {
         double gs = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale();
         float s = (float) (1.0 / gs);
@@ -2410,7 +2196,7 @@ public class ChronicleOverviewScreen extends Screen {
         float pcx = (float) ((x + sz / 2f) * gs);
         float pcy = (float) ((y + sz / 2f) * gs);
         float pr = (float) ((sz / 2f - 1f) * gs);
-        int steps = Math.max(64, (int) (pr * 6.3f)); // ≥ 1 step per physical pixel around circumference
+        int steps = Math.max(64, (int) (pr * 6.3f)); 
         for (int i = 0; i < steps; i++) {
             double a = 2 * Math.PI * i / steps;
             int px = (int) Math.round(pcx + Math.cos(a) * pr);
@@ -2420,7 +2206,6 @@ public class ChronicleOverviewScreen extends Screen {
         g.pose().popPose();
     }
 
-    /** Diamond (rotated square). */
     private void fillDiamond(GuiGraphics g, int x, int y, int sz, int color) {
         int cx = x + sz / 2, cy = y + sz / 2, h = sz / 2;
         for (int py = y; py < y + sz; py++) {
@@ -2432,19 +2217,18 @@ public class ChronicleOverviewScreen extends Screen {
 
     private void outlineDiamond(GuiGraphics g, int x, int y, int sz, int color) {
         int cx = x + sz / 2, cy = y + sz / 2, h = sz / 2 - 1;
-        // Four edges: top-left, top-right, bottom-left, bottom-right
+        
         for (int i = 0; i <= h; i++) {
-            g.fill(cx - i, cy - h + i, cx - i + 1, cy - h + i + 1, color); // TL edge
-            g.fill(cx + i, cy - h + i, cx + i + 1, cy - h + i + 1, color); // TR edge
-            g.fill(cx - i, cy + h - i, cx - i + 1, cy + h - i + 1, color); // BL edge
-            g.fill(cx + i, cy + h - i, cx + i + 1, cy + h - i + 1, color); // BR edge
+            g.fill(cx - i, cy - h + i, cx - i + 1, cy - h + i + 1, color); 
+            g.fill(cx + i, cy - h + i, cx + i + 1, cy - h + i + 1, color); 
+            g.fill(cx - i, cy + h - i, cx - i + 1, cy + h - i + 1, color); 
+            g.fill(cx + i, cy + h - i, cx + i + 1, cy + h - i + 1, color); 
         }
     }
 
-    /** Flat-top hexagon. */
     private void fillHexagon(GuiGraphics g, int x, int y, int sz, int color) {
         float cx = x + sz / 2f, cy = y + sz / 2f, r = sz / 2f - 1;
-        float qr = r * 0.866f; // sqrt(3)/2
+        float qr = r * 0.866f; 
         for (int py = y; py < y + sz; py++) {
             float dy = Math.abs(py + 0.5f - cy);
             float hw;
@@ -2466,7 +2250,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** Upward-pointing triangle. */
     private void fillTriangle(GuiGraphics g, int x, int y, int sz, int color) {
         int cx = x + sz / 2;
         int top = y + 1, bot = y + sz - 1;
@@ -2480,17 +2263,16 @@ public class ChronicleOverviewScreen extends Screen {
     private void outlineTriangle(GuiGraphics g, int x, int y, int sz, int color) {
         int cx = x + sz / 2, top = y + 1, bot = y + sz - 1;
         int bl = x + 1, br = x + sz - 1;
-        drawLine(g, cx, top, bl, bot, color); // left edge
-        drawLine(g, cx, top, br, bot, color); // right edge
-        drawLine(g, bl, bot, br, bot, color); // base
+        drawLine(g, cx, top, bl, bot, color); 
+        drawLine(g, cx, top, br, bot, color); 
+        drawLine(g, bl, bot, br, bot, color); 
     }
 
-    /** 5-pointed star. */
     private void fillStar(GuiGraphics g, int x, int y, int sz, int color) {
         float cx = x + sz / 2f, cy = y + sz / 2f;
         float outerR = sz / 2f - 1, innerR = outerR * 0.4f;
         int points = 5;
-        // Scan-line fill of star polygon
+        
         float[] px = new float[points * 2], py2 = new float[points * 2];
         for (int i = 0; i < points * 2; i++) {
             double a = -Math.PI / 2 + i * Math.PI / points;
@@ -2529,7 +2311,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** 5-sided pentagon. */
     private void fillPentagon(GuiGraphics g, int x, int y, int sz, int color) {
         float cx = x + sz / 2f, cy = y + sz / 2f, r = sz / 2f - 1;
         int sides = 5;
@@ -2555,12 +2336,11 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** Shield shape: square top half, pointed bottom half. */
     private void fillShield(GuiGraphics g, int x, int y, int sz, int color) {
         int midY = y + sz * 2 / 3;
-        // Rectangular top
+        
         g.fill(x + 1, y, x + sz - 1, midY, color);
-        // Pointed lower triangle
+        
         int cx = x + sz / 2;
         for (int py = midY; py < y + sz; py++) {
             float t = (float) (py - midY) / (y + sz - midY);
@@ -2571,22 +2351,21 @@ public class ChronicleOverviewScreen extends Screen {
 
     private void outlineShield(GuiGraphics g, int x, int y, int sz, int color) {
         int midY = y + sz * 2 / 3, cx = x + sz / 2;
-        // Top edge
+        
         g.fill(x + 1, y, x + sz - 1, y + 1, color);
-        // Left/right sides of rectangle part
+        
         g.fill(x, y, x + 1, midY, color);
         g.fill(x + sz - 1, y, x + sz, midY, color);
-        // Converging lines from rect corners to bottom point
+        
         drawLine(g, x, midY, cx, y + sz - 1, color);
         drawLine(g, x + sz, midY, cx, y + sz - 1, color);
     }
 
-    /** Cross / plus shape. */
     private void fillCross(GuiGraphics g, int x, int y, int sz, int color) {
         int arm = sz / 3;
         int cx = x + sz / 2, cy = y + sz / 2;
-        g.fill(cx - arm / 2, y + arm / 2, cx + arm / 2 + 1, y + sz - arm / 2, color); // vertical bar
-        g.fill(x + arm / 2, cy - arm / 2, x + sz - arm / 2, cy + arm / 2 + 1, color); // horizontal bar
+        g.fill(cx - arm / 2, y + arm / 2, cx + arm / 2 + 1, y + sz - arm / 2, color); 
+        g.fill(x + arm / 2, cy - arm / 2, x + sz - arm / 2, cy + arm / 2 + 1, color); 
     }
 
     private void outlineCross(GuiGraphics g, int x, int y, int sz, int color) {
@@ -2595,20 +2374,17 @@ public class ChronicleOverviewScreen extends Screen {
         int x0 = cx - arm / 2, x1 = cx + arm / 2, y0 = cy - arm / 2, y1 = cy + arm / 2;
         int ax0 = x + arm / 2, ax1 = x + sz - arm / 2;
         int ay0 = y + arm / 2, ay1 = y + sz - arm / 2;
-        // Trace the 12-corner outline clockwise
-        int[][] pts = { { x0, ay0 }, { x0, y0 }, { ax0, y0 }, { ax0, ay0 }, { ax0, y0 }, { x0, y0 },  // redraw is fine
-                                                                                                      // — just hits
-                                                                                                      // same pixels
+        
+        int[][] pts = { { x0, ay0 }, { x0, y0 }, { ax0, y0 }, { ax0, ay0 }, { ax0, y0 }, { x0, y0 },  
+
                 { x0, ay0 }, { ax0, ay0 }, { ax0, ay1 }, { x0, ay1 }, { ax0, ay1 }, { ax0, ay0 },
                 { x1, ay0 }, { ax1, ay0 }, { ax1, y0 }, { x1, y0 }, { ax1, y0 }, { ax1, ay0 },
                 { x1, ay1 }, { ax1, ay1 }, { ax1, ay1 }, { x1, ay1 } };
-        // Simpler: just draw the 12-sided polygon outline directly
+        
         int[] ox = { x0, x1, x1, ax1, ax1, x1, x1, x0, x0, ax0, ax0, x0, x0 };
         int[] oy = { ay0, ay0, y0, y0, ay0, ay0, ay1, ay1, ay0, ay0, y0, y0, ay0 };
         for (int i = 0; i < 12; i++) drawLine(g, ox[i], oy[i], ox[i + 1], oy[i + 1], color);
     }
-
-    // ── Generic polygon fill (scan-line) ──────────────────────────────────────
 
     private void fillPolygon(GuiGraphics g, float[] vx, float[] vy, int yMin, int yMax, int color) {
         int n = vx.length;
@@ -2626,8 +2402,6 @@ public class ChronicleOverviewScreen extends Screen {
                         (int) xs.get(i + 1).floatValue() + 1, scanY + 1, color);
         }
     }
-
-    // ── Bresenham line ────────────────────────────────────────────────────────
 
     private void drawLine(GuiGraphics g, int x0, int y0, int x1, int y1, int color) {
         int dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
@@ -2658,8 +2432,6 @@ public class ChronicleOverviewScreen extends Screen {
         for (QuestTask t : tasks) if (isTaskDone(t)) n++;
         return n;
     }
-
-    // ── Context menu render ───────────────────────────────────────────────────
 
     private void renderCtxMenu(GuiGraphics g, int mx, int my) {
         List<CtxItem> items = buildCtxItems();
@@ -2696,7 +2468,6 @@ public class ChronicleOverviewScreen extends Screen {
             iy += CTX_ROW;
         }
 
-        // Move-category submenu
         if (ctxMoveCatOpen && ctxNode != null) {
             List<String> cats = buildCategoryList();
             cats.remove("ALL");
@@ -2722,7 +2493,6 @@ public class ChronicleOverviewScreen extends Screen {
         g.pose().popPose();
     }
 
-    /** Parses the first occurrence of {@code key: <number>} in SNBT text and adds {@code delta} to it. */
     private static String offsetSnbtCoord(String snbt, String key, int delta) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile(key + ":\\s*(-?\\d+)").matcher(snbt);
         if (!m.find()) return snbt;
@@ -2730,13 +2500,6 @@ public class ChronicleOverviewScreen extends Screen {
         return snbt.substring(0, m.start()) + key + ": " + (old + delta) + snbt.substring(m.end());
     }
 
-    // ── Background rendering ──────────────────────────────────────────────────
-
-    /**
-     * Renders the full quest graph (background, nodes, sidebar) without interactive widgets or
-     * tooltips. Safe to call from a child screen that overlays its own UI on top.
-     * Flushes all batched renders and disables any scissor before returning.
-     */
     public void renderForChildScreen(GuiGraphics g) {
         renderingAsBackdrop = true;
         try {
@@ -2748,7 +2511,6 @@ public class ChronicleOverviewScreen extends Screen {
         com.mojang.blaze3d.systems.RenderSystem.disableScissor();
     }
 
-    /** Renders only the static canvas backdrop — no widgets, no scissors, safe to call from child screens. */
     public void renderBackdrop(GuiGraphics g) {
         g.fill(0, 0, SIDEBAR_W, height, C_PANEL_DARK);
         g.fill(SIDEBAR_W, 0, width, height, C_BG);
@@ -2767,7 +2529,7 @@ public class ChronicleOverviewScreen extends Screen {
             case GRID_LINES -> drawGridLines(g, x1, y1, x2, y2);
             case HEX_GRID -> drawHexGrid(g, x1, y1, x2, y2);
             case DIAGONAL_LINES -> drawDiagonalLines(g, x1, y1, x2, y2);
-            case SOLID -> {} // tint fill above is sufficient
+            case SOLID -> {} 
             case CUSTOM -> drawCustomBg(g, x1, y1, x2, y2, cfg.getTexture());
         }
     }
@@ -2791,7 +2553,7 @@ public class ChronicleOverviewScreen extends Screen {
 
     private void drawHexGrid(GuiGraphics g, int x1, int y1, int x2, int y2) {
         float r = Math.max(10f, 28f * zoom);
-        float w = r * 1.732f; // sqrt(3) * r
+        float w = r * 1.732f; 
         float h = r * 2f;
         float offX = viewOffX % (int) w;
         float offY = viewOffY % (int) (h * 0.75f);
@@ -2824,7 +2586,7 @@ public class ChronicleOverviewScreen extends Screen {
         for (int d = -sp + startOff; d < total + sp; d += sp) {
             int ax = x1 + d, ay = y1;
             int bx = x1, by = y1 + d;
-            // Clamp to canvas rect
+            
             int cx0 = Math.max(x1, Math.min(x2, ax));
             int cy0 = ay + (cx0 - ax);
             int cx1 = Math.max(x1, Math.min(x2, bx));
@@ -2856,10 +2618,8 @@ public class ChronicleOverviewScreen extends Screen {
             ResourceLocation loc = new ResourceLocation(textureLoc);
             int w = x2 - x1, h = y2 - y1;
             g.blit(loc, x1, y1, 0, 0, w, h, w, h);
-        } catch (Exception ignored) {} // malformed RL or missing texture
+        } catch (Exception ignored) {} 
     }
-
-    // ── State badge (small corner indicator when node has an icon) ────────────
 
     private void renderStateBadge(GuiGraphics g, int nx, int ny, int sz, QuestState st) {
         int badgeSz = Math.min(8, Math.max(4, sz / 5));
@@ -2874,20 +2634,17 @@ public class ChronicleOverviewScreen extends Screen {
         g.fill(bx, by, bx + badgeSz, by + badgeSz, bc);
     }
 
-    // ── Utilities ─────────────────────────────────────────────────────────────
-
     private boolean catMatches(QuestNode n) {
         QuestNode.Visibility vis = n.getVisibility();
-        // Flag-disabled quests never appear (treated as nonexistent), even in dev mode
-        if (n.isFlagDisabled()) return isDevMode; // dev can still see them with a faint marker
-        // HIDDEN quests invisible to non-devs until prerequisites satisfied
+        
+        if (n.isFlagDisabled()) return isDevMode; 
+        
         if (!isDevMode && vis == QuestNode.Visibility.HIDDEN) {
             if (getState(n) == QuestState.LOCKED) return false;
         }
-        // DISABLED quests are always visible (shown grayed out); they are NOT hidden
-        // Category filter
+
         if (!selectedCategory.equals(n.getCategory())) return false;
-        // State filter (hard filter — search is soft/dim only via matchesSearch)
+        
         if (!stateFilter.equals("ALL")) {
             QuestState st = getState(n);
             boolean stateMatch = switch (stateFilter) {
@@ -2902,7 +2659,6 @@ public class ChronicleOverviewScreen extends Screen {
         return true;
     }
 
-    /** Returns true if this node matches the current search query (any-word-order, title+id+desc). */
     private boolean matchesSearch(QuestNode n) {
         if (searchWords.length == 0) return true;
         String hay = searchCache.computeIfAbsent(n.getId(), id -> buildSearchHaystack(n));
@@ -2915,7 +2671,6 @@ public class ChronicleOverviewScreen extends Screen {
     String buildSearchHaystack(QuestNode n) {
         StringBuilder sb = new StringBuilder();
 
-        // Core text fields (lowercased for case-insensitive search)
         sb.append(n.getTitle().getString().toLowerCase()).append(' ');
         sb.append(n.getId().getPath().replace('_', ' ').toLowerCase()).append(' ');
         sb.append(n.getId().toString().toLowerCase()).append(' ');
@@ -2924,7 +2679,6 @@ public class ChronicleOverviewScreen extends Screen {
         if (n.getSubtitle() != null && !n.getSubtitle().isEmpty()) sb.append(n.getSubtitle().toLowerCase()).append(' ');
         sb.append(n.getCategory().toLowerCase()).append(' ');
 
-        // Tasks — description text + item name + item ID + item tags
         for (QuestTask task : n.getTasks()) {
             sb.append(task.getDescription().getString().toLowerCase()).append(' ');
 
@@ -2933,12 +2687,12 @@ public class ChronicleOverviewScreen extends Screen {
                 net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS
                         .getValue(displayId);
                 if (item != null && item != net.minecraft.world.item.Items.AIR) {
-                    // Item display name
+                    
                     sb.append(item.getDescription().getString().toLowerCase()).append(' ');
-                    // Item registry path (e.g. "iron_ingot" → "iron ingot")
+                    
                     sb.append(displayId.getPath().replace('_', ' ').toLowerCase()).append(' ');
                     sb.append(displayId.toString().toLowerCase()).append(' ');
-                    // Item tags
+                    
                     try {
                         net.minecraft.core.Registry<net.minecraft.world.item.Item> itemReg = net.minecraft.core.registries.BuiltInRegistries.ITEM;
                         var holder = itemReg.getHolder(itemReg.getId(item));
@@ -2950,15 +2704,15 @@ public class ChronicleOverviewScreen extends Screen {
                             }
                         }
                     } catch (Exception ignored) {}
-                    // Tooltips — use the local player if available so mods see a real player
+                    
                     try {
                         net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
                         net.minecraft.client.player.LocalPlayer localPlayer = net.minecraft.client.Minecraft
                                 .getInstance().player;
                         var tooltipLines = stack.getTooltipLines(localPlayer,
                                 net.minecraft.world.item.TooltipFlag.Default.NORMAL);
-                        for (int ti = 1; ti < tooltipLines.size(); ti++) { // skip index 0 (display name — already in
-                                                                           // haystack)
+                        for (int ti = 1; ti < tooltipLines.size(); ti++) { 
+                                                                           
                             String txt = tooltipLines.get(ti).getString().trim().toLowerCase();
                             if (!txt.isEmpty()) sb.append(txt).append(' ');
                         }
@@ -2967,7 +2721,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Rewards — item name + ID
         for (QuestReward reward : n.getRewards()) {
             sb.append(reward.getSummary().getString()).append(' ');
             if (reward instanceof QuestReward.ItemReward ir) {
@@ -2982,22 +2735,16 @@ public class ChronicleOverviewScreen extends Screen {
         return sb.toString().toLowerCase();
     }
 
-    // ── Validation ────────────────────────────────────────────────────────────
-
-    /**
-     * Returns a list of human-readable warnings about this quest node.
-     * Only meaningful in dev mode — called at render time, kept cheap.
-     */
     private List<String> getValidationIssues(QuestNode node) {
         List<String> issues = new ArrayList<>();
-        // No tasks at all
+        
         if (node.getTasks().isEmpty()) issues.add("No tasks defined");
-        // No title
+        
         if (node.getTitle().getString().isBlank()) issues.add("Missing title");
-        // SNBT file doesn't exist on disk (unsaved / loaded from datapack)
+        
         Path snbt = questSnbt(node);
         if (!Files.exists(snbt)) issues.add("No editable file on disk (datapack quest)");
-        // Check that registered item IDs in item_check tasks are resolvable
+        
         for (QuestTask task : node.getTasks()) {
             if (task instanceof net.phoenix.core.integration.phoenix_chronicles.tasks.ItemRequirementTask irt) {
                 if (irt.getItem() == null || irt.getItem() == net.minecraft.world.item.Items.AIR) {
@@ -3005,7 +2752,7 @@ public class ChronicleOverviewScreen extends Screen {
                 }
             }
         }
-        // Prerequisites that no longer exist
+        
         for (QuestNode prereq : node.getPrerequisites()) {
             if (QuestTreeRegistry.getQuest(prereq.getId()) == null) {
                 issues.add("Broken prerequisite: " + prereq.getId().getPath());
@@ -3033,8 +2780,6 @@ public class ChronicleOverviewScreen extends Screen {
         return font.width(t) > maxW ? font.plainSubstrByWidth(t, maxW - 4) + "…" : t;
     }
 
-    // ── Fit-to-canvas ─────────────────────────────────────────────────────────
-
     private void fitToCanvas() {
         if (nodeScreenPos.isEmpty()) return;
         int cl = SIDEBAR_W, cr = width;
@@ -3060,14 +2805,11 @@ public class ChronicleOverviewScreen extends Screen {
         rebuild();
     }
 
-    // ── Hover tooltip ─────────────────────────────────────────────────────────
-
     private void renderNodeTooltip(GuiGraphics g, QuestNode node, int mx, int my) {
         QuestState st = getState(node);
         String title = node.getTitle().getString();
         String sub = node.getSubtitle() != null && !node.getSubtitle().isBlank() ? node.getSubtitle() : null;
 
-        // Task progress summary
         List<QuestTask> tasks = node.getTasks();
         int taskDone = 0, taskTotal = 0;
         List<String> taskLines = new ArrayList<>();
@@ -3084,7 +2826,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // State line
         String stateLine = switch (st) {
             case COMPLETED -> "§a✔ Complete";
             case ACTIVE -> "§e▶ In progress — " + taskDone + "/" + taskTotal;
@@ -3092,7 +2833,6 @@ public class ChronicleOverviewScreen extends Screen {
             case LOCKED -> "§8✕ Locked";
         };
 
-        // Prereqs
         List<String> prereqLines = new ArrayList<>();
         if (!node.getPrerequisites().isEmpty()) {
             for (QuestNode req : node.getPrerequisites()) {
@@ -3102,7 +2842,6 @@ public class ChronicleOverviewScreen extends Screen {
             }
         }
 
-        // Build tooltip lines
         List<String> lines = new ArrayList<>();
         lines.add("§f" + title);
         if (sub != null) lines.add("§8" + sub);
@@ -3117,7 +2856,7 @@ public class ChronicleOverviewScreen extends Screen {
             lines.add("§8Requires:");
             lines.addAll(prereqLines.stream().limit(4).toList());
         }
-        // Dev-mode validation warnings
+        
         if (isDevMode) {
             List<String> issues = getValidationIssues(node);
             if (!issues.isEmpty()) {
@@ -3141,7 +2880,7 @@ public class ChronicleOverviewScreen extends Screen {
         g.fill(tx, ty + tipH - 1, tx + tipW, ty + tipH, C_BORDER_LIT);
         g.fill(tx, ty, tx + 1, ty + tipH, C_BORDER_LIT);
         g.fill(tx + tipW - 1, ty, tx + tipW, ty + tipH, C_BORDER_LIT);
-        g.fill(tx, ty, tx + 1, ty + tipH, 0xFF884499); // left accent bar
+        g.fill(tx, ty, tx + 1, ty + tipH, 0xFF884499); 
 
         int lx = tx + padW, ly = ty + padH;
         for (String line : lines) {
@@ -3158,8 +2897,8 @@ public class ChronicleOverviewScreen extends Screen {
         int done = 0, total = 0;
         for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
             if (!cat.equals("ALL") && !cat.equals(n.getCategory())) continue;
-            if (n.isFlagDisabled()) continue; // flag-disabled = nonexistent, excluded from progress
-            // DISABLED visibility still counts toward progress (visible but uncompletable)
+            if (n.isFlagDisabled()) continue; 
+            
             total++;
             if (getState(n) == QuestState.COMPLETED) done++;
         }
@@ -3181,7 +2920,6 @@ public class ChronicleOverviewScreen extends Screen {
         return lines;
     }
 
-    /** Brightens a line color for hover highlighting. */
     private static int boostedLineColor(int col) {
         int r = Math.min(255, ((col >> 16) & 0xFF) + 90);
         int g2 = Math.min(255, ((col >> 8) & 0xFF) + 90);
@@ -3201,20 +2939,16 @@ public class ChronicleOverviewScreen extends Screen {
         feedbackTimer = 100;
     }
 
-    // ── Disk persistence ──────────────────────────────────────────────────────
-
     private Path questSnbt(QuestNode node) {
         return Minecraft.getInstance().gameDirectory.toPath()
                 .resolve("config").resolve("phoenix_chronicles")
                 .resolve(node.getId().getPath() + ".snbt");
     }
 
-    /** Called by DepLineSettingsScreen to trigger a line-cache rebuild after per-quest hide toggles. */
     void rebuildFromExternal() {
         rebuild();
     }
 
-    /** Saves the hide_dep_line flag for a single quest node to its SNBT file. */
     void saveNodeHideDepLineToDisk(QuestNode node) {
         try {
             Path p = questSnbt(node);
@@ -3343,9 +3077,6 @@ public class ChronicleOverviewScreen extends Screen {
         return new FullQuestData(title, Component.literal(desc.toString().trim()), List.of());
     }
 
-    // ── Bezier proximity ─────────────────────────────────────────────────────
-
-    /** True when (mx,my) is within tol pixels of the cubic S-bezier from (x1,y1) to (x2,y2). */
     private boolean pointNearBezier(int mx, int my, int x1, int y1, int x2, int y2, int tol) {
         int dx = x2 - x1, dy = y2 - y1;
         int cx1 = x1 + dx / 3, cy1 = y1;
@@ -3363,8 +3094,6 @@ public class ChronicleOverviewScreen extends Screen {
         return false;
     }
 
-    // ── Line context menu ─────────────────────────────────────────────────────
-
     private void renderLineCtxMenu(GuiGraphics g, double mx, double my) {
         QuestNode parentNode = lineCtxParentId == null ? null : QuestTreeRegistry.getQuest(lineCtxParentId);
         QuestNode childNode = lineCtxChildId == null ? null : QuestTreeRegistry.getQuest(lineCtxChildId);
@@ -3377,7 +3106,6 @@ public class ChronicleOverviewScreen extends Screen {
         boolean isRequired = !isForbidden && childNode.isPrereqRequired(lineCtxParentId);
         boolean isLink = childNode.isPrereqLink(lineCtxParentId);
 
-        // 3-way cycle label: required → optional → forbidden → required
         String cycleLabel;
         if (isForbidden) cycleLabel = "§aType: Forbidden  →  Required";
         else if (!isRequired) cycleLabel = "§cType: Optional  →  Forbidden";
@@ -3442,14 +3170,14 @@ public class ChronicleOverviewScreen extends Screen {
         lineCtxOpen = false;
 
         if (idx == 0) {
-            // Remove connection: child removes parentNode as a prereq; also remove parent→child edge
+            
             childNode.removePrerequisite(parentNode);
             parentNode.removeChild(childNode);
             saveNodePrereqsToDisk(childNode);
             rebuild();
             setFeedback("Removed: " + parentNode.getTitle().getString() + " → " + childNode.getTitle().getString());
         } else if (idx == 1) {
-            // 3-way cycle: required → optional → forbidden → required
+            
             if (isForbidden) {
                 childNode.setPrereqForbidden(lineCtxParentId, false);
                 childNode.setPrereqRequired(lineCtxParentId, true);
@@ -3464,30 +3192,28 @@ public class ChronicleOverviewScreen extends Screen {
             saveNodePrereqsToDisk(childNode);
             rebuild();
         } else if (idx == 2) {
-            // Toggle link marker
+            
             childNode.setPrereqLink(lineCtxParentId, !isLink);
             saveNodePrereqsToDisk(childNode);
             rebuild();
             setFeedback(isLink ? "Unmarked as link" : "Marked as link");
         } else if (idx == 3) {
-            // Toggle dep line visibility for the child quest
+            
             childNode.setHideDepLine(!childNode.isHideDepLine());
             saveNodeHideDepLineToDisk(childNode);
             rebuild();
             setFeedback(childNode.isHideDepLine() ? "Dep lines hidden: " + childNode.getTitle().getString() :
                     "Dep lines shown: " + childNode.getTitle().getString());
         } else if (idx == 4) {
-            // Open dep line settings screen
+            
             final String cat = selectedCategory;
             if (minecraft != null) minecraft.setScreen(new DepLineSettingsScreen(this, cat));
         }
     }
 
-    // ── Unlock path BFS ───────────────────────────────────────────────────────
-
     private void computeUnlockPath(QuestNode target) {
         unlockPathHighlight.clear();
-        // BFS backwards through prerequisites until we hit completed/active nodes
+        
         java.util.Queue<QuestNode> queue = new java.util.LinkedList<>();
         for (QuestNode prereq : target.getPrerequisites()) queue.add(prereq);
         java.util.Set<ResourceLocation> visited = new java.util.HashSet<>();
@@ -3500,7 +3226,7 @@ public class ChronicleOverviewScreen extends Screen {
             QuestNode n = queue.poll();
             if (!visited.add(n.getId())) continue;
             unlockPathHighlight.add(n.getId());
-            // Stop following chain once we hit a completed/active node
+            
             if (data != null) {
                 QuestState st = data.getQuestState(n.getId(), QuestState.LOCKED);
                 if (st == QuestState.COMPLETED || st == QuestState.ACTIVE) continue;
@@ -3508,8 +3234,6 @@ public class ChronicleOverviewScreen extends Screen {
             for (QuestNode req : n.getPrerequisites()) queue.add(req);
         }
     }
-
-    // ── Validation panel ──────────────────────────────────────────────────────
 
     private void renderValidationPanel(GuiGraphics g, int cl, int cr) {
         int panW = Math.min(400, cr - cl - 20);
@@ -3561,9 +3285,6 @@ public class ChronicleOverviewScreen extends Screen {
         return false;
     }
 
-    // ── Tutorial overlay ──────────────────────────────────────────────────────
-
-    /** Finds the first ACTIVE/UNLOCKED quest that has tutorial steps and hasn't been dismissed. */
     private QuestNode findActiveTutorialQuest() {
         if (!TutorialProgressTracker.isInitialized()) {
             Path cfg = Minecraft.getInstance().gameDirectory.toPath()
@@ -3596,7 +3317,6 @@ public class ChronicleOverviewScreen extends Screen {
 
         int cl = SIDEBAR_W, cr = width;
 
-        // ── Spotlight dim ─────────────────────────────────────────────────────
         int hx = 0, hy = 0, hw = 0, hh = 0;
         if (step.hasHighlight()) {
             if (TutorialStep.HL_SIDEBAR.equals(step.highlight())) {
@@ -3632,12 +3352,12 @@ public class ChronicleOverviewScreen extends Screen {
 
         int dimColor = 0xBB000000;
         if (hw > 0) {
-            // Four rectangles around the spotlight
+            
             g.fill(0, 0, width, hy, dimColor);
             g.fill(0, hy + hh, width, height, dimColor);
             g.fill(0, hy, hx, hy + hh, dimColor);
             g.fill(hx + hw, hy, width, hy + hh, dimColor);
-            // Glowing border around highlight
+            
             g.fill(hx - 1, hy - 1, hx + hw + 1, hy, C_SEL_ACCENT);
             g.fill(hx - 1, hy + hh, hx + hw + 1, hy + hh + 1, C_SEL_ACCENT);
             g.fill(hx - 1, hy, hx, hy + hh, C_SEL_ACCENT);
@@ -3646,11 +3366,9 @@ public class ChronicleOverviewScreen extends Screen {
             g.fill(0, 0, width, height, dimColor);
         }
 
-        // ── Text box ──────────────────────────────────────────────────────────
         int boxW = Math.min(380, width - 40);
         int boxX = (width - boxW) / 2;
 
-        // Word-wrap the step text
         java.util.List<String> wrappedLines = new java.util.ArrayList<>();
         String remaining = step.text();
         int maxLineW = boxW - 20;
@@ -3669,7 +3387,7 @@ public class ChronicleOverviewScreen extends Screen {
         int textH = wrappedLines.size() * 11;
         int btnRowH = 18;
         int boxH = 14 + textH + 8 + btnRowH + 8;
-        // Position above highlight if it's in the lower half, else below
+        
         int boxY = (hw > 0 && hy + hh > height * 2 / 3) ? hy - boxH - 10 : (hw > 0 ? hy + hh + 10 : height - boxH - 20);
         boxY = Math.max(HEADER_H + 4, Math.min(boxY, height - boxH - 4));
 
@@ -3679,25 +3397,21 @@ public class ChronicleOverviewScreen extends Screen {
         g.fill(boxX, boxY, boxX + 1, boxY + boxH, C_BORDER);
         g.fill(boxX + boxW - 1, boxY, boxX + boxW, boxY + boxH, C_BORDER);
 
-        // Step counter
         String counter = "Step " + (stepIdx + 1) + " / " + steps.size();
         g.drawString(font, "§8" + counter, boxX + 10, boxY + 5, C_TEXT_FAINT, false);
-        // Quest title
+        
         g.drawString(font, "§7" + tutQuest.getTitle().getString(),
                 boxX + boxW - font.width(tutQuest.getTitle().getString()) - 10, boxY + 5, C_TEXT_DIM, false);
 
-        // Text lines
         int ty = boxY + 16;
         for (String line : wrappedLines) {
             g.drawString(font, "§f" + line, boxX + 10, ty, C_TEXT, false);
             ty += 11;
         }
 
-        // ── Navigation buttons ────────────────────────────────────────────────
         int btnY = boxY + boxH - btnRowH - 5;
         int btnH = btnRowH - 2;
 
-        // Skip (right-aligned)
         int skipW = font.width("Skip") + 12;
         int skipX = boxX + boxW - skipW - 6;
         tutSkipBtn = new int[] { skipX, btnY, skipX + skipW, btnY + btnH };
@@ -3705,7 +3419,6 @@ public class ChronicleOverviewScreen extends Screen {
         g.fill(skipX, btnY, skipX + skipW, btnY + btnH, skipHov ? 0x33FFFFFF : 0x1AFFFFFF);
         g.drawCenteredString(font, "§8Skip", skipX + skipW / 2, btnY + 4, skipHov ? C_TEXT_DIM : C_TEXT_FAINT);
 
-        // Next / Finish
         boolean isLast = stepIdx == steps.size() - 1;
         String nextLabel = isLast ? "§aFinish" : "§fNext →";
         int nextW = font.width(isLast ? "Finish" : "Next →") + 16;
@@ -3716,7 +3429,6 @@ public class ChronicleOverviewScreen extends Screen {
         g.fill(nextX, btnY, nextX + nextW, btnY + 1, nextHov ? C_NBORD_DONE : 0xFF004422);
         g.drawCenteredString(font, nextLabel, nextX + nextW / 2, btnY + 4, nextHov ? C_NBORD_DONE : 0xFF55BB77);
 
-        // Prev (only if not first step)
         if (stepIdx > 0) {
             int prevW = font.width("← Prev") + 12;
             int prevX = boxX + 6;
@@ -3727,7 +3439,6 @@ public class ChronicleOverviewScreen extends Screen {
         }
     }
 
-    /** Called from mouseClicked — handles tutorial nav buttons before other handlers. */
     private boolean handleTutorialClick(double mx, double my) {
         if (tutNextBtn == null && tutPrevBtn == null && tutSkipBtn == null) return false;
 

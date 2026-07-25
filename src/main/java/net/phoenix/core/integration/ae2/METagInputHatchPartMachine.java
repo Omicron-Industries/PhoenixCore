@@ -93,12 +93,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
         return MANAGED_FIELD_HOLDER;
     }
 
-    /*
-     * =========================
-     * == LIFECYCLE / TANK ==
-     * =========================
-     */
-
     @Override
     protected NotifiableFluidTank createTank(int initialCapacity, int slots, Object... args) {
         this.aeFluidHandler = new ExportOnlyAEFluidList(this, CONFIG_SIZE);
@@ -109,12 +103,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
     public void onMachineRemoved() {
         flushInventory();
     }
-
-    /*
-     * =========================
-     * == ME SYNC ==
-     * =========================
-     */
 
     @Override
     protected void autoIO() {
@@ -242,12 +230,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
         }
     }
 
-    /*
-     * =========================
-     * == TAG LOGIC ==
-     * =========================
-     */
-
     protected boolean isAllowed(AEFluidKey key) {
         if (whitelistExpr.isBlank() && blacklistExpr.isBlank()) return false;
         if (!blacklistExpr.isBlank() && TagMatcher.doesFluidMatch(key, blacklistExpr)) return false;
@@ -311,12 +293,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
         }
     }
 
-    /*
-     * =========================
-     * == GUI ==
-     * =========================
-     */
-
     @Override
     public Widget createUIWidget() {
         WidgetGroup group = new WidgetGroup(new Position(0, 0), new Size(176, 220));
@@ -367,12 +343,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
 
         return group;
     }
-
-    /*
-     * =========================
-     * == DATA STICK ==
-     * =========================
-     */
 
     @Override
     public InteractionResult onDataStickShiftUse(Player player, ItemStack stick) {

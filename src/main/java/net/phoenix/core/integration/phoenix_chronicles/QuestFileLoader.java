@@ -17,8 +17,6 @@ import java.util.stream.Stream;
 
 public class QuestFileLoader {
 
-    // ── Load error accumulator ────────────────────────────────────────────────
-    /** Errors collected during the most recent load pass. Cleared on each reload. */
     public static final List<String> LOAD_ERRORS = new ArrayList<>();
 
     private record QuestRecord(
@@ -50,13 +48,6 @@ public class QuestFileLoader {
                                boolean shared,
                                List<TutorialStep> tutorialSteps) {}
 
-    // ── Public entry points ───────────────────────────────────────────────────
-
-    /**
-     * Server-side additive load: reads .snbt files from the given config directory
-     * and registers any quests NOT already in the registry (datapacks take priority).
-     * Does not clear the registry. Safe to call after ChronicleDataLoader.apply().
-     */
     public static void loadAdditiveFromDisk(Path configDir) {
         if (!Files.exists(configDir)) return;
         LOAD_ERRORS.clear();
@@ -81,7 +72,6 @@ public class QuestFileLoader {
                 " editor quest(s) from config dir.");
     }
 
-    /** Client-side full reload from the default config location. Clears the registry first. */
     public static void reloadAllQuestsFromDisk() {
         LOAD_ERRORS.clear();
         QuestTreeRegistry.clear();
@@ -108,10 +98,8 @@ public class QuestFileLoader {
                 QuestTreeRegistry.getRootChapters().size() + " root(s)).");
     }
 
-    // ── Shared wiring ─────────────────────────────────────────────────────────
-
     private static void wireAndRegister(List<QuestRecord> records) {
-        // Phase 1 — construct and bare-register all nodes
+        
         for (QuestRecord rec : records) {
             QuestNode node = new QuestNode(rec.id(),
                     Component.literal(rec.title()), Component.literal(rec.description()));
@@ -138,7 +126,6 @@ public class QuestFileLoader {
             QuestTreeRegistry.registerBareQuestNode(node);
         }
 
-        // Phase 2 — wire parent→child, prerequisites, and promote roots
         for (QuestRecord rec : records) {
             QuestNode node = QuestTreeRegistry.getQuest(rec.id());
             if (node == null) continue;
@@ -154,7 +141,7 @@ public class QuestFileLoader {
             } else {
                 QuestTreeRegistry.registerRootChapter(node);
             }
-            // Validate: check for broken prereq references
+            
             for (String pid : rec.prereqRequired().keySet()) {
                 if (QuestTreeRegistry.getQuest(new ResourceLocation("phoenixcore", pid)) == null)
                     LOAD_ERRORS.add("Quest '" + rec.id().getPath() + "': prereq '" + pid + "' not found.");
@@ -164,7 +151,6 @@ public class QuestFileLoader {
                     LOAD_ERRORS.add("Quest '" + rec.id().getPath() + "': forbidden prereq '" + pid + "' not found.");
             }
 
-            // Wire prerequisites
             for (Map.Entry<String, Boolean> e : rec.prereqRequired().entrySet()) {
                 QuestNode prereq = QuestTreeRegistry.getQuest(new ResourceLocation("phoenixcore", e.getKey()));
                 if (prereq != null) {
@@ -183,7 +169,6 @@ public class QuestFileLoader {
             }
         }
 
-        // Phase 3 — duplicate task-ID detection across all loaded quests
         Map<ResourceLocation, String> taskIdToQuest = new LinkedHashMap<>();
         for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
             for (QuestTask task : node.getTasks()) {
@@ -197,8 +182,6 @@ public class QuestFileLoader {
             }
         }
     }
-
-    // ── File parser ───────────────────────────────────────────────────────────
 
     private static QuestRecord parseFile(Path file) {
         try {
@@ -222,7 +205,6 @@ public class QuestFileLoader {
             ResourceLocation parentId = (!parentStr.isEmpty() && !parentStr.equals("none")) ?
                     new ResourceLocation("phoenixcore", parentStr.toLowerCase()) : null;
 
-            // Repeat behaviour
             QuestNode.RepeatMode repeatMode = QuestNode.RepeatMode.NONE;
             if (tag.contains("repeat_mode")) {
                 try {
@@ -231,10 +213,8 @@ public class QuestFileLoader {
             }
             int repeatCooldownHours = tag.contains("repeat_cooldown_hours") ? tag.getInt("repeat_cooldown_hours") : 24;
 
-            // Prerequisite gate
             boolean requireAllPrereqs = !tag.contains("require_all_prereqs") || tag.getBoolean("require_all_prereqs");
 
-            // Extended metadata
             String subtitle = tag.contains("subtitle") ? tag.getString("subtitle") : "";
             QuestNode.Visibility visibility = QuestNode.Visibility.NORMAL;
             if (tag.contains("visibility")) {
@@ -244,7 +224,6 @@ public class QuestFileLoader {
             }
             int taskMinCount = tag.contains("task_min_count") ? tag.getInt("task_min_count") : 0;
 
-            // Rewards
             List<QuestReward> rewards = new ArrayList<>();
             if (tag.contains("rewards")) {
                 ListTag rewardList = tag.getList("rewards", Tag.TAG_COMPOUND);
@@ -254,7 +233,6 @@ public class QuestFileLoader {
                 }
             }
 
-            // Tasks (fix pre-existing persistence bug: tasks were never loaded)
             List<QuestTask> tasks = new ArrayList<>();
             if (tag.contains("tasks")) {
                 ListTag taskList = tag.getList("tasks", Tag.TAG_COMPOUND);
@@ -264,11 +242,9 @@ public class QuestFileLoader {
                 }
             }
 
-            // Emergency items
             net.minecraft.nbt.ListTag emergencyTag = tag.contains("emergency_items") ?
                     tag.getList("emergency_items", Tag.TAG_COMPOUND) : null;
 
-            // Per-prereq flags: required/optional/forbidden + link marker
             Map<String, Boolean> prereqRequired = new LinkedHashMap<>();
             Set<String> prereqForbidden = new java.util.LinkedHashSet<>();
             Set<String> prereqLink = new java.util.LinkedHashSet<>();
@@ -296,7 +272,6 @@ public class QuestFileLoader {
                     tag.getBoolean("disabled_blocks_children");
             boolean shared = tag.contains("shared") && tag.getBoolean("shared");
 
-            // Tutorial steps
             List<TutorialStep> tutorialSteps = new ArrayList<>();
             if (tag.contains("tutorial_steps")) {
                 ListTag stepList = tag.getList("tutorial_steps", Tag.TAG_COMPOUND);
@@ -322,13 +297,10 @@ public class QuestFileLoader {
         }
     }
 
-    // ── Task deserializer ─────────────────────────────────────────────────────
-
     private static QuestTask deserializeTask(CompoundTag tag) {
         if (!tag.contains("type") || !tag.contains("task_id")) return null;
         boolean optional = tag.contains("optional") && tag.getBoolean("optional");
 
-        // Delegate fully to the registry — built-ins are registered there, mods/KubeJS extend it
         QuestTask task = PhoenixTaskRegistry.deserialize(tag);
         if (task != null) {
             task.setOptional(optional);

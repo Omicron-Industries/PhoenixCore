@@ -7,11 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider;
 
-/**
- * Task: visit (stand in) a specific biome.
- * Completes the first time the player is detected inside the target biome on a server tick.
- * SNBT shape: { type: "biome", biome_id: "minecraft:jungle" }
- */
 public class BiomeTask extends QuestTask {
 
     private ResourceLocation biomeId;

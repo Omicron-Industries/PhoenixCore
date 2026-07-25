@@ -7,10 +7,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Static singleton — persists Recipe Builder state across screen opens in the same session.
- * Save on onClose(), restore in init() after widgets are built, clear on Clear button.
- */
 public final class RecipeBuilderState {
 
     public static final RecipeBuilderState INSTANCE = new RecipeBuilderState();
@@ -37,10 +33,7 @@ public final class RecipeBuilderState {
 
     public final List<SavedFluid> fluidInputs = new ArrayList<>(), fluidOutputs = new ArrayList<>();
 
-    /** "TYPE_NAME|val0|val1|..." */
     public final List<String> conditions = new ArrayList<>();
-
-    // ── Save ──────────────────────────────────────────────────────────────────
 
     public void save(RecipeBuilderScreen s) {
         recipeTypeIdx = s.recipeTypeDropdown.getSelectedIdx();
@@ -83,8 +76,6 @@ public final class RecipeBuilderState {
             out.add(f);
         }
     }
-
-    // ── Restore ───────────────────────────────────────────────────────────────
 
     public void restore(RecipeBuilderScreen s) {
         s.recipeTypeDropdown.setSelectedIdx(recipeTypeIdx);
@@ -136,8 +127,6 @@ public final class RecipeBuilderState {
             e.amount = saved.get(i).amount;
         }
     }
-
-    // ── Clear ─────────────────────────────────────────────────────────────────
 
     public void clear() {
         recipeTypeIdx = 0;

@@ -10,16 +10,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider;
 
-/**
- * Task: Place or interact with a specific block.
- * SNBT shape: { type: "block_interact", block_id: "minecraft:furnace", mode: "PLACE" }
- * Migrated to player-capability data layers to safely isolate multi-player progress states.
- */
 public class BlockInteractTask extends QuestTask {
 
-    // REMOVED final: Must be assignable by the data loader inside deserializeNBT()
     private Block targetBlock;
-    private String mode; // "PLACE" or "RIGHT_CLICK"
+    private String mode; 
 
     public BlockInteractTask(ResourceLocation taskId, Component description, Block targetBlock, String mode) {
         super(taskId, description);
@@ -41,7 +35,6 @@ public class BlockInteractTask extends QuestTask {
                 .map(data -> data.getOrCreateTaskProgress(this.getTaskId()).getBoolean("completed")).orElse(false);
     }
 
-    /** Call this from your BlockEvent.PlaceEvent / PlayerInteractEvent.RightClickBlock hooks */
     public void onBlockEvent(Player player, Block block, String action) {
         if (targetBlock == null || mode == null) return;
 
@@ -62,7 +55,7 @@ public class BlockInteractTask extends QuestTask {
         ResourceLocation id = ForgeRegistries.BLOCKS.getKey(targetBlock);
         tag.putString("block_id", id != null ? id.toString() : "minecraft:air");
         tag.putString("mode", mode != null ? mode : "PLACE");
-        // REMOVED: tag.putBoolean("completed", this.completed);
+        
         return tag;
     }
 

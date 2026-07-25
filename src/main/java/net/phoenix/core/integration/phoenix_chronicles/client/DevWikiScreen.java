@@ -10,41 +10,28 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-/**
- * In-game developer wiki / reference panel.
- * Opened via the ? button in the toolbar (dev mode) or pressing ? on the keyboard.
- *
- * Each page is a list of WLine records rendered top-to-bottom. Some pages pull live
- * data from the registries so values are always current.
- */
 public class DevWikiScreen extends Screen {
 
-    // ── Palette ───────────────────────────────────────────────────────────────
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_TEXT_DIM, C_TEXT_FAINT, C_DONE, C_ACTIVE;
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int HEADER_H = 28;
     private static final int FOOTER_H = 28;
     private static final int SIDEBAR_W = 96;
     private static final int MARGIN = 10;
     private static final int LINE_H = 12;
 
-    // ── Pages ─────────────────────────────────────────────────────────────────
     private static final String[] PAGE_NAMES = {
             "Overview", "Canvas", "Quest Fields", "Tasks", "Rewards", "SNBT Format", "Live Stats", "API Reference"
     };
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final Screen parent;
     private int activePage = 0;
     private int scrollY = 0;
-    private int cachedContentH = 0; // updated each render frame for scroll clamping
+    private int cachedContentH = 0; 
 
-    // ── Copy-button tracking (rebuilt each frame) ─────────────────────────────
-    private final List<int[]> copyBtnBounds = new ArrayList<>(); // {x1,y1,x2,y2}
+    private final List<int[]> copyBtnBounds = new ArrayList<>(); 
     private final List<String> copyBtnTexts = new ArrayList<>();
 
-    // ── Content line model ────────────────────────────────────────────────────
     private enum LT {
         HEADING,
         SUBHEADING,
@@ -86,20 +73,15 @@ public class DevWikiScreen extends Screen {
             return new WLine(LT.SPACER, "", "");
         }
 
-        /** Monospace-style code line with a copy button. */
         static WLine code(String s) {
             return new WLine(LT.CODE, s, "");
         }
     }
 
-    // ── Constructor ───────────────────────────────────────────────────────────
-
     public DevWikiScreen(Screen parent) {
         super(Component.literal("Dev Wiki"));
         this.parent = parent;
     }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     @Override
     protected void init() {
@@ -117,7 +99,6 @@ public class DevWikiScreen extends Screen {
 
         clearWidgets();
 
-        // Sidebar page buttons
         int tabY = HEADER_H + 8;
         for (int i = 0; i < PAGE_NAMES.length; i++) {
             final int idx = i;
@@ -133,7 +114,6 @@ public class DevWikiScreen extends Screen {
             tabY += 16;
         }
 
-        // Close button
         addRenderableWidget(Button.builder(Component.literal("§7✕ Close"),
                 b -> {
                     if (minecraft != null) minecraft.setScreen(parent);
@@ -146,8 +126,6 @@ public class DevWikiScreen extends Screen {
         init();
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void renderBackground(@NotNull GuiGraphics g) {}
 
@@ -155,24 +133,19 @@ public class DevWikiScreen extends Screen {
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
         g.fill(0, 0, width, height, C_BG);
 
-        // Header
         g.fill(0, 0, width, HEADER_H, C_HEADER);
         g.fill(0, HEADER_H - 1, width, HEADER_H, C_BORDER);
         g.drawCenteredString(font, "§fDev Wiki  §8— §7" + PAGE_NAMES[activePage], width / 2, 10, C_TEXT);
 
-        // Sidebar
         g.fill(0, HEADER_H, SIDEBAR_W, height - FOOTER_H, C_PANEL);
         g.fill(SIDEBAR_W - 1, HEADER_H, SIDEBAR_W, height, C_BORDER);
 
-        // Active tab accent
         int tabY = HEADER_H + 8 + activePage * 16;
         g.fill(0, tabY - 1, 2, tabY + 15, C_ACCENT);
 
-        // Footer
         g.fill(0, height - FOOTER_H, width, height, C_HEADER);
         g.fill(0, height - FOOTER_H, width, height - FOOTER_H + 1, C_BORDER);
 
-        // Content area
         int cx = SIDEBAR_W + MARGIN;
         int cw = width - cx - MARGIN;
         int contentTop = HEADER_H + MARGIN;
@@ -191,7 +164,6 @@ public class DevWikiScreen extends Screen {
 
         g.disableScissor();
 
-        // Scrollbar (if needed)
         int totalH = lines.stream().mapToInt(this::lineHeight).sum();
         cachedContentH = totalH;
         int visibleH = contentBot - contentTop;
@@ -225,7 +197,7 @@ public class DevWikiScreen extends Screen {
                 if (y + LINE_H >= top) {
                     int kw = font.width(line.a() + "  ");
                     g.drawString(font, line.a(), x, y, C_ACCENT, false);
-                    // word-wrap value if it overflows
+                    
                     String val = line.b();
                     int maxVW = w - kw;
                     if (font.width(val) <= maxVW) {
@@ -258,10 +230,10 @@ public class DevWikiScreen extends Screen {
             case CODE -> {
                 int lh = LINE_H + 4;
                 if (y + lh >= top) {
-                    // background pill
+                    
                     g.fill(x, y, x + w, y + lh, 0xFF0A0A12);
                     g.fill(x, y, x + 1, y + lh, C_BORDER);
-                    // copy button
+                    
                     int btnW = font.width("⎘") + 8;
                     int btnX = x + w - btnW - 2;
                     int btnY2 = y + 1;
@@ -269,12 +241,12 @@ public class DevWikiScreen extends Screen {
                     boolean hov = mx >= btnX && mx < btnX + btnW && my >= btnY2 && my < btnY2 + btnH2;
                     g.fill(btnX, btnY2, btnX + btnW, btnY2 + btnH2, hov ? 0x44FFFFFF : 0x22FFFFFF);
                     g.drawCenteredString(font, hov ? "§f⎘" : "§7⎘", btnX + btnW / 2, btnY2 + 2, C_TEXT_DIM);
-                    // code text (clipped before copy btn)
+                    
                     String code = line.a();
                     int maxCW = btnX - x - 6;
                     String display = font.width(code) <= maxCW ? code : font.plainSubstrByWidth(code, maxCW - 4) + "…";
                     g.drawString(font, display, x + 4, y + 3, C_TEXT, false);
-                    // register copy btn
+                    
                     copyBtnBounds.add(new int[] { btnX, btnY2, btnX + btnW, btnY2 + btnH2 });
                     copyBtnTexts.add(line.a());
                 }
@@ -295,8 +267,6 @@ public class DevWikiScreen extends Screen {
         };
     }
 
-    // ── Page builders ─────────────────────────────────────────────────────────
-
     private List<WLine> buildPage(int page) {
         return switch (page) {
             case 0 -> pageOverview();
@@ -315,7 +285,7 @@ public class DevWikiScreen extends Screen {
         int total = QuestTreeRegistry.getAllQuests().size();
         int cats = QuestTreeRegistry.getRootChapters().values().stream()
                 .map(QuestNode::getCategory).distinct().mapToInt(c -> 1).sum();
-        // count more accurately
+        
         Set<String> catSet = new HashSet<>();
         QuestTreeRegistry.getAllQuests().values().forEach(n -> catSet.add(n.getCategory()));
 
@@ -432,7 +402,6 @@ public class DevWikiScreen extends Screen {
         var lines = new ArrayList<WLine>();
         lines.add(WLine.h("Task Types"));
 
-        // Built-in types
         lines.add(WLine.sh("Built-in"));
         String[][] builtins = {
                 { "kill_entity", "Kill mobs", "target: entity_id, count, consume" },
@@ -459,7 +428,6 @@ public class DevWikiScreen extends Screen {
             lines.add(WLine.in(row[2]));
         }
 
-        // KubeJS / registry extensions
         int kjsCount = PhoenixTaskRegistry.getEditorTypes().size() - builtins.length;
         if (kjsCount > 0) {
             lines.add(WLine.sp());
@@ -610,7 +578,6 @@ public class DevWikiScreen extends Screen {
                 .filter(n -> !n.getTutorialSteps().isEmpty()).count();
         lines.add(WLine.kv("Total:", tutCount + " quest" + (tutCount == 1 ? "" : "s") + " have tutorial steps"));
 
-        // Load errors
         lines.add(WLine.sp());
         lines.add(WLine.div());
         List<String> errs = QuestFileLoader.LOAD_ERRORS;
@@ -631,7 +598,6 @@ public class DevWikiScreen extends Screen {
         L.add(WLine.t("Click ⎘ to copy any snippet to clipboard."));
         L.add(WLine.sp());
 
-        // ── QuestAPI ──────────────────────────────────────────────────────────
         L.add(WLine.sh("QuestAPI  (Java — net.phoenix.core.integration.phoenix_chronicles)"));
         L.add(WLine.kv("completeQuest", "Force-complete a quest for a player (server-side)"));
         L.add(WLine.code("QuestAPI.completeQuest(serverPlayer, new ResourceLocation(\"phoenixcore\", \"my_quest\"));"));
@@ -647,7 +613,6 @@ public class DevWikiScreen extends Screen {
         L.add(WLine.code("float pct = QuestAPI.getProgress(serverPlayer, questId);"));
         L.add(WLine.sp());
 
-        // ── Java events ───────────────────────────────────────────────────────
         L.add(WLine.sh("Forge event hooks  (Java)"));
         L.add(WLine.kv("QuestCompletedEvent", "Fired on server bus when any quest completes"));
         L.add(WLine.code("@SubscribeEvent"));
@@ -669,7 +634,6 @@ public class DevWikiScreen extends Screen {
         L.add(WLine.code("}"));
         L.add(WLine.sp());
 
-        // ── Task registration ─────────────────────────────────────────────────
         L.add(WLine.sh("Custom task type  (Java)"));
         L.add(WLine.t("Implement QuestTask, then register in your mod constructor or common setup:"));
         L.add(WLine.code("PhoenixTaskRegistry.register("));
@@ -680,7 +644,6 @@ public class DevWikiScreen extends Screen {
         L.add(WLine.code(");"));
         L.add(WLine.sp());
 
-        // ── Flag registration ─────────────────────────────────────────────────
         L.add(WLine.sh("Custom enable_if flag  (Java)"));
         L.add(WLine.t("Flags are evaluated each render tick — keep the supplier cheap:"));
         L.add(WLine.code("PhoenixQuestFlags.register(\"my_flag\", () -> MyMod.isSomethingEnabled());"));
@@ -689,7 +652,6 @@ public class DevWikiScreen extends Screen {
         L.add(WLine.sp());
         L.add(WLine.div());
 
-        // ── KubeJS ────────────────────────────────────────────────────────────
         L.add(WLine.sh("KubeJS — startup_scripts/chronicles.js"));
         L.add(WLine.sp());
         L.add(WLine.kv("Register a task type", ""));
@@ -733,8 +695,6 @@ public class DevWikiScreen extends Screen {
 
         return L;
     }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {

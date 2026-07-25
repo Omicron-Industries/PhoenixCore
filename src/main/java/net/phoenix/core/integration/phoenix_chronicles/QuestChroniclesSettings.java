@@ -35,17 +35,17 @@ public class QuestChroniclesSettings {
     }
 
     public enum LineStyle {
-        SPLINE,   // cubic S-curve bezier (default)
-        STRAIGHT  // vertex straight lines
+        SPLINE,   
+        STRAIGHT  
     }
 
     public enum LineVisualStyle {
-        THIN,    // 1px hairline
-        NORMAL,  // 3px core with soft edge (default)
-        BOLD,    // 5px core with soft edge
-        THICK,   // 7px core with halo
-        WIDE,    // 9px core with strong halo
-        GLOW     // 3px core with luminous halo
+        THIN,    
+        NORMAL,  
+        BOLD,    
+        THICK,   
+        WIDE,    
+        GLOW     
     }
 
     public enum LineAnimSpeed {
@@ -115,7 +115,6 @@ public class QuestChroniclesSettings {
         }
     }
 
-    // Getters
     public TextScale getTextScale() {
         return textScale;
     }
@@ -152,7 +151,6 @@ public class QuestChroniclesSettings {
         return showHUDRewards;
     }
 
-    // Setters
     public void setTextScale(TextScale scale) {
         this.textScale = scale;
     }

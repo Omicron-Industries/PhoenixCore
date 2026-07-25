@@ -87,7 +87,6 @@ public abstract class MixinGTOres {
                     placement = SurfaceIndicatorGenerator.IndicatorPlacement.ABOVE;
                 }
 
-                // Using your custom indicator generator instead!
                 def.indicatorGenerators().add(new CrystalRoseIndicatorGenerator(def)
                         .state(phoenixCore$getCrystalRoseState(primaryMat))
                         .placement(placement)

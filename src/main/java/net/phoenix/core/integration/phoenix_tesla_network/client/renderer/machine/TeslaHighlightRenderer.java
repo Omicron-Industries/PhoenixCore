@@ -123,17 +123,17 @@ public class TeslaHighlightRenderer {
     private static void drawBox(PoseStack matrix, VertexConsumer buffer, float x1, float y1, float z1, float x2,
                                 float y2, float z2, float r, float g, float b, float a) {
         var pose = matrix.last().pose();
-        // Bottom
+        
         line(pose, buffer, x1, y1, z1, x2, y1, z1, r, g, b, a);
         line(pose, buffer, x2, y1, z1, x2, y1, z2, r, g, b, a);
         line(pose, buffer, x2, y1, z2, x1, y1, z2, r, g, b, a);
         line(pose, buffer, x1, y1, z2, x1, y1, z1, r, g, b, a);
-        // Top
+        
         line(pose, buffer, x1, y2, z1, x2, y2, z1, r, g, b, a);
         line(pose, buffer, x2, y2, z1, x2, y2, z2, r, g, b, a);
         line(pose, buffer, x2, y2, z2, x1, y2, z2, r, g, b, a);
         line(pose, buffer, x1, y2, z2, x1, y2, z1, r, g, b, a);
-        // Vertical
+        
         line(pose, buffer, x1, y1, z1, x1, y2, z1, r, g, b, a);
         line(pose, buffer, x2, y1, z1, x2, y2, z1, r, g, b, a);
         line(pose, buffer, x2, y1, z2, x2, y2, z2, r, g, b, a);

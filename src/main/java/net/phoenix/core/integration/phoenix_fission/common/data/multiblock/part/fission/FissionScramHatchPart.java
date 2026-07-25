@@ -20,17 +20,6 @@ import net.phoenix.core.integration.phoenix_fission.common.data.multiblock.fissi
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Basic SCRAM Hatch.
- *
- * Triggers on ANY redstone signal, ANY face, NO configuration.
- * Sounds simple — is actually the harder puzzle tier.
- *
- * The trap: a comparator reading heat fires almost constantly; a button
- * pulse disappears too fast; a lever works but is purely manual.
- * The player must build a circuit that sustains a signal ONLY during the
- * danger window, with zero knobs to tune the behaviour.
- */
 public class FissionScramHatchPart extends TieredPartMachine {
 
     @Getter
@@ -39,8 +28,6 @@ public class FissionScramHatchPart extends TieredPartMachine {
     public FissionScramHatchPart(IMachineBlockEntity holder, int tier) {
         super(holder, tier);
     }
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     @Override
     public void onLoad() {
@@ -53,8 +40,6 @@ public class FissionScramHatchPart extends TieredPartMachine {
         super.addedToController(controller);
         updateScramStatus();
     }
-
-    // ── Redstone ──────────────────────────────────────────────────────────────
 
     @Override
     public boolean canConnectRedstone(@NotNull Direction side) {
@@ -84,8 +69,6 @@ public class FissionScramHatchPart extends TieredPartMachine {
             }
         }
     }
-
-    // ── UI ────────────────────────────────────────────────────────────────────
 
     @Override
     public boolean shouldOpenUI(Player player, InteractionHand hand, BlockHitResult hit) {

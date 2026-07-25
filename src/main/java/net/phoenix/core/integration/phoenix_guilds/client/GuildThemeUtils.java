@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.phoenix_guilds.client;
 
-/** Static accessors for the active GuildTheme — call these in all guild GUI rendering. */
 public final class GuildThemeUtils {
 
     private GuildThemeUtils() {}
@@ -41,7 +40,6 @@ public final class GuildThemeUtils {
         return GuildTheme.current().faint.getColor();
     }
 
-    // Derived: slightly darker border for secondary dividers
     public static int C_BORDER2() {
         int b = GuildTheme.current().border.getColor();
         int a = (b >> 24) & 0xFF;
@@ -51,12 +49,10 @@ public final class GuildThemeUtils {
         return (a << 24) | (r << 16) | (g << 8) | bl;
     }
 
-    // Subtle alternating row tint (always a faint white regardless of theme)
     public static int C_ROW_ALT() {
         return 0x0AFFFFFF;
     }
 
-    // Semantic / fixed colors — not theme-controlled
     public static int C_ONLINE() {
         return 0xFF33EE77;
     }

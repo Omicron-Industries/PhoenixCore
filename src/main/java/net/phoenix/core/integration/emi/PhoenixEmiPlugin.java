@@ -25,7 +25,6 @@ import dev.emi.emi.api.widget.Bounds;
 @EmiEntrypoint
 public class PhoenixEmiPlugin implements EmiPlugin {
 
-    // ── Category definitions ───────────────────────────────────────────────────
     public static final EmiStack COOLER_ICON = EmiStack.of(PhoenixFissionBlocks.COOLER_BASIC.asStack());
 
     public static final EmiRecipeCategory FISSION_FUEL = new EmiRecipeCategory(
@@ -40,14 +39,12 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             new ResourceLocation("phoenixcore", "fission_breeding"),
             EmiStack.of(Items.CAULDRON));
 
-    // ── Registration ──────────────────────────────────────────────────────────
     @Override
     public void register(EmiRegistry registry) {
         registry.addCategory(FISSION_FUEL);
         registry.addCategory(FISSION_COOLANT);
         registry.addCategory(FISSION_BREEDING);
 
-        // ── Fuel rod info cards ───────────────────────────────────────────────
         for (FissionFuelRodBlock.FissionFuelRodTypes type : FissionFuelRodBlock.FissionFuelRodTypes.values()) {
             registry.addRecipe(new FuelRodEmiRecipe(type));
             registry.addRecipe(new FissionFuelInfoEmiRecipe(type));
@@ -58,7 +55,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             }
         }
 
-        // ── Coolants ─────────────────────────────────────────────────────────
         for (FissionCoolerBlock.FissionCoolerTypes type : FissionCoolerBlock.FissionCoolerTypes.values()) {
             registry.addRecipe(new CoolantEmiRecipe(type));
             EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
@@ -67,7 +63,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             }
         }
 
-        // ── Breeding blanket info cards ────────────────────────────────────────
         for (FissionBlanketBlock.BreederBlanketTypes type : FissionBlanketBlock.BreederBlanketTypes.values()) {
             registry.addRecipe(new BreedingEmiRecipe(type));
             registry.addRecipe(new BreederBlanketInfoEmiRecipe(type));
@@ -77,7 +72,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             }
         }
 
-        // ── Moderators ────────────────────────────────────────────────────────
         for (FissionModeratorBlock.FissionModeratorTypes type : FissionModeratorBlock.FissionModeratorTypes.values()) {
             EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
             if (!stack.isEmpty()) {
@@ -86,7 +80,6 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             }
         }
 
-        // ── Machine workstations ──────────────────────────────────────────────
         registry.addWorkstation(FISSION_FUEL,
                 EmiStack.of(PhoenixFissionMachines.HIGH_PERFORMANCE_BREEDER_REACTOR.asStack()));
         registry.addWorkstation(FISSION_COOLANT,
@@ -99,14 +92,11 @@ public class PhoenixEmiPlugin implements EmiPlugin {
         registry.addWorkstation(FISSION_COOLANT,
                 EmiStack.of(PhoenixFissionMachines.PRESSURIZED_FISSION_REACTOR.asStack()));
 
-        // ── Recipe Builder exclusion + drag-drop ─────────────────────────────
         registry.addExclusionArea(RecipeBuilderScreen.class, (screen, consumer) -> consumer.accept(new Bounds(
                 screen.getGuiLeft(), screen.getGuiTop(),
                 screen.getXSize(), screen.getYSize())));
         registry.addDragDropHandler(RecipeBuilderScreen.class, new RecipeBuilderDragDrop());
     }
-
-    // ── Drag-drop handler ─────────────────────────────────────────────────────
 
     private static class RecipeBuilderDragDrop implements EmiDragDropHandler<RecipeBuilderScreen> {
 

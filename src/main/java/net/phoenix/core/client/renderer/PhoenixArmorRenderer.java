@@ -28,7 +28,6 @@ public class PhoenixArmorRenderer extends GeoArmorRenderer<PhoenixArmorItem> {
 
                     RenderType wingsRenderType = RenderType.armorCutoutNoCull(wingsTex);
 
-                    // Re-render the model using the wings texture
                     getRenderer().reRender(model, poseStack, bufferSource, animatable, wingsRenderType,
                             bufferSource.getBuffer(wingsRenderType), partialTick, packedLight, packedOverlay,
                             1, 1, 1, 1);

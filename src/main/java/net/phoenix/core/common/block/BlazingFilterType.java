@@ -17,13 +17,6 @@ public enum BlazingFilterType implements IFilterType {
     @Getter
     private final CleanroomType cleanroomType;
 
-    /**
-     * Constructs a new BlazingFilterType enum entry.
-     * * @param name The unique name of the filter type.
-     * 
-     * @param tier          The tier of the filter type.
-     * @param cleanroomType The custom cleanroom type associated with this filter.
-     */
     BlazingFilterType(String name, int tier, CleanroomType cleanroomType) {
         this.name = name;
         this.tier = tier;

@@ -16,15 +16,6 @@ import net.phoenix.core.common.data.item.PhoenixArmorItem;
 
 import static net.phoenix.core.api.gui.PhoenixGuiTextures.TESLA_BACKGROUND;
 
-/**
- * GUI for controlling Phoenix Wing flight modes.
- * Opened via Numpad9 keybind on the client side.
- * NBT keys written to the chestplate stack:
- * "FlightMode" — "powered" or "creative"
- * "FlightSpeed" — int 0–10
- * "FlightDrift" — int 0–10
- * When applying to movement, divide by 10f to get a 0.0–1.0 multiplier.
- */
 public class WingFlightGui {
 
     public static final String NBT_MODE = "FlightMode";

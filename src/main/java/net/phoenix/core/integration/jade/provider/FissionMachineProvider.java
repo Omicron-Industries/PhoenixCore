@@ -68,7 +68,6 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         boolean isRunning = data.getBoolean(NBT_RUNNING);
         boolean isScrammed = data.getBoolean(NBT_IS_SCRAMMED);
 
-        // Status logic
         if (isScrammed) {
             tooltip.add(Component.literal("SCRAMMED")
                     .withStyle(s -> s.withColor(0xFF0000).withBold(true)));
@@ -77,15 +76,14 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
                     .withStyle(s -> s.withColor(0x55FFFF).withItalic(true)));
         }
 
-        // Meltdown Timer
         int meltdownSeconds = data.getInt(NBT_MELTDOWN_SECONDS);
         if (meltdownSeconds > 0) {
             tooltip.add(Component.translatable("jade.phoenixcore.fission_meltdown_timer", meltdownSeconds)
                     .withStyle(s -> s.withColor(0xFFAA00)));
-            // Note: Using a literal here since we are showing raw heat value
+            
             tooltip.add(Component.literal("Current Heat: " + (long) heat));
         } else {
-            // Only show "Safe" if it's actually not scrammed or cooling
+            
             if (heat <= 0) {
                 tooltip.add(Component.translatable("jade.phoenixcore.fission_safe")
                         .withStyle(s -> s.withColor(0x33FF33)));
@@ -182,7 +180,7 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         tag.putInt(NBT_MODS, machine.getActiveModerators().size());
         tag.putInt(NBT_BLANKETS, machine.getActiveBlankets().size());
 
-        tag.putBoolean(NBT_IS_SCRAMMED, machine.isScramActive()); // Add this line
+        tag.putBoolean(NBT_IS_SCRAMMED, machine.isScramActive()); 
         tag.putBoolean(NBT_RUNNING, machine.wasRunningLastTick());
 
         tag.putDouble(NBT_HEAT, machine.getHeat());
@@ -280,26 +278,21 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
     }
 
     private Component getVoltageFormattedOutput(long euOut) {
-        // Default to ULV (Tier 0)
+        
         int tier = 0;
 
-        // Iterate through the voltage array to find the highest tier
-        // that the current output meets or exceeds.
-        // GTValues.V contains the base voltages: [8, 32, 128, 512, 2048, 8192, ...]
         for (int i = 0; i < GTValues.V.length; i++) {
             if (euOut >= GTValues.V[i]) {
                 tier = i;
             } else {
-                // Once we find a tier voltage higher than our output, we stop.
+                
                 break;
             }
         }
 
-        // Formatting: "Output: 8192 EU/t (IV)"
-        // This will now stay "IV" until euOut reaches 32768 (LuV)
         return Component.translatable("phoenixcore.eu_generation", euOut)
                 .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(GTValues.VNF[tier])) // VNF contains the colored strings like "IV"
+                .append(Component.literal(GTValues.VNF[tier])) 
                 .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
 

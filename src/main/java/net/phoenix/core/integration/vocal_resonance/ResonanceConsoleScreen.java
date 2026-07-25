@@ -27,7 +27,6 @@ public class ResonanceConsoleScreen extends Screen {
     private boolean discDropdownOpen = false;
     private final List<Button> discButtons = new ArrayList<>();
 
-    // Tracks the last sound selection processed by the UI to prevent redundant redraw loops
     private String lastRenderedSelectedSound = "";
 
     public ResonanceConsoleScreen(ResonantJukeboxMachine machine) {
@@ -45,7 +44,6 @@ public class ResonanceConsoleScreen extends Screen {
         int center = this.width / 2;
         this.lastRenderedSelectedSound = machine.selectedLibrarySound;
 
-        // --- LEFT PANEL: REGISTRY SEARCH ---
         this.searchBox = new EditBox(font, 20, 50, panelWidth - 40, 20, Component.literal("Search..."));
         this.searchBox.setValue(machine.searchTerm);
         this.searchBox.setResponder(val -> {
@@ -55,14 +53,12 @@ public class ResonanceConsoleScreen extends Screen {
         });
         this.addRenderableWidget(this.searchBox);
 
-        // --- MIDDLE PANEL: QUICK SELECT ---
         this.musicDiscs = scanForMusicDiscs();
         this.addRenderableWidget(Button.builder(Component.literal("§6Select Music Disc ▼"), b -> {
             this.discDropdownOpen = !this.discDropdownOpen;
             updateDiscDropdown();
         }).pos(center - (panelWidth / 2) + 10, 50).size(panelWidth - 20, 20).build());
 
-        // --- RIGHT PANEL: URL STREAMING ---
         this.urlBox = new EditBox(font, this.width - panelWidth + 20, 50, panelWidth - 40, 20,
                 Component.literal("Enter Stream URL..."));
         this.urlBox.setMaxLength(256);
@@ -74,19 +70,16 @@ public class ResonanceConsoleScreen extends Screen {
             machine.syncAndGeneralUpdate();
         }).pos(this.width - panelWidth + 20, 75).size(panelWidth - 40, 20).build());
 
-        // --- FOOTER ---
         this.addRenderableWidget(Button.builder(Component.literal("§aRETURN TO FACTORY"), b -> this.onClose())
                 .pos(center - 100, this.height - 30).size(200, 20).build());
 
         updateFilteredSounds();
     }
 
-    // --- NEW: KEEPS CLIENT STATE LOCKED WITH SERVER PACKETS ---
     @Override
     public void tick() {
         super.tick();
-        // If the machine's backend sound changes (due to a server packet syncing down),
-        // instantly rebuild the button indicators so the visual UI doesn't lag behind.
+
         if (!machine.selectedLibrarySound.equals(lastRenderedSelectedSound)) {
             this.lastRenderedSelectedSound = machine.selectedLibrarySound;
             updateFilteredSounds();
@@ -187,18 +180,15 @@ public class ResonanceConsoleScreen extends Screen {
         this.renderBackground(graphics);
         int third = this.width / 3;
 
-        // Panel backgrounds
         graphics.fill(10, 25, third - 10, this.height - 40, 0x33000000);
         graphics.fill(third + 5, 25, (third * 2) - 5, this.height - 40, 0x33000000);
         graphics.fill((third * 2) + 10, 25, this.width - 10, this.height - 40, 0x33000000);
 
-        // Panel headers
         graphics.drawCenteredString(font, "§bAUDIO REGISTRY", third / 2, 35, 0xFFFFFF);
         graphics.drawCenteredString(font, "§6QUICK SELECT", this.width / 2, 35, 0xFFFFFF);
         graphics.drawCenteredString(font, "§dREMOTE LINK", this.width - (third / 2), 35, 0xFFFFFF);
         graphics.drawString(font, "§8Direct streams only.", (third * 2) + 20, 100, 0xFFFFFF);
 
-        // Scroll position indicator
         if (!filteredSounds.isEmpty()) {
             graphics.drawString(font,
                     "§8" + (scrollOffset + 1) + "-" + (scrollOffset + registryButtons.size()) +
@@ -206,7 +196,6 @@ public class ResonanceConsoleScreen extends Screen {
                     20, this.height - 52, 0xFFFFFF);
         }
 
-        // Now-playing / analysis box (bottom right panel)
         int boxY = this.height - 95;
         int boxX = (third * 2) + 20;
         graphics.fill(boxX, boxY, this.width - 20, boxY + 50, 0xAA000000);

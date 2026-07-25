@@ -39,7 +39,6 @@ public class PhoenixRecipeModifier {
                 GTRecipe modified = baseModifier.apply(recipe);
                 if (modified == null) return null;
 
-                // Scale Source Consumption (inputs)
                 if (sourceMultiplier != 1.0 && modified.inputs.containsKey(SourceRecipeCapability.CAP)) {
                     var sourceContents = new ArrayList<>(modified.inputs.get(SourceRecipeCapability.CAP));
                     sourceContents.replaceAll(content -> content.copy(SourceRecipeCapability.CAP,
@@ -47,7 +46,6 @@ public class PhoenixRecipeModifier {
                     modified.inputs.put(SourceRecipeCapability.CAP, sourceContents);
                 }
 
-                // Scale Source Output (extraction recipes)
                 if (sourceMultiplier != 1.0 && modified.outputs.containsKey(SourceRecipeCapability.CAP)) {
                     var sourceContents = new ArrayList<>(modified.outputs.get(SourceRecipeCapability.CAP));
                     sourceContents.replaceAll(content -> content.copy(SourceRecipeCapability.CAP,
@@ -55,7 +53,6 @@ public class PhoenixRecipeModifier {
                     modified.outputs.put(SourceRecipeCapability.CAP, sourceContents);
                 }
 
-                // Scale EU Generation (per-tick output for generators)
                 if (euOutputMultiplier != 1.0 && modified.tickOutputs.containsKey(EURecipeCapability.CAP)) {
                     var euContents = new ArrayList<>(modified.tickOutputs.get(EURecipeCapability.CAP));
                     euContents.replaceAll(content -> content.copy(EURecipeCapability.CAP,

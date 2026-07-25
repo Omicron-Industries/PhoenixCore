@@ -46,7 +46,6 @@ public class PhoenixWireRecipeHandler {
             return;
         }
 
-        // Generate Cable Covering Recipes
         generateCableCovering(provider, property, wireGtSingle, material);
         generateCableCovering(provider, property, wireGtDouble, material);
         generateCableCovering(provider, property, wireGtQuadruple, material);
@@ -58,7 +57,7 @@ public class PhoenixWireRecipeHandler {
                                               @NotNull WireProperties property,
                                               @NotNull TagPrefix prefix, @NotNull Material material) {
         if (!material.shouldGenerateRecipesFor(prefix) || property.isSuperconductor()) {
-            // Superconductors have no Cables, so exit early
+            
             return;
         }
 
@@ -67,19 +66,16 @@ public class PhoenixWireRecipeHandler {
         int voltageTier = GTUtil.getTierByVoltage(property.getVoltage());
         int insulationAmount = INSULATION_AMOUNT.getInt(cablePrefix);
 
-        // Silicone Rubber Recipe (all cables)
         GTRecipeBuilder builder = ASSEMBLER_RECIPES
                 .recipeBuilder("cover_" + material.getName() + "_" + prefix + "_polyamide_imide")
                 .EUt(VA[ULV]).duration(100)
                 .inputItems(prefix, material)
                 .outputItems(cablePrefix, material);
 
-        // Apply a Polyphenylene Sulfate Foil if LuV or above.
         if (voltageTier >= LuV) {
             builder.inputItems(foil, PolyphenyleneSulfide, insulationAmount);
         }
 
-        // Apply a PVC Foil if EV or above.
         if (voltageTier >= EV) {
             builder.inputItems(foil, PolyvinylChloride, insulationAmount);
         }

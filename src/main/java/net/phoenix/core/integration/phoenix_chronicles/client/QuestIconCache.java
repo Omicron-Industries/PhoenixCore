@@ -13,30 +13,14 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Loads and caches custom per-quest icon PNGs from disk.
- *
- * Icon files live at: config/phoenix_chronicles/icons/<questId>.png
- * where questId uses the path portion (slashes become underscores for the filename):
- * quest id "phoenixcore:chapter_1/signal_lost" → icons/chapter_1_signal_lost.png
- *
- * Textures are registered with Minecraft's TextureManager under:
- * phoenixcore:dynamic/quest_icon/<questPath>
- *
- * Call {@link #invalidateAll()} when the world unloads.
- */
 public final class QuestIconCache {
 
     private static final Map<String, ResourceLocation> CACHE = new HashMap<>();
     private static final Map<String, int[]> DIMS_CACHE = new HashMap<>();
-    private static final Map<String, Boolean> MISS_CACHE = new HashMap<>(); // paths known to have no file
+    private static final Map<String, Boolean> MISS_CACHE = new HashMap<>(); 
 
     private QuestIconCache() {}
 
-    /**
-     * Returns the ResourceLocation for a quest's custom icon, or null if no icon file exists.
-     * Loads and registers the texture on first call for each quest.
-     */
     public static ResourceLocation get(String questPath) {
         if (MISS_CACHE.getOrDefault(questPath, false)) return null;
         ResourceLocation cached = CACHE.get(questPath);
@@ -65,19 +49,16 @@ public final class QuestIconCache {
         }
     }
 
-    /** Returns {width, height} of the cached icon, or {64,64} if not loaded yet. */
     public static int[] getDimensions(String questPath) {
         return DIMS_CACHE.getOrDefault(questPath, new int[] { 64, 64 });
     }
 
-    /** Force all cached textures to be re-read from disk (e.g. after the editor saves a new icon). */
     public static void invalidate(String questPath) {
         CACHE.remove(questPath);
         DIMS_CACHE.remove(questPath);
         MISS_CACHE.remove(questPath);
     }
 
-    /** Release all cached textures — call on world unload. */
     public static void invalidateAll() {
         Minecraft mc = Minecraft.getInstance();
         for (ResourceLocation loc : CACHE.values()) {

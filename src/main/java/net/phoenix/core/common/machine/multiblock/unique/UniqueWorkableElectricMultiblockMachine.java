@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.UUID;
 
-// Copied from CosmicCore with some minor changes (thank you Caitlynn!)
 public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMultiblockMachine {
 
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(
@@ -35,7 +34,6 @@ public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMul
         return MANAGED_FIELD_HOLDER;
     }
 
-    // Used to make sure you cannot have more than one of this multiblock per owner
     @Persisted
     public boolean isDuplicate = false;
 
@@ -71,10 +69,6 @@ public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMul
         }
     }
 
-    /**
-     * Default unique registration: one multiblock per player (owner UUID).
-     * Tesla Tower will override this to use team UUID instead.
-     */
     protected void handleUniqueRegistration(UniqueMultiblockSavedData data,
                                             UUID owner,
                                             String multiblockId,
@@ -94,9 +88,6 @@ public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMul
         }
     }
 
-    /**
-     * Default unique removal for player‑owned machines.
-     */
     protected void handleUniqueRemoval(UniqueMultiblockSavedData data,
                                        UUID owner,
                                        String multiblockId,

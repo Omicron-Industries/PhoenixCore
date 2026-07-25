@@ -24,7 +24,6 @@ public class ChromaticEffectSelectScreen extends Screen {
         super(Component.literal("Select Chromatic Effect"));
         this.hand = hand;
 
-        // --- SECTION 1: Pull from Custom Colors ---
         for (String entry : ModConfig.INSTANCE.colors.customColors) {
             String codeStr = entry.split(":")[0];
             if (!codeStr.isEmpty()) {
@@ -32,7 +31,6 @@ public class ChromaticEffectSelectScreen extends Screen {
             }
         }
 
-        // --- SECTION 2: Pull from Custom Gradients ---
         for (String entry : ModConfig.INSTANCE.colors.customGradients) {
             String codeStr = entry.split(":")[0];
             if (!codeStr.isEmpty()) {
@@ -53,13 +51,13 @@ public class ChromaticEffectSelectScreen extends Screen {
         guiGraphics.drawCenteredString(this.font, "§7Select active flux code", centerX, 32, 0xAAAAAA);
 
         for (Character code : availableCodes) {
-            // Preview using the actual effect
+            
             Component preview = ChromaticEffectsRegistry.parseCustomEffects("&" + code + " CODE_TYPE: " + code);
 
             boolean hovering = mouseX >= x && mouseX <= x + 200 && mouseY >= y && mouseY <= y + (ENTRY_HEIGHT - 2);
 
             if (hovering) {
-                guiGraphics.fill(x - 5, y - 2, x + 205, y + ENTRY_HEIGHT - 2, 0x2200FF00); // Green terminal hover
+                guiGraphics.fill(x - 5, y - 2, x + 205, y + ENTRY_HEIGHT - 2, 0x2200FF00); 
             }
 
             guiGraphics.drawString(this.font, preview, x, y, 0xFFFFFF);

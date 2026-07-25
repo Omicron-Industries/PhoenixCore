@@ -13,17 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Full-screen Ctrl+F search overlay for Phoenix Chronicles.
- *
- * Pushed onto the MC screen stack via {@code minecraft.setScreen(new SearchOverlayScreen(parent))}.
- * The parent {@link ChronicleOverviewScreen} is rendered first on each frame (at off-screen
- * mouse coords so no hover effects show) and then this panel is drawn on top — the correct
- * MC pattern that avoids the "parent bleeds through child" rendering artifact.
- */
 public class SearchOverlayScreen extends Screen {
 
-    // ── Palette (themed fields populated in init) ─────────────────────────────
     private int C_PANEL = 0xFF14141A;
     private int C_PANEL_DARK = 0xFF0E0E12;
     private int C_BORDER = 0xFF252530;
@@ -37,11 +28,9 @@ public class SearchOverlayScreen extends Screen {
             0xFF22AABB, 0xFFBB4444, 0xFF88AA22, 0xFF448899
     };
 
-    // ── Constants ─────────────────────────────────────────────────────────────
     private static final int OVL_ROW_H = 46;
     private static final int OVL_MAX_ROWS = 8;
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final ChronicleOverviewScreen parent;
 
     private EditBox searchBox;
@@ -52,14 +41,10 @@ public class SearchOverlayScreen extends Screen {
     private int scrollY = 0;
     private String catFilter = "";
 
-    // ── Constructor ───────────────────────────────────────────────────────────
-
     public SearchOverlayScreen(ChronicleOverviewScreen parent) {
         super(Component.empty());
         this.parent = parent;
     }
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     @Override
     protected void init() {
@@ -94,7 +79,7 @@ public class SearchOverlayScreen extends Screen {
 
     @Override
     public void onClose() {
-        // Return to the parent screen (not the title screen)
+        
         if (minecraft != null) minecraft.setScreen(parent);
     }
 
@@ -103,12 +88,9 @@ public class SearchOverlayScreen extends Screen {
         return false;
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
-        // Render a solid black background (search overlay obscures parent anyway).
-        // This avoids all the complexity of trying to render the parent without its widgets.
+
         g.fill(0, 0, width, height, 0xFF000000);
 
         if (searchBox == null) return;
@@ -117,9 +99,6 @@ public class SearchOverlayScreen extends Screen {
         int panX = (width - panW) / 2;
         int panY = height / 10;
 
-        // ── Panel ─────────────────────────────────────────────────────────────
-
-        // ── Panel geometry ────────────────────────────────────────────────────
         int searchRowH = 40;
         int catRowH = 22;
         int dividerH = 9;
@@ -129,7 +108,6 @@ public class SearchOverlayScreen extends Screen {
         int panH = searchRowH + catRowH + dividerH + resultsH + footerH + 16;
         panH = Math.min(panH, height - 80);
 
-        // Panel background + border
         g.fill(panX, panY, panX + panW, panY + panH, C_PANEL);
         g.fill(panX, panY, panX + panW, panY + 1, C_BORDER_LIT);
         g.fill(panX, panY + panH - 1, panX + panW, panY + panH, C_BORDER_LIT);
@@ -137,7 +115,6 @@ public class SearchOverlayScreen extends Screen {
         g.fill(panX + panW - 1, panY, panX + panW, panY + panH, C_BORDER_LIT);
         g.fill(panX + 1, panY + 1, panX + panW - 1, panY + 2, C_SEL_ACCENT);
 
-        // ── Search box ────────────────────────────────────────────────────────
         searchBox.setX(panX + 14);
         searchBox.setY(panY + 10);
         searchBox.setWidth(panW - 28);
@@ -148,7 +125,6 @@ public class SearchOverlayScreen extends Screen {
 
         int cy = panY + searchRowH;
 
-        // ── Category chips ────────────────────────────────────────────────────
         List<String> cats = parent.buildCategoryList();
         int cpx = panX + 14, cpy = cy + 4, cph = 14;
 
@@ -177,11 +153,9 @@ public class SearchOverlayScreen extends Screen {
         }
         cy += catRowH;
 
-        // ── Divider ───────────────────────────────────────────────────────────
         g.fill(panX + 10, cy + 3, panX + panW - 10, cy + 4, C_BORDER);
         cy += dividerH;
 
-        // ── Results list ──────────────────────────────────────────────────────
         int listY = cy;
         int listH = panH - (cy - panY) - footerH - 8;
         g.enableScissor(panX + 1, listY, panX + panW - 1, listY + listH);
@@ -249,7 +223,6 @@ public class SearchOverlayScreen extends Screen {
         }
         g.disableScissor();
 
-        // ── Footer ────────────────────────────────────────────────────────────
         int footerY = panY + panH - footerH - 2;
         g.fill(panX + 1, footerY, panX + panW - 1, footerY + 1, C_BORDER);
         String footerLeft = results.size() + (results.size() == 1 ? " result" : " results");
@@ -259,26 +232,24 @@ public class SearchOverlayScreen extends Screen {
                 false);
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         boolean ctrl = (mods & 2) != 0;
 
-        if (key == 256 || (key == 70 && ctrl)) { // ESC or Ctrl+F — close
+        if (key == 256 || (key == 70 && ctrl)) { 
             onClose();
             return true;
         }
-        if (key == 257 || key == 335) { // Enter / numpad Enter
+        if (key == 257 || key == 335) { 
             if (!results.isEmpty()) selectResult(results.get(Math.min(selectedIdx, results.size() - 1)));
             return true;
         }
-        if (key == 264) { // Down
+        if (key == 264) { 
             selectedIdx = Math.min(selectedIdx + 1, results.size() - 1);
             ensureSelectionVisible(OVL_MAX_ROWS * OVL_ROW_H);
             return true;
         }
-        if (key == 265) { // Up
+        if (key == 265) { 
             selectedIdx = Math.max(0, selectedIdx - 1);
             ensureSelectionVisible(OVL_MAX_ROWS * OVL_ROW_H);
             return true;
@@ -307,7 +278,6 @@ public class SearchOverlayScreen extends Screen {
         int panX = (width - panW) / 2;
         int panY = height / 10;
 
-        // Click outside panel → close
         int searchRowH = 40, catRowH = 22, dividerH = 9;
         int visRows = Math.min(results.size(), OVL_MAX_ROWS);
         int resultsH = visRows * OVL_ROW_H + (results.isEmpty() ? 32 : 0);
@@ -318,7 +288,7 @@ public class SearchOverlayScreen extends Screen {
         }
 
         if (btn == 0) {
-            // Category chips
+            
             List<String> cats = parent.buildCategoryList();
             int cpx = panX + 14, cpy = panY + searchRowH + 4, cph = 14;
             int allW = font.width("All") + 10;
@@ -343,7 +313,6 @@ public class SearchOverlayScreen extends Screen {
                 cpx += cpw + 4;
             }
 
-            // Result rows
             int listY = panY + searchRowH + catRowH + dividerH;
             int ry = listY - scrollY;
             for (int i = 0; i < results.size(); i++) {
@@ -354,10 +323,8 @@ public class SearchOverlayScreen extends Screen {
                 ry += OVL_ROW_H;
             }
         }
-        return true; // absorb all panel clicks
+        return true; 
     }
-
-    // ── Search logic ──────────────────────────────────────────────────────────
 
     private List<QuestNode> computeResults() {
         List<QuestNode> all = new ArrayList<>(QuestTreeRegistry.getAllQuests().values());
@@ -378,7 +345,6 @@ public class SearchOverlayScreen extends Screen {
                 continue;
             }
 
-            // Always build fresh haystack for search (don't rely on cache which may be stale)
             String hay = parent.buildSearchHaystack(n);
             boolean allMatch = true;
             for (String w : words) {
@@ -425,7 +391,7 @@ public class SearchOverlayScreen extends Screen {
     }
 
     private void selectResult(QuestNode node) {
-        // Go back to parent, then navigate
+        
         if (minecraft != null) minecraft.setScreen(parent);
         parent.navigateToNode(node);
     }

@@ -7,10 +7,6 @@ import java.util.List;
 
 import javax.swing.*;
 
-/**
- * Phoenix Quest Designer - A Design-First GUI for FTB Quests.
- * Features: Click to select, Drag to move, Right-click for Templates.
- */
 public class PhoenixQuestDesigner extends JFrame {
 
     private final List<QuestNode> quests = new ArrayList<>();

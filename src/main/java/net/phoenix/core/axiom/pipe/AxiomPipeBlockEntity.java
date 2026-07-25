@@ -13,20 +13,10 @@ import net.phoenix.core.axiom.AxiomDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Tile entity for all Axiom data pipes.
- *
- * Each pipe holds a small buffer and pushes its contents downstream each tick.
- * "Downstream" means any adjacent block exposing {@link IAxiomDataHandler} of the
- * same {@link AxiomDataType}, prioritising handlers that still have capacity.
- * Pipes do NOT form an explicit network graph — they rely on per-tick propagation,
- * which is simpler and avoids CWU-style network rebuild bugs.
- */
 public class AxiomPipeBlockEntity extends BlockEntity {
 
-    /** Throughput per tick, per pipe. Tune this to control network speed. */
     public static final long THROUGHPUT = 64L;
-    /** How much data a single pipe segment can buffer. */
+    
     public static final long BUFFER = 256L;
 
     private long stored = 0L;
@@ -76,8 +66,6 @@ public class AxiomPipeBlockEntity extends BlockEntity {
         };
     }
 
-    // ── Tick ─────────────────────────────────────────────────────────────────
-
     public void serverTick() {
         if (stored == 0 || level == null) return;
 
@@ -89,10 +77,8 @@ public class AxiomPipeBlockEntity extends BlockEntity {
             BlockEntity be = level.getBlockEntity(neighbourPos);
             if (be == null) continue;
 
-            // Don't push back toward a pipe that has equal or more data (prevents loops)
             if (be instanceof AxiomPipeBlockEntity peer && peer.stored >= stored) continue;
 
-            // Single-type neighbour (another pipe)
             LazyOptional<IAxiomDataHandler> single = be.getCapability(AxiomDataCapability.DATA, dir.getOpposite());
             if (single.isPresent()) {
                 IAxiomDataHandler handler = single.orElseThrow(IllegalStateException::new);
@@ -106,7 +92,6 @@ public class AxiomPipeBlockEntity extends BlockEntity {
                 continue;
             }
 
-            // Multi-type neighbour (terminal, machine)
             LazyOptional<IAxiomMultiHandler> multi = be.getCapability(AxiomMultiHandlerCapability.MULTI_DATA,
                     dir.getOpposite());
             if (multi.isPresent()) {
@@ -120,8 +105,6 @@ public class AxiomPipeBlockEntity extends BlockEntity {
         }
     }
 
-    // ── Capability ────────────────────────────────────────────────────────────
-
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == AxiomDataCapability.DATA) return handlerOpt.cast();
@@ -133,8 +116,6 @@ public class AxiomPipeBlockEntity extends BlockEntity {
         super.invalidateCaps();
         handlerOpt.invalidate();
     }
-
-    // ── NBT ───────────────────────────────────────────────────────────────────
 
     @Override
     public void saveAdditional(CompoundTag tag) {

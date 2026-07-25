@@ -554,38 +554,5 @@ public class PhoenixTeslaMachines {
             "tesla_wireless_charger",
             TeslaWirelessChargerMachine::new);
 
-    /*
-     * private static MachineDefinition[] registerTeslaEnergyHatch(String name,
-     * String displayName,
-     * IO io,
-     * int[] tiers,
-     * int amperage,
-     * PartAbility... abilities) {
-     * return registerTieredMachines(
-     * name,
-     * (holder, tier) -> new TeslaEnergyHatchPartMachine(holder, tier, io, amperage),
-     * (tier, builder) -> builder
-     * .langValue(GTValues.VNF[tier] + " " + displayName)
-     * .rotationState(RotationState.ALL)
-     * .abilities(abilities)
-     * .modelProperty(GTMachineModelProperties.IS_FORMED, false)
-     * .overlayTieredHullModel(io == IO.IN
-     * ? "tesla_hatches/tesla_input"
-     * : "tesla_hatches/tesla_output")
-     * .tooltips(
-     * Component.translatable(io == IO.IN ? "gtceu.universal.tooltip.voltage_in" :
-     * "gtceu.universal.tooltip.voltage_out",
-     * FormattingUtil.formatNumbers(GTValues.V[tier]), GTValues.VNF[tier]),
-     * Component.translatable(io == IO.IN ? "gtceu.universal.tooltip.amperage_in" :
-     * "gtceu.universal.tooltip.amperage_out", amperage),
-     * Component.translatable("gtceu.universal.tooltip.energy_storage_capacity",
-     * FormattingUtil.formatNumbers(io == IO.IN ? GTValues.V[tier] * 16L * amperage : GTValues.V[tier] * 64L *
-     * amperage)),
-     * Component.translatable(io == IO.IN ? "tooltip.PhoenixCore.tesla_hatch.input" :
-     * "tooltip.PhoenixCore.tesla_hatch.output"))
-     * .register(),
-     * tiers);
-     * }
-     */
     public static void init() {}
 }

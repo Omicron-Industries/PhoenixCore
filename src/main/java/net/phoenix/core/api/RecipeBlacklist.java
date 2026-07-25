@@ -30,21 +30,18 @@ public class RecipeBlacklist {
 
     public static void load() {
         try {
-            // 1. Ensure the directory exists
+            
             if (!Files.exists(REMOVALS_DIR)) {
                 Files.createDirectories(REMOVALS_DIR);
             }
 
-            // 2. Generate examples if the folder is empty
             generateExamplesIfEmpty();
 
-            // 3. Clear current sets before reloading
             BY_ID.clear();
             BY_MOD.clear();
             BY_OUTPUT.clear();
             BY_INPUT.clear();
 
-            // 4. Scan the folder for all .json files
             try (Stream<Path> paths = Files.list(REMOVALS_DIR)) {
                 paths.filter(path -> path.toString().endsWith(".json"))
                         .forEach(RecipeBlacklist::loadSingleFile);
@@ -55,18 +52,14 @@ public class RecipeBlacklist {
         }
     }
 
-    // Keep this alongside shouldRemoveRaw for cleaning ALREADY parsed recipes
     public static boolean shouldRemoveParsed(ResourceLocation id, Recipe<?> recipe) {
-        // Check ID and Mod
+        
         if (BY_ID.contains(id) || BY_MOD.contains(id.getNamespace())) return true;
 
-        // Check Output (Parsed)
-        // Note: You need a RegistryAccess for 1.20+, or use empty for 1.19
         String outputId = BuiltInRegistries.ITEM.getKey(recipe.getResultItem(RegistryAccess.EMPTY).getItem())
                 .toString();
         if (BY_OUTPUT.contains(outputId)) return true;
 
-        // Check Ingredients (Parsed)
         for (Ingredient ingredient : recipe.getIngredients()) {
             for (ItemStack stack : ingredient.getItems()) {
                 String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
@@ -80,7 +73,7 @@ public class RecipeBlacklist {
         try (Reader reader = Files.newBufferedReader(path)) {
             RecipeConfig fileConfig = GSON.fromJson(reader, RecipeConfig.class);
             if (fileConfig != null) {
-                // Merge this file's data into our global Sets
+                
                 fileConfig.remove_by_id.forEach(s -> BY_ID.add(new ResourceLocation(s)));
                 BY_MOD.addAll(fileConfig.remove_by_mod);
                 BY_OUTPUT.addAll(fileConfig.remove_by_output);
@@ -92,14 +85,12 @@ public class RecipeBlacklist {
     }
 
     public static boolean shouldRemoveRaw(ResourceLocation id, JsonElement json) {
-        // 1. Check ID & Mod ID
+        
         if (BY_ID.contains(id) || BY_MOD.contains(id.getNamespace())) return true;
 
-        // 2. Safety check for JSON
         if (!json.isJsonObject()) return false;
         JsonObject obj = json.getAsJsonObject();
 
-        // 3. Check Output
         if (obj.has("result")) {
             JsonElement result = obj.get("result");
             String resStr = "";
@@ -110,7 +101,6 @@ public class RecipeBlacklist {
             if (BY_OUTPUT.contains(resStr)) return true;
         }
 
-        // 4. Check Input
         String rawJson = obj.toString();
         for (String inputItem : BY_INPUT) {
             if (rawJson.contains("\"item\":\"" + inputItem + "\"") ||
@@ -124,12 +114,11 @@ public class RecipeBlacklist {
     private static void generateExamplesIfEmpty() throws Exception {
         try (Stream<Path> stream = Files.list(REMOVALS_DIR)) {
             if (stream.findAny().isEmpty()) {
-                // Create a 'vanilla_tweaks.json' example
+                
                 RecipeConfig vanillaExample = new RecipeConfig();
                 vanillaExample.remove_by_id.add("minecraft:example_recipe_id");
                 Files.writeString(REMOVALS_DIR.resolve("vanilla_tweaks.json"), GSON.toJson(vanillaExample));
 
-                // Create a 'mod_removal_example.json'
                 RecipeConfig modExample = new RecipeConfig();
                 modExample.remove_by_mod.add("example_mod_id");
                 modExample.remove_by_output.add("example_mod:broken_item");

@@ -49,8 +49,6 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
         return MANAGED_FIELD_HOLDER;
     }
 
-    // ── UI ────────────────────────────────────────────────────────────────────
-
     @Override
     public boolean shouldOpenUI(Player player, InteractionHand hand, BlockHitResult hit) {
         return true;
@@ -62,7 +60,6 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
 
         group.addWidget(new LabelWidget(10, 8, "§lFission Stability Sensor"));
 
-        // Live readout
         group.addWidget(new LabelWidget(10, 24, () -> {
             var controller = getController();
             if (controller instanceof FissionWorkableElectricMultiblockMachine fission) {
@@ -76,19 +73,16 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
 
         group.addWidget(new LabelWidget(10, 40, "§7─────────────────────────────"));
 
-        // Min %
         group.addWidget(new LabelWidget(10, 52, "§fMin Heat %:"));
         group.addWidget(new IntInputWidget(90, 47, 90, 20,
                 () -> minPercent,
                 val -> minPercent = Mth.clamp(val, 0, 200)));
 
-        // Max %
         group.addWidget(new LabelWidget(10, 76, "§fMax Heat %:"));
         group.addWidget(new IntInputWidget(90, 71, 90, 20,
                 () -> maxPercent,
                 val -> maxPercent = Mth.clamp(val, 0, 200)));
 
-        // Invert toggle
         group.addWidget(new LabelWidget(10, 100, "§fInvert output:"));
         group.addWidget(new ToggleButtonWidget(
                 100, 95, 18, 18,
@@ -103,8 +97,6 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
         return group;
     }
 
-    // ── Signal logic ──────────────────────────────────────────────────────────
-
     @Override
     public int getOutputSignal(@Nullable Direction direction) {
         if (direction != null && direction != getFrontFacing().getOpposite()) return 0;
@@ -117,15 +109,11 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
 
         double heatPct = (fission.getHeat() / maxSafe) * 100.0;
 
-        // Proportional signal (0-15) scaled to heat % out of 200 max input range.
-        // This is what makes the advanced hatch's threshold setting meaningful —
-        // a sensor hatch paired with an advanced scram hatch creates a real
-        // comparator-strength puzzle rather than a simple on/off.
         int strength = (int) Math.round((heatPct / 200.0) * 15.0);
         strength = Mth.clamp(strength, 0, 15);
 
         boolean inRange = heatPct >= minPercent && heatPct <= maxPercent;
-        boolean emit = inverted != inRange; // clean XOR
+        boolean emit = inverted != inRange; 
 
         return emit ? strength : 0;
     }

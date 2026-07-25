@@ -40,7 +40,6 @@ public class SoundRecipeCapability extends RecipeCapability<SoundIngredient> {
                             "§6Tempo: §e" + sound.requiredBPM() + " BPM §8(Sync: " + tolStr + ")"));
                 }
 
-                // Show whichever frequency bands the recipe actually requires
                 if (sound.minBass() > 0) {
                     group.addWidget(new LabelWidget(xOffset, yOffset.addAndGet(10),
                             "§5Bass: §f≥" + String.format("%.2f", sound.minBass())));

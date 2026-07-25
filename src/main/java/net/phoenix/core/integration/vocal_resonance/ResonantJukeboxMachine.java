@@ -45,10 +45,6 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
     @NotNull
     private final NotifiableItemStackHandler discInventory = new NotifiableItemStackHandler(this, 1, IO.IN);
 
-    /**
-     * Registered as a machine trait in the constructor so GTCEu's recipe pipeline
-     * can find it via getRecipeHandlers() → traits scan. No override needed.
-     */
     @NotNull
     private final NotifiableSoundHandler soundHandler = new NotifiableSoundHandler(this, IO.IN);
 
@@ -90,12 +86,11 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
 
     private int lastKnownDuration = 0;
 
-    // The core Tick Subscription Handler
     private final ConditionalSubscriptionHandler acousticTickHandler;
 
     public ResonantJukeboxMachine(IMachineBlockEntity holder) {
         super(holder);
-        // Initialize the tick sub to point to our acoustic update loop, running only when formed
+        
         this.acousticTickHandler = new ConditionalSubscriptionHandler(this, this::acousticStateMachineTick,
                 this::isFormed);
     }
@@ -127,37 +122,29 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
         this.hasLibraryHatch = true;
         this.hasStreamHatch = true;
         this.totalSpeakerRange = matchContext.getOrDefault("TotalSpeakerRange", 0);
-        // ResonancePower is stored as integer (amplifier × 100) by tieredSpeakers() predicate.
-        // Default 100 → /100 = 1.0f base volume when no speakers are present.
+
         this.resonancePower = matchContext.getOrDefault("ResonancePower", 100) / 100.0f;
-        // Force the tick loop to re-send packets after reload or re-formation.
+        
         this.lastPlayingStreamUrl = "";
         this.lastPlayingLibrarySound = "";
         this.resetAcousticData();
 
-        // Activate/Update the tick subscription loop state
         this.acousticTickHandler.updateSubscription();
-        // Register as a world-acoustic sensor so any sound in range feeds NotifiableSoundHandler
+        
         WorldAcousticSensor.register(getPos(), getFinalRange());
     }
 
     @Override
     public void onStructureInvalid() {
-        killAllMachineAudio(); // stop clients before clearing state
+        killAllMachineAudio(); 
         super.onStructureInvalid();
         this.lastPlayingStreamUrl = "";
         this.resetAcousticData();
 
-        // Terminate the tick subscription loop when broken
         this.acousticTickHandler.updateSubscription();
         WorldAcousticSensor.unregister(getPos());
     }
 
-    /**
-     * THE TICK SUB LOOP
-     * Runs independently of recipe processing state. Gated purely by active UI toggles and physical energy
-     * availability.
-     */
     public void acousticStateMachineTick() {
         if (getLevel() == null || getLevel().isClientSide) return;
 
@@ -165,7 +152,6 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
                 !currentStreamUrl.isEmpty();
         boolean canPlay = hasActiveSelection && isWorkingEnabled();
 
-        // If the machine is turned off via UI or has nothing selected, make sure we clean up noise
         if (!canPlay) {
             if (!lastPlayingStreamUrl.isEmpty() || remainingSoundTicks != -1) {
                 killAllMachineAudio();
@@ -173,18 +159,15 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
             return;
         }
 
-        // EU Gating: Manually poll and draw energy out of internal power containers
         var energyContainer = this.getEnergyContainer();
         if (energyContainer == null || energyContainer.getEnergyStored() < MUSIC_ENERGY_DRAIN) {
-            // Out of power! Halt audio updates and stop audio until power returns
+            
             killAllMachineAudio();
             return;
         }
 
-        // Safely draw operational costs
         energyContainer.changeEnergy(-MUSIC_ENERGY_DRAIN);
 
-        // ── Stream Audio Handling ──
         if (hasStreamHatch && !currentStreamUrl.isEmpty()) {
             if (!currentStreamUrl.equals(lastPlayingStreamUrl)) {
                 this.selectedLibrarySound = "";
@@ -199,16 +182,13 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
                 lastPlayingStreamUrl = currentStreamUrl;
             }
         } else {
-            // User cleared the stream URL — kill the active stream and mark it gone
+            
             if (!lastPlayingStreamUrl.isEmpty()) {
                 killAllMachineAudio();
                 this.lastPlayingStreamUrl = "";
             }
         }
 
-        // ── Standard Resource Library Audio Handling ──
-        // Only send a play packet when the selection changes. The client instance loops
-        // indefinitely (looping=true), so repeated packets just cause audible restarts.
         if (hasLibraryHatch && !selectedLibrarySound.isEmpty() && currentStreamUrl.isEmpty()) {
             if (!selectedLibrarySound.equals(lastPlayingLibrarySound)) {
                 playLibrarySound();
@@ -218,21 +198,15 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
         }
     }
 
-    /**
-     * Utility method to completely silence client execution tracks and clear backend state fields.
-     */
     private void killAllMachineAudio() {
         var level = getLevel();
         if (level == null || level.isClientSide) return;
 
-        // volume=0 signals ClientSoundHandler.playSound() to call stopSoundAt() instead of playing
         PhoenixNetwork.CHANNEL.send(
                 PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(getPos())),
                 new S2CPlaySoundPacket(getPos(), new ResourceLocation("minecraft", "empty"), 0.0f, 1.0f,
                         (float) getFinalRange()));
 
-        // Do NOT reset lastPlayingStreamUrl here — callers that want a re-send must do it explicitly.
-        // Resetting it here caused a kill→restart loop every tick whenever conditions briefly failed.
         this.lastPlayingLibrarySound = "";
         this.resetAcousticData();
         this.markDirty();

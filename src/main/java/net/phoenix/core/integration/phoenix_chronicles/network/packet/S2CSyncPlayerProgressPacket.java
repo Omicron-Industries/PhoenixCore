@@ -18,10 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-/**
- * Server → Client: sends the full PlayerQuestData blob so the client capability
- * mirrors the server. Sent on login and after every server-side state change.
- */
 public class S2CSyncPlayerProgressPacket {
 
     private final CompoundTag progressNbt;
@@ -48,7 +44,7 @@ public class S2CSyncPlayerProgressPacket {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         mc.player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
-            // Snapshot old states before overwrite so we can detect transitions
+            
             Map<ResourceLocation, QuestState> oldStates = new HashMap<>();
             for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
                 oldStates.put(node.getId(), data.getQuestState(node.getId(), QuestState.LOCKED));
@@ -56,7 +52,6 @@ public class S2CSyncPlayerProgressPacket {
 
             data.deserializeNBT(nbt);
 
-            // Fire toasts for any quests that newly became UNLOCKED or COMPLETED
             for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
                 QuestState oldState = oldStates.getOrDefault(node.getId(), QuestState.LOCKED);
                 QuestState newState = data.getQuestState(node.getId(), QuestState.LOCKED);

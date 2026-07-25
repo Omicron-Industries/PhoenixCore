@@ -10,11 +10,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider;
 
-/**
- * Task: enter a specific structure (e.g. "minecraft:village", "minecraft:stronghold").
- * Checks whether the player's current position is inside the named structure on each server tick.
- * SNBT shape: { type: "structure", structure_id: "minecraft:stronghold" }
- */
 public class StructureTask extends QuestTask {
 
     private ResourceLocation structureId;

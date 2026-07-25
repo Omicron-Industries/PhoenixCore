@@ -13,15 +13,6 @@ import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
 import lombok.Getter;
 
-/**
- * A structural multiblock part that gates which audio modes the
- * {@link ResonantJukeboxMachine} can use (disc, library, stream).
- *
- * Recipe capability (SoundIngredient matching) lives on the controller itself
- * via {@link net.phoenix.core.integration.vocal_resonance.ingredient.NotifiableSoundHandler},
- * which is registered as a field trait on ResonantJukeboxMachine — exactly like discInventory.
- * This hatch has no recipe handler of its own.
- */
 public class SoundHatchPartMachine extends TieredPartMachine {
 
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(

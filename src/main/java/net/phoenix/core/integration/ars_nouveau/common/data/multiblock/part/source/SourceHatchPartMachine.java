@@ -53,23 +53,11 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
         return MANAGED_FIELD_HOLDER;
     }
 
-    /**
-     * IMPORTANT FIX:
-     * Returning a simple page widget prevents GTCEu from generating its default fancy "scene/preview" page.
-     * Do NOT put inventory widgets here; FancyMachineUIWidget handles the player inventory panel.
-     *
-     * Also: keep this reasonably sized. FancyMachineUIWidget will center it inside its pageContainer.
-     */
     @Override
     public Widget createUIWidget() {
         return new WidgetGroup(0, 0, 176, 74);
     }
 
-    /**
-     * IMPORTANT:
-     * The height here is just a starting container size; FancyMachineUIWidget will recompute its final size
-     * from the page widget + border + optional inventory. Keep it close to your page widget height.
-     */
     @Override
     public ModularUI createUI(Player player) {
         final int w = 176;

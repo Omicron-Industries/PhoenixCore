@@ -15,37 +15,15 @@ import net.phoenix.core.integration.phoenix_chronicles.tasks.ViewSceneTask;
 
 import java.util.function.Supplier;
 
-/**
- * Client → Server: a Phantasia viewer just closed and a ViewMachineTask or ViewSceneTask
- * should be marked complete for the sending player.
- *
- * Wire format:
- * ResourceLocation questId — quest that owns this task
- * ResourceLocation taskId — the specific task to mark done
- *
- * The server re-validates that the task is actually a ViewMachineTask / ViewSceneTask
- * before writing to the capability, so a malicious client can't abuse this to complete
- * arbitrary tasks.
- *
- * TO HOOK UP: Register this packet in PhoenixNetwork (alongside C2SClaimQuestRewardPacket):
- * CHANNEL.registerMessage(nextId++, C2SPhantasiaTaskCompletePacket.class,
- * C2SPhantasiaTaskCompletePacket::encode,
- * C2SPhantasiaTaskCompletePacket::new,
- * C2SPhantasiaTaskCompletePacket::handle);
- */
 public class C2SPhantasiaTaskCompletePacket {
 
     private final ResourceLocation questId;
     private final ResourceLocation taskId;
 
-    // ── Client-side constructor ───────────────────────────────────────────────
-
     public C2SPhantasiaTaskCompletePacket(ResourceLocation questId, ResourceLocation taskId) {
         this.questId = questId;
         this.taskId = taskId;
     }
-
-    // ── Codec ─────────────────────────────────────────────────────────────────
 
     public C2SPhantasiaTaskCompletePacket(FriendlyByteBuf buf) {
         this.questId = buf.readResourceLocation();
@@ -56,8 +34,6 @@ public class C2SPhantasiaTaskCompletePacket {
         buf.writeResourceLocation(questId);
         buf.writeResourceLocation(taskId);
     }
-
-    // ── Handle (server thread) ────────────────────────────────────────────────
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
@@ -73,7 +49,6 @@ public class C2SPhantasiaTaskCompletePacket {
             for (QuestTask task : node.getTasks()) {
                 if (!task.getTaskId().equals(taskId)) continue;
 
-                // Whitelist: only ViewMachineTask and ViewSceneTask may be completed this way
                 if (!(task instanceof ViewMachineTask) && !(task instanceof ViewSceneTask)) return;
                 if (task.isCompletedFor(player)) return;
 

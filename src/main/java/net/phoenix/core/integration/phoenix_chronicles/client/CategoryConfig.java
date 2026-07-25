@@ -14,40 +14,22 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Per-chapter background configuration.
- *
- * Stored at: config/phoenix_chronicles/categories.json
- * Example:
- * {
- * "MAIN": { "style": "DOT_GRID" },
- * "CHAPTER_1": { "style": "HEX_GRID", "color": "#0A120A" },
- * "BOSS": { "style": "SOLID", "color": "#0F0808" },
- * "EXPLORE": { "style": "CUSTOM", "texture": "phoenixcore:textures/gui/bg_forest.png" }
- * }
- *
- * Available styles: DOT_GRID, GRID_LINES, HEX_GRID, DIAGONAL_LINES, SOLID, CUSTOM
- */
 public class CategoryConfig {
 
     public enum BgStyle {
-        DOT_GRID,       // default – subtle dot lattice
-        GRID_LINES,     // faint square grid
-        HEX_GRID,       // hex-tile outline pattern
-        DIAGONAL_LINES, // diagonal hatch
-        SOLID,          // plain background color only
-        CUSTOM          // blits a registered texture (see texture field)
+        DOT_GRID,       
+        GRID_LINES,     
+        HEX_GRID,       
+        DIAGONAL_LINES, 
+        SOLID,          
+        CUSTOM          
     }
 
-    // ── Fields ────────────────────────────────────────────────────────────────
-
     private BgStyle style = BgStyle.DOT_GRID;
-    /** ARGB background tint overlaid on top of the default canvas fill. 0 = use default. */
+    
     private int color = 0;
-    /** Minecraft resource-location string for CUSTOM style, e.g. "phoenixcore:textures/gui/bg_forest.png" */
+    
     private String texture = "";
-
-    // ── Accessors ─────────────────────────────────────────────────────────────
 
     public BgStyle getStyle() {
         return style;
@@ -73,8 +55,6 @@ public class CategoryConfig {
         this.texture = t != null ? t : "";
     }
 
-    // ── Serialization ─────────────────────────────────────────────────────────
-
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
         o.addProperty("style", style.name());
@@ -99,8 +79,6 @@ public class CategoryConfig {
         return cfg;
     }
 
-    // ── Disk I/O ──────────────────────────────────────────────────────────────
-
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Map<String, CategoryConfig> CACHE = new HashMap<>();
     private static boolean loaded = false;
@@ -115,7 +93,6 @@ public class CategoryConfig {
         CACHE.put(category, cfg);
     }
 
-    /** Force-reload from disk (call after edits). */
     public static void invalidate() {
         loaded = false;
         CACHE.clear();

@@ -17,25 +17,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Manages all {@link QuestGroup} instances in memory, with JSON persistence
- * to {@code config/phoenix_chronicles/groups.json}.
- *
- * <p>
- * JSON format: an array of group objects —
- * {@code [{id, label, category, color, borderColor, x, y, width, height}]}
- * where color values are encoded as {@code #AARRGGBB} hex strings.
- * </p>
- */
 public class QuestGroupManager {
 
     private static final Map<String, QuestGroup> GROUPS = new LinkedHashMap<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    /** Set to true after the first successful load to avoid redundant disk reads. */
     private static boolean loaded = false;
-
-    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     public static Collection<QuestGroup> getAll() {
         return GROUPS.values();
@@ -57,14 +44,12 @@ public class QuestGroupManager {
         GROUPS.clear();
     }
 
-    /** Returns all groups that belong to the given category (or all groups when category is "ALL"). */
     public static List<QuestGroup> forCategory(String category) {
         return GROUPS.values().stream()
                 .filter(g -> "ALL".equals(category) || category.equalsIgnoreCase(g.getCategory()))
                 .collect(Collectors.toList());
     }
 
-    /** Generates a unique group id (UUID-based). */
     public static String generateId() {
         String candidate;
         do {
@@ -73,27 +58,18 @@ public class QuestGroupManager {
         return candidate;
     }
 
-    /** Whether groups have been loaded from disk at least once. */
     public static boolean isLoaded() {
         return loaded;
     }
 
-    /** Forces a reload on the next call to {@link #load(Path)}. */
     public static void invalidate() {
         loaded = false;
     }
-
-    // ── Persistence ───────────────────────────────────────────────────────────
 
     private static Path groupsFile(Path configDir) {
         return configDir.resolve("groups.json");
     }
 
-    /**
-     * Loads groups from {@code configDir/groups.json}.
-     * If the file does not exist, the manager is left with whatever is currently loaded.
-     * Skips the read if already loaded; call {@link #invalidate()} first to force a reload.
-     */
     public static void load(Path configDir) {
         if (loaded) return;
         loaded = true;
@@ -131,9 +107,6 @@ public class QuestGroupManager {
         }
     }
 
-    /**
-     * Saves all groups to {@code configDir/groups.json}.
-     */
     public static void save(Path configDir) {
         try {
             Files.createDirectories(configDir);
@@ -159,17 +132,10 @@ public class QuestGroupManager {
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    /** Encodes an ARGB int as {@code #AARRGGBB}. */
     public static String formatColor(int argb) {
         return String.format("#%08X", argb);
     }
 
-    /**
-     * Parses {@code #AARRGGBB} or {@code #RRGGBB} hex strings to ARGB int.
-     * Returns the fallback value on error.
-     */
     public static int parseColor(String hex) {
         if (hex == null) return 0x22FFFFFF;
         String s = hex.startsWith("#") ? hex.substring(1) : hex;

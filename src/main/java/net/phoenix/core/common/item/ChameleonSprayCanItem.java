@@ -175,7 +175,7 @@ public class ChameleonSprayCanItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level,
                                 @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
-        // 1. Core State Status Line (The first one that you like)
+        
         String chromCode = ChameleonSprayCanBehaviour.getChromaticCode(stack);
         if (chromCode != null) {
             tooltipComponents.add(Component.literal("§7Color Mode: §" + chromCode + "Chromatic (" + chromCode + ")"));
@@ -190,13 +190,10 @@ public class ChameleonSprayCanItem extends Item {
             }
         }
 
-        // Call behavior's standard tooltip processing (This handles your fluid bar levels/mB text)
         this.behaviour.appendHoverText(stack, level, tooltipComponents, isAdvanced);
 
-        // Spacing bracket to clean up text density
         tooltipComponents.add(Component.literal(""));
 
-        // 2. Clear Controls Section
         tooltipComponents.add(Component.literal("§eControls:"));
         tooltipComponents.add(Component.literal(" §7• §fRight-Click Block §7- Paint a single block"));
         tooltipComponents.add(Component.literal(" §7• §fShift + Scroll §7- Quickly cycle standard colors"));
@@ -205,12 +202,10 @@ public class ChameleonSprayCanItem extends Item {
 
         tooltipComponents.add(Component.literal(""));
 
-        // 3. Mechanics / Mass Painting Section
         tooltipComponents.add(Component.literal("§bFeatures:"));
         tooltipComponents.add(Component.literal(" §7• §fMass Painting §7- Hold §eShift§7 while painting blocks to"));
         tooltipComponents.add(Component.literal("   §7chain-paint connected surfaces of the same type."));
 
-        // Dynamically mention the discount value from your active config file!
         double discountPct = (1.0 - PhoenixConfigs.INSTANCE.features.chameleonSprayCanBulkMultiplier) * 100;
         if (discountPct > 0) {
             tooltipComponents.add(Component.literal(
@@ -262,8 +257,6 @@ public class ChameleonSprayCanItem extends Item {
         };
     }
 
-    // Stripping out custom logic from getName() ensures vanilla never attempts to re-display
-    // its native action bar text above your custom over-the-hotbar HUD overlay implementation.
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
         return super.getName(stack);

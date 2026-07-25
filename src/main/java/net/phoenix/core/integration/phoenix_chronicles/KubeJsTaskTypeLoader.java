@@ -17,59 +17,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Reads {@code config/phoenix_chronicles/kjs_task_types.json} and registers any
- * task types defined there into {@link PhoenixTaskRegistry}.
- *
- * This lets KubeJS startup scripts define custom task types that appear in the
- * in-game editor dropdown and can be used in quest SNBT — without needing a
- * compile-time KubeJS dependency on the Java side.
- *
- * ── KubeJS startup_scripts/phoenix_tasks.js ─────────────────────────────────
- * 
- * <pre>
- * // Define custom task types visible in the in-game editor
- * const taskTypes = [
- *   {
- *     type_id: "mypack:sun_eaten",
- *     label: "Eat the Sun",
- *     icon: "§c☀",
- *     tooltip: "Complete after eating a star.\nTrigger: mypack:sun_eaten",
- *     // task_type: what underlying task class to use — "external_trigger" is the default
- *     task_type: "external_trigger",
- *     // For external_trigger: pre-fill the trigger_id in the editor
- *     default_trigger_id: "mypack:sun_eaten",
- *     fields: [
- *       {id: "required", label: "Times", type: "integer"}
- *     ]
- *   }
- * ]
- *
- * const file = new java.io.File("config/phoenix_chronicles/kjs_task_types.json")
- * file.getParentFile().mkdirs()
- * file.text = JSON.stringify(taskTypes, null, 2)
- * </pre>
- *
- * ── How KubeJS handles completion ────────────────────────────────────────────
- * 
- * <pre>
- * // server_scripts/quest_triggers.js
- * const QuestAPI = Java.loadClass('net.phoenix.core.integration.phoenix_chronicles.QuestAPI')
- *
- * ForgeEvents.onEvent('...LivingDeathEvent', event => {
- *   if (event.entity.type.registryName.equals('mypack:sun')) {
- *     QuestAPI.fireExternalEvent(event.source.entity, 'mypack:sun_eaten', null)
- *   }
- * })
- * </pre>
- *
- * The task in quest SNBT is just an {@code external_trigger} task:
- * 
- * <pre>
- * tasks: [{type: "external_trigger", trigger_id: "mypack:sun_eaten", required: 1,
- *          task_id: "mypack:eat_sun_task", description: '"Eat the Sun"'}]
- * </pre>
- */
 public final class KubeJsTaskTypeLoader {
 
     private static final String FILE = "kjs_task_types.json";
@@ -97,7 +44,6 @@ public final class KubeJsTaskTypeLoader {
                 String typeId = obj.get("type_id").getAsString();
                 if (typeId.isBlank()) continue;
 
-                // Skip if already registered (built-in or already loaded)
                 if (PhoenixTaskRegistry.get(typeId) != null) continue;
 
                 String label = obj.has("label") ? obj.get("label").getAsString() : typeId;
@@ -106,7 +52,6 @@ public final class KubeJsTaskTypeLoader {
                 String defaultTriggerId = obj.has("default_trigger_id") ? obj.get("default_trigger_id").getAsString() :
                         typeId;
 
-                // Build field defs
                 List<FieldDef> fields = new ArrayList<>();
                 if (obj.has("fields") && obj.get("fields").isJsonArray()) {
                     JsonArray farr = obj.getAsJsonArray("fields");
@@ -129,7 +74,6 @@ public final class KubeJsTaskTypeLoader {
                     }
                 }
 
-                // All KubeJS-defined task types are backed by ExternalTriggerTask
                 final String tid = defaultTriggerId;
                 var builder = PhoenixTaskRegistry.register(typeId, tag -> {
                     String trigger = tag.contains("trigger_id") ? tag.getString("trigger_id") : tid;
@@ -148,13 +92,13 @@ public final class KubeJsTaskTypeLoader {
                     }
                     if (desc == null) desc = Component.literal(label);
                     ExternalTriggerTask t = new ExternalTriggerTask(taskId, desc, trigger, required);
-                    // Store the original typeId so serializeNBT writes the right type string
+                    
                     t.setKjsTypeId(typeId);
                     return t;
                 }).icon(icon).label(label).tooltip(tooltip);
 
                 for (FieldDef f : fields) builder.field(f);
-                // Always expose trigger_id and required if no fields specified
+                
                 if (fields.isEmpty()) {
                     builder.field(FieldDef.text("trigger_id", "Trigger ID", "e.g. " + defaultTriggerId));
                     builder.field(FieldDef.integer("required", "Count"));

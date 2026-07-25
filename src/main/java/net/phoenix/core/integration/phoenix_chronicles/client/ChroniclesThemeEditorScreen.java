@@ -15,38 +15,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
-/**
- * Full-featured theme editor for Phoenix Chronicles.
- *
- * Layout:
- * Left canvas — live preview of quest node states + dep line + text swatches,
- * then a scrollable theme list below
- * Right sidebar — hex edit fields grouped by category, name input, Save / Exit
- *
- * UX parity with PhantasiaThemeEditorScreen:
- * - Ctrl+Z undo · Ctrl+S save
- * - Unsaved-changes guard (click-again-to-discard pattern)
- * - Deferred deletions — custom themes are only purged from disk on onClose()
- * - Live preview updates as you type
- */
 public class ChroniclesThemeEditorScreen extends Screen {
 
     private final Screen parent;
 
-    // ── Sidebar edit fields ───────────────────────────────────────────────────
     private final List<FieldEntry> fields = new ArrayList<>();
     private final List<SectionLabel> sections = new ArrayList<>();
     private EditBox nameInput;
 
-    // ── Theme list ────────────────────────────────────────────────────────────
     private int scrollOffset = 0;
-    /** Y of the first theme row — updated in renderPreview so mouseClicked stays in sync. */
+    
     private int listRowsStartY = 0;
 
-    // ── Deferred deletions (purged on onClose) ────────────────────────────────
     private final List<String> pendingDeletions = new ArrayList<>();
 
-    // ── Undo stack ────────────────────────────────────────────────────────────
     private record Snap(String bg, String panel, String header, String border, String accent,
                         String text, String dim, String faint, String done, String active,
                         String locked, String name) {}
@@ -56,24 +38,17 @@ public class ChroniclesThemeEditorScreen extends Screen {
     private String lastTrackedName = null;
     private boolean isUndoing = false;
 
-    // ── Unsaved-changes guard ─────────────────────────────────────────────────
     private boolean confirmActive = false;
-    private String pendingAction = null;   // theme name, or "EXIT"
+    private String pendingAction = null;   
 
-    // ── Cached palette (refreshed from live theme on every field change) ──────
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_DIM, C_FAINT;
 
-    // ── Constants ─────────────────────────────────────────────────────────────
     private static final int SIDEBAR_MIN = 185;
-
-    // ── Constructor ───────────────────────────────────────────────────────────
 
     public ChroniclesThemeEditorScreen(Screen parent) {
         super(Component.literal("Theme Editor"));
         this.parent = parent;
     }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     @Override
     protected void init() {
@@ -86,7 +61,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
 
         syncPalette(t);
 
-        // Reset undo / snapshot only when the active theme actually changes
         if (!curName.equals(lastTrackedName)) {
             lastTrackedName = curName;
             savedSnap = makeSnap(t, curName);
@@ -133,7 +107,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
         addField("Locked", t.locked, sbX, y, boxW);
         y += rh + 6;
 
-        // Name + buttons
         int ctrlY = Math.max(y + 4, height - 70);
         nameInput = new EditBox(font, width - sbW + 10, ctrlY, sbW - 20, 16, Component.literal("Theme name"));
         nameInput.setValue(curName);
@@ -185,23 +158,18 @@ public class ChroniclesThemeEditorScreen extends Screen {
         C_FAINT = t.textFaint.getColor();
     }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
         int sbW = sidebarW();
 
-        // Canvas background + sidebar
         g.fill(0, 0, width - sbW, height, C_BG);
         g.fill(width - sbW, 0, width, height, C_PANEL);
         g.fill(width - sbW, 0, width - sbW + 1, height, C_BORDER);
 
-        // Sidebar header
         g.fill(width - sbW, 0, width, 28, C_HEADER);
         g.fill(width - sbW, 27, width, 28, C_BORDER);
         g.drawString(font, "§fTheme Editor", width - sbW + 8, 8, C_ACCENT, false);
 
-        // Status line
         String status;
         int statusC;
         if (confirmActive) {
@@ -216,14 +184,13 @@ public class ChroniclesThemeEditorScreen extends Screen {
         }
         g.drawString(font, status, width - sbW + 8, 19, statusC, false);
 
-        // Section headers + field labels
         for (SectionLabel s : sections) {
             g.drawString(font, "§8" + s.title, s.x, s.y, C_ACCENT, false);
         }
         for (FieldEntry f : fields) {
-            // Label left of box
+            
             g.drawString(font, f.label, f.box.getX() - 65, f.box.getY() + 4, C_TEXT, false);
-            // Live color swatch after box
+            
             int sx = f.box.getX() + f.box.getWidth() + 3;
             int sy = f.box.getY();
             int sw = 14;
@@ -234,7 +201,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
                 previewColor = 0xFF888888;
             }
             g.fill(sx, sy, sx + sw, sy + 14, previewColor);
-            // swatch border
+            
             g.fill(sx, sy, sx + sw, sy + 1, C_BORDER);
             g.fill(sx, sy + 13, sx + sw, sy + 14, C_BORDER);
             g.fill(sx, sy, sx + 1, sy + 14, C_BORDER);
@@ -255,25 +222,20 @@ public class ChroniclesThemeEditorScreen extends Screen {
         int mockW = Math.min(canvasW - 20, 360);
         int mockX = 10;
 
-        // ── Animated header strip ─────────────────────────────────────────────
         int animY = 8;
         g.drawString(font, "§7Node states · dep line · text hierarchy", mockX, animY, C_FAINT, false);
 
-        // ── Quest-node mockup ─────────────────────────────────────────────────
         int mockTop = animY + 13;
         int mockH = Math.min(150, (height - 20) / 2);
 
-        // Canvas area
         g.fill(mockX, mockTop, mockX + mockW, mockTop + mockH, t.bg.getColor());
         drawBorder(g, mockX, mockTop, mockW, mockH, t.border.getColor());
 
-        // Header strip
         int hdrH = 17;
         g.fill(mockX, mockTop, mockX + mockW, mockTop + hdrH, t.header.getColor());
         g.fill(mockX, mockTop + hdrH - 1, mockX + mockW, mockTop + hdrH, t.border.getColor());
         g.drawString(font, "§f✦ Phoenix Chronicles", mockX + 5, mockTop + 5, t.text.getColor(), false);
 
-        // Sidebar strip
         int sideW = Math.min(52, mockW / 5);
         g.fill(mockX, mockTop + hdrH, mockX + sideW, mockTop + mockH, t.panel.getColor());
         g.fill(mockX + sideW, mockTop + hdrH, mockX + sideW + 1, mockTop + mockH, t.border.getColor());
@@ -281,29 +243,24 @@ public class ChroniclesThemeEditorScreen extends Screen {
         g.drawString(font, "§8Main", mockX + 4, mockTop + hdrH + 15, t.textFaint.getColor(), false);
         g.drawString(font, "§8Expert", mockX + 4, mockTop + hdrH + 26, t.textFaint.getColor(), false);
 
-        // Three fake quest nodes: Done · Active · Locked
         int sz = Math.max(16, Math.min(26, (mockW - sideW - 30) / 6));
         int n1x = mockX + sideW + 14;
         int n2x = n1x + sz * 2 + 14;
         int n3x = n2x + sz * 2 + 14;
         int ny = mockTop + hdrH + (mockH - hdrH) / 2 - sz / 2;
 
-        // Dep lines (behind nodes)
         drawMockLine(g, n1x + sz, ny + sz / 2, n2x, ny + sz / 2, t.done.getColor());
         drawMockLine(g, n2x + sz, ny + sz / 2, n3x, ny + sz / 2,
                 (t.locked.getColor() & 0x00FFFFFF) | 0x66000000);
 
-        // Node 1 — DONE (green)
         g.fill(n1x, ny, n1x + sz, ny + sz, (t.done.getColor() & 0x00FFFFFF) | 0xFF081A0E);
         drawBorder(g, n1x, ny, sz, sz, t.done.getColor());
         g.drawCenteredString(font, "§a✔", n1x + sz / 2, ny + sz / 2 - 4, t.done.getColor());
 
-        // Node 2 — ACTIVE (gold pulse sim: static here)
         g.fill(n2x, ny, n2x + sz, ny + sz, (t.activeColor.getColor() & 0x00FFFFFF) | 0xFF221C00);
         drawBorder(g, n2x, ny, sz, sz, t.activeColor.getColor());
         g.drawCenteredString(font, "§e◎", n2x + sz / 2, ny + sz / 2 - 4, t.activeColor.getColor());
 
-        // Node 3 — LOCKED (dim)
         g.fill(n3x, ny, n3x + sz, ny + sz, (t.locked.getColor() & 0x00FFFFFF) | 0xFF1A1A24);
         drawBorder(g, n3x, ny, sz, sz, t.locked.getColor());
         g.fill(n3x + 1, ny + 1, n3x + sz - 1, ny + sz - 1, 0x880B0B0F);
@@ -316,7 +273,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
             g.drawCenteredString(font, "§8Locked", n3x + sz / 2, lblY, t.textFaint.getColor());
         }
 
-        // Accent + text color swatches at bottom of mock
         int swY = mockTop + mockH - 7;
         if (swY > mockTop + hdrH + 4) {
             int sw = Math.max(4, (mockW - sideW - 10) / 5);
@@ -327,7 +283,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
             g.fill(sx + sw * 3 + 6, swY, sx + sw * 4 + 6, swY + 5, t.textFaint.getColor());
         }
 
-        // ── Theme list ────────────────────────────────────────────────────────
         int listY = mockTop + mockH + 8;
         g.drawString(font, "§8Themes  §7(click to swap)", mockX, listY, C_FAINT, false);
         listY += 12;
@@ -362,8 +317,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
         }
     }
 
-    // ── Mouse ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (btn != 0) return super.mouseClicked(mx, my, btn);
@@ -380,7 +333,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
         for (int i = scrollOffset; i < vis.size() && listY + itemH <= height - 4; i++) {
             String name = vis.get(i);
             if (my >= listY && my < listY + itemH) {
-                // Delete button (custom themes only)
+                
                 if (!ChroniclesTheme.isBuiltin(name)) {
                     int dX = mockX + mockW - 14;
                     if (mx >= dX && mx <= dX + 12) {
@@ -389,12 +342,12 @@ public class ChroniclesThemeEditorScreen extends Screen {
                             ChroniclesTheme.setCurrent("DARK");
                         confirmActive = false;
                         pendingAction = null;
-                        lastTrackedName = null; // force snapshot reset on reinit
+                        lastTrackedName = null; 
                         init();
                         return true;
                     }
                 }
-                // Swap theme
+                
                 if (mx >= mockX && mx <= mockX + mockW - 16) {
                     if (hasChanges()) {
                         if (!confirmActive || !name.equals(pendingAction)) {
@@ -432,24 +385,20 @@ public class ChroniclesThemeEditorScreen extends Screen {
         return super.mouseScrolled(mx, my, delta);
     }
 
-    // ── Keyboard ──────────────────────────────────────────────────────────────
-
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         if (hasControlDown()) {
             if (key == 90) {
                 tryUndo();
                 return true;
-            }  // Ctrl+Z
+            }  
             if (key == 83) {
                 save();
                 return true;
-            }  // Ctrl+S
+            }  
         }
         return super.keyPressed(key, scan, mods);
     }
-
-    // ── Save / Undo ───────────────────────────────────────────────────────────
 
     private void save() {
         String name = nameInput != null ? nameInput.getValue().trim().toUpperCase(Locale.ROOT) : "";
@@ -479,7 +428,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
         isUndoing = true;
         Snap prev = undoStack.pop();
         restore(prev);
-        // Sync edit boxes back to restored values
+        
         for (FieldEntry f : fields) {
             String v = fieldValue(prev, f.label);
             if (v != null) f.box.setValue(v.toUpperCase(Locale.ROOT));
@@ -534,8 +483,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
         syncPalette(t);
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
     @Override
     public void onClose() {
         for (String name : pendingDeletions) ChroniclesTheme.deleteCustom(name);
@@ -549,9 +496,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(@NotNull GuiGraphics g) { /* themed canvas, not dirt */ }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    public void renderBackground(@NotNull GuiGraphics g) {  }
 
     private int sidebarW() {
         return Math.max(SIDEBAR_MIN, width / 4);
@@ -573,11 +518,9 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     private void drawMockLine(GuiGraphics g, int x1, int y, int x2, int y2, int color) {
-        // Simple horizontal line for the preview (real dep lines are bezier)
+        
         for (int x = x1; x < x2; x++) g.fill(x, y - 1, x + 1, y + 2, color);
     }
-
-    // ── Records ───────────────────────────────────────────────────────────────
 
     private record FieldEntry(String label, ChroniclesTheme.ThemeColor target, EditBox box) {}
 

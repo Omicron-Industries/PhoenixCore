@@ -10,10 +10,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.phoenix.core.integration.phoenix_chronicles.client.ChronicleOverviewScreen;
 
-/**
- * Physical in-game item that opens the Phoenix Chronicles quest book GUI.
- * Register via PhoenixItems / GTRegistrate under id "chronicle_book".
- */
 public class ChronicleBookItem extends Item {
 
     public ChronicleBookItem(Properties props) {

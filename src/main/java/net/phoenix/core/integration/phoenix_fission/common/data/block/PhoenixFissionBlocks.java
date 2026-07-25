@@ -36,9 +36,6 @@ public class PhoenixFissionBlocks {
             .build()
             .register();
 
-    // Inside PhoenixFissionBlocks.java
-
-    // Array/Map cache reference
     public static final java.util.Map<IMSRCoreLinerType, BlockEntry<MSRCoreLinerBlock>> MSR_LINERS = new java.util.HashMap<>();
 
     static {
@@ -48,7 +45,7 @@ public class PhoenixFissionBlocks {
                     .initialProperties(() -> net.minecraft.world.level.block.Blocks.IRON_BLOCK)
                     .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
                     .blockstate((ctx, prov) -> {
-                        // Generates clean blockstates pointing to active / inactive variants
+                        
                         String name = ctx.getName();
                         var inactive = prov.models().cubeAll(name, type.getTexture());
                         var active = prov.models().cubeAll(name + "_active",
@@ -69,7 +66,6 @@ public class PhoenixFissionBlocks {
         }
     }
 
-    // --- Coolers ---
     public static final BlockEntry<FissionCoolerBlock> COOLER_BASIC = createCoolerBlock(
             FissionCoolerBlock.FissionCoolerTypes.COOLER_BASIC);
     public static final BlockEntry<FissionCoolerBlock> COOLER_EV = createCoolerBlock(
@@ -79,7 +75,6 @@ public class PhoenixFissionBlocks {
     public static final BlockEntry<FissionCoolerBlock> COOLER_LUV = createCoolerBlock(
             FissionCoolerBlock.FissionCoolerTypes.COOLER_LUV);
 
-    // --- Moderators ---
     public static final BlockEntry<FissionModeratorBlock> MODERATOR_GRAPHITE = createModeratorBlock(
             FissionModeratorBlock.FissionModeratorTypes.GRAPHITE);
     public static final BlockEntry<FissionModeratorBlock> MODERATOR_BERYLLIUM = createModeratorBlock(
@@ -89,7 +84,6 @@ public class PhoenixFissionBlocks {
     public static final BlockEntry<FissionModeratorBlock> MODERATOR_NIOBIUM_SIC = createModeratorBlock(
             FissionModeratorBlock.FissionModeratorTypes.NIOBIUM_SIC);
 
-    // --- Fuel Rods ---
     public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T1 = createFuelRodBlock(
             FissionFuelRodBlock.FissionFuelRodTypes.T1_FUEL_ROD);
     public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T2 = createFuelRodBlock(
@@ -101,7 +95,6 @@ public class PhoenixFissionBlocks {
     public static final BlockEntry<FissionFuelRodBlock> FUEL_ROD_T5 = createFuelRodBlock(
             FissionFuelRodBlock.FissionFuelRodTypes.T5_FUEL_ROD);
 
-    // --- Breeder Blankets ---
     public static final BlockEntry<FissionBlanketBlock> THORIUM_BLANKET = createBlanketBlock(
             FissionBlanketBlock.BreederBlanketTypes.THORIUM_BLANKET);
     public static final BlockEntry<FissionBlanketBlock> URANIUM_BLANKET = createBlanketBlock(
@@ -113,7 +106,6 @@ public class PhoenixFissionBlocks {
     public static final BlockEntry<FissionBlanketBlock> AMERICIUM_BLANKET = createBlanketBlock(
             FissionBlanketBlock.BreederBlanketTypes.AMERICIUM_BLANKET);
 
-    // --- Casings ---
     public static BlockEntry<Block> FISSILE_HEAT_SAFE_CASING = registerSimpleBlock("§bFissile Heat Safe Casing",
             "fissile_heat_safe_casing", "fissile_heat_safe_casing", BlockItem::new);
     public static BlockEntry<Block> FISSILE_REACTION_SAFE_CASING = registerSimpleBlock("§bFissile Reaction Safe Casing",

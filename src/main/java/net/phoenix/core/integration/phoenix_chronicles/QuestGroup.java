@@ -1,17 +1,12 @@
 package net.phoenix.core.integration.phoenix_chronicles;
 
-/**
- * A purely cosmetic colored region that visually clusters related quest nodes
- * within a chapter on the canvas — similar to FTB Quests chapter sections.
- * Groups have no effect on quest logic or progression.
- */
 public class QuestGroup {
 
     private String id;
     private String label;
-    private int color;        // ARGB fill color
-    private int borderColor;  // ARGB border color
-    private int x, y, width, height; // logical canvas coords (same space as node customX/customY)
+    private int color;        
+    private int borderColor;  
+    private int x, y, width, height; 
     private String category;
 
     private static final int DEFAULT_COLOR = 0x22FFFFFF;
@@ -28,8 +23,6 @@ public class QuestGroup {
         this.width = 120;
         this.height = 80;
     }
-
-    // ── Getters ───────────────────────────────────────────────────────────────
 
     public String getId() {
         return id;
@@ -66,8 +59,6 @@ public class QuestGroup {
     public String getCategory() {
         return category;
     }
-
-    // ── Setters ───────────────────────────────────────────────────────────────
 
     public void setId(String id) {
         this.id = id;

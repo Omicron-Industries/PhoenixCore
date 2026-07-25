@@ -42,14 +42,8 @@ public class PhoenixClient {
     public static void init(IEventBus modBus) {
         MinecraftForge.EVENT_BUS.register(PhoenixShaders.class);
 
-        // Hook VocalVibrancyClient into the client tick so LiveAcousticTracker
-        // fires every tick and sends bass data to the server.
-        // Without this, VocalVibrancyClient.tick() is defined but never called,
-        // meaning no S2CSoundMetadataPacket is ever sent and the machine never
-        // receives live bass data.
         MinecraftForge.EVENT_BUS.register(VocalVibrancyClientTick.class);
 
-        // GTCEu Dynamic Renders
         DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
         DynamicRenderManager.register(PhoenixCore.id("plasma_arc_furnace"), PlasmaArcFurnaceRender.TYPE);
@@ -60,20 +54,16 @@ public class PhoenixClient {
         DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
     }
 
-    // Inner static class keeps the tick handler co-located with the rest of
-    // PhoenixClient rather than scattering it into a separate file.
-    // Registered on the FORGE event bus (not MOD bus) so it fires every game tick.
     public static class VocalVibrancyClientTick {
 
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
-            // Only tick at END to avoid running twice per tick (START + END both fire)
+            
             if (event.phase != TickEvent.Phase.END) return;
             VocalVibrancyClient.tick();
         }
     }
 
-    // --- PARTICLE FACTORY REGISTRATION ---
     @SubscribeEvent
     public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(PhoenixParticles.TESLA_SPARK.get(), TeslaSparkProvider::new);
@@ -99,7 +89,6 @@ public class PhoenixClient {
         }
     }
 
-    // --- MODEL & SETUP LOGIC ---
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(EyeOfHarmonyRender.SPACE_SHELL_MODEL_RL);

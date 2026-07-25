@@ -26,8 +26,6 @@ import static net.phoenix.core.integration.phoenix_guilds.client.GuildThemeUtils
 @OnlyIn(Dist.CLIENT)
 public class WikiEditScreen extends Screen {
 
-    // Colors delegated to GuildThemeUtils via static import
-
     private static final int MAX_CONTENT = 512;
     private static final int MAX_TITLE = 64;
 
@@ -39,12 +37,10 @@ public class WikiEditScreen extends Screen {
             0xFFFFFFFF
     };
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int W = 420;
     private static final int H = 210;
     private int px, py;
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final Screen parent;
     private final String initialTitle;
     private final String initialContent;
@@ -76,8 +72,6 @@ public class WikiEditScreen extends Screen {
 
         setInitialFocus(initialTitle.isEmpty() ? titleBox : contentArea);
     }
-
-    // ── Render ────────────────────────────────────────────────────────────────
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
@@ -120,8 +114,6 @@ public class WikiEditScreen extends Screen {
         }
         g.drawCenteredString(font, label, x + w / 2, y + (h - 8) / 2, hov ? C_ACCENT() : C_TEXT());
     }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
@@ -170,7 +162,7 @@ public class WikiEditScreen extends Screen {
         String title = titleBox != null ? titleBox.getValue().trim() : "";
         String content = contentArea != null ? contentArea.getValue() : "";
         if (title.isEmpty()) return;
-        //  is the title/content separator (not a printable char, won't appear in user input)
+        
         PhoenixNetwork.CHANNEL.sendToServer(
                 new C2SGuildActionPacket(C2SGuildActionPacket.Action.WIKI_SET, title + '' + content));
         Minecraft.getInstance().setScreen(parent);
@@ -180,8 +172,6 @@ public class WikiEditScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
-    // ── Multiline content widget ──────────────────────────────────────────────
 
     class ContentArea extends AbstractWidget {
 
@@ -234,7 +224,6 @@ public class WikiEditScreen extends Screen {
                     lineCache.add(new LinePos(full.length(), full.length(), ""));
             }
 
-            // Selection
             if (tf.hasSelection()) {
                 String sel = tf.getSelectedText();
                 int si = full.indexOf(sel);
@@ -254,7 +243,6 @@ public class WikiEditScreen extends Screen {
                 }
             }
 
-            // Text + caret
             for (int i = 0; i < lineCache.size(); i++) {
                 LinePos lp = lineCache.get(i);
                 int ly = ty + i * 9;
@@ -266,7 +254,6 @@ public class WikiEditScreen extends Screen {
                 }
             }
 
-            // Char count
             String cc = tf.value().length() + "/" + MAX_CONTENT;
             g.drawString(WikiEditScreen.this.font, cc,
                     getX() + width - WikiEditScreen.this.font.width(cc) - 4, getY() + height - 10, C_DIM(), false);

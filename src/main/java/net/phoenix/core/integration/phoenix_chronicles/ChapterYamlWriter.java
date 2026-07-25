@@ -13,14 +13,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Writes or updates a node entry block in a chapter .yml file.
- *
- * Used by QuestCreatorScreen when saving Chapter Node tab edits.
- *
- * If the quest is already listed in the chapter, its block is replaced.
- * If not, a new node block is appended to the nodes: list.
- */
 public class ChapterYamlWriter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChapterYamlWriter.class);
@@ -43,7 +35,7 @@ public class ChapterYamlWriter {
             if (Files.exists(chapterFile)) {
                 lines = new ArrayList<>(Files.readAllLines(chapterFile, StandardCharsets.UTF_8));
             } else {
-                // Create a minimal chapter file if none exists
+                
                 lines = new ArrayList<>();
                 lines.add("id: " + chapterId.getPath());
                 lines.add("display_name: \"" + chapterId.getPath() + "\"");
@@ -55,23 +47,21 @@ public class ChapterYamlWriter {
 
             String questPath = questId.getPath();
 
-            // Build the replacement block
             List<String> block = buildNodeBlock(questPath, shape, x, y, visible, dependsOn);
 
-            // Check if the quest already has a block in the file
             int existingStart = findNodeBlockStart(lines, questPath);
             if (existingStart >= 0) {
-                // Replace existing block
+                
                 int existingEnd = findNodeBlockEnd(lines, existingStart);
                 lines.subList(existingStart, existingEnd).clear();
                 lines.addAll(existingStart, block);
             } else {
-                // Ensure "nodes:" key exists
+                
                 if (!lines.contains("nodes:")) {
                     lines.add("");
                     lines.add("nodes:");
                 }
-                // Append after the last line
+                
                 lines.add("");
                 lines.addAll(block);
             }
@@ -83,8 +73,6 @@ public class ChapterYamlWriter {
             LOGGER.error("[Chronicles] Failed to write chapter node for {} in {}", questId, chapterId, e);
         }
     }
-
-    // -------------------------------------------------------------------------
 
     private static List<String> buildNodeBlock(
                                                String questPath, String shape, int x, int y, boolean visible,
@@ -105,9 +93,6 @@ public class ChapterYamlWriter {
         return block;
     }
 
-    /**
-     * Returns the line index of " - quest: <questPath>" or -1 if not found.
-     */
     private static int findNodeBlockStart(List<String> lines, String questPath) {
         String target = "  - quest: " + questPath;
         for (int i = 0; i < lines.size(); i++) {
@@ -118,15 +103,11 @@ public class ChapterYamlWriter {
         return -1;
     }
 
-    /**
-     * Returns the exclusive end index of the node block starting at startIdx.
-     * A block ends when we hit another " - quest:" line, a top-level key, or EOF.
-     */
     private static int findNodeBlockEnd(List<String> lines, int startIdx) {
         for (int i = startIdx + 1; i < lines.size(); i++) {
             String trimmed = lines.get(i).trim();
             if (trimmed.isEmpty()) continue;
-            // Another node entry, or a top-level key — block is over
+            
             if (trimmed.startsWith("- quest:") || (leadingSpaces(lines.get(i)) == 0 && !trimmed.startsWith("-"))) {
                 return i;
             }

@@ -14,8 +14,6 @@ import java.util.function.Supplier;
 
 public class S2CGuildSyncPacket {
 
-    // ── Records ───────────────────────────────────────────────────────────────
-
     public record MemberEntry(UUID uuid, String name, boolean isOnline, String rank) {}
 
     public record GuildSummary(String name, int memberCount, int onlineCount, String description) {}
@@ -27,8 +25,6 @@ public class S2CGuildSyncPacket {
     public record LogEntry(long timestamp, String message) {}
 
     public record WikiPage(String title, String content) {}
-
-    // ── Fields ────────────────────────────────────────────────────────────────
 
     private final String guildName;
     private final UUID ownerUUID;
@@ -43,8 +39,6 @@ public class S2CGuildSyncPacket {
     private final List<LogEntry> logEntries;
     private final List<WikiPage> wikiPages;
     private final List<GuildSummary> allGuilds;
-
-    // ── Server-side constructor ───────────────────────────────────────────────
 
     public S2CGuildSyncPacket(String guildName, UUID ownerUUID, String motd, String description,
                               boolean friendlyFire, boolean homeSet,
@@ -65,8 +59,6 @@ public class S2CGuildSyncPacket {
         this.wikiPages = wikiPages;
         this.allGuilds = allGuilds;
     }
-
-    // ── Decode ────────────────────────────────────────────────────────────────
 
     public S2CGuildSyncPacket(FriendlyByteBuf buf) {
         boolean inGuild = buf.readBoolean();
@@ -101,8 +93,6 @@ public class S2CGuildSyncPacket {
         this.allGuilds = readList(buf,
                 b -> new GuildSummary(b.readUtf(64), b.readVarInt(), b.readVarInt(), b.readUtf(256)));
     }
-
-    // ── Encode ────────────────────────────────────────────────────────────────
 
     public void encode(FriendlyByteBuf buf) {
         boolean inGuild = guildName != null;
@@ -144,8 +134,6 @@ public class S2CGuildSyncPacket {
         });
     }
 
-    // ── Handle ────────────────────────────────────────────────────────────────
-
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
                 () -> () -> applyOnClient(this)));
@@ -162,8 +150,6 @@ public class S2CGuildSyncPacket {
         if (mc.screen instanceof net.phoenix.core.integration.phoenix_guilds.client.GuildScreen gs)
             gs.onDataRefreshed();
     }
-
-    // ── IO helpers ────────────────────────────────────────────────────────────
 
     @FunctionalInterface
     private interface ElemReader<T> {

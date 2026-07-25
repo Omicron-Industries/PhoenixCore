@@ -2,18 +2,6 @@ package net.phoenix.core.integration.phoenix_chronicles.flag;
 
 import javax.annotation.Nullable;
 
-/**
- * Parses and evaluates comparison expressions of the form:
- * key (EXISTS — truthy: non-null, non-empty, not "false", not "0")
- * key=value (equality)
- * key!=value (inequality)
- * key>value (numeric greater-than)
- * key>=value (numeric greater-or-equal)
- * key<value (numeric less-than)
- * key<=value (numeric less-or-equal)
- *
- * Used by flag providers to avoid duplicating parsing logic.
- */
 public final class FlagExpression {
 
     public enum Op {
@@ -37,7 +25,6 @@ public final class FlagExpression {
         this.value = value;
     }
 
-    /** Longer operators must come before their prefixes to avoid partial matches. */
     private static final String[] OPS = { ">=", "<=", "!=", ">", "<", "=" };
     private static final Op[] OP_ENUMS = { Op.GTE, Op.LTE, Op.NEQ, Op.GT, Op.LT, Op.EQ };
 
@@ -55,10 +42,6 @@ public final class FlagExpression {
         return new FlagExpression(expr.trim(), Op.EXISTS, null);
     }
 
-    /**
-     * Tests {@code actual} against the parsed expression.
-     * Returns {@code false} if {@code actual} is null and op is not EXISTS.
-     */
     public boolean test(@Nullable String actual) {
         if (op == Op.EXISTS) {
             return actual != null && !actual.isBlank() && !actual.equalsIgnoreCase("false") && !actual.equals("0") &&
@@ -66,7 +49,6 @@ public final class FlagExpression {
         }
         if (actual == null) return false;
 
-        // Numeric comparison
         if (op != Op.EQ && op != Op.NEQ) {
             try {
                 double a = Double.parseDouble(actual.trim());
@@ -79,11 +61,10 @@ public final class FlagExpression {
                     default -> false;
                 };
             } catch (NumberFormatException ignored) {
-                return false; // non-numeric values don't support >, <
+                return false; 
             }
         }
 
-        // String / boolean equality
         boolean eq = actual.trim().equalsIgnoreCase(value != null ? value.trim() : "");
         return op == Op.EQ ? eq : !eq;
     }

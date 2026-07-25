@@ -127,10 +127,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
         updateTickSubscription();
     }
 
-    /**
-     * Updates tick subscription based on wireless status and multiblock membership.
-     * Subscribes if wireless AND (not in multiblock OR in non-Tesla multiblock).
-     */
     private void updateTickSubscription() {
         boolean shouldTick = false;
 

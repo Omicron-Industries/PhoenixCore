@@ -76,7 +76,7 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         this.maxLength = Math.max(0, maxLength);
         if (isRemote() && textField != null) {
             textField.setCharacterLimit(this.maxLength);
-            // przytnij aktualną wartość jeśli trzeba
+            
             String v = safe(textField.value());
             if (v.length() > this.maxLength) {
                 setValueClient(v.substring(0, this.maxLength));
@@ -104,7 +104,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         sendToServer(true);
     }
 
-    // ====== networking ======
     private void sendToServer() {
         sendToServer(false);
     }
@@ -143,7 +142,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         }
     }
 
-    // ====== client init ======
     @OnlyIn(Dist.CLIENT)
     private void initClient(int width) {
         this.font = net.minecraft.client.Minecraft.getInstance().font;
@@ -170,7 +168,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         ensureCursorVisible();
     }
 
-    // ====== focus ======
     @OnlyIn(Dist.CLIENT)
     private void takeFocus() {
         if (focusedField != this) {
@@ -187,7 +184,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         if (focusedField == this) focusedField = null;
     }
 
-    // ====== scrolling helpers ======
     @OnlyIn(Dist.CLIENT)
     private double getMaxScroll() {
         if (textField == null || font == null) return 0.0;
@@ -238,7 +234,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         return (Util.getMillis() / 500L) % 2L == 0L;
     }
 
-    // ====== clipboard + shortcuts ======
     @OnlyIn(Dist.CLIENT)
     public static boolean isCtrlDown() {
         return net.minecraft.client.gui.screens.Screen.hasControlDown();
@@ -311,7 +306,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         String clip = safe(clipboardGet());
         if (clip.isEmpty()) return;
 
-        // kontrolujemy maxLength “po fakcie”
         textField.insertText(clip);
         String v = clampToMax(safe(textField.value()));
         if (!v.equals(textField.value())) {
@@ -319,7 +313,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         }
     }
 
-    // ====== input ======
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -373,11 +366,10 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         if (!hasFocus || textField == null) return false;
 
         if (keyCode == KEY_ESCAPE) {
-            // zostawiamy ESC do wyjścia z GUI; nie kasujemy focusu na siłę
+            
             return false;
         }
 
-        // CTRL shortcuts
         if (isCtrlDown()) {
             if (net.minecraft.client.gui.screens.Screen.isSelectAll(keyCode)) {
                 selectAll();
@@ -404,7 +396,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
             }
         }
 
-        // Enter / Tab
         if (keyCode == KEY_ENTER || keyCode == KEY_KP_ENTER) {
             textField.insertText("\n");
             clampScroll();
@@ -420,7 +411,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
             return true;
         }
 
-        // reszta (strzałki, backspace, delete, home/end, itp.)
         boolean handled = textField.keyPressed(keyCode);
         if (handled) {
             clampScroll();
@@ -436,7 +426,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
     public boolean charTyped(char codePoint, int modifiers) {
         if (!hasFocus || textField == null) return false;
 
-        // nie wstawiaj znaków kontrolnych (poza \t i \n obsłużonych wyżej)
         if (codePoint < 32) return true;
 
         textField.insertText(String.valueOf(codePoint));
@@ -451,7 +440,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         return true;
     }
 
-    // ====== render ======
     @Override
     @OnlyIn(Dist.CLIENT)
     public void drawInBackground(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
@@ -519,7 +507,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
             y += font.lineHeight;
         }
 
-        // caret
         if (hasFocus && blink()) {
             int curLine = textField.lineAtCursor();
             Line ln = textField.line(curLine);
@@ -537,7 +524,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
 
         graphics.disableScissor();
 
-        // placeholder
         if (safe(textField.value()).isEmpty() && !hasFocus && !placeholder.getString().isEmpty()) {
             graphics.drawString(font, placeholder, clipL, clipT, 0xFF808080);
         }
@@ -545,7 +531,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
     }
 
-    // ===== helpers =====
     private static String safe(String s) {
         return s == null ? "" : s;
     }
@@ -555,7 +540,6 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         return s.substring(0, maxLength);
     }
 
-    // ===== cached multiline field (client-only) =====
     private static final class Line {
 
         final int begin;

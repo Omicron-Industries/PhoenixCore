@@ -17,7 +17,7 @@ public interface IFissionBlanketType {
     int getTier();
 
     default int getRequiredFuelTier() {
-        return getTier(); // Default fallback: requires matching tier
+        return getTier(); 
     }
 
     int getDurationTicks();

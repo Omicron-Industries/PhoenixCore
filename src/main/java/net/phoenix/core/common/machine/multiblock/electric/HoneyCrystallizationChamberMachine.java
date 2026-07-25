@@ -120,14 +120,6 @@ public class HoneyCrystallizationChamberMachine extends WorkableElectricMultiblo
         return offsets;
     }
 
-    /**
-     * PlasmaBoost config:
-     * - name for display
-     * - duration multiplier
-     * - EUt multiplier
-     * - consumeAmount = how much plasma to consume per interval (mB)
-     * - ticksPerConsumption = how many ticks between each consumption
-     */
     private record PlasmaBoost(String name, double durationMultiplier, double eutMultiplier, int consumeAmount,
                                int ticksPerConsumption) {}
 

@@ -61,18 +61,16 @@ public class CoolantEmiRecipe implements EmiRecipe {
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
-        // Input → arrow → output
+        
         widgets.addSlot(inputs.get(0), 8, 16);
         widgets.addSlot(outputs.get(0), 114, 16).recipeContext(this);
-        widgets.addFillingArrow(48, 16, 1000); // Continuous process — cosmetic 1s arrow
+        widgets.addFillingArrow(48, 16, 1000); 
 
-        // ── Row 1: cooling power ─────────────────────────────────────────────
         widgets.addText(
                 Component.literal("−" + formatHeat(type.getCoolerTemperature()) + " HU/t")
                         .withStyle(ChatFormatting.AQUA),
                 8, 4, 0xFFFFFF, false);
 
-        // ── Row 2: fluid throughput (left) and "continuous" label (right) ────
         long mbt = type.getCoolantUsagePerTick();
         widgets.addText(
                 Component.literal(mbt + " mB/t").withStyle(ChatFormatting.DARK_AQUA),
@@ -83,7 +81,6 @@ public class CoolantEmiRecipe implements EmiRecipe {
                 95, 37, 0xFFFFFF, false);
     }
 
-    /** Format large HU/t values with k suffix, e.g. 10000 → "10k" */
     private String formatHeat(int hut) {
         if (hut >= 1000 && hut % 1000 == 0) return (hut / 1000) + "k";
         if (hut >= 1000) return String.format("%.1fk", hut / 1000.0);

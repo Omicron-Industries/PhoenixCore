@@ -40,7 +40,6 @@ public class QuestCapabilityProvider implements ICapabilitySerializable<Compound
         instance.deserializeNBT(nbt);
     }
 
-    // Attach capability instantly whenever a player spawns into the world
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof Player) {
@@ -48,7 +47,6 @@ public class QuestCapabilityProvider implements ICapabilitySerializable<Compound
         }
     }
 
-    // Register the capability to Forge on startup (call this in your Mod constructor or CommonSetup)
     public static void register(RegisterCapabilitiesEvent event) {
         event.register(PlayerQuestData.class);
     }

@@ -17,11 +17,7 @@ public class ItemRequirementTask extends QuestTask {
     private Item item;
     private int requiredCount;
     private boolean consume;
-    /**
-     * Optional NBT filter: if non-null, each stack must contain ALL keys from this tag
-     * (subset match — extra NBT on the stack is allowed).
-     * Null means match any stack of the right item type.
-     */
+    
     private CompoundTag nbtFilter = null;
 
     public ItemRequirementTask(ResourceLocation taskId, Component description, Item item, int requiredCount,
@@ -62,7 +58,7 @@ public class ItemRequirementTask extends QuestTask {
         if (nbtFilter == null || nbtFilter.isEmpty()) return true;
         CompoundTag stackTag = stack.getTag();
         if (stackTag == null) return false;
-        // Subset match: every key in nbtFilter must be present and equal in stackTag
+        
         for (String key : nbtFilter.getAllKeys()) {
             if (!stackTag.contains(key)) return false;
             if (!stackTag.get(key).equals(nbtFilter.get(key))) return false;
@@ -70,7 +66,6 @@ public class ItemRequirementTask extends QuestTask {
         return true;
     }
 
-    /** All slots we scan: main inventory + offhand + armour. */
     private Iterable<ItemStack> allSlots(Player player) {
         List<ItemStack> all = new ArrayList<>(player.getInventory().items);
         all.addAll(player.getInventory().offhand);
@@ -94,7 +89,7 @@ public class ItemRequirementTask extends QuestTask {
     public void tryConsume(Player player) {
         if (item == null || !consume) return;
         int remaining = requiredCount;
-        // Consume from main inventory first, then offhand, then armour
+        
         for (ItemStack stack : allSlots(player)) {
             if (!stackMatches(stack)) continue;
             int take = Math.min(remaining, stack.getCount());

@@ -15,9 +15,6 @@ import java.util.List;
 
 import static net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen.formatAmount;
 
-/**
- * A horizontal row of item slots updated for 1.20+.
- */
 public class SlotPanel extends AbstractWidget {
 
     public static class SlotEntry {
@@ -45,17 +42,15 @@ public class SlotPanel extends AbstractWidget {
 
     @Override
     protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mx, int my, float dt) {
-        // 1. Visibility Guard: Don't render anything if the tab isn't active
+        
         if (!this.visible) return;
 
-        // Render Label
         guiGraphics.drawString(parent.getFont(), getMessage(), getX(), getY(), 0x888888, false);
 
         for (int i = 0; i < slotCount; i++) {
             int sx = getX() + i * (S + GA);
             int sy = getY() + 10;
 
-            // Background & Border
             guiGraphics.fill(sx, sy, sx + S, sy + S, 0xFF2C2C2C);
             renderBorder(guiGraphics, sx, sy, sx + S, sy + S, 0xFF505050);
 
@@ -67,7 +62,7 @@ public class SlotPanel extends AbstractWidget {
             if (!e.stack.isEmpty()) {
                 guiGraphics.renderFakeItem(e.stack, sx + 1, sy + 1);
                 if (e.count > 1) {
-                    // Replace String.valueOf(e.count) with our new formatter
+                    
                     guiGraphics.renderItemDecorations(parent.getFont(), e.stack, sx + 1, sy + 1, formatAmount(e.count));
                 }
             }
@@ -86,16 +81,14 @@ public class SlotPanel extends AbstractWidget {
 
         SlotEntry e = entries.get(i);
 
-        // RIGHT-CLICK: Now opens the popup editor
         if (btn == 1) {
             if (!e.stack.isEmpty()) {
-                // Call the screen's editor at the mouse position
+                
                 parent.openEditor(mx, my, e, e.count);
                 return true;
             }
         }
 
-        // MIDDLE-CLICK: Toggle non-consumable (useful for GregTech circuits/tools)
         if (btn == 2 && !e.stack.isEmpty()) {
             e.notConsumable = !e.notConsumable;
             return true;
@@ -106,7 +99,7 @@ public class SlotPanel extends AbstractWidget {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        // 3. Input Guard: Don't accept scroll if hidden
+        
         if (!this.visible) return false;
 
         int i = slotAt(mx, my);
@@ -120,7 +113,7 @@ public class SlotPanel extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(double mx, double my, int btn) {
-        // 4. Input Guard: Don't accept drag-drops if hidden
+        
         if (!this.visible) return false;
 
         int i = slotAt(mx, my);
@@ -155,10 +148,6 @@ public class SlotPanel extends AbstractWidget {
         return true;
     }
 
-    /**
-     * Checks if the mouse is over a specific slot and returns the stack found there.
-     * Used by the screen to render tooltips for custom slots.
-     */
     public ItemStack getStackUnderMouse(double mx, double my) {
         if (!this.visible) return ItemStack.EMPTY;
 

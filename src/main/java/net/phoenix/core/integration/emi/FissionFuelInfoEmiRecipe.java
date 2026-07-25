@@ -13,20 +13,13 @@ import dev.emi.emi.api.widget.WidgetHolder;
 
 import java.util.List;
 
-/**
- * One EMI recipe card per fuel rod type.
- * Shows stats and an in-world technical log entry.
- * Register one instance per FissionFuelRodTypes value.
- */
 public class FissionFuelInfoEmiRecipe implements EmiRecipe {
 
     private static final int W = 220;
     private static final int H = 140;
 
-    // Flavour text per fuel rod — written as field-log / spec-sheet entries.
-    // Index mirrors FissionFuelRodTypes.values() ordinal.
     private static final String[] LOGS = {
-            // 0 — placeholder; add one entry per enum value in the same order
+            
             "LOG-001 // Standard fissile charge. Stable neutron cross-section. " +
                     "Recommended for initial reactor commissioning and baseline calibration runs.",
 
@@ -90,11 +83,9 @@ public class FissionFuelInfoEmiRecipe implements EmiRecipe {
     public void addWidgets(WidgetHolder widgets) {
         int y = 6;
 
-        // ── Item slot ────────────────────────────────────────────────────────
         widgets.addSlot(FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + fuel.getName()), 6, y)
                 .drawBack(true);
 
-        // ── Name ─────────────────────────────────────────────────────────────
         String displayName = fuel.getName().replace("_", " ").toUpperCase();
         widgets.addText(
                 Component.literal(displayName)
@@ -109,13 +100,11 @@ public class FissionFuelInfoEmiRecipe implements EmiRecipe {
 
         y += 24;
 
-        // ── Horizontal rule ──────────────────────────────────────────────────
         final int ruleY = y;
         widgets.addDrawable(6, ruleY, W - 12, 1,
                 (gui, mx, my, dt) -> gui.fill(0, 0, W - 12, 1, 0x44AAAAAA));
         y += 6;
 
-        // ── Stats block ──────────────────────────────────────────────────────
         int col1 = 6, col2 = 114;
 
         statLine(widgets, col1, y, "Base Heat",
@@ -130,13 +119,11 @@ public class FissionFuelInfoEmiRecipe implements EmiRecipe {
                 biasClass(fuel.getNeutronBias()), ChatFormatting.WHITE);
         y += 20;
 
-        // ── Horizontal rule ──────────────────────────────────────────────────
         final int ruleY2 = y;
         widgets.addDrawable(6, ruleY2, W - 12, 1,
                 (gui, mx, my, dt) -> gui.fill(0, 0, W - 12, 1, 0x33AAAAAA));
         y += 6;
 
-        // ── Log entry ────────────────────────────────────────────────────────
         widgets.addText(
                 Component.literal("// FIELD LOG").withStyle(ChatFormatting.DARK_GRAY),
                 6, y, 0xFFFFFF, false);
@@ -150,8 +137,6 @@ public class FissionFuelInfoEmiRecipe implements EmiRecipe {
             y += 9;
         }
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private void statLine(WidgetHolder w, int x, int y,
                           String label, String value, ChatFormatting valueColor) {
@@ -187,7 +172,6 @@ public class FissionFuelInfoEmiRecipe implements EmiRecipe {
         return "Volatile";
     }
 
-    /** Naive word-wrap to ~charWidth characters. */
     private static List<String> wrapText(String text, int charWidth) {
         java.util.List<String> lines = new java.util.ArrayList<>();
         String[] words = text.split(" ");

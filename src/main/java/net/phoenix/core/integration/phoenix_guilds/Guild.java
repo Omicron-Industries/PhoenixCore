@@ -31,11 +31,11 @@ public class Guild {
     private final Set<UUID> allies = new LinkedHashSet<>();
     private final Set<UUID> pendingOutgoing = new LinkedHashSet<>();
     private final Deque<LogEntry> log = new ArrayDeque<>();
-    private final Map<String, String> wikiPages = new LinkedHashMap<>(); // title → content (ordered insertion)
+    private final Map<String, String> wikiPages = new LinkedHashMap<>(); 
 
     private String motd = "";
     private String description = "";
-    private boolean friendlyFire = false; // false = PvP between members disabled
+    private boolean friendlyFire = false; 
     private double homeX, homeY, homeZ;
     private float homeYaw, homePitch;
     private ResourceLocation homeDimension = null;
@@ -47,8 +47,6 @@ public class Guild {
         members.add(owner);
         memberRanks.put(owner, GuildRank.OWNER);
     }
-
-    // ── Basic accessors ───────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;
@@ -154,8 +152,6 @@ public class Guild {
         this.homePitch = pitch;
     }
 
-    // ── Rank helpers ──────────────────────────────────────────────────────────
-
     public GuildRank getRank(UUID uuid) {
         return memberRanks.getOrDefault(uuid, GuildRank.MEMBER);
     }
@@ -163,8 +159,6 @@ public class Guild {
     public boolean hasRank(UUID uuid, GuildRank required) {
         return getRank(uuid).isAtLeast(required);
     }
-
-    // ── Member mutations ──────────────────────────────────────────────────────
 
     public boolean isMember(UUID uuid) {
         return members.contains(uuid);
@@ -179,8 +173,6 @@ public class Guild {
         members.remove(uuid);
         memberRanks.remove(uuid);
     }
-
-    // ── Ally helpers ──────────────────────────────────────────────────────────
 
     public boolean isAlly(UUID guildId) {
         return allies.contains(guildId);
@@ -205,8 +197,6 @@ public class Guild {
     public void removePendingOutgoing(UUID guildId) {
         pendingOutgoing.remove(guildId);
     }
-
-    // ── Wiki ──────────────────────────────────────────────────────────────────
 
     public Map<String, String> getWikiPages() {
         return wikiPages;
@@ -234,14 +224,10 @@ public class Guild {
         return wikiPages.remove(title) != null;
     }
 
-    // ── Log ───────────────────────────────────────────────────────────────────
-
     public void addLog(String message) {
         log.addFirst(new LogEntry(System.currentTimeMillis(), message));
         while (log.size() > MAX_LOG) log.removeLast();
     }
-
-    // ── NBT ───────────────────────────────────────────────────────────────────
 
     public CompoundTag serialize() {
         CompoundTag tag = new CompoundTag();
@@ -263,7 +249,6 @@ public class Guild {
         tag.put("allies", uuidSet(allies));
         tag.put("pendingOutgoing", uuidSet(pendingOutgoing));
 
-        // Ranks
         ListTag rankList = new ListTag();
         for (Map.Entry<UUID, GuildRank> e : memberRanks.entrySet()) {
             CompoundTag r = new CompoundTag();
@@ -273,7 +258,6 @@ public class Guild {
         }
         tag.put("ranks", rankList);
 
-        // Wiki
         ListTag wikiList = new ListTag();
         for (Map.Entry<String, String> e : wikiPages.entrySet()) {
             CompoundTag w = new CompoundTag();
@@ -283,7 +267,6 @@ public class Guild {
         }
         tag.put("wiki", wikiList);
 
-        // Log
         ListTag logList = new ListTag();
         for (LogEntry entry : log) {
             CompoundTag l = new CompoundTag();
@@ -330,7 +313,7 @@ public class Guild {
                 g.memberRanks.put(uuid, rank);
             } catch (Exception ignored) {}
         }
-        // Ensure all members have a rank entry
+        
         for (UUID m : g.members) g.memberRanks.putIfAbsent(m, GuildRank.MEMBER);
         g.memberRanks.put(owner, GuildRank.OWNER);
 

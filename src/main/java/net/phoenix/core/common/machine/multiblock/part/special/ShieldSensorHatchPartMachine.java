@@ -35,7 +35,6 @@ public class ShieldSensorHatchPartMachine extends SensorHatchPartMachine {
                 ShieldedMachine controller = controllers.get(0);
                 ShieldTypes shield = controller.getShieldType();
 
-                // scale shield health (0–1000) to redstone (0–15)
                 int signal = (int) (15.0 * shield.shieldHealth / 1000.0);
 
                 return signal;

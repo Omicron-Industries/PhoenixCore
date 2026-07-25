@@ -82,12 +82,11 @@ public class FuelRodEmiRecipe implements EmiRecipe {
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
-        // Input slot → filling arrow → output slot, vertically centred in the widget
+        
         widgets.addSlot(inputs.get(0), 8, 16);
         widgets.addSlot(outputs.get(0), 114, 16).recipeContext(this);
         widgets.addFillingArrow(48, 16, type.getDurationTicks() * 50);
 
-        // ── Stat row: HU/t (left) and duration (right) ──────────────────────
         int durSec = type.getDurationTicks() / 20;
         String durStr = durSec >= 60 ? (durSec / 60) + "m " + (durSec % 60) + "s" : durSec + "s";
 
@@ -99,7 +98,6 @@ public class FuelRodEmiRecipe implements EmiRecipe {
                 Component.literal(durStr).withStyle(ChatFormatting.GRAY),
                 114, 37, 0xFFFFFF, false);
 
-        // ── Neutron bias, shown in the arrow area so it doesn't crowd the slots ─
         int bias = type.getNeutronBias();
         if (bias > 0) {
             ChatFormatting biasColor = bias >= 12 ? ChatFormatting.RED :

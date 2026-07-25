@@ -99,7 +99,7 @@ public class FissionModeratorBlock extends ActiveBlock {
 
         @Override
         public @NotNull ResourceLocation getTexture() {
-            // Uses the consolidated base texture
+            
             return PhoenixCore.id("block/fission/moderator_base");
         }
 

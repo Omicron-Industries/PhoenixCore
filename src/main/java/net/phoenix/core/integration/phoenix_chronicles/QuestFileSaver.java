@@ -11,17 +11,6 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Writes the full quest registry back to disk.
- *
- * Called:
- * - When the player leaves the world (LoggingOut event)
- * - When Minecraft stops (ClientStopping event)
- * - Explicitly after edits in QuestCreatorScreen and TaskRewardEditorScreen
- *
- * Format per node: one .snbt + one .md (human-readable companion).
- * The .snbt is the source of truth; the .md is for author readability only.
- */
 public class QuestFileSaver {
 
     public static void saveAllQuestsToDisk() {
@@ -37,7 +26,6 @@ public class QuestFileSaver {
             return;
         }
 
-        // Determine each node's parent id by scanning the child lists
         java.util.Map<net.minecraft.resources.ResourceLocation, net.minecraft.resources.ResourceLocation> childToParent = new java.util.HashMap<>();
         for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
             for (QuestNode child : node.getChildren()) {
@@ -56,13 +44,10 @@ public class QuestFileSaver {
             }
         }
 
-        // Persist stub categories (categories with no quests)
         saveStubCategories(base);
 
         System.out.println("[Phoenix Chronicles] Saved " + saved + " quest(s) to disk.");
     }
-
-    // ── Single node ───────────────────────────────────────────────────────────
 
     public static void saveNode(Path base, QuestNode node,
                                 net.minecraft.resources.ResourceLocation parentId)
@@ -72,10 +57,9 @@ public class QuestFileSaver {
         String desc = node.getDescription().getString();
         String category = node.getCategory() != null ? node.getCategory() : "MAIN";
         String shape = node.getShapeType() != null ? node.getShapeType() : "SQUARE";
-        String iconItem = node.getIconItemId();        // "" if none
+        String iconItem = node.getIconItemId();        
         String parent = parentId != null ? parentId.getPath() : "none";
 
-        // ── .snbt ─────────────────────────────────────────────────────────────
         CompoundTag tag = new CompoundTag();
         tag.putString("id", id);
         tag.putString("title", title);
@@ -87,7 +71,6 @@ public class QuestFileSaver {
         tag.putInt("positionY", node.getCustomY());
         if (!iconItem.isEmpty()) tag.putString("icon_item", iconItem);
 
-        // Extended metadata
         if (!node.getSubtitle().isEmpty()) tag.putString("subtitle", node.getSubtitle());
         tag.putString("visibility", node.getVisibility().name());
         if (node.getEnableIf() != null) tag.putString("enable_if", node.getEnableIf());
@@ -96,11 +79,9 @@ public class QuestFileSaver {
         if (node.isDisabledBlocksChildren()) tag.putBoolean("disabled_blocks_children", true);
         if (node.isShared()) tag.putBoolean("shared", true);
 
-        // Repeat behaviour
         tag.putString("repeat_mode", node.getRepeatMode().name());
         tag.putInt("repeat_cooldown_hours", node.getRepeatCooldownHours());
 
-        // Prerequisite gate + per-prereq flags
         tag.putBoolean("require_all_prereqs", node.getRequireAllPrerequisites());
         if (!node.getPrerequisites().isEmpty()) {
             net.minecraft.nbt.ListTag prereqList = new net.minecraft.nbt.ListTag();
@@ -120,7 +101,6 @@ public class QuestFileSaver {
         if (node.getOptionalPrereqMinCount() != 0)
             tag.putInt("optional_prereq_min_count", node.getOptionalPrereqMinCount());
 
-        // Tasks (fix pre-existing persistence bug: tasks were never saved)
         if (!node.getTasks().isEmpty()) {
             net.minecraft.nbt.ListTag taskList = new net.minecraft.nbt.ListTag();
             for (QuestTask t : node.getTasks()) {
@@ -134,14 +114,12 @@ public class QuestFileSaver {
             tag.put("tasks", taskList);
         }
 
-        // Rewards
         if (!node.getRewards().isEmpty()) {
             net.minecraft.nbt.ListTag rewardList = new net.minecraft.nbt.ListTag();
             for (QuestReward r : node.getRewards()) rewardList.add(r.serializeNBT());
             tag.put("rewards", rewardList);
         }
 
-        // Emergency items
         if (!node.getEmergencyItems().isEmpty()) {
             tag.put("emergency_items", node.serializeEmergencyItems());
         }
@@ -150,9 +128,8 @@ public class QuestFileSaver {
         Files.createDirectories(snbtPath.getParent());
         Files.writeString(snbtPath, tag.toString(), StandardCharsets.UTF_8);
 
-        // ── .md ───────────────────────────────────────────────────────────────
         Path mdPath = base.resolve(id + ".md");
-        // Only write .md if it doesn't already exist (preserve author edits)
+        
         if (!Files.exists(mdPath)) {
             Files.writeString(mdPath,
                     "# " + title + "\n\n" + (desc.isEmpty() ? "" : desc + "\n"),
@@ -160,18 +137,15 @@ public class QuestFileSaver {
         }
     }
 
-    // ── Stub categories ───────────────────────────────────────────────────────
-
     private static void saveStubCategories(Path base) {
         try {
-            // Collect categories that come from quests
+            
             Set<String> questCats = new HashSet<>();
             questCats.add("ALL");
             for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
                 if (n.getCategory() != null) questCats.add(n.getCategory());
             }
 
-            // Read the existing categories.txt to find any stubs
             Path catFile = base.resolve("categories.txt");
             java.util.List<String> stubs = new java.util.ArrayList<>();
             if (Files.exists(catFile)) {
@@ -181,7 +155,6 @@ public class QuestFileSaver {
                 }
             }
 
-            // Persist (overwrite with pruned list)
             Files.writeString(catFile, String.join("\n", stubs), StandardCharsets.UTF_8);
         } catch (IOException e) {
             System.err.println("[Phoenix Chronicles] Failed to save categories.txt: " + e.getMessage());

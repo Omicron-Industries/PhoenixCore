@@ -13,20 +13,17 @@ import java.util.Set;
 
 public class PlayerQuestData {
 
-    // Quest state per quest id
     private final Map<ResourceLocation, QuestState> questStates = new HashMap<>();
-    // Task-specific progress blobs
+    
     private final Map<ResourceLocation, CompoundTag> taskProgress = new HashMap<>();
-    // Last-completed epoch-millis per quest (for cooldown / daily repeat logic)
+    
     private final Map<ResourceLocation, Long> lastCompleted = new HashMap<>();
-    // Rewards the player has already claimed (prevents double-granting on reconnect)
+    
     private final Set<ResourceLocation> claimedRewards = new HashSet<>();
-    // Which reward index was chosen in a choice group, keyed by quest id
+    
     private final Map<ResourceLocation, Integer> chosenRewardIndex = new HashMap<>();
-    // The single pinned quest shown on the HUD (null = nothing pinned)
+    
     private ResourceLocation pinnedQuestId = null;
-
-    // ── Quest state ───────────────────────────────────────────────────────────
 
     public QuestState getQuestState(ResourceLocation questId, QuestState defaultState) {
         return questStates.getOrDefault(questId, defaultState);
@@ -36,13 +33,9 @@ public class PlayerQuestData {
         questStates.put(questId, state);
     }
 
-    // ── Task progress ─────────────────────────────────────────────────────────
-
     public CompoundTag getOrCreateTaskProgress(ResourceLocation taskId) {
         return taskProgress.computeIfAbsent(taskId, id -> new CompoundTag());
     }
-
-    // ── Repeat / cooldown ─────────────────────────────────────────────────────
 
     public long getLastCompletedTime(ResourceLocation questId) {
         return lastCompleted.getOrDefault(questId, 0L);
@@ -51,8 +44,6 @@ public class PlayerQuestData {
     public void recordCompletion(ResourceLocation questId) {
         lastCompleted.put(questId, System.currentTimeMillis());
     }
-
-    // ── Rewards ───────────────────────────────────────────────────────────────
 
     public boolean hasClaimedRewards(ResourceLocation questId) {
         return claimedRewards.contains(questId);
@@ -78,12 +69,9 @@ public class PlayerQuestData {
         chosenRewardIndex.remove(questId);
     }
 
-    /** Wipes all accumulated task progress for a single task (used on repeat reset). */
     public void clearTaskProgress(ResourceLocation taskId) {
         taskProgress.remove(taskId);
     }
-
-    // ── Pinned quest ──────────────────────────────────────────────────────────
 
     public ResourceLocation getPinnedQuestId() {
         return pinnedQuestId;
@@ -101,12 +89,9 @@ public class PlayerQuestData {
         return pinnedQuestId != null && pinnedQuestId.equals(questId);
     }
 
-    // ── Serialization ─────────────────────────────────────────────────────────
-
     public CompoundTag serializeNBT() {
         CompoundTag root = new CompoundTag();
 
-        // Quest states
         ListTag questsList = new ListTag();
         questStates.forEach((id, state) -> {
             CompoundTag e = new CompoundTag();
@@ -116,7 +101,6 @@ public class PlayerQuestData {
         });
         root.put("Quests", questsList);
 
-        // Task progress
         ListTag tasksList = new ListTag();
         taskProgress.forEach((id, tag) -> {
             CompoundTag e = new CompoundTag();
@@ -126,7 +110,6 @@ public class PlayerQuestData {
         });
         root.put("Tasks", tasksList);
 
-        // Last completed timestamps
         ListTag completedList = new ListTag();
         lastCompleted.forEach((id, time) -> {
             CompoundTag e = new CompoundTag();
@@ -136,7 +119,6 @@ public class PlayerQuestData {
         });
         root.put("LastCompleted", completedList);
 
-        // Claimed rewards
         ListTag claimedList = new ListTag();
         for (ResourceLocation id : claimedRewards) {
             CompoundTag e = new CompoundTag();
@@ -145,7 +127,6 @@ public class PlayerQuestData {
         }
         root.put("ClaimedRewards", claimedList);
 
-        // Chosen reward indices
         ListTag chosenList = new ListTag();
         chosenRewardIndex.forEach((id, idx) -> {
             CompoundTag e = new CompoundTag();
@@ -155,7 +136,6 @@ public class PlayerQuestData {
         });
         root.put("ChosenRewards", chosenList);
 
-        // Pinned quest
         if (pinnedQuestId != null) root.putString("PinnedQuest", pinnedQuestId.toString());
 
         return root;

@@ -38,7 +38,7 @@ public final class SourceHatchJarTransferTick {
 
             BlockEntity be = level.getBlockEntity(hatchPos);
             if (!(be instanceof MetaMachineBlockEntity metaBE)) {
-                // PhoenixCore.LOGGER.debug("Tracker contained non-machine at {}", hatchPos);
+                
                 continue;
             }
 
@@ -47,7 +47,7 @@ public final class SourceHatchJarTransferTick {
 
             ISourceTile tank = hatch.getSource();
             if (tank == null) {
-                // PhoenixCore.LOGGER.warn("SourceHatch at {} has null Source container!", hatchPos);
+                
                 continue;
             }
 
@@ -79,14 +79,12 @@ public final class SourceHatchJarTransferTick {
                 jar.removeSource(toMove);
                 tank.addSource(toMove);
 
-                // CRITICAL: Ensure the jar and hatch sync to client for particles/UI
                 jar.setChanged();
                 level.sendBlockUpdated(targetPos, jar.getBlockState(), jar.getBlockState(), 3);
 
                 ParticleUtil.spawnFollowProjectile(level, targetPos, hatchPos, jar.getColor());
                 remaining -= toMove;
 
-                // PhoenixCore.LOGGER.debug("Hatch at {} pulled {} source from jar at {}", hatchPos, toMove, targetPos);
             }
         }
     }
@@ -113,7 +111,6 @@ public final class SourceHatchJarTransferTick {
                 ParticleUtil.spawnFollowProjectile(level, hatchPos, targetPos, jar.getColor());
                 remaining -= toMove;
 
-                // PhoenixCore.LOGGER.debug("Hatch at {} pushed {} source to jar at {}", hatchPos, toMove, targetPos);
             }
         }
     }

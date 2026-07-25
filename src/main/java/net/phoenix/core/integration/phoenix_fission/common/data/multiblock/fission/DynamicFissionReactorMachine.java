@@ -190,12 +190,6 @@ public class DynamicFissionReactorMachine extends FissionWorkableElectricMultibl
         return true;
     }
 
-    /**
-     * Fuel consumption + optional spent/depleted fuel output.
-     *
-     * NOTE: This class overrides the base tickFuelConsumptionMachineDriven(), so any spent-fuel output logic
-     * must live here (otherwise it will never run for machines extending this class, e.g. breeders).
-     */
     @Override
     protected void tickFuelConsumptionMachineDriven(int parallels) {
         var cfg = PhoenixConfigs.INSTANCE.fission;

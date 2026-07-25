@@ -45,15 +45,13 @@ public class FissionBlanketBlock extends ActiveBlock {
         tooltip.add(Component.translatable("block.phoenixcore.fission_blanket.info_header")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
 
-        // --- Input Info ---
         Component inputName = FissionFuelRodBlock.getRegistryDisplayName(blanketType.getInputKey());
-        // --- Required Driver Fuel Info ---
+        
         tooltip.add(Component.literal(" • ")
                 .append(Component.translatable("phoenixcore.tooltip.required_fuel_tier"))
                 .append(Component.literal(": Tier " + blanketType.getRequiredFuelTier() + "+")
                         .withStyle(ChatFormatting.DARK_RED)));
 
-        // --- Cycle Stats ---
         double seconds = blanketType.getDurationTicks() / 20.0;
         tooltip.add(Component.translatable("gtceu.multiblock.generation_features")
                 .withStyle(ChatFormatting.GRAY));
@@ -66,7 +64,6 @@ public class FissionBlanketBlock extends ActiveBlock {
                 .append(Component.translatable("gtceu.recipe.duration"))
                 .append(Component.literal(": " + String.format("%.2f", seconds) + "s").withStyle(ChatFormatting.GOLD)));
 
-        // --- Required Driver Fuel Info ---
         tooltip.add(Component.literal(" • ")
                 .append(Component.translatable("phoenixcore.tooltip.required_fuel_tier"))
                 .append(Component.literal(": Tier " + blanketType.getRequiredFuelTier() + "+")
@@ -74,7 +71,6 @@ public class FissionBlanketBlock extends ActiveBlock {
 
         tooltip.add(Component.empty());
 
-        // --- Potential Outputs ---
         tooltip.add(Component.translatable("phoenixcore.blanket.potential_outputs")
                 .withStyle(ChatFormatting.YELLOW));
 
@@ -99,7 +95,6 @@ public class FissionBlanketBlock extends ActiveBlock {
             }
         }
 
-        // --- Mechanic Hint ---
         tooltip.add(Component.empty());
         tooltip.add(Component.translatable("phoenixcore.blanket.bias_hint")
                 .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
@@ -107,7 +102,6 @@ public class FissionBlanketBlock extends ActiveBlock {
 
     public enum BreederBlanketTypes implements StringRepresentable, IFissionBlanketType {
 
-        // Format: name, blanket_tier, required_fuel_tier, duration, amount, input_material, outputs, tint
         THORIUM_BLANKET("thorium_blanket", 1, 1, 3500, 4, "phoenixcore:thorium_fuel_pellet",
                 List.of(new BlanketOutput("gtceu:uranium_233_dust", 60, 2),
                         new BlanketOutput("gtceu:uranium_235_dust", 15, 1),
@@ -133,7 +127,6 @@ public class FissionBlanketBlock extends ActiveBlock {
                         new BlanketOutput("gtceu:caesium_dust", 20, 0)),
                 0xFFFFD27D),
 
-        // Modified: Blanket is Tier 5, but can target a Tier 3 driver fuel environment!
         AMERICIUM_BLANKET("americium_blanket", 5, 3, 8000, 1, "gtceu:americium_dust",
                 List.of(new BlanketOutput("gtceu:curium_dust", 60, 3), new BlanketOutput("californium_dust", 5, 6),
                         new BlanketOutput("gtceu:berkelium_dust", 15, 4),

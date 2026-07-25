@@ -14,28 +14,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.phoenix.core.integration.phoenix_chronicles.event.PhoenixQuestScriptRewardEvent;
 
-/**
- * A reward that can be granted to a player when they complete a quest.
- *
- * Subclasses cover items, XP, and arbitrary server commands.
- * Each type knows how to serialize itself to/from SNBT for disk persistence.
- *
- * SNBT shape inside a quest file:
- * 
- * <pre>
- * rewards: [{
- *   type: "item",
- *   item_id: "minecraft:diamond",
- *   count: 3
- * }, {
- *   type: "xp",
- *   levels: 5
- * }, {
- *   type: "command",
- *   command: "give %player% minecraft:netherite_ingot 1"
- * }]
- * </pre>
- */
 public abstract class QuestReward {
 
     public enum RewardType {
@@ -48,20 +26,12 @@ public abstract class QuestReward {
 
     public abstract RewardType getType();
 
-    /** Human-readable one-line summary shown in the UI. */
     public abstract Component getSummary();
 
-    /** Grants the reward to a player. Called server-side only. */
     public abstract void grant(ServerPlayer player);
 
     public abstract CompoundTag serializeNBT();
 
-    // ── Factory ───────────────────────────────────────────────────────────────
-
-    /**
-     * Deserializes a reward from a CompoundTag read out of the quest SNBT.
-     * Returns null and logs a warning if the type is unknown or data is malformed.
-     */
     public static QuestReward deserializeNBT(CompoundTag tag) {
         String type = tag.getString("type");
         return switch (type) {
@@ -73,10 +43,6 @@ public abstract class QuestReward {
             default -> null;
         };
     }
-
-    // =========================================================================
-    // Item reward
-    // =========================================================================
 
     public static class ItemReward extends QuestReward {
 
@@ -110,7 +76,7 @@ public abstract class QuestReward {
         public void grant(ServerPlayer player) {
             ItemStack stack = new ItemStack(item, count);
             if (!player.addItem(stack)) {
-                // Drop at feet if inventory is full
+                
                 player.drop(stack, false);
             }
         }
@@ -133,10 +99,6 @@ public abstract class QuestReward {
             return new ItemReward(item, count);
         }
     }
-
-    // =========================================================================
-    // XP reward
-    // =========================================================================
 
     public static class XPReward extends QuestReward {
 
@@ -178,13 +140,8 @@ public abstract class QuestReward {
         }
     }
 
-    // =========================================================================
-    // Command reward
-    // =========================================================================
-
     public static class CommandReward extends QuestReward {
 
-        /** %player% is replaced with the player's username at grant time. */
         private final String command;
 
         public CommandReward(String command) {
@@ -227,16 +184,6 @@ public abstract class QuestReward {
         }
     }
 
-    // =========================================================================
-    // Loot table reward
-    // =========================================================================
-
-    /**
-     * Rolls a named loot table and gives every resulting ItemStack to the player.
-     * Overflowing items are dropped at the player's feet.
-     *
-     * SNBT shape: { type: "loot_table", loot_table: "minecraft:chests/simple_dungeon" }
-     */
     public static class LootTableReward extends QuestReward {
 
         private final ResourceLocation lootTableId;
@@ -285,35 +232,6 @@ public abstract class QuestReward {
         }
     }
 
-    // =========================================================================
-    // Script event reward
-    // =========================================================================
-
-    /**
-     * Fires a {@link PhoenixQuestScriptRewardEvent} on the Forge event bus.
-     *
-     * Subscribe from KubeJS or Java to run arbitrary code when the quest is completed.
-     *
-     * SNBT shape:
-     * 
-     * <pre>
-     * {type: "script_event", event_id: "unlock_end"}
-     * {type: "script_event", event_id: "give_reward", data: {item: "minecraft:diamond", count: 5}}
-     * </pre>
-     *
-     * KubeJS subscription (server_scripts/quest_rewards.js):
-     * 
-     * <pre>
-     * ForgeEvents.onEvent(
-     *   'net.phoenix.core.integration.phoenix_chronicles.event.PhoenixQuestScriptRewardEvent',
-     *   event => {
-     *     if (event.eventId === 'unlock_end') {
-     *       event.player.stages.add('end_unlocked')
-     *     }
-     *   }
-     * )
-     * </pre>
-     */
     public static class ScriptEventReward extends QuestReward {
 
         private final String eventId;

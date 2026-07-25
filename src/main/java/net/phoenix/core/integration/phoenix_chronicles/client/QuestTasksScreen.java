@@ -16,14 +16,8 @@ import net.phoenix.core.network.PhoenixNetwork;
 
 import java.util.List;
 
-/**
- * Quest detail screen — two states:
- * compact (isFullscreen=false): small card overlay on the parent quest graph
- * fullscreen (isFullscreen=true): full-screen panel with rich task inspector
- */
 public class QuestTasksScreen extends Screen {
 
-    // Themed color fields — populated from ChroniclesTheme in init()
     private int C_BG = 0xFF0B0B0F;
     private int C_PANEL = 0xFF14141A;
     private int C_HEADER = 0xFF0C0C10;
@@ -38,7 +32,6 @@ public class QuestTasksScreen extends Screen {
     private static final int C_SLOT_BG = 0xFF0E0E14;
     private static final int C_SLOT_HI = 0xFF3A2A00;
 
-    // Fullscreen layout constants
     private static final int HEADER_H = 28;
     private static final int REQBAR_H = 48;
     private static final int FOOTER_H = 22;
@@ -46,14 +39,12 @@ public class QuestTasksScreen extends Screen {
     private static final int REWARD_W = 140;
     private static final int TASK_ICON_SZ = 24;
 
-    // Compact card constants
     private static final int CARD_W = 310;
     private static final int CARD_PAD = 6;
     private static final int CARD_TASK_ROW_H = 22;
     private static final int CARD_MAX_TASKS = 6;
     private static final int CARD_MAX_DESC = 10;
 
-    // State
     private final Screen parent;
     private final QuestNode node;
     private final FullQuestData content;
@@ -63,7 +54,7 @@ public class QuestTasksScreen extends Screen {
     private int descScrollY = 0;
     private long openTimeMs = -1;
     private static final long OPEN_FADE_MS = 100;
-    private int inspectorTab = 2; // default to Tasks tab
+    private int inspectorTab = 2; 
     private int inspectorScrollY = 0;
     private boolean isFullscreen = false;
 
@@ -93,8 +84,6 @@ public class QuestTasksScreen extends Screen {
         C_LOCKED = t.locked.getColor();
     }
 
-    // ── Top-level render ──────────────────────────────────────────────────────
-
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
         if (isFullscreen) {
@@ -113,11 +102,8 @@ public class QuestTasksScreen extends Screen {
         }
     }
 
-    // ── Compact card ──────────────────────────────────────────────────────────
-
-    // Compact list rows: each task row = status mark + icon + name + progress + bar
-    private static final int TASK_LIST_ROW_H = 24; // 14px text area + 4px bar + 6px gap
-    // Reward mini-slots shown inline in the tasks header
+    private static final int TASK_LIST_ROW_H = 24; 
+    
     private static final int REWARD_MINI_SZ = 14;
 
     private int compactCardH(List<QuestTask> tasks, List<QuestReward> rewards,
@@ -132,7 +118,6 @@ public class QuestTasksScreen extends Screen {
         return fixedH + descH + (descH > 0 ? 1 : 0);
     }
 
-    /** Combines InfoTask bodies (word-wrapped) with the quest description lines for the bottom section. */
     private java.util.List<net.minecraft.util.FormattedCharSequence> buildAllDescLines(
                                                                                        List<QuestTask> tasks,
                                                                                        java.util.List<net.minecraft.util.FormattedCharSequence> questDescLines) {
@@ -146,23 +131,21 @@ public class QuestTasksScreen extends Screen {
             }
         }
         if (!all.isEmpty() && !questDescLines.isEmpty()) {
-            // blank separator line between info body and quest description
+            
             all.add(net.minecraft.util.FormattedCharSequence.EMPTY);
         }
         all.addAll(questDescLines);
         return all;
     }
 
-    // Tracked during renderCompact for tooltip and click handling
     private QuestTask hoveredTask = null;
     private QuestReward hoveredReward = null;
-    private int hoveredSlotX, hoveredSlotY; // screen position of hovered slot
+    private int hoveredSlotX, hoveredSlotY; 
 
     private void renderCompact(GuiGraphics g, int mx, int my, float partial) {
         hoveredTask = null;
         hoveredReward = null;
 
-        // Render parent graph at base z (no widget buttons, no tooltips, flushed)
         if (parent instanceof ChronicleOverviewScreen overview) {
             overview.renderForChildScreen(g);
         } else if (parent != null) {
@@ -173,8 +156,6 @@ public class QuestTasksScreen extends Screen {
             g.fill(0, 0, width, height, C_BG);
         }
 
-        // Elevate z so the card is ALWAYS drawn in front of any parent content,
-        // regardless of render-buffer ordering or leftover scissor state.
         g.pose().pushPose();
         g.pose().translate(0f, 0f, 300f);
         g.fill(0, 0, width, height, 0x88000000);
@@ -186,7 +167,6 @@ public class QuestTasksScreen extends Screen {
                 font.split(Component.literal(descText), CARD_W - CARD_PAD * 2) : java.util.List.of();
         java.util.List<net.minecraft.util.FormattedCharSequence> descLines = buildAllDescLines(tasks, questDescLines);
 
-        // Layout constants
         int taskSectionH = 14 + Math.min(tasks.size(), CARD_MAX_TASKS) * TASK_LIST_ROW_H +
                 (tasks.size() > CARD_MAX_TASKS ? 10 : 0) + 2;
         int fixedH = 20 + 1 + taskSectionH + 1 + 18;
@@ -198,14 +178,12 @@ public class QuestTasksScreen extends Screen {
         int cardX = (width - CARD_W) / 2;
         int cardY = Math.max(10, (height - cardH) / 2);
 
-        // Shadow + body
         g.fill(cardX + 3, cardY + 3, cardX + CARD_W + 3, cardY + cardH + 3, 0x66000000);
         g.fill(cardX, cardY, cardX + CARD_W, cardY + cardH, C_BG);
         drawBorder(g, cardX, cardY, CARD_W, cardH);
 
         int cy = cardY;
 
-        // ── Header ──────────────────────────────────────────────────────────
         g.fill(cardX, cy, cardX + CARD_W, cy + 20, C_HEADER);
         String title = node.getTitle().getString();
         if (font.width(title) > CARD_W - 32) title = font.plainSubstrByWidth(title, CARD_W - 38) + "…";
@@ -217,18 +195,15 @@ public class QuestTasksScreen extends Screen {
         g.fill(cardX, cy, cardX + CARD_W, cy + 1, C_BORDER);
         cy += 1;
 
-        // ── Task list + reward mini-strip ───────────────────────────────────
         int listX = cardX + CARD_PAD;
         int listW = CARD_W - CARD_PAD * 2;
         int visible = Math.min(tasks.size(), CARD_MAX_TASKS);
         boolean hasMore = tasks.size() > CARD_MAX_TASKS;
 
-        // Label row: "TASKS X/Y" left, reward mini-icons right
         long doneCount = tasks.stream().filter(this::isTaskDone).count();
         g.drawString(font, "§8TASKS §7" + doneCount + "§8/§7" + tasks.size(),
                 listX, cy + 3, C_TEXT_FAINT, false);
 
-        // Reward mini-icons in header row (right-aligned, up to 10)
         int maxRewardMini = Math.min(rewards.size(), (listW - 70) / (REWARD_MINI_SZ + 2));
         int rx = cardX + CARD_W - CARD_PAD;
         for (int i = 0; i < maxRewardMini; i++) {
@@ -248,7 +223,6 @@ public class QuestTasksScreen extends Screen {
         }
         cy += 14;
 
-        // Task list rows
         for (int i = 0; i < visible; i++) {
             renderCompactTaskRow(g, listX, cy, listW, tasks.get(i), mx, my);
             cy += TASK_LIST_ROW_H;
@@ -262,7 +236,6 @@ public class QuestTasksScreen extends Screen {
         g.fill(cardX, cy, cardX + CARD_W, cy + 1, C_BORDER);
         cy += 1;
 
-        // ── Description (bottom) ────────────────────────────────────────────
         if (descH > 0) {
             int dy = cy + 4;
             for (int i = 0; i < fittedDesc; i++) {
@@ -274,10 +247,8 @@ public class QuestTasksScreen extends Screen {
             cy += 1;
         }
 
-        // ── Footer ──────────────────────────────────────────────────────────
         renderCompactFooter(g, cardX, cy, CARD_W, 18, mx, my);
 
-        // ── Tooltip for hovered slot (drawn last, at z+200 so it's above the card) ──
         if (hoveredTask != null) {
             g.pose().translate(0f, 0f, 200f);
             g.renderComponentTooltip(font, buildTaskTooltip(hoveredTask), mx, my);
@@ -299,18 +270,14 @@ public class QuestTasksScreen extends Screen {
             hoveredSlotY = y;
         }
 
-        // Row hover highlight
         if (hov) g.fill(x, y, x + w, y + TASK_LIST_ROW_H - 6, 0x18FFFFFF);
 
-        // Left accent bar: green=done, orange=active, grey=optional
         int accent = done ? C_DONE : (task.isOptional() ? C_TEXT_FAINT : C_ACTIVE);
         g.fill(x, y + 1, x + 2, y + TASK_LIST_ROW_H - 7, accent);
 
-        // Status mark
         String mark = done ? "§a✔" : (task.isOptional() ? "§8○" : "§c✗");
         g.drawString(font, mark, x + 4, y + 3, 0xFFFFFFFF, false);
 
-        // Item icon (16x16) or type glyph
         int textX = x + 16;
         ItemStack icon = getTaskIcon(task);
         if (!icon.isEmpty()) {
@@ -321,14 +288,12 @@ public class QuestTasksScreen extends Screen {
             textX += 10;
         }
 
-        // Task description — use getTaskDetail() if the description looks like a raw id, else description
         String desc = task.getDescription().getString();
         String detail = getTaskDetail(task);
-        // Prefer detail when description is blank or contains only lowercase+underscores (raw id)
+        
         boolean descIsId = desc.isEmpty() || desc.matches("[a-z0-9_]+");
         String primary = (descIsId && detail != null) ? detail : desc;
 
-        // Right-aligned progress counter
         String prog = done ? "§a✔" : (progress != null ? "§8" + progress : "");
         int progW = prog.isEmpty() ? 0 : font.width(prog) + 2;
         int labelW = w - (textX - x) - progW - 2;
@@ -339,7 +304,6 @@ public class QuestTasksScreen extends Screen {
             g.drawString(font, prog, x + w - progW, y + 3, C_TEXT_FAINT, false);
         }
 
-        // Thin progress bar spanning full row width below the text
         float pct = done ? 1f : parseProgress(progress);
         int barY = y + 14;
         g.fill(x, barY, x + w, barY + 3, 0xFF1A1A22);
@@ -366,8 +330,6 @@ public class QuestTasksScreen extends Screen {
         }
     }
 
-    // ── Fullscreen ────────────────────────────────────────────────────────────
-
     private void renderFullscreen(GuiGraphics g, int mx, int my, float partial) {
         g.fill(0, 0, width, height, C_BG);
         renderHeader(g, mx, my);
@@ -391,13 +353,12 @@ public class QuestTasksScreen extends Screen {
 
         if (mx >= 4 && mx < 20 && my >= 6 && my < 22) g.fill(4, 6, 20, 22, 0x22FFFFFF);
         g.drawCenteredString(font, "§7←", 12, 10, C_TEXT_DIM);
-        // Leave room for ← (12px) + gap + ⛶ (16px) + pin (16px) + margins
+        
         int titleMaxW = width - 28 - 60;
         String titleStr = node.getTitle().getString();
         if (font.width(titleStr) > titleMaxW) titleStr = font.plainSubstrByWidth(titleStr, titleMaxW - 6) + "…";
         g.drawString(font, "§f" + titleStr, 28, 10, C_TEXT, false);
 
-        // ⛶ → compact
         int fsX = width - 36;
         if (mx >= fsX && mx < fsX + 16 && my >= 6 && my < 22) g.fill(fsX, 6, fsX + 16, 22, 0x22FFFFFF);
         g.drawCenteredString(font, "§d⛶", fsX + 8, 10, 0xFFAA44FF);
@@ -482,8 +443,6 @@ public class QuestTasksScreen extends Screen {
         }
     }
 
-    // ── Inspector panel ───────────────────────────────────────────────────────
-
     private static final String[] INSP_TABS = { "Info", "Prereqs", "Tasks", "Rewards" };
     private static final int INSP_TAB_H = 16;
 
@@ -535,7 +494,6 @@ public class QuestTasksScreen extends Screen {
         g.drawString(font, "§7" + (node.getId() != null ? node.getId() : "unknown"), x + m, cy + 10, C_TEXT, false);
         cy += 24;
 
-        // InfoTask bodies — displayed here instead of as a task row
         for (QuestTask task : node.getTasks()) {
             if (!(task instanceof InfoTask info)) continue;
             String body = info.getBody();
@@ -584,20 +542,17 @@ public class QuestTasksScreen extends Screen {
         }
         for (QuestTask task : tasks) {
             if (cy > y + h) break;
-            if (task instanceof InfoTask) continue; // body shown in Info tab
+            if (task instanceof InfoTask) continue; 
             cy = renderRichTaskRow(g, x + m, cy, w - m * 2, task);
         }
     }
 
-    /** Returns the y position after the rendered row (including gap). */
     private int renderRichTaskRow(GuiGraphics g, int x, int y, int w, QuestTask task) {
         boolean done = isTaskDone(task);
         String progress = player != null ? task.getProgressString(player) : null;
 
-        // Status mark
         g.drawString(font, done ? "§a✔" : (task.isOptional() ? "§8○" : "§c✗"), x, y + 1, 0xFFFFFFFF, false);
 
-        // Icon or glyph
         int cx = x + 10;
         ItemStack icon = getTaskIcon(task);
         if (!icon.isEmpty()) {
@@ -609,14 +564,12 @@ public class QuestTasksScreen extends Screen {
             cx += 10;
         }
 
-        // Description — truncate to leave room for progress counter on the right
         String desc = task.getDescription().getString();
         int progW = (progress != null && !done) ? font.width(progress) + 4 : 0;
         int descAvailW = w - (cx - x) - progW;
         if (font.width(desc) > descAvailW) desc = font.plainSubstrByWidth(desc, Math.max(0, descAvailW - 6)) + "…";
         g.drawString(font, "§f" + desc, cx, y + 1, done ? C_DONE : C_TEXT, false);
 
-        // Detail line
         String detail = getTaskDetail(task);
         if (detail != null) {
             int detailAvailW = w - (cx - x);
@@ -625,7 +578,6 @@ public class QuestTasksScreen extends Screen {
             g.drawString(font, "§8" + detail, cx, y + 11, C_TEXT_FAINT, false);
         }
 
-        // Progress bar + text
         float pct = done ? 1f : parseProgress(progress);
         int barY = y + (detail != null ? 22 : 14);
         int barW = w - 12;
@@ -635,7 +587,7 @@ public class QuestTasksScreen extends Screen {
             g.drawString(font, "§8" + progress, x + w - font.width(progress), barY - 1, C_TEXT_FAINT, false);
         }
 
-        return barY + 3 + 5; // 5px gap between tasks
+        return barY + 3 + 5; 
     }
 
     private void renderRewardsTab(GuiGraphics g, int x, int y, int w, int h, int mx, int my) {
@@ -724,8 +676,6 @@ public class QuestTasksScreen extends Screen {
         g.fill(x + w - 1, y, x + w, y + h, C_BORDER);
     }
 
-    // ── Task display helpers ──────────────────────────────────────────────────
-
     private ItemStack getTaskIcon(QuestTask task) {
         ResourceLocation id = task.getDisplayItemId();
         if (id == null) return ItemStack.EMPTY;
@@ -781,7 +731,7 @@ public class QuestTasksScreen extends Screen {
             return "Unlock: " + adv;
         }
         if (task instanceof InfoTask) {
-            return null; // body text is rendered in the description section, not the task row
+            return null; 
         }
         if (task instanceof TagItemTask t) {
             String tag = t.getTag() != null ? "#" + t.getTag().location().getPath() : "#unknown";
@@ -820,10 +770,9 @@ public class QuestTasksScreen extends Screen {
         return lines;
     }
 
-    /** Tries to open EMI or JEI for the given ItemStack via reflection (no hard dependency). */
     private void tryOpenInRecipeViewer(ItemStack stack) {
         if (stack.isEmpty() || minecraft == null) return;
-        // EMI
+        
         try {
             Class<?> api = Class.forName("dev.emi.emi.api.EmiApi");
             Class<?> esClass = Class.forName("dev.emi.emi.api.stack.EmiStack");
@@ -831,12 +780,12 @@ public class QuestTasksScreen extends Screen {
             api.getMethod("displayRecipes", esClass).invoke(null, es);
             return;
         } catch (Exception ignored) {}
-        // JEI fallback
+        
         try {
             Class<?> jeiApi = Class.forName("mezz.jei.api.runtime.IJeiRuntime");
-            // JEI requires more complex setup; just fall through for now
+            
         } catch (Exception ignored) {}
-        // Nothing found — expand to fullscreen so the user can see details
+        
         isFullscreen = true;
     }
 
@@ -852,8 +801,6 @@ public class QuestTasksScreen extends Screen {
             return 0f;
         }
     }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
@@ -872,23 +819,20 @@ public class QuestTasksScreen extends Screen {
         int cardX = (width - CARD_W) / 2;
         int cardY = Math.max(10, (height - cardH) / 2);
 
-        // Click outside card → close
         if (mx < cardX || mx >= cardX + CARD_W || my < cardY || my >= cardY + cardH) {
             if (minecraft != null) minecraft.setScreen(parent);
             return true;
         }
 
-        // ⛶ expand button
         if (mx >= cardX + CARD_W - 18 && mx < cardX + CARD_W - 4 && my >= cardY + 3 && my < cardY + 17) {
             isFullscreen = true;
             return true;
         }
 
-        // Task / reward slot clicks (use hovered slot tracked during last render)
         if (hoveredTask != null) {
             ItemStack icon = getTaskIcon(hoveredTask);
             if (!icon.isEmpty()) tryOpenInRecipeViewer(icon);
-            else isFullscreen = true; // non-item tasks → expand for detail
+            else isFullscreen = true; 
             return true;
         }
         if (hoveredReward != null) {
@@ -898,7 +842,6 @@ public class QuestTasksScreen extends Screen {
             return true;
         }
 
-        // Claim button in footer
         int footerY = cardY + cardH - 18;
         if (my >= footerY && my < footerY + 18) {
             QuestState state = playerData != null ? playerData.getQuestState(node.getId(), QuestState.LOCKED) :
@@ -911,17 +854,17 @@ public class QuestTasksScreen extends Screen {
     }
 
     private boolean handleFullscreenClick(double mx, double my, int btn) {
-        // ← Back → close
+        
         if (mx >= 4 && mx < 20 && my >= 6 && my < 22) {
             if (minecraft != null) minecraft.setScreen(parent);
             return true;
         }
-        // ⛶ → compact
+        
         if (mx >= width - 36 && mx < width - 20 && my >= 6 && my < 22 && btn == 0) {
             isFullscreen = false;
             return true;
         }
-        // Pin
+        
         if (mx >= width - 20 && mx < width - 4 && my >= 6 && my < 22 && btn == 0) {
             if (playerData != null) {
                 if (playerData.isPinned(node.getId())) playerData.clearPin();
@@ -929,7 +872,7 @@ public class QuestTasksScreen extends Screen {
             }
             return true;
         }
-        // Inspector tabs
+        
         int contentTop = HEADER_H + REQBAR_H + MARGIN;
         int contentRight = width - REWARD_W - MARGIN - MARGIN;
         int rightX = contentRight + MARGIN;
@@ -945,7 +888,7 @@ public class QuestTasksScreen extends Screen {
                 tabX += tabW + 2;
             }
         }
-        // Claim
+        
         int footerY = height - FOOTER_H;
         if (my >= footerY + 2 && my < footerY + 20) {
             QuestState state = playerData != null ? playerData.getQuestState(node.getId(), QuestState.LOCKED) :
@@ -974,7 +917,7 @@ public class QuestTasksScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        if (key == 256) { // ESC
+        if (key == 256) { 
             if (isFullscreen) {
                 isFullscreen = false;
                 return true;
@@ -994,8 +937,6 @@ public class QuestTasksScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private boolean isTaskDone(QuestTask task) {
         return player != null && task.isCompletedFor(player);

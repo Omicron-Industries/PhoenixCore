@@ -16,18 +16,6 @@ public class BeeRender {
 
     private Bee dummyBee;
 
-    /**
-     * Renders a swarm of bees in a circular orbit.
-     *
-     * @param level       The current world level
-     * @param timer       A consistent timer (e.g., machine.getOffsetTimer() + partialTick)
-     * @param partialTick The partial tick for smooth animation
-     * @param poseStack   The current PoseStack
-     * @param buffer      The MultiBufferSource
-     * @param packedLight The light level
-     * @param beeCount    How many bees to render
-     * @param orbitRadius How far from the center they orbit
-     */
     public void renderSwarm(Level level, float timer, float partialTick, PoseStack poseStack,
                             MultiBufferSource buffer, int packedLight, int beeCount, float orbitRadius) {
         if (dummyBee == null && level != null) {
@@ -68,17 +56,4 @@ public class BeeRender {
         }
     }
 
-    /*
-     * How to use: Put this in render class inside main render call.
-     * BeeRender.INSTANCE.renderSwarm(
-     * machine.getLevel(),
-     * tick,
-     * partialTick,
-     * poseStack,
-     * buffer,
-     * packedLight,
-     * 6, // beeCount
-     * 4.5f // orbitRadius
-     * );
-     */
 }

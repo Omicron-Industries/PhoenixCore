@@ -66,7 +66,6 @@ public class PhoenixToolRecipeHelper {
             final MaterialEntry steelPlate = new MaterialEntry(TagPrefix.plate, GTMaterials.Steel);
             final MaterialEntry steelRing = new MaterialEntry(TagPrefix.ring, GTMaterials.Steel);
 
-            // chainsaw
             if (property.hasType(GTToolType.CHAINSAW_LV)) {
                 toolPrefix = TagPrefix.toolHeadChainsaw;
                 VanillaRecipeHelper.addShapedRecipe(provider, String.format("chainsaw_head_%s", material.getName()),
@@ -83,7 +82,6 @@ public class PhoenixToolRecipeHelper {
                         material);
             }
 
-            // drill
             if (property.hasType(GTToolType.DRILL_LV)) {
                 toolPrefix = TagPrefix.toolHeadDrill;
                 VanillaRecipeHelper.addShapedRecipe(provider, String.format("drill_head_%s", material.getName()),
@@ -96,7 +94,6 @@ public class PhoenixToolRecipeHelper {
                         new GTToolType[] { PhoenixToolType.DRILL_LUV, PhoenixToolType.DRILL_ZPM }, material);
             }
 
-            // electric wire cutters
             if (property.hasType(GTToolType.WIRE_CUTTER_LV)) {
                 toolPrefix = toolHeadWireCutter;
                 addElectricToolRecipe(provider, toolPrefix,
@@ -112,7 +109,6 @@ public class PhoenixToolRecipeHelper {
                         'S', new MaterialEntry(screw, GTMaterials.Steel));
             }
 
-            // buzzsaw
             if (property.hasType(GTToolType.BUZZSAW)) {
                 toolPrefix = TagPrefix.toolHeadBuzzSaw;
                 addElectricToolRecipe(provider, toolPrefix,
@@ -126,7 +122,7 @@ public class PhoenixToolRecipeHelper {
                         "sXh", "X X", "fXx",
                         'X', plate);
             }
-            // wrench
+            
             if (property.hasType(GTToolType.WRENCH_LV)) {
                 toolPrefix = TagPrefix.toolHeadWrench;
                 addElectricToolRecipe(provider, toolPrefix,
@@ -144,7 +140,6 @@ public class PhoenixToolRecipeHelper {
 
         }
 
-        // screwdriver
         if (property.hasType(GTToolType.SCREWDRIVER_LV)) {
 
             if (material.hasFlag(GENERATE_LONG_ROD)) {

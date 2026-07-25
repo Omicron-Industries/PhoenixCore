@@ -11,22 +11,6 @@ import net.minecraft.util.RandomSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * A positioned, tickable sound instance for the Resonant Jukebox.
- *
- * Extends {@link AbstractSoundInstance} directly (not AbstractTickableSoundInstance)
- * and takes a {@link ResourceLocation} rather than a {@link net.minecraft.sounds.SoundEvent}.
- *
- * Why: AbstractTickableSoundInstance's constructor calls SoundEvent.getSound(random)
- * immediately at construction, which resolves the audio file via the SoundManager's
- * registered sound map. If the SoundEvent isn't in that map (e.g. dynamic or modded
- * sounds not yet resolved), getSound() returns EMPTY_SOUND — the silent placeholder —
- * and the wrong (silent/default) audio plays regardless of what was selected.
- *
- * Using the ResourceLocation constructor of AbstractSoundInstance stores the sound ID
- * directly in the {@code id} field and defers resolution to when the SoundEngine
- * actually enqueues the buffer, which happens after all sounds are registered.
- */
 public class JukeblockSoundInstance extends AbstractSoundInstance implements TickableSoundInstance {
 
     private static final Logger LOGGER = LogManager.getLogger("VocalResonance");
@@ -50,7 +34,6 @@ public class JukeblockSoundInstance extends AbstractSoundInstance implements Tic
         this.looping = false;
         this.delay = 0;
 
-        // Bypass vanilla's 16-block attenuation clamp — we handle falloff ourselves in tick()
         this.attenuation = Attenuation.NONE;
         LOGGER.info("VR JukeblockSoundInstance created: sound={} pos={} volume={} range={}", soundId, pos, volume,
                 range);
@@ -59,8 +42,6 @@ public class JukeblockSoundInstance extends AbstractSoundInstance implements Tic
     public float getMaxRange() {
         return maxRange;
     }
-
-    // ── TickableSoundInstance ────────────────────────────────────────────────
 
     @Override
     public void tick() {
@@ -78,9 +59,7 @@ public class JukeblockSoundInstance extends AbstractSoundInstance implements Tic
         if (distance > maxRange) {
             this.volume = 0.0f;
         } else {
-            // Minecraft clamps this.volume to [0,1] in calculateVolume().
-            // baseVolume (resonancePower) can be >1 with many speakers, so we clamp it here
-            // to keep the falloff linear across the full range instead of only the last few blocks.
+
             float effectiveBase = Math.min(1.0f, baseVolume);
             this.volume = effectiveBase * (1.0f - (float) (distance / maxRange));
         }

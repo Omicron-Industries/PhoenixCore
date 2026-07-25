@@ -6,7 +6,6 @@ import net.phoenix.core.integration.phoenix_guilds.network.S2CGuildSyncPacket;
 import java.util.List;
 import java.util.UUID;
 
-/** Client-side mirror of the player's guild state, updated by S2CGuildSyncPacket. */
 public final class ClientGuildCache {
 
     private ClientGuildCache() {}
@@ -59,7 +58,6 @@ public final class ClientGuildCache {
         return mc.player != null && ownerUUID != null && ownerUUID.equals(mc.player.getUUID());
     }
 
-    /** Returns the local player's rank string ("OWNER", "OFFICER", "MEMBER") or null if not in guild. */
     public static String myRank() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !isInGuild()) return null;

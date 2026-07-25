@@ -11,12 +11,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.phoenix.core.integration.phoenix_chronicles.QuestTask;
 
-/**
- * Task: have (or collect) a required count of items matching a given item tag.
- * Counts items currently in the player's inventory — does not consume them.
- *
- * SNBT shape: { type: "tag_item", tag: "c:ores/iron", required: 64 }
- */
 public class TagItemTask extends QuestTask {
 
     private TagKey<Item> tag;

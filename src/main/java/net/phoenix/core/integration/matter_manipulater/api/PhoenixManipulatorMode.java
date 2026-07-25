@@ -7,11 +7,11 @@ import lombok.Getter;
 @Getter
 public enum PhoenixManipulatorMode {
 
-    LINE("Line", "Places pipes in a direct line", 0xFF00E5FF),          // Cyan
-    WALL("Wall", "Creates a 2D plane of pipes", 0xFFFFFF00),          // Yellow
-    GRID("Grid", "Fills a 3D volume (Cuboid)", 0xFFFFFFFF),           // White
-    CONNECT_ONLY("Connect", "Fixes/Forces connections", 0xFF00FF00),   // Green
-    DISCONNECT("Disconnect", "Severs all connections", 0xFFFF0000);    // Red
+    LINE("Line", "Places pipes in a direct line", 0xFF00E5FF),          
+    WALL("Wall", "Creates a 2D plane of pipes", 0xFFFFFF00),          
+    GRID("Grid", "Fills a 3D volume (Cuboid)", 0xFFFFFFFF),           
+    CONNECT_ONLY("Connect", "Fixes/Forces connections", 0xFF00FF00),   
+    DISCONNECT("Disconnect", "Severs all connections", 0xFFFF0000);    
 
     private final String name;
     private final String description;
@@ -24,7 +24,7 @@ public enum PhoenixManipulatorMode {
     }
 
     public Component getDisplayName() {
-        // Using the mode's color for the chat message/action bar
+        
         return Component.literal("Mode: " + name).withStyle(s -> s.withColor(this.color & 0xFFFFFF));
     }
 
@@ -32,9 +32,6 @@ public enum PhoenixManipulatorMode {
         return values()[(this.ordinal() + 1) % values().length];
     }
 
-    /**
-     * Helper for the Ghost Renderer to get RGB floats.
-     */
     public float[] getRGB() {
         return new float[] {
                 ((color >> 16) & 0xFF) / 255f,

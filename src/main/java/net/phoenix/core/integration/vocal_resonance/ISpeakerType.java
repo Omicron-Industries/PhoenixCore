@@ -4,7 +4,7 @@ public interface ISpeakerType {
 
     String getName();
 
-    int getRangeBonus(); // Blocks added to the radius
+    int getRangeBonus(); 
 
-    float getResonanceAmplifier(); // Multiplier for "Sonic Energy"
+    float getResonanceAmplifier(); 
 }

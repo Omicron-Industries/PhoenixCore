@@ -23,9 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Custom renderer that draws the current recipe output fluid on chosen faces.
- */
 @SuppressWarnings("all")
 public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFluidRender> {
 
@@ -45,8 +42,8 @@ public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFl
                 .getRenderer();
 
         this.drawFaces = List.of(
-                RelativeDirection.DOWN,  // bottom
-                RelativeDirection.UP     // top
+                RelativeDirection.DOWN,  
+                RelativeDirection.UP     
         );
     }
 
