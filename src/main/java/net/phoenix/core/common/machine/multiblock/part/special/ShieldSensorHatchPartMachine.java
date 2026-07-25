@@ -2,7 +2,7 @@ package net.phoenix.core.common.machine.multiblock.part.special;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; // Added 8.0.0 import
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; 
 
 import net.minecraft.core.Direction;
 import net.phoenix.core.common.machine.multiblock.Shield.ShieldTypes;
@@ -35,7 +35,6 @@ public class ShieldSensorHatchPartMachine extends SensorHatchPartMachine {
                 ShieldedMachine controller = controllers.get(0);
                 ShieldTypes shield = controller.getShieldType();
 
-                // scale shield health (0–1000) to redstone (0–15)
                 int signal = (int) (15.0 * shield.shieldHealth / 1000.0);
 
                 return signal;
@@ -74,7 +73,6 @@ public class ShieldSensorHatchPartMachine extends SensorHatchPartMachine {
         }
     }
 
-    // Fix: Updated to match 8.0.0 2-argument signature
     @Override
     public void addedToController(@NotNull MultiblockControllerMachine controller, String substructureName) {
         super.addedToController(controller, substructureName);
@@ -83,7 +81,6 @@ public class ShieldSensorHatchPartMachine extends SensorHatchPartMachine {
         }
     }
 
-    // Fix: Updated to match 8.0.0 1-argument signature
     @Override
     public void removedFromController(@NotNull MultiblockControllerMachine controller) {
         super.removedFromController(controller);

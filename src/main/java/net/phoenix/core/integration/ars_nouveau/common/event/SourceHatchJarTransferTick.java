@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.ars_nouveau.common.event;
 
-
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 
 import net.minecraft.core.BlockPos;
@@ -38,14 +37,12 @@ public final class SourceHatchJarTransferTick {
 
             BlockEntity be = level.getBlockEntity(hatchPos);
 
-            // FIXED FOR 8.0.0: The block entity is the MetaMachine natively.
-            // We can match directly against our SourceHatchPartMachine target.
             if (!(be instanceof SourceHatchPartMachine hatch)) continue;
             if (!hatch.isWorkingEnabled()) continue;
 
             ISourceTile tank = hatch.getSource();
             if (tank == null) {
-                // PhoenixCore.LOGGER.warn("SourceHatch at {} has null Source container!", hatchPos);
+                
                 continue;
             }
 
@@ -80,7 +77,6 @@ public final class SourceHatchJarTransferTick {
                 jar.setChanged();
                 level.sendBlockUpdated(targetPos, jar.getBlockState(), jar.getBlockState(), 3);
 
-                // FIXED FOR 8.0.0: Update the hatch data status using the refactored mark method
                 hatch.markAsChanged();
 
                 ParticleUtil.spawnFollowProjectile(level, targetPos, hatchPos, jar.getColor());
@@ -108,7 +104,6 @@ public final class SourceHatchJarTransferTick {
                 jar.setChanged();
                 level.sendBlockUpdated(targetPos, jar.getBlockState(), jar.getBlockState(), 3);
 
-                // FIXED FOR 8.0.0: Notifies the machine network to update state and sync data fields
                 hatch.markAsChanged();
 
                 ParticleUtil.spawnFollowProjectile(level, hatchPos, targetPos, jar.getColor());

@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-/** Server → Client: full research state sync for the local player's team. */
 public class S2CResearchSyncPacket {
 
     private final Set<ResourceLocation>      unlocked;

@@ -1,4 +1,4 @@
-package net.phoenix.core.common.cover; // Your mod's package
+package net.phoenix.core.common.cover; 
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;

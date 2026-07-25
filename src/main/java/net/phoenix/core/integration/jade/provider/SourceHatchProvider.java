@@ -25,7 +25,7 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        // FIXED FOR 8.0.0: SourceHatchPartMachine is now the BlockEntity directly.
+        
         if (!(accessor.getBlockEntity() instanceof SourceHatchPartMachine hatch)) return;
 
         ISourceTile source = hatch.getSource();
@@ -37,7 +37,7 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-        // FIXED FOR 8.0.0: Type verification safety check added to match the formatting behavior
+        
         if (!(accessor.getBlockEntity() instanceof SourceHatchPartMachine)) return;
 
         CompoundTag data = accessor.getServerData();

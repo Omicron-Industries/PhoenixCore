@@ -98,17 +98,15 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         ServerLevel serverLevel = !world.isClientSide && world instanceof ServerLevel sl ? sl : null;
         TeslaTeamEnergyData teslaData = serverLevel != null ? TeslaTeamEnergyData.get(serverLevel) : null;
 
-        // ── FIX: Synchronize network state via NBT ────────────────────────
         boolean networkOnline;
         if (serverLevel != null) {
-            // Server computes the actual truth from SavedData
+            
             networkOnline = teslaData != null && teslaData.isOnline(teamID);
             data.putBoolean("TeslaNetworkOnline", networkOnline);
         } else {
-            // Client safely reads what the server synced down
+            
             networkOnline = data.getBoolean("TeslaNetworkOnline");
         }
-        // ──────────────────────────────────────────────────────────────────
 
         boolean containerOpen = !world.isClientSide && player.containerMenu != player.inventoryMenu;
         boolean currentTeslaMode = data.getBoolean("teslaMode");
@@ -161,8 +159,6 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         boolean sprinting = SyncedKeyMappings.VANILLA_FORWARD.isKeyDown(player) && player.isSprinting();
         if (item.canUse(energyPerUse / 100) && sprinting && player.onGround()) {
 
-            // 1. Use a much smaller acceleration multiplier (e.g., your LEGGING_ACCEL = 0.085D)
-            // 2. Scale it by the player's existing forward movement efficiency
             float speedModifier = player.isInWater() ? 0.02F : (float) LEGGING_ACCEL;
 
             player.moveRelative(speedModifier, new Vec3(0, 0, 1));
@@ -252,14 +248,13 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
     private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel,
                                   boolean isClientSide) {
-        // Keep your vanilla state checks for movement
+        
         boolean jumping = player.getDeltaMovement().y > 0 && !player.onGround();
         boolean sneaking = player.isShiftKeyDown();
         boolean boostedJump = data.getBoolean("boostedJump");
         boolean stepAssist = data.getBoolean("stepAssist");
         int toggleBootsTimer = data.getInt("toggleBootsTimer");
 
-        // Cooldown tracking is fine to leave on the server tick
         if (serverLevel != null) {
             int dischargeCooldown = data.getInt("dischargeCooldown");
             if (dischargeCooldown > 0) data.putInt("dischargeCooldown", dischargeCooldown - 1);
@@ -285,14 +280,14 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         if (toggleBootsTimer > 0) data.putInt("toggleBootsTimer", toggleBootsTimer - 1);
 
         if (boostedJump) {
-            if (serverLevel == null) { // Client Side Physics
+            if (serverLevel == null) { 
                 if (item.canUse(energyPerUse / 100) && player.onGround()) {
                     this.charge = 1.0F;
                 }
                 Vec3 delta = player.getDeltaMovement();
-                // Use player vertical velocity to check jumping safely
+                
                 if (delta.y >= 0.0D && this.charge > 0.0F && !player.isInWater()) {
-                    if (player.getDeltaMovement().y > 0.05 /* Replaces vanilla jump key mapping check */) {
+                    if (player.getDeltaMovement().y > 0.05 ) {
                         if (this.charge == 1.0F) player.setDeltaMovement(delta.x * 3.6D, delta.y, delta.z * 3.6D);
                         player.addDeltaMovement(new Vec3(0.0, this.charge * 0.32, 0.0));
                         this.charge *= 0.7F;
@@ -300,7 +295,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                         this.charge = 0.0F;
                     }
                 }
-            } else { // Server Side Energy Draw
+            } else { 
                 boolean prevOnGround = data.getBoolean("onGround");
                 if (prevOnGround && !player.onGround() && jumping && !sneaking) {
                     item.discharge(energyPerUse / 100, item.getTier(), true, false, false);
@@ -410,9 +405,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         if (!world.isClientSide) {
             data.putBoolean("IsSonicFlight", true);
-            // if (player instanceof ServerPlayer sp) {
-            // TriggerRegistry.fire(sp, "flight_status", "sonic_speed");
-            // }
+
             teslaData.getOrCreate(player.getUUID())
                     .drain(java.math.BigInteger.valueOf(cfg.poweredFlightEUt));
         }
@@ -437,7 +430,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         if (!player.onGround() && !player.isFallFlying() && world.isClientSide) {
             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            // Use the vanilla key mapping directly to consume the discrete second tap
+            
             if (mc.options.keyJump.consumeClick() && player.getDeltaMovement().y < 0.0) {
                 player.startFallFlying();
             }
@@ -524,11 +517,10 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             return;
         }
 
-        // Replace the old SyncedKeyMappings.VANILLA_JUMP check with this:
         if (flightMode.equals("creative+wings")) {
             if (!player.getAbilities().flying && !player.isFallFlying() && !player.onGround() && world.isClientSide) {
                 net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-                // Use the vanilla key mapping directly to consume the discrete second tap
+                
                 if (mc.options.keyJump.consumeClick() && player.getDeltaMovement().y < 0.0) {
                     player.startFallFlying();
                 }
@@ -616,10 +608,6 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                     player.level().playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE,
                             SoundSource.PLAYERS, 0.5f, 1.2f);
 
-                    // if (player instanceof ServerPlayer sp) {
-                    // TriggerRegistry.fire(sp, "suit_event", "first_rebirth");
-                    // }
-
                     player.displayClientMessage(Component.literal("§6§l⚡ PHOENIX REBIRTH ACTIVATED ⚡"), true);
                 } else {
                     player.displayClientMessage(Component.literal("§c⚡ REBIRTH FAILED: §7Insufficient network energy!")
@@ -687,9 +675,6 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         };
     }
 
-    /**
-     * Helper to match your GUI colors in the HUD
-     */
     private ChatFormatting getChatColorForMode(String mode) {
         return switch (mode) {
             case "basic" -> ChatFormatting.GREEN;
@@ -721,7 +706,6 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             return;
         }
 
-        // Flight mode fallback fix
         String fMode = nbt.getString("FlightMode");
         if (fMode.isEmpty()) fMode = "basic";
 
@@ -750,11 +734,10 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
             this.HUD.newString(Component.literal("❤ REBIRTH: READY").withStyle(ChatFormatting.GREEN));
         }
 
-        // ── FIX: Read the authoritative server-synchronized network state ──
         boolean networkIsOnline = nbt.getBoolean("TeslaNetworkOnline");
 
         if (!networkIsOnline) {
-            // Explicitly display Offline if the server calculated that the team network isn't linked
+            
             this.HUD.newString(
                     Component.literal("⚡ NETWORK: OFFLINE").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         } else {

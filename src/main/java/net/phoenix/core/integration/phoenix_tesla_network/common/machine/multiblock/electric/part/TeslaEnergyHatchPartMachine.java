@@ -1,4 +1,4 @@
-package net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.part; // Adjusted to match standard layouts if needed
+package net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.part; 
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
@@ -9,7 +9,7 @@ import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; // Fixed import
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; 
 import com.gregtechceu.gtceu.common.machine.multiblock.part.EnergyHatchPartMachine;
 
 import brachy.modularui.api.drawable.Text;
@@ -41,16 +41,6 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigInteger;
 import java.util.UUID;
 
-/**
- * MUI2 addition: IMuiMachine + buildMainUI, matching the SourceHatchPartMachine pattern for the
- * right-click-the-block GUI. Styled with TeslaBackground (electric blue/cyan, same drawable used
- * by TeslaBinderItem) -- background, arcs, and border are identical for IO.IN and IO.OUT; the only
- * IO-dependent visual is a colored IN/OUT badge next to the title (green for IN, cyan for OUT).
- *
- * lastTransferRate/lastTransferAmount are intentionally NOT surfaced in this UI -- they're never
- * assigned anywhere in tickWireless() in this class, so they'd always read 0. The UI instead shows
- * buffered energy, link status, and direction, all of which are live-correct off existing methods.
- */
 public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implements IDataStickInteractable, IMuiMachine {
 
     public static final boolean TESLA_DEBUG = false;
@@ -76,10 +66,9 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     public void setCustomName(String name) {
         this.customName = name;
-        this.markAsChanged(); // 8.0.0: Replaced self().markDirty()
+        this.markAsChanged(); 
     }
 
-    // Fix: Updated constructor to explicitly match 8.0.0 EnergyHatchPartMachine requirements
     public TeslaEnergyHatchPartMachine(BlockEntityCreationInfo holder, int tier, IO io, int amperage) {
         super(holder, tier, io, amperage);
     }
@@ -105,7 +94,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
     public void onUnload() {
         super.onUnload();
         if (!getLevel().isClientSide && getLevel() instanceof ServerLevel server) {
-            if (this.isRemoved()) { // 8.0.0: Removed self().getHolder().self().isRemoved()
+            if (this.isRemoved()) { 
                 TeslaTeamEnergyData.get(server).removeMachineFromAllTeams(getBlockPos());
             } else if (ownerTeamUUID != null) {
                 TeslaTeamEnergyData.get(server).setEnergyBuffered(
@@ -122,7 +111,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     @Override
     public void addedToController(@NotNull com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller, String substructureName) {
-        super.addedToController(controller, substructureName); // Pass both arguments up
+        super.addedToController(controller, substructureName); 
 
         if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] addedToController: {} at {}, isTeslaTower={}",
                 controller.getClass().getSimpleName(), getBlockPos(), controller instanceof TeslaTowerMachine);
@@ -138,7 +127,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     @Override
     public void removedFromController(@NotNull com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller) {
-        super.removedFromController(controller); // Fix: Only passes 1 argument in 8.0.0!
+        super.removedFromController(controller); 
         updateTickSubscription();
     }
 
@@ -195,7 +184,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     public void bindToTower(TeslaTowerMachine tower) {
         this.boundTower = tower;
-        this.markAsChanged(); // 8.0.0: Replaced self().markDirty()
+        this.markAsChanged(); 
     }
 
     public boolean isWireless() {
@@ -271,7 +260,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
         if (this.ownerTeamUUID == null || !team.equals(this.ownerTeamUUID)) {
             this.ownerTeamUUID = team;
-            this.markAsChanged(); // 8.0.0: Replaced self().markDirty()
+            this.markAsChanged(); 
 
             TeslaWirelessRegistry.unregisterHatch(this);
             TeslaWirelessRegistry.registerHatch(this);
@@ -303,7 +292,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
                     this.ownerTeamUUID = newTeamUUID;
                     this.boundTower = null;
-                    this.markAsChanged(); // 8.0.0: Replaced self().markDirty()
+                    this.markAsChanged(); 
 
                     TeslaWirelessRegistry.unregisterHatch(this);
                     TeslaWirelessRegistry.registerHatch(this);
@@ -331,11 +320,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
         return InteractionResult.PASS;
     }
 
-    // ------------------------------------------------------------------
-    // MUI2 block GUI (right-click the hatch). Matches SourceHatchPartMachine's structure:
-    // TeslaBackground on the client-side root widget, then a Flow.col() text stack on top.
-    // ------------------------------------------------------------------
-
     @Override
     public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager,
                             UISettings settings) {
@@ -343,11 +327,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
             mainWidget.background(new TeslaBackground(getBorderColor()));
         }
 
-        // NOTE: titleWidget/badgeWidget use `var` to capture asWidget()'s Widget<?> return type
-        // directly (not raw), which should let IPositioned's builder methods resolve via wildcard
-        // capture the same way the raw-type fix worked in TeslaBinderItem -- but this exact
-        // var+wildcard-capture shape wasn't separately confirmed; flagging in case it doesn't
-        // compile cleanly in your actual build.
         Flow titleRow = Flow.row()
                 .coverChildren()
                 .marginBottom(8);
@@ -384,7 +363,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                         .asWidget()));
     }
 
-    /** Small colored "IN"/"OUT" badge next to the title -- the only IO-dependent visual. */
     private Component getDirectionBadge() {
         boolean isOut = getIO() == IO.OUT;
         return Component.literal(isOut ? "[OUT]" : "[IN]")
@@ -403,7 +381,6 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                         .withStyle(ChatFormatting.LIGHT_PURPLE));
     }
 
-    /** ARGB border color passed to TeslaBackground -- same accent family for both IN and OUT. */
     private int getBorderColor() {
         return 0xAA00C0FF;
     }

@@ -26,13 +26,11 @@ import java.util.Set;
 @OnlyIn(Dist.CLIENT)
 public class ResearchTerminalScreen extends Screen {
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int TAB_H    = 20;
     private static final int BOTTOM_H = 48;
     private static final int DETAIL_W = 224;
-    private static final int NODE_R   = 22; // used for label placement
+    private static final int NODE_R   = 22; 
 
-    // ── Colors ────────────────────────────────────────────────────────────────
     private static final int C_BG     = 0xFF07070F;
     private static final int C_CANVAS = 0xFF09090E;
     private static final int C_PANEL  = 0xFF0F0F1C;
@@ -42,7 +40,6 @@ public class ResearchTerminalScreen extends Screen {
     private static final int C_TEXT   = 0xFFCCCCEE;
     private static final int C_DIM    = 0xFF555577;
 
-    // ── State ─────────────────────────────────────────────────────────────────
     @Nullable private final ResearchTerminalBlockEntity terminal;
 
     private float panX = 0, panY = 0;
@@ -54,7 +51,6 @@ public class ResearchTerminalScreen extends Screen {
     private int activeTreeIdx = 0;
     private List<ResearchTree> trees = new ArrayList<>();
 
-    // ── Visual system ─────────────────────────────────────────────────────────
     private final MotionClock clock = new MotionClock();
     private final IntensityController intensity = new IntensityController();
     private DisciplineRenderer activeRenderer = DisciplineRendererRegistry.getDefault();
@@ -73,7 +69,7 @@ public class ResearchTerminalScreen extends Screen {
         trees = new ArrayList<>(ResearchTreeRegistry.INSTANCE.getAllTrees());
         resetPan();
         lastFrameNanos = -1;
-        // Activate renderer for the initially-selected tree
+        
         syncRenderer();
     }
 
@@ -88,38 +84,30 @@ public class ResearchTerminalScreen extends Screen {
         panY = canvasH() / 2f;
     }
 
-    // ── Canvas bounds ─────────────────────────────────────────────────────────
-
     private int canvasW()   { return width - DETAIL_W; }
     private int canvasH()   { return height - TAB_H - BOTTOM_H; }
     private int canvasTop() { return TAB_H; }
     private int bottomTop() { return height - BOTTOM_H; }
 
-    // ── Render ────────────────────────────────────────────────────────────────
-
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
-        // Delta time
+        
         long now = System.nanoTime();
         float dt = lastFrameNanos < 0 ? 0.016f : (float)((now - lastFrameNanos) / 1_000_000_000.0);
         lastFrameNanos = now;
-        dt = Math.min(dt, 0.1f); // clamp to avoid spiral-of-death on lag
+        dt = Math.min(dt, 0.1f); 
 
-        // Sync discipline renderer if tree switched
         syncRenderer();
 
-        // Tick motion systems
         clock.tick(dt);
         intensity.tick(dt);
         AxiomShaderManager.tick(dt);
         pushShaderData(mx, my);
 
-        // Hover detection for intensity
         int cw = canvasW(), ct = canvasTop();
         boolean hoveringCanvas = mx >= 0 && mx < cw && my >= ct && my < ct + canvasH();
         if (hoveringCanvas) intensity.onHover(); else intensity.onHoverEnd();
 
-        // Build RenderContext for active tree (null if no trees loaded)
         RenderContext ctx = buildContext(mx, my);
         if (ctx == null) {
             g.fill(0, 0, width, height, C_BG);
@@ -130,10 +118,8 @@ public class ResearchTerminalScreen extends Screen {
             return;
         }
 
-        // Tick the renderer
         activeRenderer.tick(dt, ctx);
 
-        // Draw UI layers
         g.fill(0, 0, width, height, C_BG);
         renderTabBar(g, mx, my);
         renderCanvas(g, mx, my, ctx);
@@ -167,8 +153,6 @@ public class ResearchTerminalScreen extends Screen {
                 cmx, cmy, canvasW(), canvasH(), clock, intensity);
     }
 
-    // ── Tab bar ───────────────────────────────────────────────────────────────
-
     private void renderTabBar(GuiGraphics g, int mx, int my) {
         g.fill(0, 0, canvasW(), TAB_H, C_HEADER);
         g.fill(0, TAB_H - 1, canvasW(), TAB_H, C_BORDER);
@@ -190,8 +174,6 @@ public class ResearchTerminalScreen extends Screen {
         }
     }
 
-    // ── Canvas ────────────────────────────────────────────────────────────────
-
     private void renderCanvas(GuiGraphics g, int mx, int my, RenderContext ctx) {
         int cw = canvasW(), ch = canvasH(), ct = canvasTop();
         g.fill(0, ct, cw, ct + ch, C_CANVAS);
@@ -209,13 +191,11 @@ public class ResearchTerminalScreen extends Screen {
                 (int)(cw * scale),
                 (int)(ch * scale));
 
-        // ── Background (canvas-space independent — no pan/zoom) ───────────────
         g.pose().pushPose();
         g.pose().translate(0, ct, 0);
         activeRenderer.renderBackground(g, ctx);
         g.pose().popPose();
 
-        // ── Edges + Nodes in pan/zoom space ────────────────────────────────────
         g.pose().pushPose();
         g.pose().translate(panX, ct + panY, 0);
         g.pose().scale(zoom, zoom, 1);
@@ -223,7 +203,6 @@ public class ResearchTerminalScreen extends Screen {
         activeRenderer.renderEdges(g, ctx);
         activeRenderer.renderNodes(g, ctx);
 
-        // Node labels (always on top, use default style)
         for (ResearchNode node : ctx.tree().getNodes()) {
             if (!node.isVisible(ctx.unlocked())) continue;
             float[] pos = activeRenderer.nodePos(node, ctx);
@@ -232,7 +211,6 @@ public class ResearchTerminalScreen extends Screen {
 
         g.pose().popPose();
 
-        // ── Foreground particles (canvas-space) ───────────────────────────────
         g.pose().pushPose();
         g.pose().translate(panX, ct + panY, 0);
         g.pose().scale(zoom, zoom, 1);
@@ -255,13 +233,11 @@ public class ResearchTerminalScreen extends Screen {
                 ? rawLabel.substring(0, rawLabel.startsWith("§") ? 17 : 15) + "…"
                 : rawLabel;
         int lw = font.width(label);
-        // Shadow
+        
         g.drawString(font, label, cx - lw / 2 + 1, cy + r + 4, 0xFF000000, false);
         g.drawString(font, label, cx - lw / 2, cy + r + 3,
                 unlocked ? C_TEXT : available ? 0xFF88CC88 : C_DIM, false);
     }
-
-    // ── Detail panel ──────────────────────────────────────────────────────────
 
     private void renderDetailPanel(GuiGraphics g, int mx, int my) {
         int px   = canvasW();
@@ -281,7 +257,7 @@ public class ResearchTerminalScreen extends Screen {
         Set<ResourceLocation> unlockedSet = ClientResearchCache.unlocked;
         boolean unlocked  = ClientResearchCache.isUnlocked(selected.id);
         boolean lockedOut = ClientResearchCache.isLockedOut(selected.id);
-        boolean isMystery = selected.hidden && !unlocked;  // revealed hidden node not yet researched
+        boolean isMystery = selected.hidden && !unlocked;  
         boolean available = !unlocked && !lockedOut
                 && selected.canUnlock(unlockedSet, ClientResearchCache.lockedOut);
         boolean canResearch = available && costsAffordable(selected);
@@ -290,13 +266,11 @@ public class ResearchTerminalScreen extends Screen {
         int y    = pTop + 14;
         int maxW = DETAIL_W - 24;
 
-        // ── Title ──────────────────────────────────────────────────────────
         String titleStr = isMystery ? "???" : selected.title;
         int titleColor  = unlocked ? 0xFF88BBFF : available ? 0xFF88EE88
                         : lockedOut ? 0xFF884444 : C_TEXT;
         g.drawString(font, titleStr, x, y, titleColor, false);
 
-        // Commitment badge
         if (selected.isCommitmentNode) {
             String badge = "§6◆ Commitment";
             g.drawString(font, badge, width - font.width(badge) - 10, y, C_TEXT, false);
@@ -306,9 +280,6 @@ public class ResearchTerminalScreen extends Screen {
         g.fill(px + 8, y, width - 8, y + 1, C_BORDER);
         y += 7;
 
-        // ── Lore / Hint ────────────────────────────────────────────────────
-        // Lore shows for ALL visible non-locked-out nodes (locked, available, or done).
-        // For mystery nodes: show the hint field instead, until they're unlocked.
         if (lockedOut) {
             for (String line : wrapText("§8This path has been sealed by a prior choice.", maxW)) {
                 g.drawString(font, line, x, y, C_TEXT, false);
@@ -316,15 +287,14 @@ public class ResearchTerminalScreen extends Screen {
             }
             y += 4;
         } else if (isMystery && !selected.hint.isEmpty()) {
-            // Hint shown in italic-style dim colour — teases but doesn't reveal
+            
             for (String line : wrapText("§o§7" + selected.hint, maxW)) {
                 g.drawString(font, line, x, y, C_TEXT, false);
                 y += 11;
             }
             y += 4;
         } else if (!selected.lore.isEmpty()) {
-            // Lore visible for locked, available, and unlocked nodes alike —
-            // acts as a hint system: read the lore to understand what you're unlocking.
+
             for (String line : wrapText("§7" + selected.lore, maxW)) {
                 g.drawString(font, line, x, y, C_TEXT, false);
                 y += 11;
@@ -332,8 +302,6 @@ public class ResearchTerminalScreen extends Screen {
             y += 6;
         }
 
-        // ── Prerequisites (any) hint ───────────────────────────────────────
-        // Tell the player they only need ONE of these paths, and which they already have.
         if (!selected.prerequisitesAny.isEmpty() && !unlocked && !lockedOut) {
             g.fill(px + 8, y, width - 8, y + 1, C_BORDER);
             y += 6;
@@ -343,21 +311,17 @@ public class ResearchTerminalScreen extends Screen {
                 boolean met = unlockedSet.contains(anyId);
                 String label = met ? "§a✔ " : "§8◦ ";
 
-                // Create an effectively final copy of y for the lambdas to use safely
                 final int currentY = y;
 
-                // Try to get the node title; fall back to the raw ID path
                 ResearchTreeRegistry.INSTANCE.getNode(anyId).ifPresentOrElse(
                         n -> g.drawString(font, label + n.title, x + 6, currentY, C_TEXT, false),
                         () -> g.drawString(font, label + anyId.getPath(), x + 6, currentY, C_TEXT, false));
 
-                // You can still safely mutate the original y out here
                 y += 10;
             }
             y += 4;
         }
 
-        // ── Cost section ───────────────────────────────────────────────────
         if (!selected.cost.isEmpty() && !lockedOut) {
             g.fill(px + 8, y, width - 8, y + 1, C_BORDER);
             y += 7;
@@ -386,7 +350,6 @@ public class ResearchTerminalScreen extends Screen {
             y += 6;
         }
 
-        // ── Unlocks section (only after unlocking — lore is the pre-unlock hint) ──
         if (!selected.unlocks.isEmpty() && unlocked) {
             g.fill(px + 8, y, width - 8, y + 1, C_BORDER);
             y += 7;
@@ -406,7 +369,6 @@ public class ResearchTerminalScreen extends Screen {
             }
         }
 
-        // ── Research button ────────────────────────────────────────────────
         int btnH = 18;
         int btnY = pBot - btnH - 10;
         int btnX = px + 10;
@@ -434,8 +396,6 @@ public class ResearchTerminalScreen extends Screen {
             g.drawCenteredString(font, lbl, px + DETAIL_W / 2, btnY + 5, C_TEXT);
         }
     }
-
-    // ── Bottom bar ────────────────────────────────────────────────────────────
 
     private void renderBottomBar(GuiGraphics g) {
         int y0 = bottomTop();
@@ -474,8 +434,6 @@ public class ResearchTerminalScreen extends Screen {
             x += slotW;
         }
     }
-
-    // ── Input ─────────────────────────────────────────────────────────────────
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
@@ -572,8 +530,6 @@ public class ResearchTerminalScreen extends Screen {
         return super.keyPressed(kc, sc, mod);
     }
 
-    // ── Actions ───────────────────────────────────────────────────────────────
-
     private void tryResearch() {
         if (selected == null || terminal == null) return;
         if (selected.hidden && !selected.isVisible(ClientResearchCache.unlocked)) return;
@@ -591,8 +547,6 @@ public class ResearchTerminalScreen extends Screen {
 
     public boolean hasTerminal() { return terminal != null; }
 
-    // ── Shader data ───────────────────────────────────────────────────────────
-
     private void pushShaderData(int mx, int my) {
         if (!AxiomShaderManager.isActive() || trees.isEmpty()) return;
         ResearchTree tree = trees.get(activeTreeIdx);
@@ -601,7 +555,6 @@ public class ResearchTerminalScreen extends Screen {
         float sh = (float) height;
         int ct   = canvasTop();
 
-        // Collect up to 8 visible node positions in screen space
         RenderContext sCtx = buildContext(mx, my);
         if (sCtx == null) return;
         java.util.List<float[]> nodePosScreen = new java.util.ArrayList<>();
@@ -612,7 +565,7 @@ public class ResearchTerminalScreen extends Screen {
             if (!node.isVisible(ClientResearchCache.unlocked)) continue;
             if (nodePosScreen.size() >= 8) break;
             float[] cp = activeRenderer.nodePos(node, sCtx);
-            // canvas → screen
+            
             float sx = panX + cp[0] * zoom;
             float sy = ct + panY + cp[1] * zoom;
             nodePosScreen.add(new float[]{ sx, sy });
@@ -630,7 +583,6 @@ public class ResearchTerminalScreen extends Screen {
             flatStr[i]       = heatStrList.get(i);
         }
 
-        // Ripple data (Sculk)
         float[] ripOrig = new float[8];
         float[] ripAge  = new float[0];
         int ripCount    = activeRenderer.rippleCount();
@@ -648,8 +600,6 @@ public class ResearchTerminalScreen extends Screen {
                 flatNodes, nc, flatStr,
                 ripOrig, ripAge, ripCount);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private int typeBarColor(ConfluxDataType type) {
         return switch (type) {

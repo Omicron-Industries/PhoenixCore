@@ -29,7 +29,6 @@ public class PhoenixPlacementEngine {
         ItemStack offhandStack = player.getOffhandItem();
         int actionCount = 0;
 
-        // PASS 1: PLACEMENT
         for (BlockPos pos : targets) {
             if (mode == PhoenixManipulatorMode.DISCONNECT) {
                 handleRemoval(serverLevel, pos);
@@ -40,7 +39,7 @@ public class PhoenixPlacementEngine {
 
                 if (isAir) {
                     if (offhandStack.getItem() instanceof PipeBlockItem pipeItem) {
-                        // Let setBlock trigger GT's own node registration naturally —
+                        
                         if (!PhoenixInventoryService.consumePipe(player, offhandStack)) break;
                         level.setBlock(pos, pipeItem.getBlock().defaultBlockState(), 3);
                         actionCount++;
@@ -57,7 +56,6 @@ public class PhoenixPlacementEngine {
             }
         }
 
-        // PASS 2: CONNECTIONS
         if (mode != PhoenixManipulatorMode.DISCONNECT) {
             for (BlockPos pos : targets) {
                 if (level.getBlockEntity(pos) instanceof IPipeNode<?, ?> node) {
@@ -156,7 +154,7 @@ public class PhoenixPlacementEngine {
                         for (int y = minY; y <= maxY; y++) positions.add(new BlockPos(x, y, anchorZ));
                 }
             }
-            default -> { // GRID
+            default -> { 
                 for (int x = minX; x <= maxX; x++)
                     for (int y = minY; y <= maxY; y++)
                         for (int z = minZ; z <= maxZ; z++) positions.add(new BlockPos(x, y, z));

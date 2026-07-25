@@ -11,10 +11,6 @@ import net.phoenix.core.common.data.item.PhoenixArmorItem;
 import java.util.Set;
 import java.util.function.Supplier;
 
-/**
- * Sent client -> server whenever the player changes a setting in the wing flight GUI.
- * Writes FlightMode, FlightSpeed, FlightDrift directly onto the chestplate NBT.
- */
 public class UpdateWingSettingsPacket {
 
     private static final Set<String> VALID_MODES = Set.of(

@@ -27,7 +27,6 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.MaintenanceHatchPart
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GradientUtil;
 
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -73,10 +72,8 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     public TeslaTowerMachine(BlockEntityCreationInfo holder) {
         super(holder);
 
-        // 1. Instantiate the trait and assign it to your field first
         this.energyBank = new TeslaEnergyBank();
 
-        // 2. Attach the trait using the key and the object reference
         this.attachPersistentTrait("tesla_energy_bank", this.energyBank);
 
         subscribeServerTick(this::transferEnergyTick);
@@ -124,7 +121,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     public void formStructure(@org.jetbrains.annotations.NotNull String substructureName) {
         super.formStructure(substructureName);
 
-        // 1. Handle Server-Side Intro Sequence
         if (!getLevel().isClientSide) {
             ensureOwnerTeamUUID();
         }
@@ -138,13 +134,11 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                 if (player != null) {
                     introSequencePlayed = true;
 
-                    // Display action bar message immediately
                     player.displayClientMessage(
                             Component.literal("We See You, We Know You.")
                                     .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC),
                             true);
 
-                    // Schedule the system chat message 100 ticks (5 seconds) later safely
                     int messageDelay = 100;
                     serverLevel.getServer().tell(new net.minecraft.server.TickTask(
                             serverLevel.getServer().getTickCount() + messageDelay,
@@ -160,13 +154,11 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             }
         }
 
-        // 2. Register Towers
         if (ownerTeamUUID != null) {
             registerTower(this);
         }
         TeslaWirelessRegistry.registerTower(this);
 
-        // 3. Gather MultiPart Hatch I/O
         MaintenanceHatchPartMachine maintenance = null;
         List<IEnergyContainer> inputs = new ArrayList<>();
         List<IEnergyContainer> outputs = new ArrayList<>();
@@ -197,25 +189,21 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         this.inputHatches = new EnergyContainerList(inputs);
         this.outputHatches = new EnergyContainerList(outputs);
 
-        // 4. Corrected Battery Gathering via PatternState Cache
         List<ITeslaBattery> batteries = new ArrayList<>();
         var patternState = this.getPatternState(substructureName);
 
         if (patternState != null && patternState.getCache() != null) {
-            // Loop through all cached blocks in the structure pattern frame
+            
             for (var entry : patternState.getCache().long2ObjectEntrySet()) {
                 BlockState state = entry.getValue().getBlockState();
 
-                // Check if the block is your custom battery block type
-                // (Replace 'TeslaBatteryBlock' with whatever your actual battery block class is named)
                 if (state.getBlock() instanceof TeslaBatteryBlock batteryBlock) {
-                    // Fetch the battery type associated with this block and add it
+                    
                     batteries.add(batteryBlock.getBatteryData());
                 }
             }
         }
 
-        // 5. Structure Validation based on Batteries
         if (batteries.isEmpty()) {
             invalidateStructure(substructureName);
             return;
@@ -535,7 +523,7 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     @Override
     public void onLoad() {
         super.onLoad();
-        // Run any logic that depends on loaded NBT states safely here
+        
         updateBatteryTier();
     }
 
@@ -554,7 +542,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     private TeslaTowerMachine getBoundTower() {
         if (boundTowerPos == null || !(getLevel() instanceof ServerLevel sl)) return null;
 
-        // Fixed: Retrieve the block entity and directly check if it's an instance of TeslaTowerMachine
         if (getLevel().getBlockEntity(boundTowerPos) instanceof TeslaTowerMachine tower) {
             return tower;
         }
@@ -607,8 +594,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
 
     public class TeslaEnergyBank extends MachineTrait {
 
-        // ── GTM 8.0 Trait Type Registration ───────────────────────────────────────
-
         private static final MachineTraitType<TeslaEnergyBank> TRAIT_TYPE =
                 new MachineTraitType<>(TeslaEnergyBank.class, true);
 
@@ -616,10 +601,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         public MachineTraitType<?> getTraitType() {
             return TRAIT_TYPE;
         }
-
-        // ── Persistent & Synced State Fields ──────────────────────────────────────
-        // String arrays or primitive-backed arrays sync automatically via GTM 8.0 reflection.
-        // For BigInteger serialization stability across sync blocks, we store/save as NBT strings.
 
         @SaveField
         @SyncToClient
@@ -629,8 +610,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         @SyncToClient
         private String[] maxStrings = new String[0];
 
-        // ── Transient Runtime Calculations ────────────────────────────────────────
-
         private BigInteger[] storage = new BigInteger[0];
         private BigInteger[] maximums = new BigInteger[0];
 
@@ -639,16 +618,9 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         private int index = 0;
         private List<ITeslaBattery> batteries = new ArrayList<>();
 
-        // ── Constructors ──────────────────────────────────────────────────────────
-
-        /**
-         * Parameterless constructor required by GTM 8.0 Reflection/Deserialization Engine.
-         */
         public TeslaEnergyBank() {
             super();
         }
-
-        // ── Initialization & Rebuilding Logic ─────────────────────────────────────
 
         public void initializeBatteries(List<ITeslaBattery> batteries) {
             this.batteries = new ArrayList<>(batteries);
@@ -678,8 +650,6 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             return newStorage;
         }
 
-        // ── Internal Network Updates ──────────────────────────────────────────────
-
         private void updateNetworkArrays() {
             if (storage == null) return;
 
@@ -691,14 +661,11 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                 this.maxStrings[i] = maximums[i] != null ? maximums[i].toString() : "0";
             }
 
-            // Tells GTM 8.0's engine to update clients regarding array shifts
             if (this.getSyncDataHolder() != null) {
                 this.getSyncDataHolder().markClientSyncFieldDirty("storedStrings");
                 this.getSyncDataHolder().markClientSyncFieldDirty("maxStrings");
             }
         }
-
-        // ── Core Energy Logic ─────────────────────────────────────────────────────
 
         public void setStored(BigInteger totalAmount) {
             if (totalAmount == null || storage == null || storage.length == 0) return;

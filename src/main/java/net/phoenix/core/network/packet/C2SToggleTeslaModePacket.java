@@ -14,14 +14,12 @@ import java.util.function.Supplier;
 
 public class C2SToggleTeslaModePacket {
 
-    // Empty constructor needed for instantiation
     public C2SToggleTeslaModePacket() {}
 
-    // Decode constructor required by the SimpleChannel pipeline
     public C2SToggleTeslaModePacket(FriendlyByteBuf buf) {}
 
     public static void encode(C2SToggleTeslaModePacket packet, FriendlyByteBuf buf) {
-        // No data payload needed as we just look up the sending player's armor slot
+        
     }
 
     public static void handle(C2SToggleTeslaModePacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -32,21 +30,17 @@ public class C2SToggleTeslaModePacket {
 
             ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
 
-            // Fix 1: Check against PhoenixArmorItem (the valid Item class) to prevent the "Inconvertible types" crash
             if (!chestplate.isEmpty() && chestplate.getItem() instanceof PhoenixArmorItem) {
                 CompoundTag data = chestplate.getOrCreateTag();
 
-                // Debounce double-clicks on the server side
                 long currentTime = player.level().getGameTime();
                 long lastToggle = data.getLong("lastToggleTime");
                 if (currentTime - lastToggle < 10) return;
 
-                // Toggle logic
                 boolean nextMode = !data.getBoolean("teslaMode");
                 data.putBoolean("teslaMode", nextMode);
                 data.putLong("lastToggleTime", currentTime);
 
-                // Play localized sound from the server so all nearby players hear it
                 player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                         nextMode ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE,
                         SoundSource.PLAYERS, 1.0F, 2.0F);

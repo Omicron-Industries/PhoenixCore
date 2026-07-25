@@ -30,11 +30,8 @@ public final class PhoenixCapabilityAttach {
     public static void attachCaps(AttachCapabilitiesEvent<BlockEntity> event) {
         BlockEntity be = event.getObject();
 
-        // FIXED FOR 8.0.0: MetaMachine is now the BlockEntity directly.
-        // We cast it to MetaMachine to evaluate our type safety hierarchies.
         if (!(be instanceof MetaMachine machine)) return;
 
-        // Safely check if this specific machine instance is our Source Hatch
         if (!(machine instanceof SourceHatchPartMachine hatch)) return;
 
         PhoenixCore.LOGGER.info("[SourceHatchCap] Attaching to {} machine={}",

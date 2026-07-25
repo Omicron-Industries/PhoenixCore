@@ -5,10 +5,6 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
 
-/**
- * Isolated class that references FTB Teams API.
- * Only instantiated/called when FTB Teams is confirmed to be loaded.
- */
 final class FTBTeamsCompat {
 
     static UUID getTeamId(ServerPlayer player) {

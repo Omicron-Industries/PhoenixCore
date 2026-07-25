@@ -105,13 +105,11 @@ public class PhoenixElements {
         EVENT_HORIZON_MATTER = create("event_horizon_matter", -1, -1, "EHM");
         ANTIMATTER = create("antimatter", -1, -1, "aM");
 
-        // Special
         ZIRCALLOY = create("zircalloy", 77, 125, "Zr⁷BiHf³");
         SOURCE_IMBUED_TITANIUM = create("source_imbued_titanium", 10, 118, "✨C✨Ti");
         ICY_STEEL_MATRIX = create("icy_steel_matrix", 8, 118, "❆Is<>");
     }
 
-    // Change long to int here for the 4-arg shortcut:
     private static Element create(String name, int protons, int neutrons, String symbol) {
         return create(name, (long) protons, (long) neutrons, -1L, (String) null, name, symbol, false);
     }
@@ -120,10 +118,8 @@ public class PhoenixElements {
                                   String symbol, boolean isIsotope) {
         Element element = new Element(protons, neutrons, halfLife, decayTo, name, symbol, isIsotope);
 
-        // FIXED FOR 8.0.0: Form the unique ResourceLocation using your mod ID
         ResourceLocation registryId = new ResourceLocation("phoenixcore", id);
 
-        // FIXED FOR 8.0.0: Call .register directly on the GTRegistry.RL field instance!
         GTRegistries.ELEMENTS.register(registryId, element);
 
         return element;

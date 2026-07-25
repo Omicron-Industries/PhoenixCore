@@ -6,21 +6,6 @@ import net.minecraft.client.gui.screens.Screen;
 
 import java.util.function.Supplier;
 
-/**
- * Wraps any {@link Screen} subclass as a single-frame {@link CaptureBakeable}.
- *
- * <p>Usage:
- * <pre>{@code
- * SpriteCaptureRegistry.register(new ScreenCaptureBaker(
- *     "theme_editor_preview",
- *     854, 480,
- *     () -> new PhantasiaThemeEditorScreen(null)
- * ));
- * }</pre>
- *
- * The screen is initialised once at bake dimensions. Mouse is positioned off-screen
- * (-1, -1) so no hover state is active. partialTick is 0.
- */
 public final class ScreenCaptureBaker implements CaptureBakeable {
 
     private final String id;

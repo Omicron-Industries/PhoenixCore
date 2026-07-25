@@ -37,11 +37,10 @@ public abstract class GuiGraphicsCountSuffixMixin {
             cancellable = true)
     private void phoenix$compactString(Font font, String text, int x, int y, int color, boolean dropShadow,
                                        CallbackInfoReturnable<Integer> cir) {
-        if (text == null || phoenix$isInsideTextField()) return; // Added null text check
+        if (text == null || phoenix$isInsideTextField()) return; 
 
         String compacted = CompactCount.compactIfNumeric(text);
 
-        // FIX: Ensure compacted is not null before calling .equals()
         if (compacted != null && !compacted.equals(text)) {
             cir.setReturnValue(this.phoenix$renderScaled(font, compacted, x, y, color, dropShadow));
         }
@@ -63,7 +62,6 @@ public abstract class GuiGraphicsCountSuffixMixin {
         String original = sb.toString();
         String compacted = CompactCount.compactIfNumeric(original);
 
-        // FIX: Ensure compacted is not null before calling .equals()
         if (compacted != null && !compacted.equals(original)) {
             cir.setReturnValue(this.phoenix$renderScaled(font, compacted, x, y, color, dropShadow));
         }

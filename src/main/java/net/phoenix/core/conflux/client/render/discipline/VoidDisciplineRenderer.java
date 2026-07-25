@@ -12,37 +12,25 @@ import static net.phoenix.core.conflux.client.render.AxiomSprites.*;
 
 import java.util.*;
 
-/**
- * Void Discipline — The Singularity.
- *
- * Renders a gravitational singularity at canvas center: star field, rotating
- * dust lanes, an elliptical accretion disk (orange-yellow-white gradient), a
- * dark void center, and two braided chain rings counter-rotating at different
- * radii. Nodes orbit the singularity in an elliptical path, slowly drifting.
- * Per-node glitch displacement fires randomly.
- */
 public class VoidDisciplineRenderer implements DisciplineRenderer {
 
-    // Geometry
     private static final float VOID_R    = 70f;
     private static final float DISK_IN   = 70f;
     private static final float DISK_OUT  = 118f;
-    private static final float DISK_SQSH = 0.38f;   // vertical squish (perspective view angle)
+    private static final float DISK_SQSH = 0.38f;   
     private static final float BRAID_R1  = 155f;
     private static final float BRAID_R2  = 212f;
-    private static final float ORBIT_R   = 148f;    // node orbital radius
-    // Animation
-    private float ringAngle  = 0f;   // braid ring phase (ring 1 clockwise)
-    private float dustAngle  = 0f;   // dust lane rotation
-    private float pulseTimer = 0f;   // general time for flicker/pulse
-    private float glitchTick = 0f;   // countdown to next glitch event
+    private static final float ORBIT_R   = 148f;    
+    
+    private float ringAngle  = 0f;   
+    private float dustAngle  = 0f;   
+    private float pulseTimer = 0f;   
+    private float glitchTick = 0f;   
 
-    private int starW = 0, starH = 0; // track canvas size for star sprite invalidation
+    private int starW = 0, starH = 0; 
 
-    // Per-node glitch: id → [dx, dy, remaining_seconds]
     private final Map<ResourceLocation, float[]> nodeGlitch = new HashMap<>();
 
-    // Stable node ordering for orbital positions (lazily populated)
     private final List<ResourceLocation> cachedOrder = new ArrayList<>();
 
     @Override public @Nullable String disciplineId() { return "void"; }
@@ -78,21 +66,16 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         nodeGlitch.entrySet().removeIf(e -> (e.getValue()[2] -= dt) <= 0f);
     }
 
-    // ── Background: star field, dust, singularity ─────────────────────────────
-
     @Override
     public void renderBackground(GuiGraphics g, RenderContext ctx) {
         int cw = ctx.canvasW(), ch = ctx.canvasH();
 
-        // Deep space fill
         g.fill(0, 0, cw, ch, 0xFF000008);
 
-        // Star field — pre-baked sprite, single blit
         blitFrame(g, VOID_STARS, 0, 0, 0, cw, ch, 0.92f);
 
         float cx = cw * 0.5f, cy = ch * 0.5f;
 
-        // Rotating dust lanes — 3 bands 120° apart, drawn via pose rotation
         for (int lane = 0; lane < 3; lane++) {
             float la = dustAngle + lane * 2.094f;
             g.pose().pushPose();
@@ -107,12 +90,9 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
             g.pose().popPose();
         }
 
-        // Accretion disk — pre-baked sprite sheet, frame driven by ringAngle
         int diskFrame = timeToFrame(ringAngle / (2f * 3.14159f), 1f, VOID_DISK.frames());
         blitFrame(g, VOID_DISK, diskFrame, 0, 0, cw, ch, 0.9f);
-        // No drawVoidCenter — the sprite bakes a transparent center, dark space fill shows through
 
-        // Two braided chain rings, counter-rotating
         drawBraidRing(g, cx, cy, BRAID_R1,  ringAngle,               DISK_SQSH + 0.14f, 0xBBCCCCDD, 0x66AABBD0);
         drawBraidRing(g, cx, cy, BRAID_R2, -ringAngle * 0.62f + 0.9f, DISK_SQSH,         0x99BBBCCC, 0x44999ABB);
     }
@@ -123,7 +103,6 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         final int   FREQ  = 20;
         final float AMP   = 9f;
 
-        // Pass 1 — draw strand 2 everywhere, strand 1 only where it's "behind"
         for (int i = 0; i < STEPS; i++) {
             float t    = (float)i / STEPS * 6.28318f;
             float a    = t + phase;
@@ -146,7 +125,7 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
                 g.fill((int)s1x - 1, (int)s1y, (int)s1x + 2, (int)s1y + 2, col1);
             }
         }
-        // Pass 2 — strand 1 on top where it's "in front"
+        
         for (int i = 0; i < STEPS; i++) {
             float t    = (float)i / STEPS * 6.28318f;
             float a    = t + phase;
@@ -166,8 +145,6 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
             }
         }
     }
-
-    // ── Edges ─────────────────────────────────────────────────────────────────
 
     @Override
     public void renderEdges(GuiGraphics g, RenderContext ctx) {
@@ -201,8 +178,6 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         }
     }
 
-    // ── Nodes ─────────────────────────────────────────────────────────────────
-
     @Override
     public void renderNodes(GuiGraphics g, RenderContext ctx) {
         for (ResearchNode node : ctx.tree().getNodes()) {
@@ -222,7 +197,6 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         float pulse  = MotionClock.Signature.VOID.pulse(ctx.clock().getElapsed());
         float intense = ctx.intensity().get();
 
-        // Outer glow halos (layered additive)
         if (unlocked || available) {
             for (int ring = 3; ring >= 1; ring--) {
                 int r   = ring * 10;
@@ -232,7 +206,6 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
             }
         }
 
-        // Hexagonal body — 3 overlapping rects at 0°, 60°, 120°
         int bg  = lockedOut ? 0xFF080012 : unlocked ? 0xFF06061E : available ? 0xFF060818 : 0xFF030308;
         int brd = lockedOut ? 0xFF330055 : unlocked ? (sel ? 0xFFCCCCFF : 0xFF6666DD) : available ? 0xFF3344AA : 0xFF111133;
         int HW = 17, HH = 7;
@@ -245,7 +218,6 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         }
         g.pose().popPose();
 
-        // Hex border: 6 vertex marks + edge highlights
         int HR = 18;
         for (int vi = 0; vi < 6; vi++) {
             float va = vi * 6.28318f / 6f;
@@ -253,7 +225,7 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
             int vy = cy + (int)(HR * Math.sin(va));
             g.fill(vx - 1, vy - 1, vx + 2, vy + 2, brd);
         }
-        // Edge lines approximated as 3 rotated fills (thin)
+        
         g.pose().pushPose();
         g.pose().translate(cx, cy, 0f);
         for (int r = 0; r < 3; r++) {
@@ -262,14 +234,12 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         }
         g.pose().popPose();
 
-        // Selection pulse ring
         if (sel) {
             int sa = (int)(60 * pulse);
             g.fill(cx - HR - 4, cy - HR - 4, cx + HR + 4, cy + HR + 4, (sa << 24) | 0x8888FF);
             g.fill(cx - HR - 3, cy - HR - 3, cx + HR + 3, cy + HR + 3, 0xFF000010);
         }
 
-        // Icon
         if (!node.hidden || unlocked) renderIcon(g, node.icon, cx - 8, cy - 8);
 
         if (node.isCommitmentNode) {
@@ -277,11 +247,9 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         }
     }
 
-    // ── Positioning ───────────────────────────────────────────────────────────
-
     @Override
     public float[] nodePos(ResearchNode node, RenderContext ctx) {
-        // Lazily build stable ordering (alphabetical by id for determinism)
+        
         if (cachedOrder.isEmpty()) {
             ctx.tree().getNodes().stream()
                 .sorted(Comparator.comparing(n -> n.id.toString()))

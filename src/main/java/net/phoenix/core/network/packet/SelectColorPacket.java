@@ -37,7 +37,7 @@ public class SelectColorPacket {
 
             ItemStack stack = player.getItemInHand(msg.hand);
             if (stack.getItem() instanceof ChameleonSprayCanItem) {
-                // Wipe out the chromatic string tag so your custom HUD can see it's gone
+                
                 if (stack.hasTag()) {
                     stack.getTag().remove("chromatic_code");
                 }

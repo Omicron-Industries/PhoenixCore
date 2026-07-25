@@ -24,7 +24,6 @@ public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProv
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         if (!config.get(UID)) return;
 
-        // FIXED FOR 8.0.0: Ensure we are dealing with our target machine block entity type
         if (!(accessor.getBlockEntity() instanceof HighPressurePlasmaArcFurnaceMachine)) {
             return;
         }
@@ -83,7 +82,7 @@ public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProv
 
     @Override
     public void appendServerData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
-        // FIXED FOR 8.0.0: HighPressurePlasmaArcFurnaceMachine is now the BlockEntity directly.
+        
         if (blockAccessor.getBlockEntity() instanceof HighPressurePlasmaArcFurnaceMachine machine &&
                 machine.isFormed()) {
 

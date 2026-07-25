@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Minimal fake {@link RenderContext} for use inside sprite bakers.
- * Tree is empty so no nodes / edges render — only the background.
- */
 public final class BakeRenderContext {
 
     private BakeRenderContext() {}
@@ -23,16 +19,12 @@ public final class BakeRenderContext {
             "Bake Stub", "", null, Map.of(), List.of()
     );
 
-    /**
-     * Build a bake context for a canvas of {@code (w, h)} at simulated time {@code elapsed}.
-     * Intensity is fixed at 1.0 (full saturation for baking).
-     */
     public static RenderContext of(int w, int h, float elapsed) {
         MotionClock clock = new MotionClock();
         clock.tick(elapsed);
 
         IntensityController intensity = new IntensityController();
-        intensity.onEvent(); // spike to full — ensures bright bake output
+        intensity.onEvent(); 
 
         return new RenderContext(
                 EMPTY_TREE,

@@ -58,7 +58,6 @@ import java.util.Map;
 
 public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInformation {
 
-    // region Copied from GTCEu's ColorSprayBehaviour
     private static final ImmutableMap<DyeColor, Block> GLASS_MAP;
     private static final ImmutableMap<DyeColor, Block> GLASS_PANE_MAP;
     private static final ImmutableMap<DyeColor, Block> TERRACOTTA_MAP;
@@ -87,7 +86,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         ImmutableMap.Builder<DyeColor, Block> concretePowderBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<DyeColor, Block> shulkerBoxBuilder = ImmutableMap.builder();
 
-        // NEW MAP BUILDERS
         ImmutableMap.Builder<DyeColor, Block> bedBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<DyeColor, Block> candleBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<DyeColor, Block> bannerBuilder = ImmutableMap.builder();
@@ -102,7 +100,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             concretePowderBuilder.put(color, getBlock(color, "concrete_powder"));
             shulkerBoxBuilder.put(color, getBlock(color, "shulker_box"));
 
-            // Populate the new entries matching vanilla naming conventions
             bedBuilder.put(color, getBlock(color, "bed"));
             candleBuilder.put(color, getBlock(color, "candle"));
             bannerBuilder.put(color, getBlock(color, "banner"));
@@ -116,7 +113,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         CONCRETE_POWDER_MAP = concretePowderBuilder.build();
         SHULKER_BOX_MAP = shulkerBoxBuilder.build();
 
-        // BUILD THE NEW MAPS
         BED_MAP = bedBuilder.build();
         CANDLE_MAP = candleBuilder.build();
         BANNER_MAP = bannerBuilder.build();
@@ -138,7 +134,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         }
         return parent.isConnected(direction) && child.isConnected(direction.getOpposite());
     };
-    // endregion
 
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
@@ -160,7 +155,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         boolean changesMade = false;
 
         if (first != null && handleSpecialBlockEntities(first, selectedColor, maxBlocksToRecolor, context)) {
-            changesMade = true; // Handled special block entity logic and fluid deduction internally
+            changesMade = true; 
         } else if (first == null || !(first instanceof SignBlockEntity || first instanceof IColorableBlockEntity ||
                 first instanceof IPipeNode || first instanceof IPaintable || first instanceof ShulkerBoxBlockEntity)) {
                     changesMade = handleBlocks(context.getClickedPos(), selectedColor, maxBlocksToRecolor, context);
@@ -171,7 +166,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             return InteractionResult.SUCCESS;
         }
 
-        return InteractionResult.PASS; // Return PASS if no changes occurred so standard mechanics take over
+        return InteractionResult.PASS; 
     }
 
     @Override
@@ -186,8 +181,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
     public static void setColor(ItemStack stack, @Nullable DyeColor color) {
         CompoundTag tag = stack.getOrCreateTag();
 
-        // CRITICAL: Wipe out the chromatic code from NBT so your HUD knows
-        // we are officially back in standard color mode!
         tag.remove("chromatic_code");
 
         if (color == null) {
@@ -227,7 +220,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         }
 
         if (successfullyPainted > 0) {
-            // Apply bulk discount if chain painting (limit > 1)
+            
             boolean isBulk = limit > 1;
             consumePaint(context.getItemInHand(), successfullyPainted, isBulk);
             return true;
@@ -262,7 +255,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
         } else {
             if (color == null) {
-                // Solvent resets text formatting safely
+                
                 sign.updateText(text -> {
                     boolean runClear = false;
                     for (int i = 0; i < 4; i++) {
@@ -274,7 +267,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
                     }
                     return text.setColor(DyeColor.BLACK).setHasGlowingText(false);
                 }, isFront);
-                // Simple validation to evaluate if anything updated
+                
                 changed = true;
             } else {
                 DyeColor targetColor = color;
@@ -409,11 +402,9 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         var blockState = level.getBlockState(pos);
         var block = blockState.getBlock();
 
-        // 0. CHROMATIC INTERCEPT: Banners and Beds do not support text formatting codes.
         String chromCode = getChromaticCode(
                 level.getBlockEntity(pos) == null ? ItemStack.EMPTY : new ItemStack(block.asItem()));
 
-        // 1. GregTech Lamp Intercept
         if (block instanceof com.gregtechceu.gtceu.common.block.LampBlock oldLamp) {
             DyeColor targetColor = (color == null) ? DyeColor.WHITE : color;
             if (oldLamp.color == targetColor) return false;
@@ -438,21 +429,18 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             return false;
         }
 
-        // 1b. Custom GT Decoration Intercept (Registrate Map Scanning)
         DyeColor targetColor = (color == null) ? DyeColor.WHITE : color;
         net.minecraft.world.level.block.Block targetDecoBlock = null;
         boolean isDecorationBlock = false;
 
-        // Scan Registrate Maps to see if this block is one of our custom decorations
         for (DyeColor entryColor : DyeColor.values()) {
             var sheetEntry = GTBlocks.METAL_SHEETS.get(entryColor);
             var largeSheetEntry = GTBlocks.LARGE_METAL_SHEETS.get(entryColor);
             var studsEntry = GTBlocks.STUDS.get(entryColor);
 
-            // Check if the world block matches the unwrapped Registrate block
             if (sheetEntry != null && sheetEntry.get() == block) {
                 isDecorationBlock = true;
-                // GRAB COLOR STATE: entryColor IS the current color of the block!
+                
                 if (entryColor != targetColor) {
                     targetDecoBlock = GTBlocks.METAL_SHEETS.get(targetColor).get();
                 }
@@ -460,7 +448,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
             if (largeSheetEntry != null && largeSheetEntry.get() == block) {
                 isDecorationBlock = true;
-                // GRAB COLOR STATE: entryColor IS the current color of the block!
+                
                 if (entryColor != targetColor) {
                     targetDecoBlock = GTBlocks.LARGE_METAL_SHEETS.get(targetColor).get();
                 }
@@ -468,7 +456,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
             if (studsEntry != null && studsEntry.get() == block) {
                 isDecorationBlock = true;
-                // GRAB COLOR STATE: entryColor IS the current color of the block!
+                
                 if (entryColor != targetColor) {
                     targetDecoBlock = GTBlocks.STUDS.get(targetColor).get();
                 }
@@ -476,12 +464,10 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
         }
 
-        // If it's one of our decoration blocks, handle it here
         if (isDecorationBlock) {
-            if (targetDecoBlock != null) { // Color is different, perform swap
+            if (targetDecoBlock != null) { 
                 BlockState newDecorationState = targetDecoBlock.defaultBlockState();
 
-                // Dynamically copy any block properties (like facing or placement values)
                 for (Property property : blockState.getProperties()) {
                     if (newDecorationState.hasProperty(property)) {
                         newDecorationState = newDecorationState.setValue(property, blockState.getValue(property));
@@ -491,14 +477,12 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
                 level.setBlockAndUpdate(pos, newDecorationState);
                 return true;
             }
-            return false; // It's a deco block, but already matches target color
+            return false; 
         }
 
-        // Determine target primitive integer color
         int targetIntColor = (color == null) ? (int) com.gregtechceu.gtceu.api.blockentity.IPaintable.UNPAINTED_COLOR :
                 (int) color.getMapColor().col;
 
-        // 2. Intercept Block-level GregTech IPaintable objects
         if (block instanceof com.gregtechceu.gtceu.api.blockentity.IPaintable paintableBlock) {
             if (paintableBlock.getPaintingColor() != targetIntColor) {
                 if (!level.isClientSide()) {
@@ -509,7 +493,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             return false;
         }
 
-        // 3. Intercept Pipe Networks and Cables
         var blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof com.gregtechceu.gtceu.api.blockentity.IPaintable paintableBE) {
             if (paintableBE.getPaintingColor() != targetIntColor) {
@@ -521,23 +504,20 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             return false;
         }
 
-        // 4. Special Vanilla Intercept (Handles normal coloring AND solvent mode cleanly)
         if (block.defaultBlockState().is(BlockTags.BEDS) || block.defaultBlockState().is(BlockTags.BANNERS) ||
                 block.defaultBlockState().is(BlockTags.CANDLES)) {
             return tryPaintSpecialBlock(level, pos, block, color);
         }
 
-        // 5. Solvent fallback logic for standard blocks
         if (color == null) {
             return tryStripBlockColor(level, pos, block);
         }
 
-        // 6. Existing standard vanilla fallback logic
         return recolorBlockState(level, pos, color) || tryPaintSpecialBlock(level, pos, block, color);
     }
 
     private boolean tryPaintSpecialBlock(Level world, BlockPos pos, Block block, DyeColor color) {
-        // Treat Solvent (null) as White for Bed and Banner conversions
+        
         DyeColor activeColor = (color == null) ? DyeColor.WHITE : color;
 
         if (block.defaultBlockState().is(Tags.Blocks.GLASS))
@@ -555,7 +535,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         if (block.defaultBlockState().is(CustomTags.CONCRETE_POWDER_BLOCK))
             return recolorBlockNoState(CONCRETE_POWDER_MAP, activeColor, world, pos, null);
 
-        // 1. FIXED BEDS (Handles normal painting & Solvent resetting seamlessly)
         if (block.defaultBlockState().is(BlockTags.BEDS)) {
             BlockState currentBedState = world.getBlockState(pos);
             if (currentBedState.getBlock() instanceof net.minecraft.world.level.block.BedBlock) {
@@ -608,11 +587,9 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
         }
 
-        // 2. CANDLES
         if (block.defaultBlockState().is(BlockTags.CANDLES))
             return recolorBlockNoState(CANDLE_MAP, activeColor, world, pos, Blocks.CANDLE);
 
-        // 3. FIXED BANNERS (Handles normal painting & Solvent resetting seamlessly)
         if (block.defaultBlockState().is(BlockTags.BANNERS)) {
             BlockState bannerState = world.getBlockState(pos);
             boolean isWallBanner = bannerState.getBlock() instanceof net.minecraft.world.level.block.WallBannerBlock;
@@ -729,7 +706,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         BlockState state = level.getBlockState(pos);
         for (Property property : state.getProperties()) {
             if (property.getValueClass() == DyeColor.class) {
-                if (state.getValue(property) == color) return false; // Skip if already matches
+                if (state.getValue(property) == color) return false; 
                 level.setBlockAndUpdate(pos, state.setValue(property, color));
                 return true;
             }
@@ -753,7 +730,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
                     int costPerOp = PhoenixConfigs.INSTANCE.features.chameleonSprayCanCostPerOperation;
                     int totalRequired = costPerOp * operationsCount;
 
-                    // Read the configurable discount multiplier if the player is mass-painting
                     if (isBulk && operationsCount > 1) {
                         double multiplier = PhoenixConfigs.INSTANCE.features.chameleonSprayCanBulkMultiplier;
                         totalRequired = Math.max(1, (int) (totalRequired * multiplier));

@@ -15,12 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Recipe handler that checks world-ambient audio conditions against a {@link SoundIngredient}.
- */
 public class NotifiableSoundHandler extends NotifiableRecipeHandlerTrait<SoundIngredient> {
 
-    // Instantiating the clean GTM 8.0 trait type lookup matching your working class pattern
     public static final MachineTraitType<NotifiableSoundHandler> TRAIT_TYPE =
             new MachineTraitType<>(NotifiableSoundHandler.class);
 
@@ -28,7 +24,7 @@ public class NotifiableSoundHandler extends NotifiableRecipeHandlerTrait<SoundIn
     private final IO handlerIO;
 
     public NotifiableSoundHandler(ResonantJukeboxMachine controller, IO io) {
-        super(); // Avoid calling super(controller) to align with your working Ars container
+        super(); 
         this.controller = controller;
         this.handlerIO = io;
     }
@@ -43,26 +39,22 @@ public class NotifiableSoundHandler extends NotifiableRecipeHandlerTrait<SoundIn
                                                    boolean simulate) {
         if (io != this.handlerIO || !controller.isActive()) return left;
 
-        // Pull the latest acoustic snapshot from the world sensor at this machine's position.
         WorldAcousticSensor.SensorData data = WorldAcousticSensor.get(controller.getBlockPos());
         if (data == null) return left;
 
         List<SoundIngredient> missingIngredients = new ArrayList<>();
 
         for (SoundIngredient req : left) {
-            // 1. Optional exact sound-name match
+            
             boolean nameMatch = !req.exactMatch() || req.soundName().equals(controller.selectedLibrarySound);
 
-            // 2. Frequency band minimums
             boolean bassMatch = req.minBass() <= 0f || data.bass >= req.minBass();
             boolean midMatch = req.minMid() <= 0f || data.mid >= req.minMid();
             boolean trebleMatch = req.minTreble() <= 0f || data.treble >= req.minTreble();
 
-            // 3. BPM with tolerance window
             boolean bpmMatch = req.requiredBPM() == 0 ||
                     Math.abs(req.requiredBPM() - data.bpm) <= (req.requiredBPM() * req.tolerance());
 
-            // If any condition fails, it's missing
             if (!(nameMatch && bassMatch && midMatch && trebleMatch && bpmMatch)) {
                 missingIngredients.add(req);
             }
@@ -71,7 +63,6 @@ public class NotifiableSoundHandler extends NotifiableRecipeHandlerTrait<SoundIn
         return missingIngredients;
     }
 
-    // FIXED CLASH: Using raw List type matching your working Ars Nouveau container
     @Override
     @SuppressWarnings("rawtypes")
     public @NotNull List getContents() {
@@ -105,7 +96,6 @@ public class NotifiableSoundHandler extends NotifiableRecipeHandlerTrait<SoundIn
         return (data != null && (data.bpm > 0 || data.bass > 0f || data.mid > 0f || data.treble > 0f)) ? 1.0 : 0.0;
     }
 
-    // FIXED: Returning the static trait type instance required by the framework compilation layer
     @Override
     public MachineTraitType<?> getTraitType() {
         return TRAIT_TYPE;

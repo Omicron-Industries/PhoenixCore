@@ -31,8 +31,7 @@ public class ClientSoundHandler {
     public static void stopSoundAt(BlockPos pos) {
         SoundInstance old = ACTIVE_SOUNDS.remove(pos);
         if (old instanceof RadioClientAudio radio) {
-            // SourceDataLine lives outside Minecraft's sound engine — must call stopStreaming()
-            // directly; getSoundManager().stop() only silences the silent dummy instance.
+
             radio.stopStreaming();
         } else if (old != null) {
             Minecraft.getInstance().getSoundManager().stop(old);
@@ -82,7 +81,6 @@ public class ClientSoundHandler {
         var player = mc.player;
         if (player == null) return;
 
-        // volume == 0 is the kill signal from killAllMachineAudio()
         if (baseVolume <= 0.0f) {
             stopSoundAt(pos);
             return;
@@ -100,14 +98,8 @@ public class ClientSoundHandler {
 
         stopSoundAt(pos);
 
-        // Pass the ResourceLocation directly — JukeblockSoundInstance uses the RL
-        // constructor of AbstractSoundInstance, deferring sound resolution to play time.
-        // This avoids the EMPTY_SOUND fallback that happens when resolving a SoundEvent
-        // that isn't yet in the SoundManager's registered map.
         var instance = new JukeblockSoundInstance(soundLoc, pos, baseVolume, pitch, range);
 
-        // startTracking BEFORE play() so SoundEngineMixin.onSoundStarted fires
-        // with an already-registered sensor and hasSensorNear() returns true.
         VocalVibrancyClient.startTracking(pos);
         mc.getSoundManager().play(instance);
         ACTIVE_SOUNDS.put(pos, instance);

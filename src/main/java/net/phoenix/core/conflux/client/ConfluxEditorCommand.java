@@ -15,14 +15,6 @@ import net.phoenix.core.conflux.research.ResearchTreeRegistry;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-/**
- * Registers client-side {@code /conflux} commands.
- *
- * <ul>
- *   <li>{@code /conflux editor}  — opens the in-game research tree editor (dev tool)</li>
- *   <li>{@code /conflux view}    — opens the player-facing research browser (no terminal needed)</li>
- * </ul>
- */
 @OnlyIn(Dist.CLIENT)
 public final class ConfluxEditorCommand {
 
@@ -53,7 +45,6 @@ public final class ConfluxEditorCommand {
                         }))
         );
 
-        // Keep the old /confluxeditor alias so existing muscle memory still works
         d.register(literal("confluxeditor")
                 .executes(ctx -> {
                     Minecraft.getInstance().setScreen(new ResearchTreeEditorScreen());

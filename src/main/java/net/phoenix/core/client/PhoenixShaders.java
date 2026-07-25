@@ -16,10 +16,6 @@ public class PhoenixShaders {
             "shaders/post/soul_vision.json");
     private static boolean isEffectActive = false;
 
-    /**
-     * This method is now only used by the mixin for the always-on test.
-     * It will always return 0.0f to force a grayscale effect.
-     */
     public static float getCurrentSoulRatio() {
         return 0.0f;
     }
@@ -31,8 +27,6 @@ public class PhoenixShaders {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // --- ALWAYS-ON SHADER TEST ---
-        // Unconditionally load the shader once and leave it on.
         if (!isEffectActive) {
             LOGGER.info("Attempting to load ALWAYS-ON soul vision shader.");
             mc.gameRenderer.loadEffect(SOUL_SHADER);

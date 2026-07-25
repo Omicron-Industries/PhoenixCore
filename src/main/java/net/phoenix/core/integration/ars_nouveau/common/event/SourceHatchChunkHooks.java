@@ -18,8 +18,7 @@ public final class SourceHatchChunkHooks {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
 
         chunk.getBlockEntities().forEach((pos, be) -> {
-            // FIXED FOR 8.0.0: The block entity is the MetaMachine directly,
-            // so we can check for SourceHatchPartMachine in a single shot.
+
             if (be instanceof SourceHatchPartMachine) {
                 SourceHatchTracker.add(level.dimension(), pos);
             }
@@ -31,7 +30,7 @@ public final class SourceHatchChunkHooks {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
 
         chunk.getBlockEntities().forEach((pos, be) -> {
-            // FIXED FOR 8.0.0: Direct check against the new merged BlockEntity hierarchy
+            
             if (be instanceof SourceHatchPartMachine) {
                 SourceHatchTracker.remove(level.dimension(), pos);
             }

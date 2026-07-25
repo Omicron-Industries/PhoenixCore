@@ -9,17 +9,8 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Stream;
 
-/**
- * Compiles and loads {@link CaptureBakeable} implementations from loose {@code .java}
- * files dropped in the {@code sprite_bakers/} folder next to the game's run directory.
- *
- * Also reads {@code sprite_bakers/auto.list} for zero-code reflective bakers.
- *
- * Requires a JDK (not just JRE) — always true in Gradle/Forge dev runs.
- */
 public final class HotBakerLoader {
 
-    /** Relative to the game's working directory (i.e. {@code run/sprite_bakers/}). */
     public static final Path BAKERS_DIR = Paths.get("sprite_bakers");
     private static final Path OUTPUT_DIR = BAKERS_DIR.resolve("out");
 
@@ -44,8 +35,6 @@ public final class HotBakerLoader {
 
         return count;
     }
-
-    // ── auto.list ─────────────────────────────────────────────────────────────
 
     private static int loadAutoList() {
         Path listFile = BAKERS_DIR.resolve("auto.list");
@@ -77,7 +66,7 @@ public final class HotBakerLoader {
                 }
 
                 try {
-                    // Use the FML/Forge mod classloader — sees all loaded mods
+                    
                     Class<?> cls = Class.forName(className, true, modLoader);
                     SpriteCaptureRegistry.register(new ReflectiveBaker(id, cls, w, h, frames));
                     System.out.println("[HotBakerLoader] Auto-registered: " + id + " → " + className);
@@ -92,8 +81,6 @@ public final class HotBakerLoader {
         }
         return count;
     }
-
-    // ── Compilation ───────────────────────────────────────────────────────────
 
     private static List<Path> collectSources() {
         try (Stream<Path> walk = Files.walk(BAKERS_DIR, 1)) {
@@ -123,23 +110,12 @@ public final class HotBakerLoader {
         return true;
     }
 
-    /**
-     * Builds a classpath string by combining:
-     * <ol>
-     *   <li>{@code java.class.path} system property (JVM bootstrap classpath)</li>
-     *   <li>All URLs from every {@link URLClassLoader} in the classloader hierarchy
-     *       starting from the current thread's context classloader — this captures
-     *       Forge's mod classloader and therefore all loaded mod JARs.</li>
-     * </ol>
-     */
     private static String buildFullClasspath() {
         Set<String> paths = new LinkedHashSet<>();
 
-        // JVM bootstrap classpath
         String jvmCp = System.getProperty("java.class.path");
         if (jvmCp != null) paths.addAll(Arrays.asList(jvmCp.split(File.pathSeparator)));
 
-        // Walk classloader hierarchy — Forge's mod loader is a URLClassLoader (or wraps one)
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         while (cl != null) {
             if (cl instanceof URLClassLoader urlCl) {
@@ -148,8 +124,7 @@ public final class HotBakerLoader {
                     catch (Exception ignored) {}
                 }
             }
-            // Also try getURLs via reflection for non-URLClassLoader implementations
-            // (e.g. FML's SecureJarHandler wrapping)
+
             try {
                 java.lang.reflect.Method getURLs = cl.getClass().getMethod("getURLs");
                 URL[] urls = (URL[]) getURLs.invoke(cl);
@@ -165,13 +140,11 @@ public final class HotBakerLoader {
         return String.join(File.pathSeparator, paths);
     }
 
-    // ── Class loading & registration ──────────────────────────────────────────
-
     private static int loadAndRegister() {
         int count = 0;
         try {
             URL outUrl = OUTPUT_DIR.toUri().toURL();
-            // Parent to the FML mod classloader so compiled bakers can reference mod classes
+            
             URLClassLoader loader = new URLClassLoader(
                     new URL[]{ outUrl },
                     Thread.currentThread().getContextClassLoader()

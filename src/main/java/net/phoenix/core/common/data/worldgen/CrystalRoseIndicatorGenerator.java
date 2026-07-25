@@ -32,8 +32,6 @@ import java.util.stream.Stream;
 
 public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
 
-    // FIXED: By explicitly casting the entire Either codec codec payload to an Object-friendly variant,
-    // Java can match it against the fields perfectly without breaking runtime functionality.
     public static final Codec<CrystalRoseIndicatorGenerator> CODEC = RecordCodecBuilder.create(instance -> instance
             .group(
                     ((Codec<Either<BlockState, Material>>) Codec.either(
@@ -45,7 +43,6 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
                             .forGetter(ext -> ext.placement))
             .apply(instance, CrystalRoseIndicatorGenerator::new));
 
-    // CLEANED UP: Standardized completely back to concrete Material definitions
     private Either<BlockState, Material> block = Either.left(Blocks.AIR.defaultBlockState());
     private IntProvider radius = ConstantInt.of(5);
     private FloatProvider density = ConstantFloat.of(0.2f);
@@ -111,14 +108,13 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
                                             BlockState blockState) {
         return (access, random) -> {
             for (BlockPos initialPos : positionsWithoutY) {
-                // 1. Scan down from the open sky using the global level container
+                
                 BlockPos pos = findTrueSurfacePos(level, initialPos);
 
                 if (pos == null || level.isOutsideBuildHeight(pos)) {
                     continue;
                 }
 
-                // 2. Safely grab the local chunk section where the rose will live
                 var section = access.getSection(pos);
                 if (section == null) continue;
 
@@ -128,12 +124,10 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
 
                 BlockState currentTargetState = section.getBlockState(sectionX, sectionY, sectionZ);
 
-                // 3. Double-check that we are placing into true surface air
                 if (!currentTargetState.isAir() || currentTargetState.is(Blocks.CAVE_AIR)) {
                     continue;
                 }
 
-                // 4. Ensure the block below satisfies your flower's survival rules
                 if (!blockState.canSurvive(level, pos)) {
                     continue;
                 }
@@ -150,12 +144,10 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
         while (cursor.getY() > minHeight) {
             BlockState state = level.getBlockState(cursor);
 
-            // If the first non-air thing we hit from the sky is liquid, this column is water
             if (!state.getFluidState().isEmpty()) {
                 return null;
             }
 
-            // Hit true solid ground
             if (!state.isAir() && !state.is(Blocks.CAVE_AIR)) {
                 return cursor.above().immutable();
             }
@@ -166,45 +158,41 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
     }
 
     private BlockPos findTrueSurfacePos(WorldGenLevel level, BlockPos startPos) {
-        // 1. Check the exact spot first
+        
         BlockPos exactPos = findDryLandAt(level, startPos.getX(), startPos.getZ());
         if (exactPos != null) {
             return exactPos;
         }
 
-        // 2. Expanded real estate recovery: Search up to 10 blocks away for a shore
-        // This stays safely within chunk boundaries while covering a much wider area
         for (int radius = 1; radius <= 10; radius++) {
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    // Only check the outer ring of the current radius step
+                    
                     if (Math.abs(dx) == radius || Math.abs(dz) == radius) {
                         BlockPos shorePos = findDryLandAt(level, startPos.getX() + dx, startPos.getZ() + dz);
                         if (shorePos != null) {
-                            return shorePos; // Found a riverbank, beach, or island edge!
+                            return shorePos; 
                         }
                     }
                 }
             }
         }
 
-        // Truly deep ocean with no land in sight—skip to preserve immersion
         return null;
     }
 
     @SuppressWarnings("unchecked")
     public static void register() {
         try {
-            // 1. Establish the ResourceKey for the custom vanilla registry used by GregTech
+            
             net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>>> registryKey = net.minecraft.resources.ResourceKey
                     .createRegistryKey(new net.minecraft.resources.ResourceLocation("gtceu", "indicator_generator"));
 
-            // 2. Grab the central custom registry map from Minecraft's core built-in registry
             net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>> registry = (net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>>) net.minecraft.core.registries.BuiltInRegistries.REGISTRY
                     .get(registryKey.location());
 
             if (registry != null) {
-                // 3. Register your codec directly into the system
+                
                 net.minecraft.core.Registry.register(
                         registry,
                         new net.minecraft.resources.ResourceLocation("phoenix", "crystal_rose_indicator"),

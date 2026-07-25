@@ -45,24 +45,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * MUI2 / GTM 8.0 port of the old MUI1 SoulLensItem.
- *
- * Game logic (onItemUseFirst, inventoryTick NBT sync, appendHoverText, etc.) is untouched.
- * Only the UI layer changed: IItemUIFactory#createUI(...) -> IItemUIHolder#buildUI(...), and every
- * MUI1 widget (WidgetGroup, LabelWidget, ImageWidget, ColorBorderTexture) replaced with confirmed
- * MUI2 equivalents.
- *
- * Two things from the original were intentionally dropped rather than guessed at:
- * 1. The 2px black ColorBorderTexture border drawn over the whole panel -- no confirmed
- *    border-drawable primitive exists in this codebase (same gap as SoulMapWidget's center-cell
- *    outline). The panel still gets PhoenixGuiTextures.TESLA_BACKGROUND.
- * 2. The original info-label positions used negative x-offsets (e.g. LabelWidget(-155, 0, ...))
- *    inside a WidgetGroup placed at x=160, netting to roughly x=5 relative to that group. That
- *    reads like an MUI1 positioning quirk rather than something to preserve literally; the labels
- *    below use plain positive offsets relative to their container instead, keeping the same
- *    visual layout (a small stack of three labels near the left edge of the info panel).
- */
 public class SoulLensItem extends ComponentItem implements IItemUIHolder, IInteractionItem {
 
     private static final int UI_WIDTH = 220;
@@ -96,18 +78,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIHolder, IInter
         return super.use(level, player, hand);
     }
 
-    // ------------------------------------------------------------------
-    // MUI2 UI
-    // ------------------------------------------------------------------
-
-    /**
-     * See TeslaBinderItem's identical override for the full explanation: ComponentItem's own
-     * shouldOpenUI() loops over getComponents() looking for an IItemUIHolder to delegate to. If
-     * this item is ever attached to its own components list during registration, that loop finds
-     * itself and recurses infinitely (confirmed via a StackOverflowError crash on the Tesla Binder
-     * with the same class structure). Overriding it directly here, like buildUI, prevents that
-     * loop from ever being reached.
-     */
     @Override
     public boolean shouldOpenUI() {
         return true;
@@ -128,10 +98,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIHolder, IInter
         titleText.pos(50, 6);
         panel.child(titleText);
 
-        // Map box: a fixed-size display panel containing the live density grid.
-        // Using Flow.col() here rather than a bare ParentWidget -- Flow is confirmed concrete and
-        // directly instantiable (used throughout TeslaBinderItem), whereas ParentWidget's own
-        // constructor/abstractness was never directly confirmed in anything I've seen.
         Flow mapBox = Flow.col();
         mapBox.pos(48, 78);
         mapBox.size(114, 114);
@@ -143,7 +109,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIHolder, IInter
 
         panel.child(mapBox);
 
-        // Info box: target biome, density, and status, refreshed live each frame via suppliers.
         TextWidget biomeLabel = new TextWidget(() -> Component.literal("Target: ")
                 .append(Component.literal(stack.getOrCreateTag().getString("BiomeName"))
                         .withStyle(ChatFormatting.GOLD)));
@@ -184,10 +149,6 @@ public class SoulLensItem extends ComponentItem implements IItemUIHolder, IInter
         }
         return Component.literal("Depleted").withStyle(ChatFormatting.RED);
     }
-
-    // ------------------------------------------------------------------
-    // Game logic (unchanged from the MUI1 version)
-    // ------------------------------------------------------------------
 
     @Override
     public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slotId,

@@ -15,7 +15,7 @@ public class SprayCanHudOverlay {
         if (mc.player == null) return;
 
         ItemStack stack = mc.player.getMainHandItem();
-        // Check offhand if main hand isn't the spray can
+        
         if (!(stack.getItem() instanceof ChameleonSprayCanItem)) {
             stack = mc.player.getOffhandItem();
         }
@@ -23,14 +23,12 @@ public class SprayCanHudOverlay {
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
             Component text;
 
-            // 1. Check if a special chromatic compatibility code is active first
             String chromCode = ChameleonSprayCanBehaviour.getChromaticCode(stack);
             if (chromCode != null && !chromCode.isEmpty()) {
-                // Formats with the formatting code prefix directly into the literal component.
-                // Using § + the code triggers the pulsing/waving text effects flawlessly on the HUD!
+
                 text = Component.literal("Mode: §" + chromCode + "Chromatic (" + chromCode + ")");
             } else {
-                // 2. Fallback to standard color tracking if no custom code tag exists
+                
                 DyeColor color = ChameleonSprayCanBehaviour.getColor(stack);
                 if (color != null) {
                     Component colorName = Component.translatable("color.minecraft." + color.getSerializedName());
@@ -41,9 +39,8 @@ public class SprayCanHudOverlay {
             }
 
             int x = width / 2;
-            int y = height - 53; // Positioned slightly above the hotbar/health labels
+            int y = height - 53; 
 
-            // Draw centered text with a shadow
             int textWidth = mc.font.width(text);
             guiGraphics.drawString(mc.font, text, x - (textWidth / 2), y, 0xFFFFFF);
         }

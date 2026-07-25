@@ -30,7 +30,7 @@ public class ResearchTerminalBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos,
                                  Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) {
-            // GUI opened client-side directly — terminal has no container, it's a pure Screen
+            
             if (level.getBlockEntity(pos) instanceof ResearchTerminalBlockEntity terminal) {
                 Minecraft.getInstance()
                         .setScreen(new ResearchTerminalScreen(terminal));

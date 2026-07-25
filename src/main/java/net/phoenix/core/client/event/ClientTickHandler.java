@@ -39,7 +39,6 @@ public class ClientTickHandler {
 
         ClientSoundHandler.tickActiveStreams(mc.player);
 
-        // ── Wing GUI Logic ────────────────────────────────────────────────
         while (PhoenixKeybinds.OPEN_WING_GUI.consumeClick()) {
             if (mc.screen == null &&
                     mc.player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof PhoenixArmorItem) {
@@ -53,7 +52,6 @@ public class ClientTickHandler {
             }
         }
 
-        // ── Recipe Builder Logic ──────────────────────────────────────────
         while (PhoenixKeybinds.OPEN_RECIPE_BUILDER.consumeClick()) {
             if (mc.screen == null) {
                 RecipeBuilderMenu menu = new RecipeBuilderMenu(0, mc.player.getInventory());
@@ -62,9 +60,6 @@ public class ClientTickHandler {
             }
         }
 
-
-
-        // ── Tesla Mode Keybind Handling ─────────────────────────────────────
         while (PhoenixKeybinds.TESLA_MODE.consumeClick()) {
             ItemStack chestItem = mc.player.getItemBySlot(EquipmentSlot.CHEST);
             if (!chestItem.isEmpty() &&
@@ -73,18 +68,13 @@ public class ClientTickHandler {
             }
         }
 
-        // ── Tesla Discharge Keybind Handling ───────────────────────────────
-        // ── Tesla Discharge Keybind Handling ───────────────────────────────
         while (PhoenixKeybinds.TESLA_DISCHARGE.consumeClick()) {
             ItemStack bootsItem = mc.player.getItemBySlot(EquipmentSlot.FEET);
 
-            // This uses your working pattern: verify the stack isn't empty,
-            // and make sure the item belongs to your mod's armor base class.
             if (!bootsItem.isEmpty() &&
                     bootsItem.getItem() instanceof net.phoenix.core.common.data.item.PhoenixArmorItem) {
                 CompoundTag nbt = bootsItem.getOrCreateTag();
 
-                // Client-side quick check on the cooldown before sending the packet
                 if (nbt.getInt("dischargeCooldown") == 0) {
                     PhoenixNetwork.CHANNEL.sendToServer(new C2STeslaDischargePacket());
                 }
@@ -138,7 +128,7 @@ public class ClientTickHandler {
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ItemStack stack = event.getItemStack();
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
-            // Logic implementation context hook
+            
         }
     }
 }

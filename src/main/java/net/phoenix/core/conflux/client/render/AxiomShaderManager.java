@@ -9,10 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Manages the per-discipline post-process shader active while the Axiom
- * research terminal is open.
- */
 public final class AxiomShaderManager {
 
     private static @Nullable ResourceLocation activeLocation = null;
@@ -34,27 +30,12 @@ public final class AxiomShaderManager {
         }
     }
 
-    /** Advance Time uniform. */
     public static void tick(float dt) {
         if (activeLocation == null) return;
         elapsed += dt;
         pushUniform1f("Time", elapsed);
     }
 
-    /**
-     * Push per-frame live data into shader uniforms.
-     *
-     * @param screenW      screen pixel width
-     * @param screenH      screen pixel height
-     * @param cursorX      cursor screen pixel x
-     * @param cursorY      cursor screen pixel y
-     * @param nodeScreenXY flat array [x0,y0, x1,y1, ...] in screen pixels, up to 8 nodes
-     * @param nodeCount    how many nodes are in nodeScreenXY
-     * @param nodeStrength per-node heat/intensity [0,1], length = nodeCount (Phoenix only)
-     * @param rippleOriginXY flat array [x0,y0, ...] of unlock ripple centres, screen pixels (Sculk only)
-     * @param rippleAge    age [0,1] per ripple (Sculk only)
-     * @param rippleCount  active ripple count (Sculk only)
-     */
     public static void pushFrameData(
             float screenW, float screenH,
             float cursorX, float cursorY,
@@ -77,7 +58,6 @@ public final class AxiomShaderManager {
         float invW = screenW > 0 ? 1f / screenW : 0f;
         float invH = screenH > 0 ? 1f / screenH : 0f;
 
-        // Convert screen-pixel node positions → UV [0,1]
         int safeCount = Math.min(nodeCount, 8);
         float[] nodeUV = new float[16];
         for (int i = 0; i < safeCount; i++) {
@@ -85,7 +65,6 @@ public final class AxiomShaderManager {
             nodeUV[i * 2 + 1] = nodeScreenXY[i * 2 + 1] * invH;
         }
 
-        // Convert ripple origins → UV
         int safeRipples = Math.min(rippleCount, 4);
         float[] rippleUV = new float[8];
         for (int i = 0; i < safeRipples; i++) {
@@ -99,14 +78,13 @@ public final class AxiomShaderManager {
         for (PostPass pass : passes) {
             var eff = pass.getEffect();
             try {
-                // Universal
+                
                 var ssSampler = eff.getUniform("ScreenSize");
                 if (ssSampler != null) ssSampler.set(screenW, screenH);
 
                 var cursor = eff.getUniform("CursorUV");
                 if (cursor != null) cursor.set(cursorU, cursorV);
 
-                // Phoenix-specific
                 var heatCount = eff.getUniform("HeatCount");
                 if (heatCount != null) heatCount.set(safeCount);
 
@@ -120,14 +98,12 @@ public final class AxiomShaderManager {
                     heatStr.set(str);
                 }
 
-                // Void / Sculk shared
                 var nodeCountU = eff.getUniform("NodeCount");
                 if (nodeCountU != null) nodeCountU.set(safeCount);
 
                 var nodePos = eff.getUniform("NodePositions");
                 if (nodePos != null) nodePos.set(nodeUV);
 
-                // Sculk-specific
                 var ripCnt = eff.getUniform("RippleCount");
                 if (ripCnt != null) ripCnt.set(safeRipples);
 
@@ -155,8 +131,6 @@ public final class AxiomShaderManager {
     }
 
     public static boolean isActive() { return activeLocation != null; }
-
-    // ── helpers ────────────────────────────────────────────────────────────────
 
     private static void pushUniform1f(String name, float value) {
         Minecraft mc = Minecraft.getInstance();

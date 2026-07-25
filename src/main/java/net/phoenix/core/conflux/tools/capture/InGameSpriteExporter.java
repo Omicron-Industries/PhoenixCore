@@ -15,19 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * Renders {@link CaptureBakeable} instances to PNG sprite sheets using the live
- * Minecraft GL context. Must be called on the render thread (e.g. from a command
- * via {@code Minecraft.getInstance().execute(...)}).
- *
- * Output layout: all frames packed horizontally — {@code width = frameW * frameCount},
- * {@code height = frameH}. Single-frame sprites produce a plain {@code frameW x frameH} PNG.
- */
 public final class InGameSpriteExporter {
 
     private InGameSpriteExporter() {}
-
-    // ── Public API ────────────────────────────────────────────────────────────
 
     public static void exportAll(Path outputDir) {
         int count = 0;
@@ -55,8 +45,6 @@ public final class InGameSpriteExporter {
         return Paths.get("src/main/resources/assets/phoenixcore/textures/gui/axiom");
     }
 
-    // ── Core FBO pipeline ─────────────────────────────────────────────────────
-
     private static void exportInternal(CaptureBakeable b, Path outputDir) throws IOException {
         Files.createDirectories(outputDir);
 
@@ -76,21 +64,15 @@ public final class InGameSpriteExporter {
         sheet.close();
     }
 
-    /**
-     * Renders one frame into an offscreen FBO and downloads the pixels.
-     * The caller owns the returned NativeImage and must close it.
-     */
     static NativeImage renderToImage(CaptureBakeable b, int frame, float t) {
         Minecraft mc = Minecraft.getInstance();
         int w = b.frameWidth(), h = b.frameHeight();
 
-        // ── Create offscreen FBO ──────────────────────────────────────────────
         TextureTarget fbo = new TextureTarget(w, h, true, Minecraft.ON_OSX);
         fbo.setClearColor(0f, 0f, 0f, 0f);
         fbo.clear(Minecraft.ON_OSX);
         fbo.bindWrite(true);
 
-        // ── Orthographic projection matching GuiGraphics conventions ──────────
         RenderSystem.setProjectionMatrix(
                 new Matrix4f().ortho(0f, w, h, 0f, -1000f, 1000f),
                 VertexSorting.ORTHOGRAPHIC_Z
@@ -100,28 +82,23 @@ public final class InGameSpriteExporter {
         mv.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
-        // ── Render ────────────────────────────────────────────────────────────
         MultiBufferSource.BufferSource buf = mc.renderBuffers().bufferSource();
         GuiGraphics gg = new GuiGraphics(mc, buf);
         b.renderFrame(gg, frame, t, w, h);
         gg.flush();
 
-        // ── Restore render state ──────────────────────────────────────────────
         mv.popPose();
         RenderSystem.applyModelViewMatrix();
         mc.getMainRenderTarget().bindWrite(true);
 
-        // ── Download pixels from the FBO colour attachment ────────────────────
         RenderSystem.bindTexture(fbo.getColorTextureId());
         NativeImage img = new NativeImage(NativeImage.Format.RGBA, w, h, false);
         img.downloadTexture(0, false);
-        img.flipY(); // OpenGL origin is bottom-left; NativeImage expects top-left
+        img.flipY(); 
         fbo.destroyBuffers();
 
         return img;
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static void copyFrameIntoSheet(NativeImage src, NativeImage dst, int frameIdx, int fw, int fh) {
         int xOff = frameIdx * fw;

@@ -40,13 +40,10 @@ public class C2SSelectSoundPacket {
 
             var level = player.level();
 
-            // FIXED FOR 8.0.0: Look up the machine directly from the level.
-            // MetaMachine extends BlockEntity natively now, so the intermediary wrapper is gone.
             if (!(level.getBlockEntity(msg.pos) instanceof ResonantJukeboxMachine jukebox)) return;
 
             if (msg.soundLoc.length() > 256 || msg.streamUrl.length() > 512) return;
 
-            // If the audio track changed, flush out old telemetry immediately
             if (!jukebox.selectedLibrarySound.equals(msg.soundLoc) || !jukebox.currentStreamUrl.equals(msg.streamUrl)) {
                 jukebox.resetAcousticData();
             }
@@ -54,7 +51,6 @@ public class C2SSelectSoundPacket {
             jukebox.selectedLibrarySound = msg.soundLoc;
             jukebox.currentStreamUrl = msg.streamUrl;
 
-            // FIXED FOR 8.0.0: markAsChanged() replaces legacy markAsDirty() / setChanged() calls on block entities
             jukebox.markAsChanged();
 
             var state = level.getBlockState(msg.pos);

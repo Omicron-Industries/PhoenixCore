@@ -8,26 +8,13 @@ import net.phoenix.core.network.packet.S2CPlayStreamPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Server-side stream manager.
- *
- * Intentionally does NO network calls to YouTube or Invidious.
- * The raw URL is passed straight to clients — each client resolves it
- * from their own residential IP via {@link RadioClientAudio}, which avoids
- * the server's IP being rate-limited or 403'd by YouTube's CDN.
- */
 public class RadioStreamManager {
 
     private static final Logger LOGGER = LogManager.getLogger("VocalResonance");
 
-    /**
-     * Sends the raw URL to all clients within range.
-     * No pre-validation, no HTTP calls — the client handles resolution and errors.
-     */
     public static void loadAndPlay(String url, ResonantJukeboxMachine controller) {
         if (url == null || url.isEmpty()) return;
 
-        // Basic sanity: must be an http/https URL
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             LOGGER.warn("Rejecting non-HTTP stream URL: {}", url);
             controller.setStreamTitle("§cInvalid URL (must be http/https)");

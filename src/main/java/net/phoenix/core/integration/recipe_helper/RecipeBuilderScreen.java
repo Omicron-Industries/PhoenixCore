@@ -27,7 +27,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     static final int GUI_W = RecipeBuilderMenu.GUI_W;
     static final int GUI_H = RecipeBuilderMenu.GUI_H;
 
-    // Package-visible so RecipeBuilderState can read/write them
     RecipeTypeDropdown recipeTypeDropdown;
     EditBox recipeIdBox, durationBox, eutBox, sourceInBox, sourceOutBox;
     public SlotPanel itemInputPanel;
@@ -61,7 +60,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         super.init();
         int x = this.leftPos, y = this.topPos;
 
-        // Tab buttons
         int tw = 80;
         addRenderableWidget(Button.builder(Component.literal("General"),
                 b -> setPage(Page.GENERAL)).bounds(x + 4, y + 13, tw, 14).build());
@@ -72,7 +70,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         addRenderableWidget(Button.builder(Component.literal("Conditions →"),
                 b -> openConditions()).bounds(x + 244, y + 13, 90, 14).build());
 
-        // General page
         recipeTypeDropdown = new RecipeTypeDropdown(x + 6, y + 42, 156, 14, this);
         recipeIdBox = box(x + 168, y + 42, 164, "recipe_id", 64);
         durationBox = box(x + 6, y + 72, 54, "duration", 12);
@@ -80,13 +77,11 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         sourceInBox = box(x + 140, y + 72, 58, "src in", 10);
         sourceOutBox = box(x + 202, y + 72, 58, "src out", 10);
 
-        // Items page
         itemInputPanel = new SlotPanel(x + 6, y + 42, 15, "Item Inputs", this);
         itemOutputPanel = new SlotPanel(x + 6, y + 82, 15, "Item Outputs", this);
         addRenderableWidget(itemInputPanel);
         addRenderableWidget(itemOutputPanel);
 
-        // Fluids page — 12 slots each
         fluidInputPanel = new FluidSlotPanel(x + 6, y + 42, 12, "Fluid Inputs", this);
         fluidOutputPanel = new FluidSlotPanel(x + 6, y + 80, 12, "Fluid Outputs", this);
         addRenderableWidget(fluidInputPanel);
@@ -97,7 +92,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         amountEditor = new AmountEditor(0, 0, font);
         addRenderableWidget(amountEditor);
 
-        // Action buttons
         int btnY = y + 153;
         addRenderableWidget(Button.builder(Component.literal("Clear"),
                 b -> onClear()).bounds(x + 6, btnY, 46, 14).build());
@@ -158,7 +152,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     }
 
     @Override
-    protected void renderLabels(@NotNull GuiGraphics g, int mx, int my) { /* suppressed */ }
+    protected void renderLabels(@NotNull GuiGraphics g, int mx, int my) {  }
 
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
@@ -194,7 +188,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (amountEditor.visible) return amountEditor.mouseClicked(mx, my, btn);
-        // Only intercept panel clicks when above the inventory divider
+        
         if (my < topPos + RecipeBuilderMenu.INV_Y - 8) {
             if (currentPage == Page.ITEMS) {
                 if (itemInputPanel.mouseClicked(mx, my, btn)) return true;
@@ -239,9 +233,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         amountEditor.open((int) mx, (int) my, target, amt, () -> {});
     }
 
-    // ── KJS output ────────────────────────────────────────────────────────────
-    // Format: event.recipes.gtceu.machine("id").itemInputs("4x mod:item")...
-
     private void onCopyKjs() {
         assert minecraft != null;
         minecraft.keyboardHandler.setClipboard(buildKjs());
@@ -282,8 +273,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         if (minecraft.player != null)
             minecraft.player.displayClientMessage(Component.literal(msg), false);
     }
-
-    // ── KubeJS code gen ───────────────────────────────────────────────────────
 
     private String buildKjs() {
         String machine = toKjsMachine(recipeTypeDropdown.getSelected());
@@ -338,7 +327,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         return sb.toString();
     }
 
-    /** ASSEMBLER_RECIPES → assembler, ASSEMBLY_LINE_RECIPES → assembly_line, etc. */
     private static String toKjsMachine(String type) {
         String n = type;
         for (String suf : new String[] { "_RECIPES", "_FUELS" }) {
@@ -349,8 +337,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         }
         return n.toLowerCase();
     }
-
-    // ── Java datagen code gen ─────────────────────────────────────────────────
 
     private String buildJava() {
         String type = recipeTypeDropdown.getSelectedCallPrefix();
@@ -398,8 +384,6 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
         sb.append("        .save(provider);");
         return sb.toString();
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void drawLabel(GuiGraphics g, String t, int x, int y) {
         g.drawString(font, t, x, y, 0x886688, false);

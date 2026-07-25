@@ -17,14 +17,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 
-/**
- * The Research Terminal accumulates Axiom data delivered by pipes and exposes it
- * to the player for spending on research nodes.
- *
- * Accepts all five data types on any face via {@link IConfluxMultiHandler}.
- * Storage is per-type; capacity is intentionally large so the terminal acts as a
- * proper reservoir rather than a bottleneck.
- */
 public class ResearchTerminalBlockEntity extends BlockEntity {
 
     public static final long CAPACITY_PER_TYPE = 1_000_000L;
@@ -62,18 +54,9 @@ public class ResearchTerminalBlockEntity extends BlockEntity {
         };
     }
 
-    // ── Public accessors (used by GUI) ────────────────────────────────────────
-
     public long getStored(ConfluxDataType type)   { return stored.getOrDefault(type, 0L); }
     public long getCapacity(ConfluxDataType type) { return CAPACITY_PER_TYPE; }
 
-    /**
-     * Attempt to spend the given costs from stored data.
-     * Either all costs are met or nothing is deducted — atomic check-then-spend.
-     *
-     * @param costs map of type → amount required
-     * @return true if the spend succeeded
-     */
     public boolean trySpend(Map<ConfluxDataType, Long> costs) {
         for (Map.Entry<ConfluxDataType, Long> e : costs.entrySet()) {
             if (stored.getOrDefault(e.getKey(), 0L) < e.getValue()) return false;
@@ -84,8 +67,6 @@ public class ResearchTerminalBlockEntity extends BlockEntity {
         setChanged();
         return true;
     }
-
-    // ── Capability ────────────────────────────────────────────────────────────
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
@@ -98,8 +79,6 @@ public class ResearchTerminalBlockEntity extends BlockEntity {
         super.invalidateCaps();
         handlerOpt.invalidate();
     }
-
-    // ── NBT ───────────────────────────────────────────────────────────────────
 
     @Override
     public void saveAdditional(CompoundTag tag) {

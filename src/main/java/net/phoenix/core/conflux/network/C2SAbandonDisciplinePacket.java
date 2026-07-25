@@ -13,10 +13,6 @@ import net.phoenix.core.conflux.terminal.ResearchTerminalBlockEntity;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-/**
- * Client → Server: player requests to abandon their current Discipline.
- * Server validates commitment state, spends the switch cost, wipes discipline progress.
- */
 public class C2SAbandonDisciplinePacket {
 
     private final BlockPos terminalPos;

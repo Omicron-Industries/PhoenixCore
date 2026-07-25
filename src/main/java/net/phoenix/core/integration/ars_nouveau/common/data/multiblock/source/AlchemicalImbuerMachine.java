@@ -121,16 +121,15 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
     private float getBlockBoost(BlockState state) {
         String registryName = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
 
-        // Assign specific values per block type
         switch (registryName) {
             case "ars_nouveau:whirlisprig_flower":
-                return 0.20f; // Highest boost
+                return 0.20f; 
             case "ars_nouveau:magebloom_crop":
-                return 0.05f; // Standard magical boost
+                return 0.05f; 
             case "ars_nouveau:sourceberry_bush":
-                return 0.01f; // Lower boost (common bush)
+                return 0.01f; 
             default:
-                // Fallback to vanilla/other flowers tag
+                
                 if (state.is(BlockTags.FLOWERS)) {
                     return 0.002f;
                 }

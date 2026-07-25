@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-@Mixin(value = RecipeManager.class, priority = 100) // Lower priority so we run BEFORE other mods
+@Mixin(value = RecipeManager.class, priority = 100) 
 public abstract class RecipeManagerMixin {
 
     @Inject(
@@ -22,10 +22,9 @@ public abstract class RecipeManagerMixin {
             at = @At("HEAD"))
     private void phoenix$onApplyHead(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager,
                                      ProfilerFiller profiler, CallbackInfo ci) {
-        // 1. Reload config to catch any changes made while the game was running
+        
         RecipeBlacklist.load();
 
-        // 2. Filter the map using the entrySet so we have access to the ID and the JSON body
         map.entrySet().removeIf(entry -> RecipeBlacklist.shouldRemoveRaw(entry.getKey(), entry.getValue()));
     }
 }

@@ -21,13 +21,11 @@ import static com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry.SOURCE_G
 
 public class PhoenixProgressionMaterials {
 
-    // Basic Alloys & Progression
     public static Material ALUMINFROST, SOURCE_IMBUED_TITANIUM, RESONANT_RHODIUM_ALLOY;
     public static Material EightyFivePercentPureNevonianSteel, AURUM_STEEL,
             FIERY_BRONZE, VOID_TOUCHED_TUNGSTEN_STEEL, FROST_REINFORCED_STAINED_STEEL, FROST,
             ADVANCED_QUIN_NAQUADIAN_ALLOY, NEBULAR_GOLD;
 
-    // Superconductors
     public static Material MAGMATIC_MANGANESE_LEAD, CRYOGENIC_ALUMINUM_STRAND, ICY_STEEL_MATRIX,
             SOURCE_TITANIUM_FILAMENT, MAGMA, SOURCE_GEM, SPONGE, SLIME, ZOMBIE, WITHERED, GHOSTLY, FLUIX, PRISMARINE,
             SILKY;
@@ -289,7 +287,6 @@ public class PhoenixProgressionMaterials {
                         PhoenixMaterialFlags.GENERATE_BEE_HONEYCOMB_BLOCK, PhoenixMaterialFlags.GENERATE_BEE_COMB)
                 .buildAndRegister();
 
-        // Superconductors
         MAGMATIC_MANGANESE_LEAD = new Material.Builder(PhoenixCore.id("magmatic_manganese_lead")).ingot().fluid()
                 .color(0x8B4513).cableProperties(GTValues.V[LV], 2, 0, true).buildAndRegister();
         CRYOGENIC_ALUMINUM_STRAND = new Material.Builder(PhoenixCore.id("cryogenic_aluminum_strand")).ingot().fluid()

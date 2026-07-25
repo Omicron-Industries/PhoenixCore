@@ -21,10 +21,6 @@ public abstract class RenderTargetMixin {
     @Shadow
     public abstract void resize(int width, int height, boolean clearError);
 
-    /**
-     * @author Phoenixvine
-     * @reason Traps early config access during GregTech startup, inky.
-     */
     @Overwrite(remap = false)
     public void enableStencil() {
         if (!this.stencilEnabled) {

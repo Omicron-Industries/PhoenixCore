@@ -1,16 +1,5 @@
 package net.phoenix.core.conflux.client.render;
 
-/**
- * Three-state intensity gate for the Axiom research UI.
- *
- * Without this, shock-and-awe has no shock — everything is always at 100%
- * and the player's eye has nowhere to rest. The rule:
- *
- *   AMBIENT     (~15%) — just looking. Presence, not performance.
- *   INTERACTION (~40%) — hovering or panning. The surface becomes reactive.
- *   EVENT       (100%) — unlock or discipline switch. Everything spikes, then
- *                         decays back to ambient. The wow-moment is earned.
- */
 public final class IntensityController {
 
     public enum State {

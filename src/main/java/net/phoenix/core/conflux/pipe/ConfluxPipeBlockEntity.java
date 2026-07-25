@@ -16,17 +16,6 @@ import net.phoenix.core.conflux.ConfluxDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Block entity for all Conflux data pipes.
- *
- * Extends GTCEu's {@link PipeBlockEntity} to gain cover support, wrench-tool
- * interaction, and GTM pipe-network membership.
- *
- * Transport behaviour is kept as per-tick push propagation: when the buffer
- * has data the entity subscribes to {@code serverTick}, pushes to every
- * connected neighbour up to the per-tick throughput limit, and unsubscribes
- * when the buffer drains to zero.
- */
 public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, ConfluxPipeData> {
 
     public static final long THROUGHPUT = 64L;
@@ -42,8 +31,6 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
         super(type, pos, state);
         this.handlerOpt = LazyOptional.of(this::buildHandler);
     }
-
-    // ── Capability ────────────────────────────────────────────────────────────
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
@@ -88,8 +75,6 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
         };
     }
 
-    // ── canAttachTo ───────────────────────────────────────────────────────────
-
     @Override
     public boolean canAttachTo(Direction side) {
         if (level == null) return false;
@@ -104,8 +89,6 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
                 .map(h -> h.getDataType() == dt)
                 .orElse(false);
     }
-
-    // ── Per-tick push ─────────────────────────────────────────────────────────
 
     private void scheduleTickIfNeeded() {
         if (tickSub == null || !tickSub.isStillSubscribed()) {
@@ -130,10 +113,8 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
             BlockEntity be = level.getBlockEntity(npos);
             if (be == null) continue;
 
-            // skip back-push into equally-full pipes to prevent oscillation
             if (be instanceof ConfluxPipeBlockEntity peer && peer.stored >= stored) continue;
 
-            // single-type handler (another pipe or typed machine output)
             LazyOptional<IConfluxDataHandler> single =
                     be.getCapability(ConfluxDataCapability.DATA, dir.getOpposite());
             if (single.isPresent()) {
@@ -144,7 +125,6 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
                 continue;
             }
 
-            // multi-type handler (research terminal)
             LazyOptional<IConfluxMultiHandler> multi =
                     be.getCapability(ConfluxMultiHandlerCapability.MULTI_DATA, dir.getOpposite());
             if (multi.isPresent()) {
@@ -161,17 +141,11 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
         tickSub = null;
     }
 
-    // ── NBT ───────────────────────────────────────────────────────────────────
-    // stored is persisted automatically via @SaveField.
-    // We override load only to resume ticking after the field is restored.
-
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
         if (stored > 0) scheduleTickIfNeeded();
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     public ConfluxDataType getDataType() { return getPipeType().dataType(); }
     public long getStored()             { return stored; }

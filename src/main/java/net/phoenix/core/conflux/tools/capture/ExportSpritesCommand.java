@@ -13,15 +13,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * /exportsprites                  — reload hot bakers, bake everything
- * /exportsprites reload           — reload hot bakers only (no export)
- * /exportsprites <id>             — bake one specific sprite
- * /exportsprites <id> <path>      — bake to a custom output directory
- *
- * Hot bakers are .java files dropped in {@code run/sprite_bakers/} — they get
- * compiled and registered automatically before every export run.
- */
 public final class ExportSpritesCommand {
 
     public static void register(RegisterClientCommandsEvent event) {
@@ -88,7 +79,6 @@ public final class ExportSpritesCommand {
         );
     }
 
-    /** Runs HotBakerLoader.reload(), catching errors so a bad baker file doesn't crash export. */
     private static int safeReload(CommandSourceStack source) {
         try {
             return HotBakerLoader.reload();

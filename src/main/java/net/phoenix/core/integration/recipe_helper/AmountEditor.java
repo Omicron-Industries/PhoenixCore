@@ -30,7 +30,6 @@ public class AmountEditor extends AbstractWidget {
     public boolean charTyped(char code, int mod) {
         if (!visible) return false;
 
-        // Only allow numbers if you want to restrict it
         if (Character.isDigit(code)) {
             return this.input.charTyped(code, mod);
         }
@@ -40,7 +39,7 @@ public class AmountEditor extends AbstractWidget {
     public void open(int mx, int my, Object target, int currentAmt, Runnable onComplete) {
         this.setX(mx);
         this.setY(my);
-        // Move internal components to the new mouse position
+        
         this.input.setPosition(mx + 5, my + 5);
         this.saveBtn.setPosition(mx + 5, my + 22);
         this.deleteBtn.setPosition(mx + 41, my + 22);
@@ -50,13 +49,13 @@ public class AmountEditor extends AbstractWidget {
         this.input.setValue(String.valueOf(currentAmt));
         this.visible = true;
         this.input.setFocused(true);
-        this.input.setHighlightPos(0); // Select all for easy overwrite
+        this.input.setHighlightPos(0); 
     }
 
     private void close(boolean delete) {
         if (delete) {
             if (target instanceof FluidSlotPanel.FluidEntry e) e.fluidExpr = null;
-            // Logic for Item deletion
+            
             if (target instanceof SlotPanel.SlotEntry e) e.stack = net.minecraft.world.item.ItemStack.EMPTY;
         } else {
             int amt = 1;
@@ -64,7 +63,7 @@ public class AmountEditor extends AbstractWidget {
                 amt = Integer.parseInt(input.getValue());
             } catch (Exception ignored) {}
             if (target instanceof FluidSlotPanel.FluidEntry e) e.amount = amt;
-            // Logic for Item count update
+            
             if (target instanceof SlotPanel.SlotEntry e) e.count = Math.max(1, amt);
         }
         this.visible = false;
@@ -78,7 +77,6 @@ public class AmountEditor extends AbstractWidget {
         if (saveBtn.mouseClicked(mx, my, btn)) return true;
         if (deleteBtn.mouseClicked(mx, my, btn)) return true;
 
-        // If clicking outside the editor box, close it
         if (!isMouseOver(mx, my)) {
             this.visible = false;
             return true;
@@ -90,7 +88,6 @@ public class AmountEditor extends AbstractWidget {
     public boolean keyPressed(int key, int scan, int mod) {
         if (!visible) return false;
 
-        // Handle Enter to save and Escape to cancel
         if (key == 257) {
             close(false);
             return true;

@@ -22,7 +22,7 @@ public class CrystalRoseBlock extends MaterialBlock {
 
     public CrystalRoseBlock(BlockBehaviour.Properties properties, TagPrefix tagPrefix, Material material) {
         super(BlockBehaviour.Properties.of()
-                .noCollission() // Matches your environment's spelling
+                .noCollission() 
                 .instabreak()
                 .noOcclusion()
                 .sound(SoundType.GRASS),
@@ -40,7 +40,6 @@ public class CrystalRoseBlock extends MaterialBlock {
         BlockPos floorPos = pos.below();
         BlockState floorState = world.getBlockState(floorPos);
 
-        // Only allows placement on sturdy solid blocks (Grass, Dirt, Stone, etc.)
         return floorState.isFaceSturdy(world, floorPos, net.minecraft.core.Direction.UP);
     }
 }

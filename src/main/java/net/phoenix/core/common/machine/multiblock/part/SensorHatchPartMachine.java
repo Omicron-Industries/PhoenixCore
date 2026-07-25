@@ -1,6 +1,5 @@
 package net.phoenix.core.common.machine.multiblock.part;
 
-
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
@@ -23,14 +22,12 @@ public class SensorHatchPartMachine extends TieredPartMachine {
         return side == getFrontFacing();
     }
 
-    // Fix: Adjusted parameter layout to match 1-argument signature from 8.0.0 controller
     @Override
     public void removedFromController(@NotNull MultiblockControllerMachine controller) {
         super.removedFromController(controller);
         this.updateSignal();
     }
 
-    // Fix: Adjusted parameter layout to match 2-argument signature from 8.0.0 controller
     @Override
     public void addedToController(@NotNull MultiblockControllerMachine controller, String substructureName) {
         super.addedToController(controller, substructureName);
@@ -42,7 +39,6 @@ public class SensorHatchPartMachine extends TieredPartMachine {
         return net.minecraft.world.InteractionResult.PASS;
     }
 
-    // Fix: Removed .getHolder().getSelf() proxy chain chain
     public void updateSignal() {
         if (getLevel() != null) {
             getLevel().updateNeighborsAt(getBlockPos(), this.getBlockState().getBlock());

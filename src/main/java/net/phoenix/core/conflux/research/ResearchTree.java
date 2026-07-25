@@ -12,38 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * A named collection of {@link ResearchNode}s forming one discipline's tree.
- *
- * Trees are loaded from datapacks at {@code data/<ns>/conflux/research/<id>.json}.
- * Multiple trees can coexist (e.g. one per ConfluxDataType, or cross-discipline trees).
- *
- * JSON schema:
- * <pre>
- * {
- *   "title": "Material Science",
- *   "description": "The study of matter and alloys.",
- *   "discipline": "thermodynamics",          // optional — omit for neutral/shared trees
- *   "switch_cost": { "material": 2000 },     // cost to abandon before commitment; omit = free
- *   "nodes": [ { ...ResearchNode... }, ... ]
- * }
- * </pre>
- */
 public class ResearchTree {
 
     public final ResourceLocation id;
     public final String title;
     public final String description;
-    /**
-     * Canonical Discipline ID this tree belongs to.
-     * {@code null} for neutral/shared trees that don't lock the player to a path.
-     */
+    
     @Nullable
     public final String discipline;
-    /**
-     * Cost to abandon this Discipline before the commitment node is reached.
-     * Empty map means abandoning is free.
-     */
+    
     public final Map<ConfluxDataType, Long> switchCost;
 
     private final Map<ResourceLocation, ResearchNode> nodes = new LinkedHashMap<>();
@@ -59,8 +36,6 @@ public class ResearchTree {
         nodeList.forEach(n -> nodes.put(n.id, n));
     }
 
-    // ── Accessors ─────────────────────────────────────────────────────────────
-
     public Optional<ResearchNode> getNode(ResourceLocation nodeId) {
         return Optional.ofNullable(nodes.get(nodeId));
     }
@@ -70,8 +45,6 @@ public class ResearchTree {
     public List<ResearchNode> getRoots() {
         return nodes.values().stream().filter(ResearchNode::isRoot).toList();
     }
-
-    // ── JSON ──────────────────────────────────────────────────────────────────
 
     public static ResearchTree fromJson(ResourceLocation id, JsonObject obj) {
         String title       = obj.has("title")       ? obj.get("title").getAsString()       : id.getPath();
@@ -95,11 +68,9 @@ public class ResearchTree {
         return new ResearchTree(id, title, description, discipline, switchCost, nodes);
     }
 
-    /** The node in this tree marked {@code "commitment": true}, if any. */
     public Optional<ResearchNode> getCommitmentNode() {
         return nodes.values().stream().filter(n -> n.isCommitmentNode).findFirst();
     }
 
-    /** True if this tree belongs to a Discipline (non-null discipline field). */
     public boolean isDisciplineTree() { return discipline != null; }
 }

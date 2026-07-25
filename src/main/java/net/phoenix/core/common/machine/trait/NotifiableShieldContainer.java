@@ -17,7 +17,6 @@ import java.util.List;
 
 public class NotifiableShieldContainer extends NotifiableRecipeHandlerTrait<ShieldTypes> {
 
-    // FIXED: Removed MetaMachine parameter from the constructor
     public NotifiableShieldContainer() {
         super();
     }
@@ -41,7 +40,7 @@ public class NotifiableShieldContainer extends NotifiableRecipeHandlerTrait<Shie
         ShieldTypes recipeShieldType = left.get(0);
 
         if (getHeldShield() == recipeShieldType) {
-            // FIXED: Returning null is now wrong and will crash. Return an empty list instead.
+            
             return List.of();
         }
         return left;
@@ -64,7 +63,7 @@ public class NotifiableShieldContainer extends NotifiableRecipeHandlerTrait<Shie
 
     @Override
     public MachineTraitType<?> getTraitType() {
-        // Pass the class type and false to indicate no special automated syncing requirements
+        
         return new MachineTraitType<>(NotifiableShieldContainer.class, false);
     }
 }

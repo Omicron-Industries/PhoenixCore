@@ -12,10 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Hooks into {@link LevelRenderer#renderSky} to inject Phoenix sky layers after
- * vanilla sky rendering (sun, moon, stars) has completed.
- */
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
 

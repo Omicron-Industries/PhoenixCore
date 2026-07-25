@@ -40,8 +40,8 @@ public class PhoenixBeeMachines {
             .rotationState(RotationState.NON_Y_AXIS)
             .recipeType(PhoenixRecipeTypes.HONEY_CHAMBER_RECIPES)
             .appearanceBlock(CASING_STAINLESS_CLEAN)
-            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) //
-                    // Each .slice() acts as a distinct 2D layer along the relative front axis
+            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
+                    
                     .slice("BBBBBBBBBBB", "BBBBBBBBBBB", "BBBBBBBBBBB", "BBBBBBBBBBB", "BBBBBBBBBBB", "BBBBBCBBBBB", "BBBBBCBBBBB", "BBBBBBBBBBB", "BBBBBBBBBBB")
                     .slice("BDDDDDDDDDB", "BBBBBBBBBBB", "BBBBBBBBBBB", "BBBBBBBBBBB", "BBBBBCBBBBB", "BBBBEEEBBBB", "BBBBEEEBBBB", "BBBBBCBBBBB", "BBBBBBBBBBB")
                     .slice("BDDDDDDDDDB", "BBFBBBBBFBB", "BBFBBBBBFBB", "BBFBBCBBFBB", "BBFGGGGGFBB", "BBGGAAAGGBB", "BBGGAAAGGBB", "BBBGGGGGBBB", "BBBBBCBBBBB")
@@ -65,7 +65,7 @@ public class PhoenixBeeMachines {
                             .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2).setMinGlobalLimited(1))
                             .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setPreviewCount(1))
                             .or(Predicates.abilities(PartAbility.EXPORT_ITEMS).setPreviewCount(1))
-                            .or(Predicates.autoAbilities(true, false, true))) //
+                            .or(Predicates.autoAbilities(true, false, true))) 
                     .where('H', Predicates.controller(definition))
                     .build())
             .register();
@@ -79,7 +79,7 @@ public class PhoenixBeeMachines {
             .recipeType(PhoenixRecipeTypes.COMB_DECANTING_RECIPES)
             .appearanceBlock(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING)
             .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                    // Replaced .aisle() with the new .slice() backend syntax
+                    
                     .slice("BCDDDCB", "BCDDDCB", "BCDDDCB", "BCDDDCB", "BBBBBBB", "BBBBBBB", "BBBBBBB", "BBBBBBB")
                     .slice("CDDDDDC", "CDEAEDC", "CDAAADC", "CDAAADC", "BCFFFCB", "BBGGGBB", "BBFFFBB", "BBDDDBB")
                     .slice("DDDDDDD", "DECACED", "DACACAD", "DACACAD", "BFFAFFB", "BGGAGGB", "BFFAFFB", "BDDDDDB")
@@ -88,7 +88,6 @@ public class PhoenixBeeMachines {
                     .slice("CDDDDDC", "CDEAEDC", "CDAAADC", "CDAAADC", "BCFFFCB", "BBGGGBB", "BBFFFBB", "BBDDDBB")
                     .slice("BCDDDCB", "BCDJDCB", "BCDDDCB", "BCDDDCB", "BBBBBBB", "BBBBBBB", "BBBBBBB", "BBBBBBB")
 
-                    // Unified all mappings to strict char primitives
                     .where('A', Predicates.air())
                     .where('B', Predicates.any())
                     .where('C', Predicates.blocks(ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.TungstenSteel)))
@@ -102,7 +101,6 @@ public class PhoenixBeeMachines {
                     .where('G', Predicates.blocks(GCYMBlocks.HEAT_VENT.get()))
                     .where('H', Predicates.abilities(PartAbility.MUFFLER))
 
-                    // Modern Controller declaration passing 'definition' directly
                     .where('J', Predicates.controller(definition))
                     .build())
             .model(
@@ -118,27 +116,26 @@ public class PhoenixBeeMachines {
             .rotationState(RotationState.NON_Y_AXIS)
             .recipeType(PhoenixRecipeTypes.SWARM_NURTURING_RECIPES)
             .appearanceBlock(GTBlocks.CASING_STAINLESS_CLEAN)
-            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) //
-                    // Converted from flat aisles to relative slice layouts
+            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
+                    
                     .slice("BCCCB", "BDDDB", "BDDDB", "BCCCB")
                     .slice("CBBBC", "DEEED", "DAAAD", "CEEEC")
                     .slice("CBBBC", "DFFFD", "DAAAD", "CFFFC")
                     .slice("CBBBC", "DEEED", "DAAAD", "CEEEC")
                     .slice("CBBBC", "CBGBC", "CBBBC", "CCCCC")
 
-                    .where('A', Predicates.air()) //
-                    // Linked controller context fallback to the casing block token 'B'
+                    .where('A', Predicates.air()) 
+                    
                     .where('B', Predicates.blocks(CASING_STAINLESS_CLEAN.get()).setMinGlobalLimited(2)
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                             .or(Predicates.autoAbilities(definition.getRecipeTypes()))
-                            .or(Predicates.controller(definition))) //
+                            .or(Predicates.controller(definition))) 
                     .where('C', Predicates.blocks(ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.StainlessSteel)))
                     .where('D', Predicates.blocks(GCYMBlocks.MOLYBDENUM_DISILICIDE_COIL_BLOCK.get()))
                     .where('E', Predicates.blocks(ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.Steel)))
                     .where('F', Predicates.blocks(CASING_STAINLESS_STEEL_GEARBOX.get()))
 
-                    // Modern Controller syntax mapping
-                    .where('G', Predicates.controller(definition)) //
+                    .where('G', Predicates.controller(definition)) 
                     .build())
             .model(
                     createWorkableCasingMachineModel(
@@ -153,35 +150,33 @@ public class PhoenixBeeMachines {
             .rotationState(RotationState.NON_Y_AXIS)
             .recipeType(PhoenixRecipeTypes.APIS_PROGENITOR_RECIPES)
             .appearanceBlock(GTBlocks.CASING_TUNGSTENSTEEL_ROBUST)
-            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) //
+            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
                     .slice("BBBBB", "CDDDC", "CDDDC", "CDDDC", "EFFFE")
                     .slice("BGGGB", "DHHHD", "DAAAD", "DAAAD", "FBBBF")
                     .slice("BGGGB", "DHHHD", "DAAAD", "DAAAD", "FBBBF")
                     .slice("BGGGB", "DHHHD", "DAAAD", "DAAAD", "FBBBF")
                     .slice("BBIBB", "CDDDC", "CDDDC", "CDDDC", "EFFFE")
 
-                    .where('A', Predicates.air()) //
-                    // Linked controller context fallback to the casing block token 'B'
+                    .where('A', Predicates.air()) 
+                    
                     .where('B', Predicates.blocks(CASING_TUNGSTENSTEEL_ROBUST.get()).setMinGlobalLimited(2)
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                             .or(Predicates.autoAbilities(definition.getRecipeTypes()))
-                            .or(Predicates.controller(definition))) //
+                            .or(Predicates.controller(definition))) 
                     .where('C', Predicates.blocks(ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.TungstenSteel)))
                     .where('D', Predicates.blocks(CASING_TEMPERED_GLASS.get()))
-                    .where('E', Predicates.any()) //
+                    .where('E', Predicates.any()) 
                     .where('F', Predicates.blocks(ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.TreatedWood)))
                     .where('G', Predicates.blocks(Blocks.DIRT))
                     .where('H', Predicates.blocks(Blocks.POPPY))
 
-                    // Modern Controller syntax mapping
-                    .where('I', Predicates.controller(definition)) //
+                    .where('I', Predicates.controller(definition)) 
                     .build())
             .model(
                     createWorkableCasingMachineModel(
                             GTCEu.id("block/casings/solid/machine_casing_robust_tungstensteel"),
                             PhoenixCore.id("block/multiblock/apis_progenitor")))
             .register();
-
 
     public static final MultiblockMachineDefinition SIMULATED_COLONY = REGISTRATE
             .multiblock("simulated_colony", WorkableElectricMultiblockMachine::new)
@@ -191,7 +186,7 @@ public class PhoenixBeeMachines {
             .recipeType(PhoenixRecipeTypes.SIMULATED_COLONY_RECIPES)
             .appearanceBlock(GTBlocks.CASING_STEEL_SOLID)
             .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                    // Converted old aisle arrays over to modern relative slice views
+                    
                     .slice("BCDDDCB", "BCEEECB", "BCEEECB", "BCEEECB", "BBBBBBB")
                     .slice("CDFFFDC", "CGAHAGC", "CGAIAGC", "CGAAAGC", "BBFFFBB")
                     .slice("DFFFFFD", "EAAAAAE", "EAAAAAE", "EAAAAAE", "BFFFFFB")
@@ -200,12 +195,10 @@ public class PhoenixBeeMachines {
                     .slice("CDFFFDC", "CGAHAGC", "CGAIAGC", "CGAAAGC", "BBFFFBB")
                     .slice("BCDJDCB", "BCEEECB", "BCEEECB", "BCEEECB", "BBBBBBB")
 
-                    // Uniform character token mapping definitions
                     .where('A', Predicates.air())
                     .where('B', Predicates.any())
                     .where('C', Predicates.blocks(ChemicalHelper.getBlock(TagPrefix.frameGt, GTMaterials.TreatedWood)))
 
-                    // Casing block 'D' configuration updated with strict type safety & controller context fallback
                     .where('D', Predicates.blocks(CASING_STEEL_SOLID.get()).setMinGlobalLimited(2)
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                             .or(Predicates.abilities(PartAbility.PARALLEL_HATCH).setMaxGlobalLimited(1))
@@ -218,7 +211,6 @@ public class PhoenixBeeMachines {
                     .where('H', Predicates.blocks(Blocks.DIRT))
                     .where('I', Predicates.blocks(Blocks.POPPY))
 
-                    // Modernized direct definition controller assignment mapping
                     .where('J', Predicates.controller(definition))
                     .build())
             .model(

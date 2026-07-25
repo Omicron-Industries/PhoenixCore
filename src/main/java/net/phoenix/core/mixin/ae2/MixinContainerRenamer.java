@@ -35,8 +35,6 @@ public abstract class MixinContainerRenamer {
             CallbackInfo ci) {
         Object target = phoenixCore$resolveTarget(host, inv.player);
 
-        // FIXED FOR 8.0.0: MetaMachine IS a BlockEntity now.
-        // Cast directly to MetaMachine instead of looking for an MMBE wrapper.
         if (!(target instanceof MetaMachine machine)) {
             return;
         }
@@ -45,7 +43,6 @@ public abstract class MixinContainerRenamer {
             return;
         }
 
-        // FIXED FOR 8.0.0: Bind directly to the CustomNameAccess methods on the machine instance
         Consumer<String> setterFn = access::phoenix$setCustomName;
 
         phoenixCore$apply(setterFn, access::phoenix$getCustomName);
@@ -65,7 +62,7 @@ public abstract class MixinContainerRenamer {
         }
 
         try {
-            // FIXED FOR 8.0.0: Query the locator context using the standard BlockEntity class filter
+            
             var locate = host.getClass()
                     .getMethod("locate", net.minecraft.world.entity.player.Player.class, Class.class);
             Object result = locate.invoke(host, player, BlockEntity.class);

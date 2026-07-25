@@ -11,18 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.phoenix.core.api.gui.BorderDrawable;
 import net.phoenix.core.api.gui.SolidColorDrawable;
 
-/**
- * MUI2 port of the old MUI1 SoulMapWidget.
- *
- * The MUI1 version drew the soul-density grid itself in drawInBackground(GuiGraphics, ...) using
- * graphics.fill(...)/renderOutline(...). MUI2 widgets don't draw directly the same way -- custom
- * visuals go through IDrawable (GuiContext#getGraphics(), confirmed via SourceHatchBackground)
- * attached as a background/overlay, not drawn inline in a widget's own draw hook.
- *
- * Rebuilt as composition: one small child widget per chunk cell, each with a SolidColorDrawable
- * background colored by that cell's soul density, plus a BorderDrawable overlay on the center
- * cell (the player's current chunk) matching the original's white outline.
- */
 public class SoulMapWidget extends ParentWidget<SoulMapWidget> {
 
     private static final int RADIUS = 8;
@@ -37,13 +25,6 @@ public class SoulMapWidget extends ParentWidget<SoulMapWidget> {
         rebuildGrid();
     }
 
-    /**
-     * Rebuilds the cell grid from the stack's current "MapData" NBT. Call this again (e.g. from an
-     * onUpdateListener) if the map needs to refresh after the panel is already open -- this
-     * implementation only builds the grid once at construction, matching how the rest of this
-     * port avoids unconfirmed "reactive child replace" APIs (see TeslaBinderItem's notes on the
-     * same limitation).
-     */
     private void rebuildGrid() {
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains("MapData")) return;
@@ -86,11 +67,5 @@ public class SoulMapWidget extends ParentWidget<SoulMapWidget> {
         return (255 << 24) | (r << 16) | (g << 8) | b;
     }
 
-    /**
-     * Plain leaf widget for a single grid cell. Named (not anonymous) because Java doesn't allow
-     * diamond inference ('<>') on anonymous classes, and Widget<W>'s self-bounded generic
-     * (W extends Widget<W>) needs a concrete type argument either way. Mirrors the confirmed
-     * DrawableWidget extends Widget<DrawableWidget> pattern.
-     */
     private static class Cell extends Widget<Cell> {}
 }

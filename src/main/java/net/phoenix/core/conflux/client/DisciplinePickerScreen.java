@@ -16,22 +16,13 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Full-screen discipline picker , floats each discipline as a card in a
- * sweeping radial arc. No costs are checked; this is the "glimpse before
- * commitment" moment where the player sees what each path IS before choosing.
- *
- * Opened via /conflux discipline. Wired to actual WorldResearchData later.
- */
 @OnlyIn(Dist.CLIENT)
 public class DisciplinePickerScreen extends Screen {
 
-    // ── Card geometry ─────────────────────────────────────────────────────────
     private static final int CARD_W = 210;
     private static final int CARD_H = 280;
     private static final float ARC_RADIUS = 380f;
 
-    // ── Discipline metadata ───────────────────────────────────────────────────
     private record DisciplineCard(
             String id,
             String name,
@@ -131,23 +122,20 @@ public class DisciplinePickerScreen extends Screen {
         ),
     };
 
-    // ── State ─────────────────────────────────────────────────────────────────
     private final MotionClock clock = new MotionClock();
     private long lastNanos = -1;
 
     private int hoveredIdx   = -1;
-    private int selectedIdx  = -1;  // -1 = none chosen yet
-    private float arcOffset  = 0f;  // horizontal pan of the arc (px)
+    private int selectedIdx  = -1;  
+    private float arcOffset  = 0f;  
     private float arcVelocity = 0f;
-    private float introAnim  = 0f;  // 0→1 on open
+    private float introAnim  = 0f;  
 
-    // Per-card animation state
     private final float[] cardScale  = new float[CARDS.length];
     private final float[] cardGlow   = new float[CARDS.length];
-    private final float[] cardLift   = new float[CARDS.length]; // vertical pop
-    private final float[] cardReveal = new float[CARDS.length]; // scanline reveal [0,1]
+    private final float[] cardLift   = new float[CARDS.length]; 
+    private final float[] cardReveal = new float[CARDS.length]; 
 
-    // Confirmation overlay
     private float confirmAlpha = 0f;
     private boolean confirming = false;
 
@@ -162,11 +150,9 @@ public class DisciplinePickerScreen extends Screen {
 
     @Override
     protected void init() {
-        // Center arc on the middle card
+        
         arcOffset = 0f;
     }
-
-    // ── Tick ─────────────────────────────────────────────────────────────────
 
     @Override
     public void tick() {
@@ -178,11 +164,9 @@ public class DisciplinePickerScreen extends Screen {
         clock.tick(dt);
         introAnim = Math.min(1f, introAnim + dt * 1.8f);
 
-        // Arc momentum decay
         arcOffset += arcVelocity * dt;
-        arcVelocity *= Math.pow(0.08, dt);  // exponential decay
+        arcVelocity *= Math.pow(0.08, dt);  
 
-        // Per-card animation
         for (int i = 0; i < CARDS.length; i++) {
             boolean hov = (i == hoveredIdx);
             boolean sel = (i == selectedIdx);
@@ -194,12 +178,9 @@ public class DisciplinePickerScreen extends Screen {
             cardLift[i]  = lerp(cardLift[i],  targetLift,  dt * 7f);
         }
 
-        // Confirm overlay fade
         float targetConfirm = confirming ? 1f : 0f;
         confirmAlpha = lerp(confirmAlpha, targetConfirm, dt * 7f);
     }
-
-    // ── Render ────────────────────────────────────────────────────────────────
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
@@ -209,16 +190,14 @@ public class DisciplinePickerScreen extends Screen {
         float ease = easeOutExpo(introAnim);
         int cx = width / 2, cy = height / 2;
 
-        // ── Background ────────────────────────────────────────────────────────
         g.fill(0, 0, width, height, 0xFF020208);
         renderStarfield(g, ease);
         renderAmbientGlow(g, ease);
 
-        // ── Title ─────────────────────────────────────────────────────────────
         int titleAlpha = (int)(ease * 220) << 24;
         String title = "CHOOSE YOUR PATH";
         int tw = font.width(title);
-        // Shadow
+        
         g.drawString(font, title, cx - tw/2 + 1, 31, 0xFF000000 & titleAlpha, false);
         g.drawString(font, title, cx - tw/2, 30, titleAlpha | 0xCCCCDD, false);
 
@@ -227,18 +206,15 @@ public class DisciplinePickerScreen extends Screen {
         int subAlpha = (int)(ease * 100) << 24;
         g.drawString(font, sub, cx - subW/2, 46, subAlpha | 0x8888AA, false);
 
-        // ── Cards ─────────────────────────────────────────────────────────────
         for (int i = 0; i < CARDS.length; i++) {
             float[] pos = cardScreenPos(i);
             renderCard(g, CARDS[i], i, pos[0], pos[1], ease, mx, my);
         }
 
-        // ── Navigation hint ───────────────────────────────────────────────────
         int hintAlpha = (int)(ease * 120) << 24;
         String hint = "← → to browse   •   Click to select   •   ESC to close";
         g.drawCenteredString(font, hint, cx, height - 22, hintAlpha | 0x666688);
 
-        // ── Confirm overlay ───────────────────────────────────────────────────
         if (confirmAlpha > 0.01f && selectedIdx >= 0) {
             renderConfirmOverlay(g, mx, my);
         }
@@ -247,7 +223,7 @@ public class DisciplinePickerScreen extends Screen {
     }
 
     private void renderStarfield(GuiGraphics g, float ease) {
-        // Deterministic "stars" from hash , no RNG per frame
+        
         int count = 180;
         float t = clock.getElapsed();
         for (int i = 0; i < count; i++) {
@@ -288,71 +264,60 @@ public class DisciplinePickerScreen extends Screen {
         boolean hov = (idx == hoveredIdx);
         boolean sel = (idx == selectedIdx);
 
-        // ── Glow behind card ─────────────────────────────────────────────────
         if (cardGlow[idx] > 0.02f) {
             int gAlpha = (int)(cardGlow[idx] * 80) << 24;
             g.fill(x0 - 8, y0 - 8, x1 + 8, y1 + 8, gAlpha | (card.glowColor & 0x00FFFFFF));
             g.fill(x0 - 4, y0 - 4, x1 + 4, y1 + 4, gAlpha | (card.accentColor & 0x00FFFFFF));
         }
 
-        // ── Card background ───────────────────────────────────────────────────
         g.fill(x0, y0, x1, y1, card.bgColor | 0xEE000000);
 
-        // ── Scanline reveal (top→bottom animated on intro) ────────────────────
         float reveal = cardReveal[idx];
         if (reveal < 1f) {
             int blankY = y0 + (int)((y1 - y0) * reveal);
             g.fill(x0, blankY, x1, y1, 0xFF020208);
         }
 
-        // ── Accent top stripe ─────────────────────────────────────────────────
         int stripeH = Math.max(2, (int)(4 * sc));
         g.fill(x0, y0, x1, y0 + stripeH, card.accentColor);
 
-        // ── Border ───────────────────────────────────────────────────────────
         int brdCol = sel ? card.accentColor : hov ? (card.accentColor & 0x00FFFFFF | 0xAA000000) : (card.accentColor & 0x00FFFFFF | 0x33000000);
         g.fill(x0, y0, x1, y0 + 1, brdCol);
         g.fill(x0, y1 - 1, x1, y1, brdCol);
         g.fill(x0, y0, x0 + 1, y1, brdCol);
         g.fill(x1 - 1, y0, x1, y1, brdCol);
 
-        // ── Sealed glyph overlay ──────────────────────────────────────────────
         if (card.sealed) {
             float glitch = (float)Math.sin(clock.getElapsed() * 11.3f + idx * 2.1f);
             int gx = cx + (int)(glitch * 2.5f);
             float pulse = 0.3f + 0.7f * (0.5f + 0.5f * (float)Math.sin(clock.getElapsed() * 2.2f));
             int sealAlpha = (int)(pulse * 60) << 24;
             g.fill(x0, y0, x1, y1, sealAlpha | 0x000000);
-            // Warp sigil lines
+            
             for (int li = 0; li < 5; li++) {
                 int lx = x0 + (x1 - x0) * li / 5 + (int)(glitch * li * 1.5f);
                 g.fill(lx, y0, lx + 1, y1, (int)(pulse * 20) << 24 | 0x888888);
             }
         }
 
-        // ── Discipline name ───────────────────────────────────────────────────
         if (reveal > 0.15f) {
             int textY = y0 + stripeH + (int)(14 * sc);
             int nameAlpha = (int)(Math.min(1f, (reveal - 0.15f) / 0.35f) * 255) << 24;
 
-            // Name
             int nameFontW = font.width(card.name);
             g.drawString(font, card.name, cx - nameFontW / 2, textY, nameAlpha | (card.accentColor & 0x00FFFFFF), false);
             textY += (int)(14 * sc) + 2;
 
-            // Tagline
             if (reveal > 0.3f) {
                 int tagAlpha = (int)(Math.min(1f, (reveal - 0.3f) / 0.3f) * 180) << 24;
                 int tagW = font.width(card.tagline);
                 g.drawString(font, "§o" + card.tagline, cx - tagW / 2, textY, tagAlpha | 0xAAAAAA, false);
                 textY += (int)(13 * sc) + 4;
 
-                // Divider
                 g.fill(x0 + (int)(16 * sc), textY, x1 - (int)(16 * sc), textY + 1, tagAlpha | (card.accentColor & 0x00FFFFFF));
                 textY += (int)(8 * sc);
             }
 
-            // Lore lines
             if (reveal > 0.45f && sc > 0.7f) {
                 int loreAlpha = (int)(Math.min(1f, (reveal - 0.45f) / 0.3f) * 160) << 24;
                 int maxLines = (int)((y1 - textY - (int)(24 * sc)) / (int)(10 * sc));
@@ -366,7 +331,6 @@ public class DisciplinePickerScreen extends Screen {
             }
         }
 
-        // ── Select button at bottom ───────────────────────────────────────────
         if (hov || sel) {
             int btnH = (int)(20 * sc);
             int btnY = y1 - btnH - (int)(8 * sc);
@@ -398,7 +362,6 @@ public class DisciplinePickerScreen extends Screen {
         int bw = 360, bh = 220;
         int bx0 = cx - bw/2, by0 = cy - bh/2;
 
-        // Panel
         g.fill(bx0, by0, bx0 + bw, by0 + bh, 0xEE050510);
         g.fill(bx0, by0, bx0 + bw, by0 + 3, card.accentColor);
         g.fill(bx0, by0, bx0 + 1, by0 + bh, card.accentColor & 0x00FFFFFF | 0x88000000);
@@ -421,7 +384,7 @@ public class DisciplinePickerScreen extends Screen {
         }
 
         ty = by0 + bh - 44;
-        // Confirm button
+        
         int cbw = 130, cbh = 24;
         int cbx = cx - cbw - 8;
         boolean confHov = mx >= cbx && mx < cbx + cbw && my >= ty && my < ty + cbh;
@@ -431,7 +394,6 @@ public class DisciplinePickerScreen extends Screen {
         String confLabel = "Commit";
         g.drawCenteredString(font, confLabel, cbx + cbw/2, ty + 8, card.sealed ? 0xFFAAAAAA : 0xFF88DD88);
 
-        // Cancel button
         int cax = cx + 8;
         boolean canHov = mx >= cax && mx < cax + cbw && my >= ty && my < ty + cbh;
         g.fill(cax, ty, cax + cbw, ty + cbh, canHov ? 0xAA221111 : 0x88110808);
@@ -440,13 +402,10 @@ public class DisciplinePickerScreen extends Screen {
         g.drawCenteredString(font, "Go Back", cax + cbw/2, ty + 8, 0xFFCC4444);
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (btn != 0) return super.mouseClicked(mx, my, btn);
 
-        // Confirm overlay buttons
         if (confirming && selectedIdx >= 0) {
             int cx2 = width / 2, cy2 = height / 2;
             int bh = 220;
@@ -454,24 +413,22 @@ public class DisciplinePickerScreen extends Screen {
             int ty = by0 + bh - 44;
             int cbw = 130, cbh = 24;
 
-            // Confirm
             int cbx = cx2 - cbw - 8;
             if (mx >= cbx && mx < cbx + cbw && my >= ty && my < ty + cbh) {
                 commitDiscipline(CARDS[selectedIdx]);
                 return true;
             }
-            // Cancel
+            
             int cax = cx2 + 8;
             if (mx >= cax && mx < cax + cbw && my >= ty && my < ty + cbh) {
                 confirming = false;
                 return true;
             }
-            // Click outside → cancel
+            
             confirming = false;
             return true;
         }
 
-        // Card select button
         for (int i = 0; i < CARDS.length; i++) {
             float[] pos = cardScreenPos(i);
             float sc = cardScale[i];
@@ -531,11 +488,8 @@ public class DisciplinePickerScreen extends Screen {
         }
     }
 
-    // ── Commit ────────────────────────────────────────────────────────────────
-
     private void commitDiscipline(DisciplineCard card) {
-        // TODO: send packet to server to set discipline , costs wired later
-        // For now just close with a message
+
         if (minecraft != null && minecraft.player != null) {
             minecraft.player.displayClientMessage(
                 Component.literal("§6[Axiom] §7Path chosen: §r" + card.name +
@@ -544,24 +498,16 @@ public class DisciplinePickerScreen extends Screen {
         onClose();
     }
 
-    // ── Geometry ──────────────────────────────────────────────────────────────
-
-    /**
-     * Returns screen {x, y} for card at index {@code i}, arranged in a
-     * wide sweeping arc. Cards fan out from center; arcOffset pans the arc.
-     */
     private float[] cardScreenPos(int i) {
         int n = CARDS.length;
         float spacing = CARD_W + 40f;
         float totalW  = spacing * n;
         float baseX   = width / 2f - totalW / 2f + spacing * i + spacing / 2f + arcOffset;
-        // Gentle vertical arc , center cards are higher, edges dip slightly
+        
         float normalised = (baseX - width / 2f) / (width * 0.4f);
         float arcY = height / 2f + 20f + normalised * normalised * 60f;
         return new float[]{ baseX, arcY };
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static float lerp(float a, float b, float t) {
         return a + (b - a) * Math.min(1f, t);

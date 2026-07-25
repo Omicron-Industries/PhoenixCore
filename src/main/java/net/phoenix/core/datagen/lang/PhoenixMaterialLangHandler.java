@@ -5,7 +5,7 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 public class PhoenixMaterialLangHandler {
 
     public static void init(RegistrateLangProvider provider) {
-        // Tag Prefixes
+        
         provider.add("tagprefix.nanites", "%s Nanites");
         provider.add("tagprefix.crystal_rose", "%s Crystal Rose");
         provider.add("tagprefix.tier_one_bee", "%s Lively Bee");
@@ -14,7 +14,6 @@ public class PhoenixMaterialLangHandler {
         provider.add("tagprefix.honeycomb_block", "%s Rich Honey Comb (Block)");
         provider.add("tagprefix.honeycomb", "%s Rich Honey Comb");
 
-        // Fission & Radioactive
         provider.add("material.phoenixcore.uranium_233", "Uranium-233");
         provider.add("material.phoenixcore.uranium_236", "Uranium-236");
         provider.add("material.phoenixcore.americium_241", "Americium-241");
@@ -31,7 +30,6 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.boron_carbide", "§5Boron Carbide");
         provider.add("material.phoenixcore.zircalloy", "Zircalloy");
 
-        // Progression & Special Alloys
         provider.add("material.phoenixcore.aluminfrost", "§bAluminfrost");
         provider.add("material.phoenixcore.concentrated_sulfuric_acid", "Concentrated Sulfuric Acid");
         provider.add("material.phoenixcore.source_gem", "§zSource Gem");
@@ -49,13 +47,11 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.void_touched_tungsten_steel", "§5Void Touched Tungsten Steel");
         provider.add("material.phoenixcore.frost_reinforced_stained_steel", "§bFrost-Reinforced Stained Steel");
 
-        // Superconductors
         provider.add("material.phoenixcore.magmatic_manganese_lead", "Magmatic Manganese Lead");
         provider.add("material.phoenixcore.cryogenic_aluminum_strand", "Cryogenic Aluminum Strand");
         provider.add("material.phoenixcore.icy_steel_matrix", "Icy Steel Matrix");
         provider.add("material.phoenixcore.source_titanium_filament", "Source Titanium Filament");
 
-        // Endgame List
         provider.add("material.phoenixcore.akashic_zeronium", "§dAkashic Zeronium");
         provider.add("material.phoenixcore.phoenix_enriched_naquadah", "§6Phoenix Enriched Naquadah");
         provider.add("material.phoenixcore.phoenix_enriched_tritanium", "§cPhoenix Enriched Tritanium");
@@ -93,7 +89,6 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.event_horizon_matter", "Event Horizon Matter");
         provider.add("material.phoenixcore.antimatter", "Antimatter");
 
-        // Polymers & Fluids
         provider.add("material.phoenixcore.quantum_coolant", "§bQuantum Coolant");
         provider.add("material.phoenixcore.supercritical_carbon_dioxide", "Supercritical Carbon Dioxide");
         provider.add("material.phoenixcore.cryo_graphite_binding_solution", "Cryo-Graphite Binding Solution");
@@ -101,7 +96,6 @@ public class PhoenixMaterialLangHandler {
         provider.add("material.phoenixcore.polymethyl_methacrylate", "Polymethyl Methacrylate (PMMA)");
         provider.add("material.phoenixcore.methyl_methacrylate", "Methyl Methacrylate");
 
-        // Bee & Magic Materials
         provider.add("material.phoenixcore.sugar_water", "Sugar Water");
         provider.add("material.phoenixcore.wax_melting_catalyst", "Wax Melting Catalyst");
         provider.add("material.phoenixcore.sucrose", "Sucrose");
@@ -168,7 +162,6 @@ public class PhoenixMaterialLangHandler {
         addMaterialLang(provider, "plutonium_fission_ash", "Plutonium Fission Ash");
         addMaterialLang(provider, "trace_actinides", "Trace Actinides");
 
-        // Solutions and Fluids
         addMaterialLang(provider, "peanut", "Peanut");
         addMaterialLang(provider, "fissile_ash", "Fissile Ash");
         addMaterialLang(provider, "unrefined_aluminfrost", "Unrefined Aluminfrost");

@@ -21,39 +21,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Singleton that manages active world visual effects from machine emitters.
- *
- * <h2>Machine side (server + client)</h2>
- * <pre>{@code
- * // In your machine's onLoad():
- * if (getLevel() != null && getLevel().isClientSide()) {
- *     WorldFXManager.register(getBlockPos(), this);
- * }
- *
- * // In onUnload():
- * WorldFXManager.unregister(getBlockPos());
- * }</pre>
- *
- * <h2>Render hooks</h2>
- * {@link #renderSkyLayers} is called from {@code MixinLevelRenderer} after vanilla sky.
- * {@link #applyScreenEffects} is called from {@code GameRendererMixin} after world render.
- */
 public final class WorldFXManager {
 
     private WorldFXManager() {}
 
-    // ── Registration ──────────────────────────────────────────────────────────
-
     private record ActiveEffect(
             IWorldFXEmitter emitter,
-            PhoenixSkyLayer skyLayer,      // may be null
-            PhoenixScreenEffect screenEffect // may be null
+            PhoenixSkyLayer skyLayer,      
+            PhoenixScreenEffect screenEffect 
     ) {}
 
     private static final Map<BlockPos, ActiveEffect> effects = new LinkedHashMap<>();
 
-    /** Call client-side from the machine's {@code onLoad()}. */
     public static void register(BlockPos pos, IWorldFXEmitter emitter) {
         PhoenixSkyLayer sky = emitter.createSkyLayer();
         PhoenixScreenEffect screen = emitter.createScreenEffect();
@@ -62,7 +41,6 @@ public final class WorldFXManager {
         effects.put(pos, new ActiveEffect(emitter, sky, screen));
     }
 
-    /** Call client-side from the machine's {@code onUnload()}. */
     public static void unregister(BlockPos pos) {
         ActiveEffect removed = effects.remove(pos);
         if (removed != null) {
@@ -70,8 +48,6 @@ public final class WorldFXManager {
             if (removed.screenEffect() != null) removed.screenEffect().onRemove();
         }
     }
-
-    // ── Sky render hook (called from LevelRendererMixin) ──────────────────────
 
     public static void renderSkyLayers(SkyRenderContext ctx) {
         Vec3 camPos = ctx.cameraPos();
@@ -100,8 +76,6 @@ public final class WorldFXManager {
             layer.render(ctx);
         }
     }
-
-    // ── Screen effect hook (called from GameRendererMixin) ────────────────────
 
     public static void applyScreenEffects(float partialTick) {
         Vec3 camPos = getCameraPos();
@@ -134,10 +108,8 @@ public final class WorldFXManager {
         RenderTarget main = mc.getMainRenderTarget();
         int w = main.width, h = main.height;
 
-        // Each effect reads from pingTarget, writes to pongTarget, then we swap
         ensureWorkTargets(w, h);
 
-        // Blit world render into pingTarget for the first pass
         blitToTarget(main, pingTarget);
 
         RenderTarget src = pingTarget;
@@ -150,7 +122,6 @@ public final class WorldFXManager {
             dst.bindWrite(true);
             RenderSystem.clear(GL30.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
 
-            // Bind the captured world as InSampler
             RenderSystem.setShader(() -> shader);
             shader.setSampler("InSampler", src.getColorTextureId());
             shader.safeGetUniform("OutSize").set((float) w, (float) h);
@@ -160,29 +131,14 @@ public final class WorldFXManager {
             drawNdcQuad();
             shader.clear();
 
-            // Swap
             RenderTarget tmp = src;
             src = dst;
             dst = tmp;
         }
 
-        // Blit the final result back to the main target
         blitToTarget(src, main);
     }
 
-    // ── Framebuffer capture (for sky layers that need to distort the sky) ─────
-
-    /**
-     * Captures the current main framebuffer into an internal texture and returns its
-     * GL texture ID.  Use this in a {@link PhoenixSkyLayer} to apply a distortion shader.
-     *
-     * <p>After calling this, you should rebind the main framebuffer for write:
-     * <pre>{@code
-     * int skyTex = WorldFXManager.captureSkyToTexture();
-     * Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-     * // now draw your distorted output with skyTex as InSampler
-     * }</pre>
-     */
     public static int captureSkyToTexture() {
         Minecraft mc = Minecraft.getInstance();
         RenderTarget main = mc.getMainRenderTarget();
@@ -190,8 +146,6 @@ public final class WorldFXManager {
         blitToTarget(main, skyCapture);
         return skyCapture.getColorTextureId();
     }
-
-    // ── Internal framebuffer management ───────────────────────────────────────
 
     private static RenderTarget pingTarget;
     private static RenderTarget pongTarget;
@@ -213,7 +167,6 @@ public final class WorldFXManager {
         }
     }
 
-    /** GL blit from src color attachment to dst color attachment. */
     private static void blitToTarget(RenderTarget src, RenderTarget dst) {
         GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, src.frameBufferId);
         GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, dst.frameBufferId);
@@ -223,7 +176,6 @@ public final class WorldFXManager {
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
-    /** Draws two triangles covering NDC [-1,1]×[-1,1] with the currently bound shader. */
     private static void drawNdcQuad() {
         RenderSystem.disableDepthTest();
         BufferBuilder bb = Tesselator.getInstance().getBuilder();

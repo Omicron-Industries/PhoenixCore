@@ -51,7 +51,7 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        // Fix: Resolved machine using the universal O(1) 8.0.0 lookup pattern
+        
         MetaMachine machine = MetaMachine.getMachine(accessor.getLevel(), accessor.getPosition());
         if (!(machine instanceof BasicThreadedMachine imbuer)) return;
 
@@ -177,7 +177,7 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
                         items.add(IntProviderIngredient.SERIALIZER.parse(
                                 (JsonObject) NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, ct)));
                     } else {
-                        // Fix: Load stack cleanly through registry tokens
+                        
                         ItemStack stack = ItemStack.of(ct);
                         if (!stack.isEmpty()) items.add(SizedIngredient.create(stack));
                     }

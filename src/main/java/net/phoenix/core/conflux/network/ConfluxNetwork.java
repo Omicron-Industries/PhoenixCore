@@ -43,7 +43,6 @@ public final class ConfluxNetwork {
                 java.util.Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
-    /** Send the player's team research state (including discipline) to their client. */
     public static void syncResearchToPlayer(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) return;
         UUID teamId = ResearchTeamHelper.getTeamId(player);

@@ -6,16 +6,8 @@ import net.phoenix.core.conflux.client.render.*;
 import net.phoenix.core.conflux.research.ResearchNode;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Fallback renderer used when no discipline-specific renderer is registered.
- * Also used for non-discipline trees (plain Axiom research).
- *
- * Mimics the grid layout and clean box style of the original ResearchTerminalScreen,
- * so trees without a discipline still look polished.
- */
 public class DefaultDisciplineRenderer implements DisciplineRenderer {
 
-    // Colors
     private static final int C_NODE_DONE    = 0xFF0D1A0D;
     private static final int C_NODE_AVAIL   = 0xFF1A0E00;
     private static final int C_NODE_LOCKED  = 0xFF0D0D0D;
@@ -38,7 +30,7 @@ public class DefaultDisciplineRenderer implements DisciplineRenderer {
 
     @Override
     public void renderBackground(GuiGraphics g, RenderContext ctx) {
-        // Minimal: no background wash needed for the default view
+        
     }
 
     @Override

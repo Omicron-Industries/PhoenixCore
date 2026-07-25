@@ -10,13 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.function.Supplier;
 
-/**
- * Server → Client: start a radio stream on the client.
- *
- * Like S2CPlaySoundPacket, this class contains ZERO references to Minecraft
- * client classes. RadioClientAudio (which extends AbstractTickableSoundInstance)
- * lives entirely in ClientSoundHandler which is stripped on the dedicated server.
- */
 public class S2CPlayStreamPacket {
 
     private static final Logger LOGGER = LogManager.getLogger("VocalResonance");
@@ -33,7 +26,6 @@ public class S2CPlayStreamPacket {
         this.volume = volume;
     }
 
-    // Decoder constructor
     public S2CPlayStreamPacket(FriendlyByteBuf buffer) {
         this.url = buffer.readUtf();
         this.pos = buffer.readBlockPos();

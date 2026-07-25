@@ -6,10 +6,6 @@ import net.phoenix.core.conflux.client.render.discipline.SculkDisciplineRenderer
 import net.phoenix.core.conflux.tools.capture.BakeRenderContext;
 import net.phoenix.core.conflux.tools.capture.CaptureBakeable;
 
-/**
- * Bakes the Sculk discipline background (vein sprite + bioluminescent atmosphere)
- * as a static single-frame sprite.
- */
 public final class AxiomSculkBaker implements CaptureBakeable {
 
     private static final int SIZE = 512;

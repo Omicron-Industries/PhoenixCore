@@ -82,8 +82,6 @@ public class PhoenixCore {
     public static final Logger LOGGER = LogManager.getLogger();
     public static GTRegistrate PHOENIX_REGISTRATE = GTRegistrate.create(MOD_ID);
 
-    // CHANGED: icon now uses a fully lazy lambda execution () -> ...
-    // This stops PhoenixMachines from classloading during static class discovery.
     public static RegistryEntry<CreativeModeTab> PHOENIX_CREATIVE_TAB = REGISTRATE
             .defaultCreativeTab(PhoenixCore.MOD_ID,
                     builder -> builder
@@ -98,14 +96,11 @@ public class PhoenixCore {
     public PhoenixCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Safe setup logic goes here
         PhoenixConfigs.init();
         CrystalRoseIndicatorGenerator.register();
 
-        // Ensure Registrate hooks into the mod event bus cycle automatically
         PHOENIX_REGISTRATE.registerEventListeners(modEventBus);
 
-        // CHANGED: We subscribe to Forge's RegisterEvent to load our classes safely
         modEventBus.addListener(this::onRegisterBlocksAndItems);
         modEventBus.addListener(this::commonSetup);
 
@@ -139,11 +134,6 @@ public class PhoenixCore {
         MinecraftForge.EVENT_BUS.addListener(ResearchTreeRegistry::onAddReloadListeners);
     }
 
-    /**
-     * CHANGED: This replaces your original static init() execution.
-     * This event guarantees that blocks and items load precisely when Forge prepares the registry,
-     * ensuring GregTech CEu Modern layers are fully assigned and populated.
-     */
     private void onRegisterBlocksAndItems(net.minecraftforge.registries.RegisterEvent event) {
         PhoenixBlocks.init();
         PhoenixItems.init();
@@ -169,13 +159,13 @@ public class PhoenixCore {
         FluidInHatchCondition.TYPE = new RecipeConditionType<>(
                 FluidInHatchCondition::new,
                 FluidInHatchCondition.CODEC);
-        // FIX: Convert the ResourceLocation to a namespace string ("phoenixcore:plasma_temp_condition")
+        
         event.register(PhoenixCore.id("plasma_temp_condition").toString(), FluidInHatchCondition.TYPE);
 
         SoulCondition.TYPE = new RecipeConditionType<>(
                 SoulCondition::new,
                 SoulCondition.CODEC);
-        // FIX: Convert the ResourceLocation to a namespace string ("phoenixcore:soul_resonance")
+        
         event.register(PhoenixCore.id("soul_resonance").toString(), SoulCondition.TYPE);
 
         AxiomResearchCondition.TYPE = new RecipeConditionType<>(

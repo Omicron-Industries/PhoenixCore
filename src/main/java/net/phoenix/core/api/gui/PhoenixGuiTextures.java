@@ -10,7 +10,6 @@ public class PhoenixGuiTextures {
     public static final UITexture PROGRESS_BAR_FISSION = UITexture.fullImage(
             "phoenixcore:textures/gui/progress_bar/progress_bar_phoenix_fission.png");
 
-    // Tesla Battery Bars
     public static final UITexture BATTERY_BAR_UHV = UITexture.fullImage(
             "phoenixcore:textures/gui/widget/tesla/uhv_battery.png");
     public static final UITexture BATTERY_BAR_UEV = UITexture.fullImage(
@@ -24,7 +23,6 @@ public class PhoenixGuiTextures {
     public static final UITexture BATTERY_BAR_MAX = UITexture.fullImage(
             "phoenixcore:textures/gui/widget/tesla/max_battery.png");
 
-    // UI Textures
     public static final UITexture TESLA_BACKGROUND = UITexture.fullImage(
             "phoenixcore:textures/gui/widget/tesla/tesla_background.png");
 }

@@ -13,18 +13,6 @@ import static net.phoenix.core.conflux.client.render.AxiomSprites.*;
 
 import java.util.*;
 
-/**
- * Phoenix Discipline — The Stellar Forge.
- *
- * Deliberately NOT orbital/circular (that's Void's territory).
- * Everything here EXPLODES outward from a white-hot core:
- *  - Wide heat rays radiate from centre like spokes, slowly rotating
- *  - Solar prominences: teardrop fire-loops that rise from the surface and arc back
- *  - Background is HOT (bright warm centre, not dark space)
- *  - Nodes are octagonal forge-cores with radial tick marks
- *  - Edges are thick plasma channels, wide at source, tapered at destination
- *  - Ash particles drift sideways (not up — fire is not gravity)
- */
 public class PhoenixDisciplineRenderer implements DisciplineRenderer {
 
     private static final int   MAX_ASH    = 140;
@@ -33,7 +21,6 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
     private static final float ARM_SPACE  = 88f;
     private static final float SPIRAL_W   = 0.45f;
 
-    // Colors — all warm, no cool tones
     private static final int C_WHITE  = 0xFFFFFFDD;
     private static final int C_HOT    = 0xFFFFFF88;
     private static final int C_YELLOW = 0xFFFFCC00;
@@ -41,19 +28,16 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
     private static final int C_RED    = 0xFFCC2200;
     private static final int C_EMBER  = 0xFF661100;
 
-    // ── Ash particle (drifts sideways like ash, not up like smoke) ────────────
     private static class Ash {
         float x, y, vx, vy, life, maxLife, size;
     }
     private final Ash[] ash = new Ash[MAX_ASH];
     private int ashHead = 0;
 
-    // Animation state
-    private float rayAngle   = 0f;   // heat-ray rotation
-    private float forgeTime  = 0f;   // master time
-    private float[] prominPhase = new float[6]; // per-prominence phase offset
+    private float rayAngle   = 0f;   
+    private float forgeTime  = 0f;   
+    private float[] prominPhase = new float[6]; 
 
-    // Cached node positions (spiral arm layout)
     private final Map<ResourceLocation, float[]> posCache = new HashMap<>();
     private String lastTreeId = null;
 
@@ -82,7 +66,6 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         forgeTime += dt;
         ensurePositions(ctx.tree());
 
-        // Passive ash spawn from unlocked nodes
         if (Math.random() < dt * 4f) {
             for (ResearchNode n : ctx.tree().getNodes()) {
                 if (ctx.isUnlocked(n.id) && Math.random() < 0.2f) {
@@ -96,9 +79,9 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
             Ash a = ash[i];
             if (a == null) continue;
             a.x += a.vx * dt; a.y += a.vy * dt;
-            // Ash drifts sideways, slows, cools
+            
             a.vx *= (float)Math.pow(0.96, dt * 60);
-            a.vy += (float)(Math.random() - 0.4) * 8f * dt; // slight turbulence
+            a.vy += (float)(Math.random() - 0.4) * 8f * dt; 
             a.size *= (float)Math.pow(0.94, dt * 60);
             a.life -= dt;
             if (a.life <= 0 || a.size < 0.3f) ash[i] = null;
@@ -129,7 +112,7 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         Ash a = new Ash();
         a.x = ox + (float)(Math.random() - 0.5) * (burst ? 20f : 8f);
         a.y = oy + (float)(Math.random() - 0.5) * (burst ? 20f : 8f);
-        // Ash moves laterally — fire doesn't go up in a forge, it spreads
+        
         a.vx = (float)(Math.random() - 0.5) * (burst ? 45f : 20f);
         a.vy = (float)(Math.random() - 0.5) * (burst ? 30f : 12f);
         a.size = 1.5f + (float)(Math.random() * (burst ? 3.5f : 1.5f));
@@ -138,8 +121,6 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         ashHead++;
     }
 
-    // ── Background: radial heat gradient + rays + prominences ────────────────
-
     @Override
     public void renderBackground(GuiGraphics g, RenderContext ctx) {
         int cw = ctx.canvasW(), ch = ctx.canvasH();
@@ -147,12 +128,10 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         float intense = ctx.intensity().get();
         float pulse   = MotionClock.Signature.PHOENIX.pulse(forgeTime);
 
-        // ── Radial heat gradient + rotating rays — pre-baked sprite ─────────
         g.fill(0, 0, cw, ch, 0xFF1A0200);
         int bgFrame = timeToFrame(rayAngle / (2f * 3.14159f), 1f, PHOENIX_BG.frames());
         blitFrame(g, PHOENIX_BG, bgFrame, 0, 0, cw, ch, intense);
 
-        // ── Solar prominences: teardrop fire-loops rising from surface ───────
         int PROMINS = 6;
         for (int pi = 0; pi < PROMINS; pi++) {
             float pa   = pi * 6.28318f / PROMINS + prominPhase[pi] + forgeTime * 0.04f;
@@ -160,14 +139,13 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
             drawProminence(g, cx, cy, pa, anim, intense, pulse);
         }
 
-        // ── Blinding white-hot core ──────────────────────────────────────────
         int coreR = (int)(20 + 6 * pulse);
         for (float dy = -coreR; dy <= coreR; dy++) {
             float hw = coreR * (float)Math.sqrt(Math.max(0, 1f - (dy/coreR)*(dy/coreR)));
             int a = (int)(230 * pulse * intense + 80);
             g.fill((int)(cx - hw), (int)(cy + dy), (int)(cx + hw), (int)(cy + dy + 1), (a << 24) | 0xFFFFEE);
         }
-        // Inner corona bloom
+        
         for (int cr = 3; cr >= 1; cr--) {
             int cr2 = coreR + cr * 8;
             int ca = (int)(40 / cr * pulse);
@@ -184,11 +162,10 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
 
         float cosA = cos(angle), sinA = sin(angle);
 
-        // Surface anchor point
         float sx = cx + cosA * surfR, sy = cy + sinA * surfR;
-        // Peak of prominence
+        
         float topX = cx + cosA * (surfR + height), topY = cy + sinA * (surfR + height);
-        // Control points give the teardrop loop shape
+        
         float perpX = -sinA * width, perpY = cosA * width;
         float cp1x = (sx + topX) * 0.5f + perpX;
         float cp1y = (sy + topY) * 0.5f + perpY;
@@ -196,17 +173,17 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         float cp2y = (sy + topY) * 0.5f - perpY;
 
         int STEPS = 36;
-        // Left arc: sx → cp1 → top
+        
         for (int i = 0; i <= STEPS; i++) {
             float t = (float)i / STEPS, u = 1f - t;
             float px = u*u*sx + 2*u*t*cp1x + t*t*topX;
             float py = u*u*sy + 2*u*t*cp1y + t*t*topY;
-            float heat = (float)Math.sin(t * 3.14159f); // peak heat at arc midpoint
+            float heat = (float)Math.sin(t * 3.14159f); 
             int a = (int)(115 * intense * brightness * heat);
             int rv = 255, gv = (int)(200 * heat), bv = (int)(30 * heat);
             g.fill((int)px-1, (int)py-1, (int)px+2, (int)py+2, (a<<24)|(rv<<16)|(gv<<8)|bv);
         }
-        // Right arc: top → cp2 → sx
+        
         for (int i = 0; i <= STEPS; i++) {
             float t = (float)i / STEPS, u = 1f - t;
             float px = u*u*topX + 2*u*t*cp2x + t*t*sx;
@@ -215,12 +192,10 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
             int a = (int)(90 * intense * brightness * heat);
             g.fill((int)px-1, (int)py-1, (int)px+2, (int)py+2, (a<<24)|0xFF8822);
         }
-        // Glowing tip
+        
         int ta = (int)(160 * brightness * pulse);
         g.fill((int)topX-2, (int)topY-2, (int)topX+3, (int)topY+3, (ta<<24)|0xFFFFAA);
     }
-
-    // ── Edges: plasma channels ────────────────────────────────────────────────
 
     @Override
     public void renderEdges(GuiGraphics g, RenderContext ctx) {
@@ -266,25 +241,23 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         int DOTS = Math.max(6, (int)(len / 4));
         for (int i = 0; i <= DOTS; i++) {
             float t = (float)i / DOTS;
-            // Thick hot core, tapered toward destination
+            
             float w = active ? 2f + (1f - t) * 5f : 1f;
             float px = x0 + dx*t, py = y0 + dy*t;
-            // Channel hugs slightly to one side for visual interest
+            
             float wave = (float)Math.sin(t * 5f + forgeTime * 3f) * 2f;
             px += -dy/len * wave; py += dx/len * wave;
             int a = active ? (int)(180 * (1f - t*0.5f)) : 45;
-            // Core: white-hot; edge: orange-red
+            
             int col = active ? lerpCol(C_WHITE, C_ORANGE, t, a) : ((a<<24)|0x330800);
             g.fill((int)(px-w), (int)(py-w/2), (int)(px+w), (int)(py+w/2+1), col);
-            // Secondary dim channel outline
+            
             if (active) {
                 int oa = a >> 2;
                 g.fill((int)(px-w-2), (int)(py-1), (int)(px+w+2), (int)(py+2), (oa<<24)|0xFF4400);
             }
         }
     }
-
-    // ── Nodes: octagonal forge cores ─────────────────────────────────────────
 
     @Override
     public void renderNodes(GuiGraphics g, RenderContext ctx) {
@@ -305,7 +278,6 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         float pulse  = MotionClock.Signature.PHOENIX.pulse(forgeTime);
         float intense = ctx.intensity().get();
 
-        // Molten glow halos — warm, layered
         if (unlocked || available) {
             int[] hR = { 44, 30, 18 };
             int[] hA = { 10, 22, 40 };
@@ -317,26 +289,24 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
             }
         }
 
-        // Octagonal forge body — 2 overlapping squares (0° and 45°)
         int bg  = lockedOut ? 0xFF100200 : unlocked ? 0xFF201000 : available ? 0xFF180800 : 0xFF0A0300;
         int brd = lockedOut ? 0xFF441100 : unlocked ? (sel ? 0xFFFFFFAA : 0xFFFFAA00) : available ? 0xFFDD6600 : 0xFF551100;
-        int OC = 16; // octagon half-size
+        int OC = 16; 
 
         g.pose().pushPose();
         g.pose().translate(cx, cy, 0f);
-        g.fill(-OC, -OC, OC, OC, bg);                         // 0° square
+        g.fill(-OC, -OC, OC, OC, bg);                         
         g.pose().mulPose(new Quaternionf().rotationZ((float)Math.PI / 4f));
-        g.fill(-OC, -OC, OC, OC, bg);                         // 45° square → octagon
+        g.fill(-OC, -OC, OC, OC, bg);                         
         g.pose().popPose();
 
-        // Octagon border — draw at 8 vertex positions
         for (int vi = 0; vi < 8; vi++) {
             float va = vi * 6.28318f / 8f;
             int vx = cx + (int)((OC + 1) * Math.cos(va));
             int vy = cy + (int)((OC + 1) * Math.sin(va));
             g.fill(vx-1, vy-1, vx+2, vy+2, brd);
         }
-        // 8 radial tick marks (forge strike marks)
+        
         g.pose().pushPose();
         g.pose().translate(cx, cy, 0f);
         for (int ti = 0; ti < 8; ti++) {
@@ -345,7 +315,6 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
         }
         g.pose().popPose();
 
-        // Hot inner square — forge glow
         if (!lockedOut) {
             int glowA = unlocked ? (int)(80 * pulse) : available ? (int)(40 * pulse) : 15;
             g.fill(cx - 6, cy - 6, cx + 6, cy + 6, (glowA<<24)|0xFFEE88);
@@ -372,13 +341,11 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
             float frac = a.life / a.maxLife;
             int alpha  = (int)(frac * 185);
             int sz     = Math.max(1, (int)(a.size * frac));
-            // Hot → dark red as it cools
+            
             int col = lerpCol(C_HOT, C_EMBER, 1f - frac, alpha);
             g.fill((int)a.x-sz, (int)a.y-sz, (int)a.x+sz, (int)a.y+sz, col);
         }
     }
-
-    // ── Positioning ───────────────────────────────────────────────────────────
 
     @Override
     public float[] nodePos(ResearchNode node, RenderContext ctx) {
@@ -400,8 +367,6 @@ public class PhoenixDisciplineRenderer implements DisciplineRenderer {
     public @Nullable ResourceLocation shaderLocation() {
         return new ResourceLocation(PhoenixCore.MOD_ID, "shaders/post/axiom_phoenix.json");
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static float cos(float a) { return (float)Math.cos(a); }
     private static float sin(float a) { return (float)Math.sin(a); }

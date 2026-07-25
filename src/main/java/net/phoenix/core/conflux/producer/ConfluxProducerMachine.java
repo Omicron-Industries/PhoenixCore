@@ -8,7 +8,6 @@ import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTrait;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
 
-
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
@@ -35,8 +34,6 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
 
     protected final AxiomStorageTrait storageTrait;
 
-    // Annotated at machine level so the machine's syncDataHolder handles save/sync,
-    // matching the same pattern as TieredEnergyMachine.energyContainer.
     @SaveField
     @SyncToClient
     protected final NotifiableItemStackHandler fuelSlot;
@@ -49,11 +46,11 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
     private TickableSubscription tickSub;
 
     public ConfluxProducerMachine(BlockEntityCreationInfo holder, int tier, ConfluxDataType dataType) {
-        // Directly pass the built NotifiableEnergyContainer instance to the super constructor
+        
         super(holder, tier, NotifiableEnergyContainer.receiverContainer(
-                GTValues.V[tier] * 64L, // Capacity
-                GTValues.V[tier],       // Voltage
-                1L                      // Amperage
+                GTValues.V[tier] * 64L, 
+                GTValues.V[tier],       
+                1L                      
         ));
 
         this.dataType = dataType;
@@ -74,8 +71,6 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
         super.onLoad();
         tickSub = subscribeServerTick(tickSub, this::tick);
     }
-
-    // ── Tick ─────────────────────────────────────────────────────────────────
 
     protected void tick() {
         if (getLevel() == null || isRemote()) return;
@@ -143,8 +138,6 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
         }
     }
 
-    // ── Capability handler ────────────────────────────────────────────────────
-
     private IConfluxDataHandler buildDataHandler() {
         return new IConfluxDataHandler() {
             @Override public ConfluxDataType getDataType() { return dataType; }
@@ -164,8 +157,6 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
     public long    getStored()  { return storageTrait.getStored(); }
     public boolean isActive()   { return storageTrait.isActive(); }
 
-    // ── Storage trait ─────────────────────────────────────────────────────────
-
     protected static class AxiomStorageTrait extends MachineTrait {
 
         private static final MachineTraitType<AxiomStorageTrait> TRAIT_TYPE =
@@ -180,13 +171,10 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
         @Override
         public MachineTraitType<?> getTraitType() { return TRAIT_TYPE; }
 
-        // Getters — read-only access from the machine
         public long    getStored()    { return stored; }
         public int     getFuelTicks() { return fuelTicks; }
         public boolean isActive()     { return active; }
 
-        // Mutation methods — keep markClientSyncFieldDirty inside the trait
-        // where getSyncDataHolder() is accessible (it's protected on MachineTrait).
         public void addStored(long delta) {
             stored += delta;
             getSyncDataHolder().markClientSyncFieldDirty("stored");

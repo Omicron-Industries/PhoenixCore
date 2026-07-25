@@ -25,7 +25,6 @@ public class PlasmaHatchPartMachine extends FluidHatchPartMachine {
         super(holder, tier, io, initialCapacity, slots);
     }
 
-    // Fix: Removed 'Object... args' to align with the GTCEu 8.0.0 trait architecture refactor
     @NotNull
     @Override
     protected NotifiableFluidTank createTank(int initialCapacity, int slots) {

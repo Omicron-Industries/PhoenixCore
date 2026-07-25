@@ -7,11 +7,6 @@ import brachy.modularui.theme.WidgetTheme;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-/**
- * A minimal rectangular border IDrawable: four thin edge fills, same technique as
- * SourceHatchBackground's border (it draws its border with four graphics.fill(...) calls along
- * the edges rather than a stroke/outline primitive).
- */
 @OnlyIn(Dist.CLIENT)
 public class BorderDrawable implements IDrawable {
 

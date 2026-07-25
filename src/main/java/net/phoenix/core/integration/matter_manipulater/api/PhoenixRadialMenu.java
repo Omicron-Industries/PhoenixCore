@@ -28,7 +28,7 @@ public class PhoenixRadialMenu extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Darken the background slightly
+        
         graphics.fill(0, 0, this.width, this.height, 0x55000000);
 
         int centerX = this.width / 2;
@@ -36,10 +36,8 @@ public class PhoenixRadialMenu extends Screen {
         PhoenixManipulatorMode[] modes = PhoenixManipulatorMode.values();
         float angleStep = 360.0f / modes.length;
 
-        // 1. Draw the Main Circular Background (Donut)
         drawDonut(graphics, centerX, centerY, innerRadius, radius, 0xCC111111);
 
-        // 2. Render Segments and Highlights
         PhoenixManipulatorMode hoveredMode = null;
         for (int i = 0; i < modes.length; i++) {
             double angle = Math.toRadians(i * angleStep - 90);
@@ -48,11 +46,10 @@ public class PhoenixRadialMenu extends Screen {
             boolean hovered = isMouseInSector(mouseX, mouseY, centerX, centerY, angle, stepRad);
             if (hovered) {
                 hoveredMode = modes[i];
-                // Draw selection highlight
+                
                 drawArc(graphics, centerX, centerY, innerRadius, radius, (float) angle, (float) stepRad, 0x66FFAA00);
             }
 
-            // 3. Render Text
             float textRadius = (innerRadius + radius) / 2.0f;
             int textX = centerX + (int) (Math.cos(angle) * textRadius);
             int textY = centerY + (int) (Math.sin(angle) * textRadius);
@@ -61,12 +58,10 @@ public class PhoenixRadialMenu extends Screen {
             graphics.drawCenteredString(this.font, modes[i].getName(), textX, textY - 4, color);
         }
 
-        // 4. Draw Center "Core"
         graphics.fill(centerX - innerRadius + 2, centerY - innerRadius + 2, centerX + innerRadius - 2,
                 centerY + innerRadius - 2, 0xFF880000);
         graphics.drawCenteredString(this.font, "CORE", centerX, centerY - 4, 0xFFFFFFFF);
 
-        // 5. Render Tooltips (Drawn last to be on top)
         if (hoveredMode != null) {
             List<Component> tooltip = new ArrayList<>();
             tooltip.add(Component.literal("§6" + hoveredMode.getName()));
@@ -85,8 +80,6 @@ public class PhoenixRadialMenu extends Screen {
             default -> "Blocks manipulation mode.";
         };
     }
-
-    // --- RENDER UTILITIES ---
 
     private void drawDonut(GuiGraphics graphics, int cx, int cy, int inner, int outer, int color) {
         RenderSystem.enableBlend();

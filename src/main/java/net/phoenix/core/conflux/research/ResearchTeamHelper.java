@@ -5,13 +5,6 @@ import net.minecraftforge.fml.ModList;
 
 import java.util.UUID;
 
-/**
- * Resolves a player → team UUID for research scoping.
- *
- * When FTB Teams is loaded, uses the player's current party team (or their personal
- * team if they have no party), so all teammates share the same research state.
- * Without FTB Teams each player's own UUID is used — effectively solo research.
- */
 public final class ResearchTeamHelper {
 
     private static final boolean FTB_TEAMS = ModList.get().isLoaded("ftbteams");

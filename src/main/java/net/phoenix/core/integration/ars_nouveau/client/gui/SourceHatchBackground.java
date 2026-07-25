@@ -9,14 +9,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-/**
- * Custom IDrawable background for Source Hatch and Source Tank UIs.
- * Renders a dark purple gradient with an animated mist overlay and a grid pattern,
- * plus a coloured border.
- *
- * The border colour is configurable so the hatch (IO-aware) and tank UIs can both
- * share this drawable with different accent colours.
- */
 @OnlyIn(Dist.CLIENT)
 public class SourceHatchBackground implements IDrawable {
 
@@ -25,14 +17,12 @@ public class SourceHatchBackground implements IDrawable {
     private static final int PURPLE_MIST = 0x8F00FF;
     private static final int GRID_COLOR  = 0x0AFFFFFF;
 
-    /** ARGB border colour, e.g. 0xAABB66FF */
     private final int borderColor;
 
     public SourceHatchBackground(int borderColor) {
         this.borderColor = borderColor;
     }
 
-    /** Convenience: fixed purple accent border */
     public SourceHatchBackground() {
         this(0xAABB66FF);
     }
@@ -41,17 +31,14 @@ public class SourceHatchBackground implements IDrawable {
     public void draw(GuiContext context, int x, int y, int width, int height, WidgetTheme widgetTheme) {
         var graphics = context.getGraphics();
 
-        // Gradient background (top → bottom)
         graphics.fillGradient(x, y, x + width, y + height, BG_COLOR_A, BG_COLOR_B);
 
-        // Grid lines
         int spacing = 16;
         for (int gx = x + spacing; gx < x + width; gx += spacing)
             graphics.fill(gx, y, gx + 1, y + height, GRID_COLOR);
         for (int gy = y + spacing; gy < y + height; gy += spacing)
             graphics.fill(x, gy, x + width, gy + 1, GRID_COLOR);
 
-        // Animated purple mist
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         long t  = System.currentTimeMillis();
@@ -70,7 +57,6 @@ public class SourceHatchBackground implements IDrawable {
         }
         RenderSystem.disableBlend();
 
-        // Border
         graphics.fill(x,             y,              x + width,     y + 1,          borderColor);
         graphics.fill(x,             y + height - 1, x + width,     y + height,     borderColor);
         graphics.fill(x,             y,              x + 1,         y + height,     borderColor);

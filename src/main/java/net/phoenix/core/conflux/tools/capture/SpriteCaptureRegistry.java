@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/** Global registry for all {@link CaptureBakeable} implementations. */
 public final class SpriteCaptureRegistry {
 
     private static final Map<String, CaptureBakeable> REGISTRY = new LinkedHashMap<>();

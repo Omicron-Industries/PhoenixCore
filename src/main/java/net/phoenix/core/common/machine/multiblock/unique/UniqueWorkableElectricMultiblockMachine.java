@@ -1,4 +1,4 @@
-package net.phoenix.core.common.machine.multiblock.unique; // Adjusted package statement if needed
+package net.phoenix.core.common.machine.multiblock.unique; 
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
@@ -10,9 +10,7 @@ import brachy.modularui.api.widget.IWidget;
 import brachy.modularui.value.sync.PanelSyncManager;
 import brachy.modularui.widgets.TextWidget;
 
-
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -24,14 +22,12 @@ import net.phoenix.core.saveddata.UniqueMultiblockSavedData;
 import java.util.List;
 import java.util.UUID;
 
-// Copied from CosmicCore with some minor changes (thank you Caitlynn!)
 public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMultiblockMachine {
 
     public UniqueWorkableElectricMultiblockMachine(BlockEntityCreationInfo holder, Object... args) {
         super(holder);
     }
 
-    // Combined 8.0.0 annotations ensure it saves to disk AND automatically syncs to client screens
     @SaveField
     @SyncToClient
     public boolean isDuplicate = false;
@@ -68,10 +64,6 @@ public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMul
         }
     }
 
-    /**
-     * Default unique registration: one multiblock per player (owner UUID).
-     * Tesla Tower will override this to use team UUID instead.
-     */
     protected void handleUniqueRegistration(UniqueMultiblockSavedData data,
                                             UUID owner,
                                             String multiblockId,
@@ -91,9 +83,6 @@ public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMul
         }
     }
 
-    /**
-     * Default unique removal for player‑owned machines.
-     */
     protected void handleUniqueRemoval(UniqueMultiblockSavedData data,
                                        UUID owner,
                                        String multiblockId,

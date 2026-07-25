@@ -7,7 +7,7 @@ import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
 import com.gregtechceu.gtceu.api.machine.multiblock.part.TieredPartMachine;
-import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine; // Essential for modern UI parts
+import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine; 
 
 import brachy.modularui.factory.PosGuiData;
 import brachy.modularui.screen.UISettings;
@@ -15,13 +15,9 @@ import brachy.modularui.value.sync.PanelSyncManager;
 import brachy.modularui.widgets.layout.Flow;
 import brachy.modularui.widgets.TextWidget;
 
-
 import net.minecraft.network.chat.Component;
 import lombok.Getter;
 
-/**
- * FIXED FOR GTM 8.0: Replaced defunct LDLib widgets/managed fields with modern MUI2 engine.
- */
 public class SoundHatchPartMachine extends TieredPartMachine implements IMuiMachine {
 
     @Getter
@@ -36,7 +32,7 @@ public class SoundHatchPartMachine extends TieredPartMachine implements IMuiMach
 
     @Override
     public ModularPanel<?> buildUI(PosGuiData data, PanelSyncManager syncManager, UISettings settings) {
-        // Adding <?> tells the compiler you intentionally want any backing type for this panel
+        
         ModularPanel<?> panel = new ModularPanel<>("phoenix_core:sound_hatch_panel");
 
         panel.size(176, 110);

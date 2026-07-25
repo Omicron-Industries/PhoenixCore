@@ -26,7 +26,6 @@ public abstract class MultiblockResearchGateMixin {
         ResourceLocation machineId = machine.getDefinition().getId();
         if (!ResearchTreeRegistry.INSTANCE.getGatedMultiblocks().contains(machineId)) return;
 
-        // Find the nearest online player to attribute the research check to
         ServerPlayer nearest = (ServerPlayer) level.getNearestPlayer(
                 machine.getBlockPos().getX() + 0.5,
                 machine.getBlockPos().getY() + 0.5,

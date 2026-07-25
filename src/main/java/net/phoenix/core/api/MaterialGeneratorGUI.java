@@ -17,7 +17,6 @@ public class MaterialGeneratorGUI extends JFrame {
     private final JLabel primaryText;
     private final JLabel secondaryText;
 
-    // --- WORD POOLS ---
     private static final List<String> MODIFIERS = List.of(
             "Soggy", "Judgmental", "Caffeinated", "Middle-Aged", "Tax-Exempt", "Confused",
             "Greasy", "Passive-Aggressive", "Gluten-Free", "Low-Resolution", "Slappy",
@@ -48,14 +47,13 @@ public class MaterialGeneratorGUI extends JFrame {
             "Old-Cheese", "Dish-Water", "Pet-Hair", "Loose-Change", "Packing-Peanut");
 
     public MaterialGeneratorGUI() {
-        // Window Setup
+        
         setTitle("Phoenix Core: Random Material Forge");
         setSize(500, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(45, 45, 45));
 
-        // Display Area
         JPanel displayPanel = new JPanel();
         displayPanel.setLayout(new BoxLayout(displayPanel, BoxLayout.Y_AXIS));
         displayPanel.setOpaque(false);
@@ -66,7 +64,6 @@ public class MaterialGeneratorGUI extends JFrame {
         nameLabel.setForeground(Color.WHITE);
         nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Color Previews
         primaryPreview = createColorCircle();
         secondaryPreview = createColorCircle();
         primaryText = createColorLabel();
@@ -81,7 +78,6 @@ public class MaterialGeneratorGUI extends JFrame {
         displayPanel.add(Box.createVerticalStrut(20));
         displayPanel.add(colorContainer);
 
-        // Forge Button
         JButton forgeButton = new JButton("FORGE MATERIAL");
         forgeButton.setFont(new Font("SansSerif", Font.BOLD, 16));
         forgeButton.setBackground(new Color(100, 60, 150));
@@ -113,7 +109,6 @@ public class MaterialGeneratorGUI extends JFrame {
         secondaryText.setText(String.format("#%06X", sColor));
     }
 
-    // --- GUI HELPER METHODS ---
     private JPanel createColorCircle() {
         JPanel p = new JPanel();
         p.setPreferredSize(new Dimension(60, 60));

@@ -16,12 +16,11 @@ public class PhoenixDataGenerators {
         PackOutput packOutput = event.getGenerator().getPackOutput();
 
         if (event.includeClient()) {
-            // Your existing sound provider
+            
             event.getGenerator().addProvider(
                     true,
                     new SoundEntryBuilder.SoundEntryProvider(packOutput, PhoenixCore.MOD_ID));
 
-            // ADD THIS: Your new Ponder provider
         }
     }
 }

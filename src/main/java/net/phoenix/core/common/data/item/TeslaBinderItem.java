@@ -62,11 +62,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-
 public class TeslaBinderItem extends ComponentItem
         implements IItemUIHolder, IInteractionItem, IAddInformation {
 
-    // filterMode values, matching the old [ALL]/[I]/[O]/[S]/[C] tabs
     private static final int FILTER_ALL = 0;
     private static final int FILTER_IN = 1;
     private static final int FILTER_OUT = 2;
@@ -216,30 +214,26 @@ public class TeslaBinderItem extends ComponentItem
         return super.use(level, player, hand);
     }
 
-    // Handles the linking of the player/team data onto the Telsa Binder.
     private void bindToPlayer(Player player, ItemStack stack) {
-        // 1. Resolve the correct ID (Party ID or Player ID)
+        
         UUID resolvedId = TeamUtils.getTeamIdOrPlayerFallback(player.getUUID());
         var tag = stack.getOrCreateTag();
 
-        // 2. Get the actual name of the team (e.g., "Phoenix" or "PlayerA")
         String teamName = TeamUtils.getTeamName(resolvedId);
 
         tag.putUUID("TargetTeam", resolvedId);
         tag.putString("TeamName", teamName);
-        // Keeping track of who last synchronized the binder
+        
         tag.putString("OwnerName", player.getName().getString());
 
         if (player.level() instanceof ServerLevel server) {
-            // 3. Initialize the shared data entry if it doesn't exist
+            
             TeslaTeamEnergyData.get(server).getOrCreate(resolvedId);
 
-            // Visual/Audio feedback
             server.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + 1.1, player.getZ(), 20, 0.2, 0.2,
                     0.2, 0.02);
             player.playSound(SoundEvents.PLAYER_LEVELUP, 0.5f, 1.5f);
 
-            // 4. Clearer messaging so players know they are sharing a network
             player.sendSystemMessage(Component.literal("Tesla frequency linked to: ")
                     .withStyle(ChatFormatting.GREEN)
                     .append(Component.literal(teamName).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)));
@@ -257,7 +251,6 @@ public class TeslaBinderItem extends ComponentItem
         return super.getName(stack);
     }
 
-    // Handles the naming of linked binders, and the name/team name fields on the tooltip.
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
@@ -293,40 +286,6 @@ public class TeslaBinderItem extends ComponentItem
         return (r << 16) | (g << 8) | b;
     }
 
-    // ------------------------------------------------------------------
-    // MUI2 UI (GTM 8.0 port of the old MUI1 createUI(...))
-    //
-    // Sync model: filterMode and selectedKey are real PanelSyncManager values
-    // (server-authoritative, same StringSyncValue/IntSyncValue pattern as WingFlightGui) --
-    // no NBT-mutate-then-reopen.
-    //
-    // List <-> detail toggle: uses the confirmed Widget#setEnabledIf(Predicate) +
-    // Flow#collapseDisabledChildren() mechanism, evaluated every tick via onUpdate().
-    // No panel rebuild/reopen needed for the filter tabs or row click-through to detail view.
-    //
-    // Row filtering: rather than rebuilding list content per filter change (no confirmed
-    // "reactive child replace" API exists), every row for every bucket is built once and each
-    // row carries its own setEnabledIf(...) keyed off the live filterValue + its bucket.
-    //
-    // Scrollable list: no dedicated scroll-container widget was confirmed for this codebase.
-    // Built as a plain Flow.col() inside a fixed-height clipped Flow. If your MUI2 build has a
-    // real scroll widget, swap it in for `listViewport` below -- everything else is unaffected.
-    // ------------------------------------------------------------------
-
-    /**
-     * IMPORTANT: this override fixes a real StackOverflowError. ComponentItem (the superclass)
-     * implements shouldOpenUI() by looping over getComponents() looking for an IItemComponent
-     * that is also an IItemUIHolder, then delegating to THAT component's shouldOpenUI(). Every
-     * other method this class overrides (use, buildUI, appendHoverText, etc.) bypasses that loop
-     * entirely via normal Java override dispatch -- but shouldOpenUI() was never overridden here,
-     * so calls to it fell through to ComponentItem's loop. If this item instance is ever attached
-     * to its own components list (e.g. via attachComponents(this) during item registration -- a
-     * common GTCEu pattern, not something visible in this file), ComponentItem's loop finds
-     * itself, sees `this instanceof IItemUIHolder` is true, and calls shouldOpenUI() on itself
-     * again -- infinite recursion, confirmed via crash log (ComponentItem.shouldOpenUI() calling
-     * itself at the same line repeatedly). Overriding it directly, like buildUI already is,
-     * prevents ComponentItem's loop from ever being reached for this class.
-     */
     @Override
     public boolean shouldOpenUI() {
         return true;
@@ -346,7 +305,6 @@ public class TeslaBinderItem extends ComponentItem
                 () -> stack.getOrCreateTag().getInt("FilterMode"),
                 (val) -> stack.getOrCreateTag().putInt("FilterMode", val));
 
-        // composite key "type:index" identifying which row's detail panel is open, "" = none
         StringSyncValue selectedKey = new StringSyncValue(
                 () -> stack.getOrCreateTag().getString("SelectedHardwareKey"),
                 (val) -> stack.getOrCreateTag().putString("SelectedHardwareKey", val));
@@ -443,10 +401,6 @@ public class TeslaBinderItem extends ComponentItem
         return tabRow;
     }
 
-    /**
-     * The scrollable hardware list. All rows for all buckets (hatches, soul machines, chargers)
-     * are built once; each row reactively enables/disables itself based on the live filterValue.
-     */
     private IWidget buildHardwareList(ItemStack stack, Player player, IntSyncValue filterValue,
                                       StringSyncValue selectedKey) {
         Flow listViewport = Flow.col()
@@ -630,7 +584,6 @@ public class TeslaBinderItem extends ComponentItem
         return detailView;
     }
 
-    /** Resolves the currently-selected row's CompoundTag from the live NBT lists, or null. */
     private CompoundTag resolveSelected(ItemStack stack, StringSyncValue selectedKey) {
         String key = selectedKey.getStringValue();
         if (key.isEmpty()) return null;
@@ -742,10 +695,6 @@ public class TeslaBinderItem extends ComponentItem
         return body;
     }
 
-    // ------------------------------------------------------------------
-    // Value formatting (unchanged from the MUI1 version)
-    // ------------------------------------------------------------------
-
     private String compactTeslaValue(String value) {
         try {
             if (value == null || value.isEmpty()) return "0 ";
@@ -808,14 +757,6 @@ public class TeslaBinderItem extends ComponentItem
             tag.putString("NetInput", String.valueOf(team.lastNetInput));
             tag.putString("NetOutput", String.valueOf(team.lastNetOutput));
 
-            // 1. Sync Hatch Data
-            // NOTE: getHatches() merges BOTH physical hatches (from energyBuffered) AND
-            // soul-linked machines (from soulLinkedMachines) into one Collection<HatchInfo>,
-            // keyed by position. Soul-linked entries are filtered out here since they're
-            // already synced separately below via team.soulLinkedMachines into MachineData --
-            // without this check, any soul-linked machine would appear twice: once here
-            // mislabeled as a physical hatch (isPhysicalOutput defaults false when the position
-            // never went through setEnergyBuffered), and once correctly in MachineData.
             ListTag hatchList = new ListTag();
             for (TeslaTeamEnergyData.HatchInfo hatch : globalData.getHatches(teamUUID)) {
                 if (hatch == null || hatch.isSoulLinked) continue;
@@ -829,7 +770,6 @@ public class TeslaBinderItem extends ComponentItem
             }
             tag.put("HatchData", hatchList);
 
-            // 2. Sync Machine Data (EV Lathes, etc)
             ListTag machineList = new ListTag();
             for (BlockPos mPos : team.soulLinkedMachines) {
                 if (mPos == null) continue;
@@ -863,7 +803,6 @@ public class TeslaBinderItem extends ComponentItem
             }
             tag.put("MachineData", machineList);
 
-            // 3. Sync Chargers
             ListTag chargerList = new ListTag();
             for (BlockPos cPos : team.activeChargers) {
                 if (cPos == null) continue;

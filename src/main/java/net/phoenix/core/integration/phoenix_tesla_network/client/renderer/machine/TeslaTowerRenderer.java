@@ -25,7 +25,6 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
     public static final Codec<TeslaTowerRenderer> CODEC = Codec.unit(INSTANCE);
     public static final DynamicRenderType<TeslaTowerMachine, TeslaTowerRenderer> TYPE = new DynamicRenderType<>(CODEC);
 
-    // Static constant configuration arrays to prevent per-frame memory allocation
     private static final float[] Y_POSITIONS = new float[] { 5.5f, 14.5f, 22.5f };
     private static final float[] X_POSITIONS = new float[] { 1.0f, 1.0f, 1.0f };
     private static final float[] Z_POSITIONS = new float[] { 6.0f, 6.0f, 6.0f };
@@ -73,7 +72,6 @@ public class TeslaTowerRenderer extends DynamicRender<TeslaTowerMachine, TeslaTo
         float TEEPEE_DROP = 2.5f;
         int ARC_POINTS = 30;
 
-        // Fetch position info using standard 8.0.0 Direct BlockEntity getters
         BlockPos machinePos = machine.getBlockPos();
         double baseParticleX = machinePos.getX() + 0.5;
         double baseParticleY = machinePos.getY() + 0.5;

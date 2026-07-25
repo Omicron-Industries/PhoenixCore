@@ -6,12 +6,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Maps discipline ID strings to their {@link DisciplineRenderer} implementations.
- *
- * The two Sealed renderers share an implementation; each receives its own
- * discipline ID so they can have distinct lore and shader variations later.
- */
 public final class DisciplineRendererRegistry {
 
     private static final Map<String, DisciplineRenderer> RENDERERS = new HashMap<>();
@@ -32,10 +26,6 @@ public final class DisciplineRendererRegistry {
         if (id != null) RENDERERS.put(id, renderer);
     }
 
-    /**
-     * Returns the renderer for the given discipline ID, or the default fallback
-     * if {@code disciplineId} is null or unregistered.
-     */
     public static DisciplineRenderer get(@Nullable String disciplineId) {
         if (disciplineId == null) return DEFAULT;
         return RENDERERS.getOrDefault(disciplineId, DEFAULT);

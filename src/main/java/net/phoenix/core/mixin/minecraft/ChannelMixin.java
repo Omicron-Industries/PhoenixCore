@@ -19,9 +19,6 @@ public abstract class ChannelMixin {
     @Final
     private int source;
 
-    // Store the last known world position so play() and updateStream() can use it.
-    // Initialised to ZERO — AcousticEffectApplier guards against sourceId == 0
-    // so a zero-pos on an unplaced channel is safe.
     @Unique
     private Vec3 lastPos = Vec3.ZERO;
 
@@ -37,8 +34,7 @@ public abstract class ChannelMixin {
 
     @Inject(method = "updateStream", at = @At("HEAD"))
     private void phoenix$liveUpdateEffects(CallbackInfo ci) {
-        // Called every tick while a streaming sound is active — real-time
-        // occlusion means the muffle changes as you walk around corners.
+
         AcousticEffectApplier.applyPhysicalProperties(this.source, this.lastPos, 1.0f);
     }
 }

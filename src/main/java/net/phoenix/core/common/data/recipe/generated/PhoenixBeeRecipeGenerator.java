@@ -148,7 +148,6 @@ public class PhoenixBeeRecipeGenerator {
 
             if (combIn.isEmpty() || honeyedMat == null || rawWaxMat == null) continue;
 
-            // Decanting
             COMB_DECANTING_RECIPES.recipeBuilder(MOD_ID + "/decanting/" + beeId)
                     .EUt(config.decantingEut()).duration(config.decantingDuration())
                     .inputItems(combIn)
@@ -156,7 +155,6 @@ public class PhoenixBeeRecipeGenerator {
                     .outputItems(base)
                     .save(provider);
 
-            // Melting
             BREWING_RECIPES.recipeBuilder(MOD_ID + "/wax_melting/" + beeId)
                     .EUt(config.waxEut()).duration(400)
                     .inputItems(TagPrefix.dust, rawWaxMat)
@@ -164,7 +162,6 @@ public class PhoenixBeeRecipeGenerator {
                     .outputFluids(honeyedMat.getFluid(1000))
                     .save(provider);
 
-            // Purifying
             var centrifuge = CENTRIFUGE_RECIPES.recipeBuilder(MOD_ID + "/purifying/" + beeId)
                     .EUt(config.decantingEut()).duration(400)
                     .inputFluids(honeyedMat.getFluid(1000))
@@ -260,7 +257,7 @@ public class PhoenixBeeRecipeGenerator {
     }
 
     public static void generateSpecialtyBeeRecipes(Consumer<FinishedRecipe> provider, ItemStack base) {
-        // Source Catalyst Imbuement
+        
         Material source = PhoenixProgressionMaterials.SOURCE_GEM;
         ItemStack catalystBee = ChemicalHelper.get(PhoenixMaterialFlags.tier_one_bee, source);
         ItemStack jelly = safeStack("phoenixcore:royal_jelly", 8);

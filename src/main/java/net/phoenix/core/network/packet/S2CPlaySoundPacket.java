@@ -8,19 +8,13 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-/**
- * Server → Client: play a positioned one-shot sound from the jukebox.
- *
- * This class contains ZERO references to Minecraft client classes. All of that lives
- * in ClientSoundHandler which is @OnlyIn(CLIENT) and stripped by RuntimeDistCleaner.
- */
 public class S2CPlaySoundPacket {
 
     private final BlockPos pos;
     private final ResourceLocation soundLocation;
     private final float volume;
     private final float pitch;
-    private final float range; // Added dynamic radius limit
+    private final float range; 
 
     public S2CPlaySoundPacket(BlockPos pos, ResourceLocation soundLocation, float volume, float pitch, float range) {
         this.pos = pos;
@@ -50,7 +44,6 @@ public class S2CPlaySoundPacket {
         ctx.get().enqueueWork(() -> {
             if (!FMLEnvironment.dist.isClient()) return;
 
-            // Delegate entirely to the client handler, passing our manual range field down
             net.phoenix.core.network.client.ClientSoundHandler.playSound(
                     msg.pos, msg.soundLocation, msg.volume, msg.pitch, msg.range);
         });

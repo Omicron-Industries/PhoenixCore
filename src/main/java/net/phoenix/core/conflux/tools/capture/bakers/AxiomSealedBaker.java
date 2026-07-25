@@ -6,10 +6,6 @@ import net.phoenix.core.conflux.client.render.discipline.SealedDisciplineRendere
 import net.phoenix.core.conflux.tools.capture.BakeRenderContext;
 import net.phoenix.core.conflux.tools.capture.CaptureBakeable;
 
-/**
- * Bakes the Sealed discipline background (classified document parchment) as a
- * static single-frame sprite.
- */
 public final class AxiomSealedBaker implements CaptureBakeable {
 
     private static final int SIZE = 512;

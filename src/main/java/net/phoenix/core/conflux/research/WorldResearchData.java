@@ -13,39 +13,26 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-/**
- * Per-world, per-team research state stored in level SavedData.
- *
- * Teams are identified by UUID — sourced from FTB Teams when loaded,
- * otherwise each player's own UUID (solo = team of 1).
- *
- * Accessed via {@link #get(ServerLevel)}.
- */
 public class WorldResearchData extends SavedData {
 
     private static final String ID = "conflux_team_research";
 
-    /** team UUID → unlocked node IDs */
     private final Map<UUID, Set<ResourceLocation>> unlocked    = new HashMap<>();
-    /** team UUID → locked-out node IDs (from exclusion groups) */
+    
     private final Map<UUID, Set<ResourceLocation>> lockedOut   = new HashMap<>();
-    /** team UUID → string flags */
+    
     private final Map<UUID, Set<String>>           flags       = new HashMap<>();
-    /** team UUID → unlocked multiblock machine IDs */
+    
     private final Map<UUID, Set<ResourceLocation>> multiblocks = new HashMap<>();
-    /** team UUID → current discipline ID (null = no discipline chosen) */
+    
     private final Map<UUID, String>                discipline  = new HashMap<>();
-    /** team UUID → whether the team has passed their commitment node */
+    
     private final Map<UUID, Boolean>               committed   = new HashMap<>();
-
-    // ── Access ────────────────────────────────────────────────────────────────
 
     public static WorldResearchData get(ServerLevel level) {
         return level.getServer().overworld().getDataStorage()
                 .computeIfAbsent(WorldResearchData::load, WorldResearchData::new, ID);
     }
-
-    // ── Queries ───────────────────────────────────────────────────────────────
 
     public boolean isUnlocked(UUID team, ResourceLocation nodeId) {
         return teamSet(unlocked, team).contains(nodeId);
@@ -73,10 +60,6 @@ public class WorldResearchData extends SavedData {
     public Set<ResourceLocation> getLockedOut(UUID team) { return Collections.unmodifiableSet(teamSet(lockedOut, team)); }
     public Set<String>           getFlags(UUID team)     { return Collections.unmodifiableSet(teamSet(flags, team)); }
 
-    /**
-     * Full GUI-ready discipline snapshot for a team.
-     * Never returns null — returns {@link DisciplineInfo#NONE} if no discipline is active.
-     */
     public DisciplineInfo getDisciplineInfo(UUID team, ResearchTreeRegistry registry) {
         String discId = discipline.get(team);
         if (discId == null) return DisciplineInfo.NONE;
@@ -94,13 +77,6 @@ public class WorldResearchData extends SavedData {
         return new DisciplineInfo(discId, title, isCommitted, switchCost);
     }
 
-    // ── Unlock ────────────────────────────────────────────────────────────────
-
-    /**
-     * Attempt to unlock a research node for a team, spending from the given terminal.
-     *
-     * @return true if the unlock succeeded
-     */
     public boolean tryUnlock(UUID team, ResearchNode node,
                              ResearchTerminalBlockEntity terminal,
                              ResearchTreeRegistry registry) {
@@ -109,7 +85,6 @@ public class WorldResearchData extends SavedData {
 
         teamSet(unlocked, team).add(node.id);
 
-        // Discipline tracking: detect which tree this node belongs to
         registry.getAllTrees().stream()
                 .filter(ResearchTree::isDisciplineTree)
                 .filter(t -> t.getNode(node.id).isPresent())
@@ -119,7 +94,6 @@ public class WorldResearchData extends SavedData {
                     if (node.isCommitmentNode) committed.put(team, true);
                 });
 
-        // Process unlock effects
         for (ResearchUnlock unlock : node.unlocks) {
             switch (unlock.type()) {
                 case "flag"       -> teamSet(flags, team).add(unlock.value());
@@ -130,7 +104,6 @@ public class WorldResearchData extends SavedData {
             }
         }
 
-        // Exclusion group: lock out siblings
         if (node.exclusionGroup != null) {
             registry.getAllNodes().stream()
                     .filter(n -> node.exclusionGroup.equals(n.exclusionGroup))
@@ -142,13 +115,6 @@ public class WorldResearchData extends SavedData {
         return true;
     }
 
-    /**
-     * Abandon the current Discipline, paying the switch cost from the terminal.
-     * Wipes all progress on nodes belonging to the old discipline tree.
-     * Blocked if the team has already passed their commitment node.
-     *
-     * @return true if abandonment succeeded
-     */
     public boolean abandonDiscipline(UUID team, ResearchTerminalBlockEntity terminal,
                                      ResearchTreeRegistry registry) {
         if (isCommitted(team)) return false;
@@ -165,7 +131,6 @@ public class WorldResearchData extends SavedData {
             if (!terminal.trySpend(tree.switchCost)) return false;
         }
 
-        // Strip all progress from the old discipline's nodes
         if (tree != null) {
             Set<ResourceLocation> disciplineNodeIds = new HashSet<>();
             tree.getNodes().forEach(n -> disciplineNodeIds.add(n.id));
@@ -173,7 +138,6 @@ public class WorldResearchData extends SavedData {
             teamSet(unlocked, team).removeAll(disciplineNodeIds);
             teamSet(lockedOut, team).removeAll(disciplineNodeIds);
 
-            // Revoke flags/multiblocks granted by those nodes
             for (ResearchNode node : tree.getNodes()) {
                 for (ResearchUnlock unlock : node.unlocks) {
                     switch (unlock.type()) {
@@ -193,8 +157,6 @@ public class WorldResearchData extends SavedData {
         return true;
     }
 
-    // ── Recipe tag check ──────────────────────────────────────────────────────
-
     public boolean hasRecipeTag(UUID team, String recipeTag, ResearchTreeRegistry registry) {
         for (ResourceLocation nodeId : getUnlocked(team)) {
             ResearchNode node = registry.getNode(nodeId).orElse(null);
@@ -205,8 +167,6 @@ public class WorldResearchData extends SavedData {
         }
         return false;
     }
-
-    // ── NBT ───────────────────────────────────────────────────────────────────
 
     public static WorldResearchData load(CompoundTag tag) {
         WorldResearchData d = new WorldResearchData();
@@ -249,8 +209,6 @@ public class WorldResearchData extends SavedData {
         tag.put("teams", teams);
         return tag;
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private <V> Set<V> teamSet(Map<UUID, Set<V>> map, UUID team) {
         return map.computeIfAbsent(team, k -> new HashSet<>());

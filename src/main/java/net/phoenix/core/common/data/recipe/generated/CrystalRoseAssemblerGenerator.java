@@ -113,11 +113,9 @@ public class CrystalRoseAssemblerGenerator {
             }
         }
 
-        // Standardize lookups to lowercase to protect ResourceLocation.tryParse allocations
         String normalizedId = id.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
         Material mat = GTRegistries.MATERIALS.get(normalizedId);
 
-        // Fixed validation check: verify against GTMaterials.NULL instead of a raw java null pointer
         if (mat == null || mat == GTMaterials.NULL) {
             mat = GTRegistries.MATERIALS.get(id.toLowerCase());
         }

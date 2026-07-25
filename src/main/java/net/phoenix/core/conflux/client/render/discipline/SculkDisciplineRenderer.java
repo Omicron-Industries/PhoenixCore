@@ -11,17 +11,6 @@ import static net.phoenix.core.conflux.client.render.AxiomSprites.*;
 
 import java.util.*;
 
-/**
- * Sculk Discipline — The Living Network.
- *
- * Unique identity: biological horror, not cosmic horror (that's Void).
- *  - Background covered in procedural bioluminescent veins
- *  - 7 sculk-sensor "eyes" track the cursor and blink
- *  - Nodes are mushroom fruiting bodies: stem + domed cap + glowing underside
- *  - Drip particles fall downward from unlocked nodes
- *  - Spores float upward on unlock bursts
- *  - Color: cyan-green + deep purple accents (alien biology)
- */
 public class SculkDisciplineRenderer implements DisciplineRenderer {
 
     private static final int   MAX_DRIPS   = 80;
@@ -29,7 +18,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     private static final int   MAX_RIPPLES = 4;
     private static final int   EYE_COUNT   = 7;
 
-    // Palette
     private static final int C_BG        = 0xFF000A06;
     private static final int C_VEIN_HOT  = 0xFF00BB77;
     private static final int C_VEIN_COLD = 0xFF002A14;
@@ -41,7 +29,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     private static final int C_PURPLE    = 0xFF440066;
     private static final int C_GLOW      = 0xFF00FF99;
 
-    // ── Drip (falls down from nodes) ──────────────────────────────────────────
     private static class Drip {
         float x, y, vy, life, maxLife, size;
         boolean splashed;
@@ -50,35 +37,29 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     private final Drip[] drips = new Drip[MAX_DRIPS];
     private int dripHead = 0;
 
-    // ── Spore (floats up on unlock bursts) ───────────────────────────────────
     private static class Spore {
         float x, y, vx, vy, life, maxLife, size;
     }
     private final Spore[] spores = new Spore[MAX_SPORES];
     private int sporeHead = 0;
 
-    // ── Sensor eyes ───────────────────────────────────────────────────────────
     private static class Eye {
-        float x, y;           // canvas-space position (set once from hash)
-        float irisX, irisY;   // current iris position (tracks cursor)
-        float blinkTimer;     // countdown to next blink
-        float blinkDuration;  // how long blink lasts
+        float x, y;           
+        float irisX, irisY;   
+        float blinkTimer;     
+        float blinkDuration;  
         boolean blinking;
     }
     private final Eye[] eyes = new Eye[EYE_COUNT];
     private int eyeW = 0, eyeH = 0;
 
-    // ── Ripple buffer ─────────────────────────────────────────────────────────
     private final float[] rippleX   = new float[MAX_RIPPLES];
     private final float[] rippleY   = new float[MAX_RIPPLES];
     private final float[] rippleAge = new float[MAX_RIPPLES];
     private int rippleHead    = 0;
     private int activeRipples = 0;
 
-    // ── Edge growth ───────────────────────────────────────────────────────────
     private final Map<String, Float> edgeGrowth = new HashMap<>();
-
-    // vein network is now a pre-baked sprite — no Vein list needed
 
     private float breatheTime = 0f;
 
@@ -102,11 +83,11 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     public void onUnlock(ResearchNode node, MotionClock clock, IntensityController intensity) {
         DisciplineRenderer.super.onUnlock(node, clock, intensity);
         float ox = node.posX * 110f, oy = node.posY * 110f;
-        // Spore burst upward
+        
         for (int i = 0; i < 16; i++) spawnSpore(ox, oy);
-        // Drip burst downward
+        
         for (int i = 0; i < 8; i++) spawnDrip(ox, oy);
-        // Ripple
+        
         int slot = rippleHead % MAX_RIPPLES;
         rippleX[slot] = ox; rippleY[slot] = oy; rippleAge[slot] = 0f;
         rippleHead++; activeRipples = Math.min(activeRipples + 1, MAX_RIPPLES);
@@ -116,26 +97,23 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     public void tick(float dt, RenderContext ctx) {
         breatheTime += dt;
 
-        // Edge growth
         for (ResearchNode n : ctx.tree().getNodes())
             for (ResourceLocation prereq : n.prerequisites)
                 if (ctx.isUnlocked(prereq))
                     edgeGrowth.merge(prereq + "→" + n.id, dt*0.55f, (o,d) -> Math.min(1f,o+d));
 
-        // Passive drips from unlocked nodes
         if (Math.random() < dt * 5f)
             for (ResearchNode n : ctx.tree().getNodes())
                 if (ctx.isUnlocked(n.id) && Math.random() < 0.2f) {
                     spawnDrip(n.posX*110f, n.posY*110f); break;
                 }
 
-        // Tick drips
         for (int i = 0; i < MAX_DRIPS; i++) {
             Drip d = drips[i];
             if (d == null) continue;
             if (!d.splashed) {
                 d.y += d.vy * dt;
-                d.vy = Math.min(d.vy + 60f*dt, 90f); // gravity
+                d.vy = Math.min(d.vy + 60f*dt, 90f); 
                 d.life -= dt;
                 if (d.life <= 0) drips[i] = null;
             } else {
@@ -145,7 +123,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             }
         }
 
-        // Tick spores
         for (int i = 0; i < MAX_SPORES; i++) {
             Spore s = spores[i];
             if (s == null) continue;
@@ -155,18 +132,16 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             if (s.life <= 0) spores[i] = null;
         }
 
-        // Tick ripples
         int alive = 0;
         for (int i = 0; i < MAX_RIPPLES; i++) {
             if (rippleAge[i] < 1f) { rippleAge[i] = Math.min(1f, rippleAge[i]+dt*0.65f); alive++; }
         }
         activeRipples = alive;
 
-        // Tick eyes — track cursor, blink
         float cursorCX = ctx.canvasMx(), cursorCY = ctx.canvasMy();
         for (Eye eye : eyes) {
             if (eye == null) continue;
-            // Move iris toward cursor (lazy tracking)
+            
             float toX = cursorCX - eye.x, toY = cursorCY - eye.y;
             float dist = (float)Math.sqrt(toX*toX + toY*toY);
             float maxIris = 5f;
@@ -174,7 +149,7 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             float targetY = dist > 0.01f ? eye.y + toY/dist * Math.min(maxIris, dist*0.3f) : eye.y;
             eye.irisX = eye.irisX * 0.85f + targetX * 0.15f;
             eye.irisY = eye.irisY * 0.85f + targetY * 0.15f;
-            // Blink
+            
             eye.blinkTimer -= dt;
             if (eye.blinkTimer <= 0f && !eye.blinking) {
                 eye.blinking = true;
@@ -210,8 +185,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
         spores[sporeHead % MAX_SPORES] = s; sporeHead++;
     }
 
-    // ── Background: vein network + sensor eyes ────────────────────────────────
-
     @Override
     public void renderBackground(GuiGraphics g, RenderContext ctx) {
         int cw = ctx.canvasW(), ch = ctx.canvasH();
@@ -222,20 +195,16 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
 
         g.fill(0, 0, cw, ch, C_BG);
 
-        // Stencil mask
         float[] mask = net.phoenix.core.conflux.client.render.CanvasMask.sculkEdge(0, 0, cw, ch);
         net.phoenix.core.conflux.client.render.CanvasMask.begin();
         net.phoenix.core.conflux.client.render.CanvasMask.writeMask(mask);
         net.phoenix.core.conflux.client.render.CanvasMask.enableTest();
 
-        // Breathing centre glow
         g.fill(cw/4, ch/4, cw*3/4, ch*3/4, ((int)(8*breathe*intense)<<24)|0x003322);
 
-        // Vein network — pre-baked sprite, alpha breathes with the bioluminescent pulse
         float veinAlpha = (0.55f + 0.45f * breathe) * intense;
         blitFrame(g, SCULK_VEINS, 0, 0, 0, cw, ch, veinAlpha);
 
-        // Sensor eyes (still procedural — they track cursor)
         for (Eye eye : eyes) {
             if (eye == null) continue;
             drawEye(g, eye, breathe, intense);
@@ -261,32 +230,30 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
 
     private void drawEye(GuiGraphics g, Eye eye, float breathe, float intense) {
         int ex = (int)eye.x, ey = (int)eye.y;
-        // Eye socket — dark oval
+        
         int sockR = 9;
         for (float dy = -sockR; dy <= sockR; dy++) {
             float hw = sockR * (float)Math.sqrt(Math.max(0,1-(dy/sockR)*(dy/sockR)));
             g.fill((int)(ex-hw), (int)(ey+dy), (int)(ex+hw), (int)(ey+dy)+1, 0xFF000A04);
         }
-        // Outer ring
+        
         int ringA = (int)(60*breathe*intense);
         g.fill(ex-sockR-1, ey-3, ex+sockR+1, ey+3, (ringA<<24)|0x004422);
         g.fill(ex-3, ey-sockR-1, ex+3, ey+sockR+1, (ringA<<24)|0x004422);
 
         if (!eye.blinking) {
-            // Iris (tracks cursor)
+            
             int ix = (int)eye.irisX, iy = (int)eye.irisY;
             int irisA = (int)(220*breathe);
             g.fill(ix-2, iy-2, ix+3, iy+3, (irisA<<24)|0x00FFAA);
-            // Sclera glow
+            
             g.fill(ix-4, iy-4, ix+5, iy+5, ((irisA>>3)<<24)|0x004433);
         } else {
-            // Blink: horizontal fill covers the eye
+            
             int blinkA = (int)(180*breathe);
             g.fill(ex-sockR, ey-2, ex+sockR, ey+2, (blinkA<<24)|0x001A0C);
         }
     }
-
-    // ── Edges: growing sculk veins ────────────────────────────────────────────
 
     @Override
     public void renderEdges(GuiGraphics g, RenderContext ctx) {
@@ -327,7 +294,7 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             int a = (int)((50+45*breathe)*(1-t));
             g.fill((int)px-1,(int)py-1,(int)px+2,(int)py+2, lerpCol(C_VEIN_HOT,C_VEIN_COLD,t,a));
         }
-        // Dead-end tendrils
+        
         for (int ti = 1; ti <= 2; ti++) {
             float tb = ti*0.33f;
             if (tb > growth) break;
@@ -343,8 +310,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             }
         }
     }
-
-    // ── Nodes: mushroom fruiting bodies ───────────────────────────────────────
 
     @Override
     public void renderNodes(GuiGraphics g, RenderContext ctx) {
@@ -369,7 +334,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
         int brd = lockedOut ? C_BORD_EXCL : mystery ? C_BORD_LOCK : unlocked ? C_BORD_DONE : available ? C_BORD_AVL : C_BORD_LOCK;
         if (sel) brd = C_BORD_SEL;
 
-        // Outer ambient glow
         if ((unlocked||available)&&!lockedOut) {
             for (int hr = 3; hr >= 1; hr--) {
                 int hrad = hr*16, ha=(int)(12*breathe*intense/hr);
@@ -377,7 +341,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             }
         }
 
-        // ── Stem (below cap centre) ───────────────────────────────────────────
         int stemW = 7, stemH = 14;
         int stemBg = lockedOut ? 0xFF060202 : unlocked ? 0xFF04120A : 0xFF030A06;
         g.fill(cx-stemW, cy, cx+stemW, cy+stemH, stemBg);
@@ -385,27 +348,25 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
         g.fill(cx+stemW-1, cy, cx+stemW, cy+stemH, brd);
         g.fill(cx-stemW, cy+stemH, cx+stemW, cy+stemH+1, brd);
 
-        // ── Cap (semicircle above cx,cy) ──────────────────────────────────────
         int capH = 22, capW = 28;
         int capBg = lockedOut ? 0xFF0A0404 : unlocked ? 0xFF063020 : available ? 0xFF042818 : 0xFF021508;
-        // Draw cap as horizontal scanlines (semicircle)
+        
         for (int dy = 0; dy >= -capH; dy--) {
-            float t = (float)(-dy) / capH; // 0=base of cap, 1=top
-            float hw = capW * (float)Math.sqrt(1f - t*t); // semicircle width
+            float t = (float)(-dy) / capH; 
+            float hw = capW * (float)Math.sqrt(1f - t*t); 
             g.fill((int)(cx-hw), cy+dy, (int)(cx+hw), cy+dy+1, capBg);
         }
-        // Cap border ring
+        
         int capBorderSteps = 28;
         for (int i = 0; i <= capBorderSteps; i++) {
-            float a = (float)i/capBorderSteps * 3.14159f; // semicircle (top half only)
+            float a = (float)i/capBorderSteps * 3.14159f; 
             int bx = cx+(int)(capW*Math.cos(a));
             int by = cy-(int)(capH*Math.sin(a));
             g.fill(bx-1,by-1,bx+2,by+2,brd);
         }
-        // Base of cap (flat underside)
+        
         g.fill(cx-capW, cy, cx+capW, cy+1, brd);
 
-        // ── Bioluminescent underside glow ─────────────────────────────────────
         if ((unlocked||available)&&!lockedOut) {
             for (int ug = 1; ug <= 6; ug++) {
                 float ut = ug/6f;
@@ -415,27 +376,22 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
             }
         }
 
-        // ── Spots on cap ──────────────────────────────────────────────────────
         for (int si = 0; si < 4; si++) {
             long sh = (si*6364136223846793005L) ^ (long)node.id.hashCode();
-            float sa = ((sh&0xFFL)/255f)*2.8f + 0.2f; // angle on cap (not full 180°)
-            float sr = 0.4f + ((sh>>8&0xFL)/15f)*0.45f; // radial pos (0=centre, 0.9=edge)
+            float sa = ((sh&0xFFL)/255f)*2.8f + 0.2f; 
+            float sr = 0.4f + ((sh>>8&0xFL)/15f)*0.45f; 
             int sx = cx+(int)(capW*sr*Math.cos(sa));
             int sy = cy-(int)(capH*sr*Math.sin(sa));
             int sA = (int)(100*breathe);
             g.fill(sx-2, sy-2, sx+3, sy+3, (sA<<24)|(brd&0xFFFFFF));
         }
 
-        // Commitment marker
         if (node.isCommitmentNode) g.fill(cx-3, cy-capH-8, cx+3, cy-capH-2, C_BORD_DONE);
 
-        // Icon (in stem area)
         if (!mystery&&!lockedOut) renderIcon(g, node.icon, cx-8, cy+2);
 
-        // Mystery label
         if (mystery) g.drawCenteredString(net.minecraft.client.Minecraft.getInstance().font, "?", cx, cy-capH/2-4, 0x88006644);
 
-        // Selection ring
         if (sel) {
             int sa = (int)(80*breathe);
             g.fill(cx-capW-5, cy-capH-5, cx+capW+5, cy+stemH+5, (sa<<24)|0x44FFCC);
@@ -443,27 +399,25 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
         }
     }
 
-    // ── Foreground: drips + spores ────────────────────────────────────────────
-
     @Override
     public void renderForeground(GuiGraphics g, RenderContext ctx) {
-        // Drips (fall down)
+        
         for (Drip d : drips) {
             if (d==null) continue;
             float frac = d.life/d.maxLife;
             int alpha = (int)(frac*200);
             if (!d.splashed) {
                 int sz = Math.max(1,(int)(d.size*frac));
-                // Teardrop: taller than wide
+                
                 g.fill((int)d.x-1,(int)d.y-sz*2,(int)d.x+2,(int)d.y+sz,(alpha<<24)|0x00AA66);
             } else {
-                // Splash ring
+                
                 int sr = (int)d.splashR;
                 int sa = (int)(frac*80);
                 g.fill((int)d.x-sr,(int)d.y-2,(int)d.x+sr,(int)d.y+2,(sa<<24)|0x00CC77);
             }
         }
-        // Spores (float up)
+        
         for (Spore s : spores) {
             if (s==null) continue;
             float frac = s.life/s.maxLife;
@@ -474,8 +428,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
         }
     }
 
-    // ── Positioning ───────────────────────────────────────────────────────────
-
     @Override
     public float[] nodePos(ResearchNode node, RenderContext ctx) {
         return new float[]{ node.posX*110f, node.posY*110f };
@@ -484,7 +436,7 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     @Override
     public boolean hitsNode(ResearchNode node, float mx, float my, RenderContext ctx) {
         float[] p = nodePos(node, ctx);
-        // Hit test covers both cap and stem
+        
         return Math.abs(mx-p[0]) <= 30 && my >= p[1]-24 && my <= p[1]+16;
     }
 
@@ -493,8 +445,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
         return new ResourceLocation(PhoenixCore.MOD_ID, "shaders/post/axiom_sculk.json");
     }
 
-    // ── Shader hooks ─────────────────────────────────────────────────────────
-
     @Override public float[] rippleOriginsCanvas() {
         float[] out = new float[MAX_RIPPLES*2];
         for (int i=0;i<MAX_RIPPLES;i++){out[i*2]=rippleX[i];out[i*2+1]=rippleY[i];}
@@ -502,8 +452,6 @@ public class SculkDisciplineRenderer implements DisciplineRenderer {
     }
     @Override public float[] rippleAges()  { return rippleAge.clone(); }
     @Override public int     rippleCount() { return activeRipples; }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static int lerpCol(int a, int b, float t, int alpha) {
         int ar=(a>>16)&0xFF,ag=(a>>8)&0xFF,ab2=a&0xFF;

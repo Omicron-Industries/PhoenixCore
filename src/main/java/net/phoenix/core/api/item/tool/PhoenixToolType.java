@@ -14,14 +14,7 @@ import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraftforge.common.ToolActions;
 
-/**
- * Custom ToolTypes
- */
 public final class PhoenixToolType {
-
-    /**
-     * Custom Screwdrivers
-     */
 
     public static final GTToolType SCREWDRIVER_MV = GTToolType.builder("mv_screwdriver")
             .idFormat("mv_%s_screwdriver")
@@ -75,10 +68,6 @@ public final class PhoenixToolType {
             .toolClasses(GTToolType.SCREWDRIVER)
             .defaultActions(GTToolActions.DEFAULT_SCREWDRIVER_ACTIONS)
             .build();
-
-    /**
-     * Custom Chainsaws
-     */
 
     public static final GTToolType CHAINSAW_MV = GTToolType.builder("mv_chainsaw")
             .idFormat("mv_%s_chainsaw")
@@ -157,10 +146,6 @@ public final class PhoenixToolType {
                     GTToolActions.SAW_DIG)
             .build();
 
-    /**
-     * Custom Drills
-     */
-
     public static final GTToolType DRILL_LUV = GTToolType.builder("luv_drill")
             .idFormat("luv_%s_drill")
             .toolTag(CustomTags.DRILLS)
@@ -171,7 +156,7 @@ public final class PhoenixToolType {
             .harvestTag(BlockTags.MINEABLE_WITH_PICKAXE)
             .harvestTag(BlockTags.MINEABLE_WITH_SHOVEL)
             .harvestTag(BlockTags.MINEABLE_WITH_HOE)
-            .toolStats(b -> b.blockBreaking().aoe(5, 5, 10) // <--- THIS IS THE KEY CHANGE
+            .toolStats(b -> b.blockBreaking().aoe(5, 5, 10) 
                     .attackDamage(1.0F).attackSpeed(-3.2F).durabilityMultiplier(8.0F)
                     .brokenStack(PhoenixToolHelper.SUPPLY_POWER_UNIT_LUV)
                     .behaviors(AOEConfigUIBehavior.INSTANCE, TorchPlaceBehavior.INSTANCE))
@@ -199,10 +184,6 @@ public final class PhoenixToolType {
             .toolClassNames("drill")
             .defaultActions(GTToolActions.DEFAULT_DRILL_ACTIONS)
             .build();
-
-    /**
-     * Custom Wrenches
-     */
 
     public static final GTToolType WRENCH_MV = GTToolType.builder("mv_wrench")
             .idFormat("mv_%s_wrench")
@@ -273,10 +254,6 @@ public final class PhoenixToolType {
             .defaultActions(GTToolActions.WRENCH_DIG, GTToolActions.WRENCH_DISMANTLE, GTToolActions.WRENCH_CONNECT)
             .build();
 
-    /**
-     * Custom Wire cutters
-     */
-
     public static final GTToolType WIRE_CUTTER_MV = GTToolType.builder("mv_wirecutter")
             .idFormat("mv_%s_wire_cutter")
             .toolTag(CustomTags.CRAFTING_WIRE_CUTTERS)
@@ -329,10 +306,6 @@ public final class PhoenixToolType {
             .toolClasses(GTToolType.WIRE_CUTTER)
             .defaultActions(GTToolActions.DEFAULT_WIRE_CUTTER_ACTIONS)
             .build();
-
-    /**
-     * Custom Buzzsaws
-     */
 
     public static final GTToolType BUZZSAW_MV = GTToolType.builder("mv_buzzsaw")
             .toolTag(CustomTags.CRAFTING_SAWS)

@@ -7,7 +7,6 @@ import com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
 
-
 import brachy.modularui.api.drawable.Text;
 import brachy.modularui.api.widget.IWidget;
 import brachy.modularui.value.sync.PanelSyncManager;
@@ -53,7 +52,6 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
     private static final long   THROUGHPUT      = 2_048L;
     private static final int    RESEARCH_SCAN_INTERVAL = 100;
 
-    // Annotations removed - managed by new sync/save systems
     private ConfluxDataType inputType  = ConfluxDataType.MATERIAL;
     private ConfluxDataType outputType = ConfluxDataType.COMPUTATIONAL;
     private long inputBuffer  = 0L;
@@ -73,7 +71,6 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
     private void lensTick() {
         if (!isFormed() || getLevel() == null || isRemote()) return;
 
-        // FIXED: Using getCapabilitiesFlat directly on MetaMachine context
         List<IRecipeHandler<?>> energyCaps = this.getCapabilitiesFlat(IO.IN, EURecipeCapability.CAP);
         if (energyCaps.isEmpty()) {
             lensActive = false;
@@ -156,10 +153,8 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
 
-        // Fetch the stack using the active hand context
         ItemStack heldStack = player.getItemInHand(context.getHand());
 
-        // Clean, dynamic check that supports ALL GregTech screwdrivers
         if (com.gregtechceu.gtceu.api.item.tool.GTToolType.SCREWDRIVER.is(heldStack)) {
             if (isRemote()) return InteractionResult.SUCCESS;
 
@@ -205,13 +200,11 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
         return super.getCapability(cap, side);
     }
 
-    // FIXED: Formatted explicitly via MUI2 PanelSyncManager registries
     @Override
     public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
 
-        // Map SyncHandlers to the window session
         syncManager.syncValue("lens_active", new BooleanSyncValue(() -> this.lensActive, (v) -> this.lensActive = v));
         syncManager.syncValue("input_buffer", new LongSyncValue(() -> this.inputBuffer, (v) -> this.inputBuffer = v));
         syncManager.syncValue("output_buffer", new LongSyncValue(() -> this.outputBuffer, (v) -> this.outputBuffer = v));

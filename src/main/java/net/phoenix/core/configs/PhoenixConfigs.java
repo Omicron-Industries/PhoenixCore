@@ -76,8 +76,6 @@ public class PhoenixConfigs {
         }
     }
 
-    // --- COLOR CONFIG ---
-
     public static class ColorConfig {
 
         @Configurable
@@ -93,8 +91,6 @@ public class PhoenixConfigs {
         };
     }
 
-    // --- SOURCE HATCH CONFIG ---
-
     public static class SourceHatchConfig {
 
         @Configurable
@@ -102,8 +98,6 @@ public class PhoenixConfigs {
                 "The radius (in blocks) in which a Source Hatch will scan for nearby Source Jars to pull from." })
         public int sourceJarCheckRadius = 12;
     }
-
-    // Wing config
 
     public static class WingFlightConfigs {
 
@@ -170,8 +164,6 @@ public class PhoenixConfigs {
         public double poweredDriftMax = 1.8;
     }
 
-    // --- CLEANROOM CONFIG ---
-
     public static class CleanroomConfig {
 
         @Configurable
@@ -195,8 +187,6 @@ public class PhoenixConfigs {
         @Configurable.Comment({ "The amount of sterilizing gas consumed per tick." })
         public int fluidConsumption = 1;
     }
-
-    // --- FEATURE & COMPUTATION & COOLING CONFIG ---
 
     public static class FeatureConfigs {
 
@@ -240,7 +230,6 @@ public class PhoenixConfigs {
         @Configurable.Comment({ "Whether recipes for the machines are enabled" })
         public boolean recipesEnabled = true;
 
-        // COMPUTATION
         @Configurable
         @Configurable.Comment({ "How powerful the normal Phoenix Computation Unit is (CWU/t)" })
         public int BasicPCUStrength = 32;
@@ -285,7 +274,6 @@ public class PhoenixConfigs {
                 "How much EU the advanced Phoenix Computation can use at max (Goes off GTValues, ULV is 0, LV is 1, MV is 2, etc)" })
         public int PCUMaxEUt = 10;
 
-        // COOLING
         @Configurable
         @Configurable.Comment({ "How powerful the Phoenix Heat Sink is (Cooling Provided)" })
         public int HeatSinkStrength = 4;
@@ -349,8 +337,6 @@ public class PhoenixConfigs {
             DATA_STICK
         }
     }
-
-    // --- FISSION CONFIG ---
 
     public static class FissionConfigs {
 

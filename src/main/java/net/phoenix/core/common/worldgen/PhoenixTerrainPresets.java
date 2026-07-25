@@ -9,7 +9,6 @@ public final class PhoenixTerrainPresets {
 
     private PhoenixTerrainPresets() {}
 
-    /** Flat, very gentle noise — plains/meadow feel. */
     public static TerrainProfile plains(long seed) {
         return TerrainProfile.builder("Plains")
                 .seed(seed)
@@ -18,7 +17,6 @@ public final class PhoenixTerrainPresets {
                 .build();
     }
 
-    /** Medium amplitude rolling hills with gentle caves. */
     public static TerrainProfile rollingHills(long seed) {
         return TerrainProfile.builder("Rolling Hills")
                 .seed(seed)
@@ -27,7 +25,6 @@ public final class PhoenixTerrainPresets {
                 .build();
     }
 
-    /** High amplitude dramatic mountains with heavy caves. */
     public static TerrainProfile mountains(long seed) {
         return TerrainProfile.builder("Mountains")
                 .seed(seed)
@@ -36,7 +33,6 @@ public final class PhoenixTerrainPresets {
                 .build();
     }
 
-    /** Wide flat mesa tops with steep sides — uses volumetric for the flat-top effect. */
     public static TerrainProfile alienMesas(long seed) {
         return TerrainProfile.builder("Alien Mesas")
                 .seed(seed)
@@ -45,17 +41,15 @@ public final class PhoenixTerrainPresets {
                 .build();
     }
 
-    /** Floating islands — volumetric with no caves so islands stay intact. */
     public static TerrainProfile floatingIslands(long seed) {
         return TerrainProfile.builder("Floating Islands")
                 .seed(seed)
                 .baseY(100).amplitude(120).frequency(0.008).octaves(5)
                 .caves(false).volumetric(true)
-                .seaLevel(0) // no sea
+                .seaLevel(0) 
                 .build();
     }
 
-    /** Very low base, creating deep craters and barren low terrain. */
     public static TerrainProfile deathValley(long seed) {
         return TerrainProfile.builder("Death Valley")
                 .seed(seed)
@@ -65,7 +59,6 @@ public final class PhoenixTerrainPresets {
                 .build();
     }
 
-    /** Low base, high cave frequency — most of it is hollow underground. */
     public static TerrainProfile cavernous(long seed) {
         return TerrainProfile.builder("Cavernous")
                 .seed(seed)
@@ -74,7 +67,6 @@ public final class PhoenixTerrainPresets {
                 .build();
     }
 
-    /** Returns all preset factories as (name, factory) pairs for GUI selectors. */
     public static List<Map.Entry<String, LongFunction<TerrainProfile>>> all() {
         return List.of(
                 entry("Plains",          PhoenixTerrainPresets::plains),

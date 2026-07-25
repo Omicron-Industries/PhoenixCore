@@ -12,8 +12,6 @@ import java.util.function.Supplier;
 
 public class PhoenixAPI {
 
-
-
     public static PhoenixAPI instance;
 
     public static final Logger LOGGER = LogManager.getLogger();

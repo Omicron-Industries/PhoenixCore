@@ -18,8 +18,6 @@ public class PhoenixJadePlugin implements IWailaPlugin {
     public void register(IWailaCommonRegistration registration) {
         PhoenixCore.LOGGER.info("[PhoenixJade] register(common) called");
 
-        // Since MetaMachine is now natively a BlockEntity, registering against
-        // MetaMachine.class remains valid for matching the block entity instances!
         registration.registerBlockDataProvider(new SourceMachineProvider(), MetaMachine.class);
         registration.registerBlockDataProvider(new SourceTankJadeProvider(), MetaMachine.class);
         registration.registerBlockDataProvider(new TeslaNetworkProvider(), MetaMachine.class);

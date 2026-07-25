@@ -31,20 +31,16 @@ public final class PlayerResearchCapability {
         event.register(PlayerResearchData.class);
     }
 
-    /** Retrieves the research data for a player, or throws if absent (should never happen). */
     public static PlayerResearchData get(Player player) {
         return player.getCapability(RESEARCH).orElseThrow(
                 () -> new IllegalStateException("Player missing AxiomResearch capability: " + player.getName().getString()));
     }
-
-    // ── Forge event handlers ──────────────────────────────────────────────────
 
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (!(event.getObject() instanceof Player)) return;
         event.addCapability(ID, new Provider());
     }
 
-    /** Copy research data on death-respawn (keepInventory or not — research is always kept). */
     public static void onPlayerClone(PlayerEvent.Clone event) {
         if (event.getOriginal().isDeadOrDying() || event.isWasDeath()) {
             PlayerResearchData original = get(event.getOriginal());
@@ -52,8 +48,6 @@ public final class PlayerResearchCapability {
             clone.copyFrom(original);
         }
     }
-
-    // ── Provider ──────────────────────────────────────────────────────────────
 
     private static class Provider implements ICapabilitySerializable<CompoundTag> {
 

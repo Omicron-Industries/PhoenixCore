@@ -105,18 +105,6 @@ public class PhoenixBlocks {
     public static final BlockEntry<CoilBlock> COIL_TRUE_HEAT_STABLE = createCoilBlock(
             PhoenixCoilBlock.CoilType.COIL_TRUE_HEAT_STABLE);
 
-    /*
-     * public static final BlockEntry<Block> CLEANROOM_CASING = REGISTRATE.block("cleanroom_casing", Block::new)
-     * .initialProperties(() -> Blocks.IRON_BLOCK)
-     * .properties(p -> p.mapColor(MapColor.METAL).instrument(NoteBlockInstrument.IRON_XYLOPHONE)
-     * .strength(5.0f, 6.0f).requiresCorrectToolForDrops())
-     * .lang("Cleanroom Casing")
-     * .item()
-     * .build()
-     * .register();
-     * 
-     */
-
     public static BlockEntry<Block> PHOENIX_ENRICHED_TRITANIUM_CASING = registerSimpleBlock(
             "§6Extremely Heat-Stable Casing", "phoenix_enriched_tritanium_casing",
             "phoenix_enriched_tritanium_casing", BlockItem::new);
@@ -231,7 +219,7 @@ public class PhoenixBlocks {
                 .initialProperties(() -> Blocks.IRON_BLOCK)
                 .lang(speakerData.getName() + " Speaker Component")
                 .blockstate((ctx, prov) -> {
-                    // Assuming you have front/side textures in your assets
+                    
                     String folder = "block/casings/speakers/";
                     var side = PhoenixCore.id(folder + "side");
                     var front = PhoenixCore.id(folder + tierName + "_front");

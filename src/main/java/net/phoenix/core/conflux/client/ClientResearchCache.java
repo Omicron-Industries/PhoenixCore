@@ -11,12 +11,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Client-side mirror of the player's research state, populated by S2CResearchSyncPacket.
- *
- * Discipline state is included so the terminal GUI can display the discipline banner,
- * commitment status, and switch cost without querying the server.
- */
 @OnlyIn(Dist.CLIENT)
 public final class ClientResearchCache {
 
@@ -24,7 +18,6 @@ public final class ClientResearchCache {
     public static Set<ResourceLocation> lockedOut = Collections.emptySet();
     public static Set<String>           flags     = Collections.emptySet();
 
-    // Discipline state synced from server
     private static @Nullable String disciplineId    = null;
     private static @Nullable String disciplineTitle = null;
     private static boolean          disciplineCommitted = false;
@@ -57,7 +50,6 @@ public final class ClientResearchCache {
     public static boolean isUnlocked(ResourceLocation id)  { return unlocked.contains(id); }
     public static boolean isLockedOut(ResourceLocation id) { return lockedOut.contains(id); }
 
-    /** Returns the client-side discipline snapshot ready for GUI rendering. */
     public static DisciplineInfo getDisciplineInfo() {
         if (disciplineId == null) return DisciplineInfo.NONE;
         return new DisciplineInfo(disciplineId, disciplineTitle, disciplineCommitted, switchCost);

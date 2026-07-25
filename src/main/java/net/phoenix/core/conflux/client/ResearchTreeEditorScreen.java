@@ -21,28 +21,17 @@ import java.io.FileWriter;
 import java.nio.file.Path;
 import java.util.*;
 
-/**
- * In-game visual editor for Axiom research trees.
- *
- * Produces datapack-ready JSON that can be dropped into
- * {@code data/<namespace>/conflux/research/<id>.json}.
- *
- * Accessible via {@code /conflux edit} (op/creative only).
- */
 @OnlyIn(Dist.CLIENT)
 public class ResearchTreeEditorScreen extends Screen {
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final int PANEL_W  = 240;
     private static final int TOOLBAR_H = 24;
 
-    // ── Node geometry ─────────────────────────────────────────────────────────
     private static final int NODE_W   = 64;
     private static final int NODE_H   = 48;
-    private static final int NODE_R   = 5;   // corner radius (approximated)
-    private static final int GRID     = 80;  // canvas units → px at zoom 1.0
+    private static final int NODE_R   = 5;   
+    private static final int GRID     = 80;  
 
-    // ── Colors ────────────────────────────────────────────────────────────────
     private static final int C_BG        = 0xFF07070F;
     private static final int C_CANVAS    = 0xFF09090E;
     private static final int C_PANEL     = 0xFF0F0F1C;
@@ -56,37 +45,31 @@ public class ResearchTreeEditorScreen extends Screen {
     private static final int C_DELETE    = 0xFFCC3333;
     private static final int C_GRID      = 0x0AFFFFFF;
 
-    // ── Mode ──────────────────────────────────────────────────────────────────
     private enum Mode { SELECT, PLACE, LINK }
     private Mode mode = Mode.SELECT;
 
-    // ── Canvas state ──────────────────────────────────────────────────────────
     private float panX, panY, zoom = 1f;
     private boolean panDragging;
     private double lastDragX, lastDragY;
 
-    // ── Editor state ──────────────────────────────────────────────────────────
     private final List<EditorNode>  nodes = new ArrayList<>();
     private final List<EditorEdge>  edges = new ArrayList<>();
     private EditorNode selected   = null;
-    private EditorNode linkSource = null;   // pending LINK source
+    private EditorNode linkSource = null;   
     private EditorNode hovering   = null;
     private boolean    nodeDragging = false;
     private double     nodeDragOffX, nodeDragOffY;
     private int        nodeIdCounter = 1;
 
-    // ── Tree metadata ─────────────────────────────────────────────────────────
     private String treeName  = "my_tree";
     private String treeTitle = "New Tree";
     private String treeDesc  = "";
 
-    // ── Property widgets ──────────────────────────────────────────────────────
     private EditBox wTreeName, wTreeTitle, wTreeDesc;
     private EditBox wNodeTitle, wNodeLore, wNodeIcon, wNodeExGroup;
     private final Map<ConfluxDataType, EditBox> wCosts = new EnumMap<>(ConfluxDataType.class);
     private final List<UnlockEntry>  unlockEntries = new ArrayList<>();
 
-    // ── Unlock editor ─────────────────────────────────────────────────────────
     private EditBox wUnlockType, wUnlockValue;
     private record UnlockEntry(String type, String value) {}
 
@@ -94,28 +77,23 @@ public class ResearchTreeEditorScreen extends Screen {
         super(Component.literal("Axiom Tree Editor"));
     }
 
-    // ── Init ─────────────────────────────────────────────────────────────────
-
     @Override
     protected void init() {
         int px = canvasW() + 8;
         int py = TOOLBAR_H + 8;
         int fw = PANEL_W - 16;
 
-        // Tree metadata
         wTreeName  = addBox(px, py,      fw, "tree name…");
         wTreeTitle = addBox(px, py + 18, fw, "display title…");
         wTreeDesc  = addBox(px, py + 36, fw, "description…");
         wTreeName.setValue(treeName); wTreeTitle.setValue(treeTitle); wTreeDesc.setValue(treeDesc);
 
-        // Node properties (shown when node selected)
         int ny = py + 72;
         wNodeTitle  = addBox(px, ny,       fw, "node title…");
         wNodeLore   = addBox(px, ny + 18,  fw, "lore / flavour text…");
         wNodeIcon   = addBox(px, ny + 36,  fw, "icon item id…");
         wNodeExGroup = addBox(px, ny + 54, fw, "exclusion group…");
 
-        // Cost boxes
         int cy = ny + 78;
         for (ConfluxDataType type : ConfluxDataType.values()) {
             EditBox b = addBox(px + 90, cy, fw - 90, "0");
@@ -124,7 +102,6 @@ public class ResearchTreeEditorScreen extends Screen {
             cy += 14;
         }
 
-        // Unlock editor
         int uy = cy + 8;
         wUnlockType  = addBox(px,      uy, 60,       "recipe_tag");
         wUnlockValue = addBox(px + 64, uy, fw - 64,  "value…");
@@ -139,8 +116,6 @@ public class ResearchTreeEditorScreen extends Screen {
         addRenderableWidget(b);
         return b;
     }
-
-    // ── Render ────────────────────────────────────────────────────────────────
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
@@ -160,7 +135,6 @@ public class ResearchTreeEditorScreen extends Screen {
         int cw = canvasW(), ch = canvasH();
         g.fill(0, TOOLBAR_H, cw, TOOLBAR_H + ch, C_CANVAS);
 
-        // Grid
         g.pose().pushPose();
         g.pose().translate(panX, TOOLBAR_H + panY, 0);
         g.pose().scale(zoom, zoom, 1f);
@@ -169,7 +143,6 @@ public class ResearchTreeEditorScreen extends Screen {
         drawNodes(g, mx, my);
         g.pose().popPose();
 
-        // Canvas border
         g.fill(cw, TOOLBAR_H, cw + 1, height, C_BORDER);
     }
 
@@ -191,7 +164,6 @@ public class ResearchTreeEditorScreen extends Screen {
             drawBezier(g, x1, y1, x2, y2, col);
         }
 
-        // Live preview line when linking
         if (mode == Mode.LINK && linkSource != null) {
             float[] c = screenToCanvas(mx, my);
             int x1 = linkSource.x * GRID, y1 = linkSource.y * GRID;
@@ -217,7 +189,6 @@ public class ResearchTreeEditorScreen extends Screen {
         int fill   = nodeFill(node);
         int border = sel ? C_SELECTED : linkSrc ? C_LINK_SRC : hov ? C_ACCENT : nodeBorder(node);
 
-        // Glow layers (3 rings, decreasing alpha)
         if (sel || hov || linkSrc) {
             for (int i = 4; i >= 1; i--) {
                 int alpha  = 0x18 * (5 - i);
@@ -226,10 +197,8 @@ public class ResearchTreeEditorScreen extends Screen {
             }
         }
 
-        // Node body + border
         drawRoundRect(g, x, y, NODE_W, NODE_H, NODE_R, fill, border);
 
-        // Item icon (16×16 centered)
         if (!node.icon.isEmpty()) {
             try {
                 var item = net.minecraft.core.registries.BuiltInRegistries.ITEM
@@ -240,16 +209,14 @@ public class ResearchTreeEditorScreen extends Screen {
             } catch (Exception ignored) {}
         }
 
-        // Title below icon
         String label = node.title.isEmpty() ? node.id : node.title;
         if (label.length() > 9) label = label.substring(0, 8) + "…";
         g.drawCenteredString(font, label, cx, cy + 6, sel ? C_SELECTED : C_TEXT);
 
-        // Root badge
         if (edges.stream().noneMatch(e -> e.to == node)) {
             g.drawString(font, "★", x + 2, y + 2, C_SELECTED, false);
         }
-        // Exclusion group badge
+        
         if (!node.exclusionGroup.isEmpty()) {
             g.drawString(font, "⊗", x + NODE_W - 9, y + 2, 0xFFFF6644, false);
         }
@@ -272,7 +239,6 @@ public class ResearchTreeEditorScreen extends Screen {
         x = drawToolBtn(g, mx, my, x, "SAVE FILE",   false, 0xFF223322);
         x = drawToolBtn(g, mx, my, x, "LOAD TREE",   false, 0xFF332233);
 
-        // Node count — right-aligned inside the side panel
         String countStr = "§7" + nodes.size() + " nodes  " + edges.size() + " edges";
         g.drawString(font, countStr, width - font.width(countStr) - 8, 8, 0xFFFFFF, false);
     }
@@ -292,13 +258,12 @@ public class ResearchTreeEditorScreen extends Screen {
 
         int x = px + 8, y = TOOLBAR_H + 8;
 
-        // Tree metadata section
         g.drawString(font, "§bTree", x, y - 2, 0xFFFFFF, false);
         y += 10;
         g.drawString(font, "§7ID",    x, y + 2, 0xFFFFFF, false);
-        y += 14; // wTreeName
+        y += 14; 
         g.drawString(font, "§7Title", x, y + 2, 0xFFFFFF, false);
-        y += 14; // wTreeTitle
+        y += 14; 
         g.drawString(font, "§7Desc",  x, y + 2, 0xFFFFFF, false);
         y += 18;
 
@@ -310,7 +275,6 @@ public class ResearchTreeEditorScreen extends Screen {
             return;
         }
 
-        // Node properties
         g.drawString(font, "§eNode: §f" + selected.id, x, y, 0xFFFFFF, false); y += 12;
         g.drawString(font, "§7Title",  x, y + 2, 0xFFFFFF, false); y += 14;
         g.drawString(font, "§7Lore",   x, y + 2, 0xFFFFFF, false); y += 14;
@@ -319,7 +283,6 @@ public class ResearchTreeEditorScreen extends Screen {
 
         g.fill(px + 4, y, width - 4, y + 1, C_BORDER); y += 6;
 
-        // Costs
         g.drawString(font, "§7Cost:", x, y, 0xFFFFFF, false); y += 12;
         for (ConfluxDataType type : ConfluxDataType.values()) {
             if (!type.isAvailable()) continue;
@@ -329,7 +292,6 @@ public class ResearchTreeEditorScreen extends Screen {
 
         g.fill(px + 4, y, width - 4, y + 1, C_BORDER); y += 6;
 
-        // Unlocks list
         g.drawString(font, "§7Unlocks:", x, y, 0xFFFFFF, false); y += 12;
         for (int i = 0; i < unlockEntries.size(); i++) {
             UnlockEntry ue = unlockEntries.get(i);
@@ -341,7 +303,6 @@ public class ResearchTreeEditorScreen extends Screen {
 
         renderUnlockEditor(g, mx, my, x, y);
 
-        // Delete node button
         int btnY = height - 22;
         boolean hov = mx >= x && mx < x + 100 && my >= btnY && my < btnY + 14;
         g.fill(x, btnY, x + 100, btnY + 14, hov ? 0xFF551111 : 0xFF330A0A);
@@ -351,7 +312,7 @@ public class ResearchTreeEditorScreen extends Screen {
 
     private void renderUnlockEditor(GuiGraphics g, int mx, int my, int x, int y) {
         g.drawString(font, "§7+ Unlock:", x, y + 2, 0xFFFFFF, false); y += 14;
-        // EditBoxes positioned by init() — just draw the "Add" button
+        
         int addX = x + 4, addY = y + 14;
         if (wUnlockType != null) { wUnlockType.setX(x); wUnlockType.setY(addY - 14); }
         if (wUnlockValue != null) { wUnlockValue.setX(x + 64); wUnlockValue.setY(addY - 14); }
@@ -361,35 +322,30 @@ public class ResearchTreeEditorScreen extends Screen {
         g.drawCenteredString(font, "§aAdd", addX + 20, addY + 2, 0xFFFFFF);
     }
 
-    // ── Input ─────────────────────────────────────────────────────────────────
-
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (super.mouseClicked(mx, my, btn)) return true;
 
-        // Toolbar
         if (my < TOOLBAR_H) {
             handleToolbarClick((int)mx, (int)my, btn);
             return true;
         }
 
-        // Panel
         if (mx >= canvasW()) {
             handlePanelClick((int)mx, (int)my, btn);
             return true;
         }
 
-        // Canvas
         float[] pos  = screenToCanvas(mx, my);
         EditorNode hit = nodeAt(pos);
 
         if (btn == 2 || (btn == 0 && hasAltDown())) {
-            // Middle / Alt+left = start pan from anywhere
+            
             panDragging = true; lastDragX = mx; lastDragY = my;
             return true;
         }
         if (btn == 1 && nodeAt(screenToCanvas(mx, my)) == null) {
-            // Right-click on empty canvas = pan
+            
             panDragging = true; lastDragX = mx; lastDragY = my;
             return true;
         }
@@ -423,7 +379,7 @@ public class ResearchTreeEditorScreen extends Screen {
                         if (linkSource == null) {
                             linkSource = hit;
                         } else if (hit != linkSource) {
-                            // Add edge: linkSource is prerequisite of hit
+                            
                             if (edges.stream().noneMatch(e -> e.from == linkSource && e.to == hit)) {
                                 edges.add(new EditorEdge(linkSource, hit));
                             }
@@ -439,7 +395,7 @@ public class ResearchTreeEditorScreen extends Screen {
         }
 
         if (btn == 1 && hit != null) {
-            // Right-click node = delete edge from selected to this
+            
             if (selected != null) {
                 edges.removeIf(e -> (e.from == selected && e.to == hit) || (e.from == hit && e.to == selected));
             }
@@ -499,14 +455,12 @@ public class ResearchTreeEditorScreen extends Screen {
         if (kc == GLFW.GLFW_KEY_DELETE && selected != null) {
             deleteSelected(); return true;
         }
-        // Mode shortcuts
+        
         if (kc == GLFW.GLFW_KEY_S && !hasControlDown()) { mode = Mode.SELECT; return true; }
         if (kc == GLFW.GLFW_KEY_P)                      { mode = Mode.PLACE;  return true; }
         if (kc == GLFW.GLFW_KEY_L)                      { mode = Mode.LINK;   return true; }
         return super.keyPressed(kc, sc, mod);
     }
-
-    // ── Click handlers ────────────────────────────────────────────────────────
 
     private void handleToolbarClick(int mx, int my, int btn) {
         int x = 6;
@@ -532,13 +486,13 @@ public class ResearchTreeEditorScreen extends Screen {
 
     private void handlePanelClick(int mx, int my, int btn) {
         if (selected == null) return;
-        // Unlock "Add" button
+        
         int ux = canvasW() + 8 + 4;
         int uy = unlockAddButtonY();
         if (mx >= ux && mx < ux + 40 && my >= uy && my < uy + 12) {
             addUnlock(); return;
         }
-        // Unlock remove buttons
+        
         int lx = width - 16;
         int ly = unlockListStartY();
         for (int i = 0; i < unlockEntries.size(); i++) {
@@ -547,14 +501,12 @@ public class ResearchTreeEditorScreen extends Screen {
             }
             ly += 10;
         }
-        // Delete node button
+        
         int bx = canvasW() + 8, by = height - 22;
         if (mx >= bx && mx < bx + 100 && my >= by && my < by + 14) {
             deleteSelected();
         }
     }
-
-    // ── Node actions ──────────────────────────────────────────────────────────
 
     private void deleteSelected() {
         if (selected == null) return;
@@ -587,8 +539,6 @@ public class ResearchTreeEditorScreen extends Screen {
             if (selected == last) { selected = null; refreshNodeWidgets(); }
         }
     }
-
-    // ── Widget sync ───────────────────────────────────────────────────────────
 
     private void refreshNodeWidgets() {
         boolean has = selected != null;
@@ -625,8 +575,6 @@ public class ResearchTreeEditorScreen extends Screen {
         }
     }
 
-    // ── Export ────────────────────────────────────────────────────────────────
-
     private String buildJson() {
         JsonObject root = new JsonObject();
         root.addProperty("title",       treeTitle);
@@ -641,18 +589,18 @@ public class ResearchTreeEditorScreen extends Screen {
             if (!n.exclusionGroup.isEmpty()) nj.addProperty("exclusion_group", n.exclusionGroup);
             JsonArray pos = new JsonArray(); pos.add(n.x); pos.add(n.y);
             nj.add("position", pos);
-            // Prerequisites
+            
             JsonArray prereqs = new JsonArray();
             edges.stream().filter(e -> e.to == n)
                     .forEach(e -> prereqs.add("phoenixcore:" + e.from.id));
             if (prereqs.size() > 0) nj.add("prerequisites", prereqs);
-            // Cost
+            
             if (!n.cost.isEmpty()) {
                 JsonObject cost = new JsonObject();
                 n.cost.forEach((t, v) -> cost.addProperty(t.id(), v));
                 nj.add("cost", cost);
             }
-            // Unlocks
+            
             if (!n.unlocks.isEmpty()) {
                 JsonArray ul = new JsonArray();
                 n.unlocks.forEach(u -> { JsonObject uj = new JsonObject();
@@ -677,14 +625,14 @@ public class ResearchTreeEditorScreen extends Screen {
             File out = dir.resolve(treeName + ".json").toFile();
             try (FileWriter fw = new FileWriter(out)) { fw.write(buildJson()); }
         } catch (Exception e) {
-            // Silent — editor is a dev tool, failures visible in log
+            
             e.printStackTrace();
         }
     }
 
     private void showLoadDialog() {
         for (ResearchTree tree : ResearchTreeRegistry.INSTANCE.getAllTrees()) {
-            // Load first tree found as a quick demo — a proper picker can come later
+            
             treeName  = tree.id.getPath();
             treeTitle = tree.title;
             treeDesc  = tree.description;
@@ -708,14 +656,12 @@ public class ResearchTreeEditorScreen extends Screen {
         }
     }
 
-    // ── Drawing helpers ───────────────────────────────────────────────────────
-
     private void drawRoundRect(GuiGraphics g, int x, int y, int w, int h, int r, int fill, int border) {
         if (fill != 0) {
             g.fill(x + r, y,     x + w - r, y + h,     fill);
             g.fill(x,     y + r, x + r,     y + h - r, fill);
             g.fill(x + w - r, y + r, x + w, y + h - r, fill);
-            // corner fills
+            
             g.fill(x + r - 1, y + 1,         x + r,         y + r,     fill);
             g.fill(x + w - r, y + 1,         x + w - r + 1, y + r,     fill);
             g.fill(x + r - 1, y + h - r,     x + r,         y + h - 1, fill);
@@ -745,8 +691,6 @@ public class ResearchTreeEditorScreen extends Screen {
         }
     }
 
-    // ── Coordinate helpers ────────────────────────────────────────────────────
-
     private float[] screenToCanvas(double sx, double sy) {
         return new float[]{ (float)((sx - panX) / zoom), (float)((sy - TOOLBAR_H - panY) / zoom) };
     }
@@ -762,8 +706,6 @@ public class ResearchTreeEditorScreen extends Screen {
 
     private int canvasW() { return width - PANEL_W; }
     private int canvasH() { return height - TOOLBAR_H; }
-
-    // ── Color helpers ─────────────────────────────────────────────────────────
 
     private int dominantColor(EditorNode n) {
         return n.cost.entrySet().stream().max(Map.Entry.comparingByValue())
@@ -796,18 +738,14 @@ public class ResearchTreeEditorScreen extends Screen {
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
-    // ── Layout helpers for panel Y positions ─────────────────────────────────
-
     private int unlockListStartY() {
-        // approximate — used for hit testing
+        
         return TOOLBAR_H + 8 + 10 + 14 + 14 + 14 + 14 + 6 + 12 + 14 + 14 + 14 + 18 + 6 + 12 + (ConfluxDataType.values().length * 14) + 6 + 12;
     }
 
     private int unlockAddButtonY() { return unlockListStartY() + unlockEntries.size() * 10 + 14; }
 
     @Override public boolean isPauseScreen() { return false; }
-
-    // ── Editor data classes ───────────────────────────────────────────────────
 
     private static class EditorNode {
         String id, title = "", lore = "", icon = "", exclusionGroup = "";

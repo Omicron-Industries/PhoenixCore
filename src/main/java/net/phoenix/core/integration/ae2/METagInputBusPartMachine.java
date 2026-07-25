@@ -68,13 +68,11 @@ public class METagInputBusPartMachine extends MEBusPartMachine implements IDataS
     public long[] previewAmounts = new long[CONFIG_SIZE];
 
     public METagInputBusPartMachine(BlockEntityCreationInfo info, IO io) {
-        // 1. Instantiate the custom inventory directly inline to satisfy the 3 expected arguments
+        
         super(info, io, new ExportOnlyAEItemList(CONFIG_SIZE));
 
-        // 2. Safely grab the reference to your custom handler from the superclass storage
         this.aeItemHandler = (ExportOnlyAEItemList) this.getInventory();
 
-        // 3. Attach your circuit slot trait configuration
         this.circuitTrait = new ProgrammableCircuitSlotTrait();
         this.attachPersistentTrait("programmable_circuit", this.circuitTrait);
 
@@ -82,8 +80,6 @@ public class METagInputBusPartMachine extends MEBusPartMachine implements IDataS
             previewStacks[i] = ItemStack.EMPTY;
         }
     }
-
-
 
     @Override
     public NotifiableItemStackHandler getInventory() {

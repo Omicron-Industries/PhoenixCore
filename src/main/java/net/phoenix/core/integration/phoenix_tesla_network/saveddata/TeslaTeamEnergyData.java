@@ -40,9 +40,6 @@ public class TeslaTeamEnergyData extends SavedData {
         }
     }
 
-    /**
-     * Aggregates both Physical Hatches and Soul-Linked machines into one list for the Binder UI.
-     */
     public Collection<HatchInfo> getHatches(UUID team) {
         TeamEnergy e = networks.get(team);
         if (e == null) return List.of();

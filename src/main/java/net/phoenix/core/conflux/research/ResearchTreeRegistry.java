@@ -18,14 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Loads Axiom research trees from datapacks.
- *
- * Files live at: {@code data/<namespace>/conflux/research/<tree_id>.json}
- *
- * Call {@link #getTree} / {@link #getAllNodes} at runtime; the registry is
- * repopulated on every datapack reload (including {@code /reload}).
- */
 public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -33,9 +25,9 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
     public static final ResearchTreeRegistry INSTANCE = new ResearchTreeRegistry();
 
     private final Map<ResourceLocation, ResearchTree> trees = new LinkedHashMap<>();
-    /** All multiblock machine IDs gated behind any research node across all loaded trees. */
+    
     private final Set<ResourceLocation> gatedMultiblocks = new LinkedHashSet<>();
-    /** All recipe-tag strings gated behind any research node across all loaded trees. */
+    
     private final Set<String> gatedRecipeTags = new LinkedHashSet<>();
 
     private ResearchTreeRegistry() {
@@ -57,7 +49,6 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
             }
         });
 
-        // Build gated-set caches from all loaded nodes
         for (ResearchTree tree : trees.values()) {
             for (ResearchNode node : tree.getNodes()) {
                 for (ResearchUnlock unlock : node.unlocks) {
@@ -72,8 +63,6 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
             }
         }
     }
-
-    // ── Queries ───────────────────────────────────────────────────────────────
 
     public Optional<ResearchTree> getTree(ResourceLocation id) {
         return Optional.ofNullable(trees.get(id));
@@ -97,13 +86,9 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
                 .toList();
     }
 
-    /** All multiblock machine IDs that require research to form (from any loaded tree). */
     public Set<ResourceLocation> getGatedMultiblocks() { return Collections.unmodifiableSet(gatedMultiblocks); }
 
-    /** All recipe-tag strings that require research to activate (from any loaded tree). */
     public Set<String> getGatedRecipeTags() { return Collections.unmodifiableSet(gatedRecipeTags); }
-
-    // ── Registration ──────────────────────────────────────────────────────────
 
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(INSTANCE);

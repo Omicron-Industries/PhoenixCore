@@ -6,13 +6,6 @@ import net.phoenix.core.conflux.client.render.discipline.PhoenixDisciplineRender
 import net.phoenix.core.conflux.tools.capture.BakeRenderContext;
 import net.phoenix.core.conflux.tools.capture.CaptureBakeable;
 
-/**
- * Bakes the Phoenix discipline background (radial heat gradient + rotating ray arms)
- * into a 16-frame sprite sheet.
- *
- * One animation period for the rays ≈ 2π / 0.09 ≈ 69.8 s.
- * 16 frames covers one full rotation at ~4.36 s per frame.
- */
 public final class AxiomPhoenixBaker implements CaptureBakeable {
 
     private static final int   FRAMES       = 16;

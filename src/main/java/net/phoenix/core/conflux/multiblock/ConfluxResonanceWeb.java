@@ -29,32 +29,21 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Axiom Resonance Web — passive data generator that rewards building large networks.
- * Ported cleanly to GTM 8.0.0 and ModularUI2.
- */
 public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
 
-    // ── Constants ─────────────────────────────────────────────────────────────
-
-    private static final int  SCAN_INTERVAL = 100;    // ticks between network scans
-    private static final int  SCAN_RADIUS   = 24;     // blocks
-    private static final long RATE_PER_PIPE = 8L;     // units/tick per pipe found
+    private static final int  SCAN_INTERVAL = 100;    
+    private static final int  SCAN_RADIUS   = 24;     
+    private static final long RATE_PER_PIPE = 8L;     
     private static final long BUFFER_PER    = 500_000L;
     private static final long PUSH_RATE     = 8_192L;
-    private static final long EU_PER_TICK   = 2_097_152L; // UV tier
+    private static final long EU_PER_TICK   = 2_097_152L; 
 
-    // ── State ─────────────────────────────────────────────────────────────────
-
-    // Annotations removed - handled dynamically by MUI2 registries
     private int totalPipeCount = 0;
     private int distinctTypeCount = 0;
     private boolean webActive = false;
 
     private final Map<ConfluxDataType, Long> buffer = new EnumMap<>(ConfluxDataType.class);
     private int scanCooldown = 0;
-
-    // ── Constructor ───────────────────────────────────────────────────────────
 
     public ConfluxResonanceWeb(BlockEntityCreationInfo holder) {
         super(holder);
@@ -64,12 +53,9 @@ public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
         this.subscribeServerTick(() -> this.webTick());
     }
 
-    // ── Tick ─────────────────────────────────────────────────────────────────
-
     private void webTick() {
         if (!isFormed() || getLevel() == null || isRemote()) return;
 
-        // FIXED: Drain EU using GTM 8.0 flat capability collection layout
         List<IRecipeHandler<?>> energyCaps = this.getCapabilitiesFlat(IO.IN, EURecipeCapability.CAP);
         if (energyCaps.isEmpty()) {
             webActive = false;
@@ -91,13 +77,11 @@ public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
         energyList.removeEnergy(EU_PER_TICK);
         webActive = true;
 
-        // Periodic network scan
         if (--scanCooldown <= 0) {
             scanNetwork();
             scanCooldown = SCAN_INTERVAL;
         }
 
-        // Produce data for each type
         if (totalPipeCount > 0) {
             float diversityBonus = 1f + 0.25f * distinctTypeCount;
             long rateBase = (long)(totalPipeCount * RATE_PER_PIPE * diversityBonus);
@@ -110,7 +94,6 @@ public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
                 }
             }
 
-            // Push all buffered data to any adjacent multi-handler (terminal/pipe)
             pushAllTypes();
         }
     }
@@ -158,14 +141,11 @@ public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
         }
     }
 
-    // ── Display text ──────────────────────────────────────────────────────────
-
     @Override
     public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
 
-        // FIXED: Explicit data synchronization mapping inside MUI2 framework context
         syncManager.syncValue("web_active", new BooleanSyncValue(() -> this.webActive, (v) -> this.webActive = v));
         syncManager.syncValue("total_pipes", new IntSyncValue(() -> this.totalPipeCount, (v) -> this.totalPipeCount = v));
         syncManager.syncValue("distinct_types", new IntSyncValue(() -> this.distinctTypeCount, (v) -> this.distinctTypeCount = v));
@@ -193,12 +173,10 @@ public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
         return widgets;
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
     @Override
     public void formStructure(@org.jetbrains.annotations.NotNull String substructureName) {
         super.formStructure(substructureName);
-        scanCooldown = 0; // immediate first scan
+        scanCooldown = 0; 
     }
 
     @Override
@@ -208,8 +186,6 @@ public class ConfluxResonanceWeb extends WorkableElectricMultiblockMachine {
         totalPipeCount = 0;
         distinctTypeCount = 0;
     }
-
-    // ── Accessors ─────────────────────────────────────────────────────────────
 
     public int getTotalPipeCount()   { return totalPipeCount; }
     public int getDistinctTypeCount(){ return distinctTypeCount; }

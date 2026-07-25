@@ -26,9 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Custom renderer that draws the current recipe output fluid on chosen faces.
- */
 @SuppressWarnings("all")
 public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, CustomFluidRender> {
 
@@ -48,8 +45,8 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
                 .getRenderer();
 
         this.drawFaces = List.of(
-                RelativeDirection.DOWN,  // bottom
-                RelativeDirection.UP     // top
+                RelativeDirection.DOWN,  
+                RelativeDirection.UP     
         );
     }
 
@@ -64,7 +61,6 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
                        int packedLight, int packedOverlay) {
         if (!ConfigHolder.INSTANCE.client.renderer.renderFluids) return;
 
-        // FIX 1: Passed .TYPE instead of .class
         var fluidTrait = machine.getTrait(MultiblockFluidRendererTrait.TYPE);
         if (fluidTrait == null || !machine.isFormed()) return;
 
@@ -103,8 +99,6 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
                 dir = dir.getOpposite();
             }
 
-            // FIX 2: Let drawPlane handle the Collection natively instead of looping manually.
-            // Passed fluidOffsets, poseStack, and machine.getBlockPos() directly matching the signature.
             fluidRenderer.drawPlane(
                     dir,
                     fluidOffsets,
@@ -112,8 +106,8 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
                     consumer,
                     cachedFluid,
                     RenderUtil.FluidTextureType.STILL,
-                    packedOverlay, // 7. combinedOverlay
-                    packedLight    // 8. combinedLight
+                    packedOverlay, 
+                    packedLight    
             );
 
             poseStack.popPose();

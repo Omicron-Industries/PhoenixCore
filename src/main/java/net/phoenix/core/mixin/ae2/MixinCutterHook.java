@@ -41,15 +41,11 @@ public class MixinCutterHook {
             return;
         }
 
-        // FIXED FOR 8.0.0: Look up the tile block entity directly.
         BlockEntity tile = level.getBlockEntity(hitResult.getBlockPos());
 
-        // FIXED FOR 8.0.0: Because MetaMachine implements BlockEntity natively,
-        // we check the block entity instance against our target machine directly.
         if (tile instanceof MEPatternBufferPartMachine bufferMachine) {
             if (!level.isClientSide) {
-                // ExtendedAE/AE2 Menu Locators expect the base Minecraft BlockEntity instance.
-                // Since bufferMachine inherits from BlockEntity, passing it directly works perfectly.
+
                 MenuOpener.open(ContainerRenamer.TYPE, player, MenuLocators.forBlockEntity(bufferMachine));
             }
             cir.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide));

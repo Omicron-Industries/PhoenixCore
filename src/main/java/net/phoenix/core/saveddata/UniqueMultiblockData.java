@@ -10,14 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Stores all unique multiblock entries for a single owner (team or player).
- * Each entry maps:
- *
- * multiblockType → (dimension, pos)
- *
- * This allows one unique multiblock per type per owner.
- */
 public class UniqueMultiblockData {
 
     @Getter
@@ -64,7 +56,6 @@ public class UniqueMultiblockData {
         this.data = new HashMap<>();
     }
 
-    /** Deserialize from NBT list */
     public static UniqueMultiblockData fromTag(ListTag tag) {
         UniqueMultiblockData result = new UniqueMultiblockData();
 
@@ -83,7 +74,6 @@ public class UniqueMultiblockData {
         return result;
     }
 
-    /** Serialize to NBT list */
     public ListTag toTag() {
         ListTag list = new ListTag();
 
@@ -104,12 +94,10 @@ public class UniqueMultiblockData {
         return list;
     }
 
-    /** Check if this owner already has a multiblock of this type */
     public boolean hasData(String multiblockType) {
         return data.containsKey(new UniqueMultiblockId(multiblockType));
     }
 
-    /** Check if the given pos/dimension matches the stored one */
     public boolean isUnique(String multiblockType, String dimension, BlockPos pos) {
         UniqueMultiblockId key = new UniqueMultiblockId(multiblockType);
 
@@ -119,14 +107,12 @@ public class UniqueMultiblockData {
         return entry.getDimension().equals(dimension) && entry.getPos().equals(pos);
     }
 
-    /** Add or overwrite the multiblock entry */
     public void addMultiblock(String multiblockType, String dimension, BlockPos pos) {
         data.put(
                 new UniqueMultiblockId(multiblockType),
                 new UniqueMultiblockEntry(dimension, pos));
     }
 
-    /** Remove only if the stored entry matches */
     public void removeMultiblock(String multiblockType, String dimension, BlockPos pos) {
         UniqueMultiblockId key = new UniqueMultiblockId(multiblockType);
 
@@ -139,7 +125,6 @@ public class UniqueMultiblockData {
         }
     }
 
-    /** Retrieve the entry for a type */
     public UniqueMultiblockEntry getEntry(String multiblockType) {
         return data.get(new UniqueMultiblockId(multiblockType));
     }

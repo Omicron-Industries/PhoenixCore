@@ -8,11 +8,6 @@ import net.phoenix.core.conflux.ConfluxDataType;
 
 import java.util.Locale;
 
-/**
- * One enum value per {@link ConfluxDataType}; ordinal matches the data-type ordinal.
- * Each value produces its own {@link ResourceLocation} so GTCEu's pipe-net treats
- * them as separate network types and they never merge across disciplines.
- */
 public enum ConfluxPipeType implements IPipeType<ConfluxPipeData>, StringRepresentable {
 
     MATERIAL,
@@ -21,10 +16,8 @@ public enum ConfluxPipeType implements IPipeType<ConfluxPipeData>, StringReprese
     COMPUTATIONAL,
     ARCANE;
 
-    /** Pipe cross-section thickness in the 0–1 range (matches GTCEu normal pipes). */
     private static final float THICKNESS = 0.375f;
 
-    /** The {@link ConfluxDataType} that corresponds to this pipe variant. */
     public ConfluxDataType dataType() {
         return ConfluxDataType.values()[ordinal()];
     }
@@ -44,7 +37,6 @@ public enum ConfluxPipeType implements IPipeType<ConfluxPipeData>, StringReprese
         return true;
     }
 
-    /** Unique RL per variant — used by GTCEu to key separate pipe-net types. */
     @Override
     public ResourceLocation type() {
         return PhoenixCore.id(dataType().id() + "_data_pipe");

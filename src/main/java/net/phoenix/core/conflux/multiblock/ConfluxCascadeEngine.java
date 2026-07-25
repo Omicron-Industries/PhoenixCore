@@ -33,23 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Axiom Cascade Engine — momentum-based single-type research data generator.
- *
- * Mechanics:
- *  - Consumes EU (ZPM-tier) every tick to sustain operation.
- *  - Consumes a solid fuel item every {@link #FUEL_TICKS} ticks to run.
- *  - Builds "momentum" the longer it runs uninterrupted (0 → 1.0 over ~500 ticks).
- *  - Output rate scales from 1× to 10× base rate as momentum increases.
- *  - Any power interruption causes rapid momentum decay (0.05/tick).
- *
- * Shift-right-click with screwdriver to cycle the output data type.
- *
- * Tier: ZPM  |  Size: 5×5×5 hollow cube
- */
 public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
-
-    // ── Constants ─────────────────────────────────────────────────────────────
 
     private static final int   FUEL_TICKS     = 400;
     private static final long  BASE_RATE      = 200L;
@@ -59,8 +43,6 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
     private static final long  PUSH_RATE      = 4_096L;
     private static final float MOMENTUM_GAIN  = 1f / 500f;
     private static final float MOMENTUM_DECAY = 0.05f;
-
-    // ── Persisted state ───────────────────────────────────────────────────────
 
     @SaveField
     private float momentum = 0f;
@@ -85,16 +67,12 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
 
     private final LazyOptional<IConfluxDataHandler> outputCap;
 
-    // ── Constructor ───────────────────────────────────────────────────────────
-
     public ConfluxCascadeEngine(BlockEntityCreationInfo holder) {
         super(holder);
         this.fuelSlot  = new NotifiableItemStackHandler(1, IO.IN);
         this.outputCap = LazyOptional.of(this::makeOutputHandler);
         subscribeServerTick(this::engineTick);
     }
-
-    // ── Tick ─────────────────────────────────────────────────────────────────
 
     private void engineTick() {
         if (!isFormed() || getLevel() == null || isRemote()) return;
@@ -103,7 +81,6 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         if (energy == null || energy.getEnergyStored() < EU_PER_TICK) { stall(); return; }
         energy.removeEnergy(EU_PER_TICK);
 
-        // Refuel
         if (fuelTicks <= 0) {
             var stack = fuelSlot.getStackInSlot(0);
             if (!stack.isEmpty()) {
@@ -116,12 +93,10 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         if (fuelTicks <= 0) { stall(); return; }
         fuelTicks--;
 
-        // Build momentum
         momentum = Math.min(1f, momentum + MOMENTUM_GAIN);
         engineActive = true;
         setChanged();
 
-        // Produce data
         float multiplier = 1f + (MAX_MULT - 1f) * momentum;
         long  produced   = (long)(BASE_RATE * multiplier);
         long  space      = BUFFER - dataBuffer;
@@ -167,8 +142,6 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         if (budget < PUSH_RATE) setChanged();
     }
 
-    // ── Interaction ───────────────────────────────────────────────────────────
-
     @Override
     protected InteractionResult onScrewdriverClick(ExtendedUseOnContext ctx) {
         var player = ctx.getPlayer();
@@ -181,8 +154,6 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         }
         return super.onScrewdriverClick(ctx);
     }
-
-    // ── Capability ────────────────────────────────────────────────────────────
 
     private IConfluxDataHandler makeOutputHandler() {
         return new IConfluxDataHandler() {
@@ -202,8 +173,6 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         if (cap == ConfluxDataCapability.DATA) return outputCap.cast();
         return super.getCapability(cap, side);
     }
-
-    // ── UI ────────────────────────────────────────────────────────────────────
 
     @Override
     public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
@@ -229,8 +198,6 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         }
         return widgets;
     }
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     @Override
     public void onUnload() {

@@ -19,8 +19,4 @@ public class SoundEngineMixin {
         }
     }
 
-    // NOTE: No stop() hook here. Stopping the old instance triggers the SoundEngine
-    // internally and we don't need to intercept it — VocalVibrancyClient.onSoundStopped()
-    // is called directly from ClientSoundHandler.stopSoundAt() instead, which avoids
-    // both the method descriptor ambiguity and the re-entrant clear-then-play race.
 }

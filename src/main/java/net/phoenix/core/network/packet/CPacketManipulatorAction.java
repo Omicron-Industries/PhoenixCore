@@ -37,7 +37,7 @@ public class CPacketManipulatorAction {
 
             ItemStack stack = player.getMainHandItem();
             if (stack.getItem() instanceof PhoenixManipulatorItem tool) {
-                // Execute the placement engine on the server side
+                
                 PhoenixPlacementEngine.fillPipeArea(
                         player.level(),
                         player,

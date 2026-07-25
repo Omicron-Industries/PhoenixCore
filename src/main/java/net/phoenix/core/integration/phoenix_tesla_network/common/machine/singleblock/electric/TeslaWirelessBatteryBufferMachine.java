@@ -40,9 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * FIXED FOR GTM 8.0: Fully ported from old LDLib architecture to standard modern sync tags &裝 MUI2.
- */
 public class TeslaWirelessBatteryBufferMachine extends TieredEnergyMachine
         implements IDataStickInteractable, IMuiMachine {
 

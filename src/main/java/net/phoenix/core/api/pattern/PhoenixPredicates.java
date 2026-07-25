@@ -32,9 +32,6 @@ import static com.gregtechceu.gtceu.common.data.GTBlocks.LAMPS;
 
 public class PhoenixPredicates {
 
-    // NOTE: matchContext is gone in GTM 8.0. Machines must scan getMultiblockState().getCache()
-    // in onStructureFormed() to collect per-block data (cooler types, battery counts, etc.).
-
     public static PatternPredicate teslaBatteries() {
         List<BlockInfo> candidates = PhoenixAPI.TESLA_BATTERIES.entrySet().stream()
                 .sorted(Comparator.comparingInt(e -> e.getKey().getTier()))
@@ -86,8 +83,6 @@ public class PhoenixPredicates {
         return LAMPS_BY_COLOR.getOrDefault(color, anyLamp());
     }
 
-
-
     public static PatternPredicate soundHatches() {
         List<BlockInfo> candidates = new ArrayList<>();
         for (var machine : PhoenixMachines.DISC_HATCH) {
@@ -112,8 +107,6 @@ public class PhoenixPredicates {
             return new PlaceholderError(pos, List.of(candidates));
         }, candidates);
     }
-
-
 
     public static PatternPredicate tieredSpeakers() {
         var lvBlock = net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get();

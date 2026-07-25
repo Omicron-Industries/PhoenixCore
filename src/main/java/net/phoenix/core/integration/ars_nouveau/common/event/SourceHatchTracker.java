@@ -16,13 +16,13 @@ public final class SourceHatchTracker {
     public static void add(ResourceKey<Level> dim, BlockPos pos) {
         HATCHES.computeIfAbsent(dim, d -> Collections.newSetFromMap(new ConcurrentHashMap<>()))
                 .add(pos.immutable());
-        // PhoenixCore.LOGGER.info("Registered SourceHatch at {} in dimension {}", pos, dim.location());
+        
     }
 
     public static void remove(ResourceKey<Level> dim, BlockPos pos) {
         Set<BlockPos> set = HATCHES.get(dim);
         if (set != null && set.remove(pos)) {
-            // PhoenixCore.LOGGER.info("Unregistered SourceHatch at {}", pos);
+            
         }
     }
 

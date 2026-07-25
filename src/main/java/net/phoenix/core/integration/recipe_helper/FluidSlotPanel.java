@@ -12,13 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A HORIZONTAL row of fluid slots.
- *
- * Each slot is a square swatch rendered left-to-right.
- * Scroll-wheel adjusts the hovered slot's mB amount.
- * Right-click opens the AmountEditor popup.
- */
 public class FluidSlotPanel extends AbstractWidget {
 
     public static class FluidEntry {
@@ -38,7 +31,7 @@ public class FluidSlotPanel extends AbstractWidget {
     private final RecipeBuilderScreen parent;
 
     public FluidSlotPanel(int x, int y, int slotCount, String label, RecipeBuilderScreen parent) {
-        // Width spans all slots horizontally
+        
         super(x, y, slotCount * SLOT_W + (slotCount - 1) * GAP, LABEL_H + SLOT_H, Component.literal(label));
         this.slotCount = slotCount;
         this.parent = parent;
@@ -50,7 +43,6 @@ public class FluidSlotPanel extends AbstractWidget {
     protected void renderWidget(@NotNull GuiGraphics g, int mx, int my, float dt) {
         if (!this.visible) return;
 
-        // Label
         g.drawString(parent.getFont(), getMessage(), getX(), getY(), 0xAA88FF, false);
 
         for (int i = 0; i < slotCount; i++) {
@@ -58,16 +50,13 @@ public class FluidSlotPanel extends AbstractWidget {
             int sy = getY() + LABEL_H;
             FluidEntry e = entries.get(i);
 
-            // Slot background — purple-tinted dark when empty, fluid color when filled
             int bgCol = e.fluidExpr != null ? hashColor(e.fluidExpr) : 0xFF180820;
             g.fill(sx, sy, sx + SLOT_W, sy + SLOT_H, bgCol);
             renderBorder(g, sx, sy, sx + SLOT_W, sy + SLOT_H, 0xFF5C2E7A);
 
-            // Hover highlight
             if (isOver(mx, my, sx, sy, SLOT_W, SLOT_H))
                 g.fill(sx + 1, sy + 1, sx + SLOT_W - 1, sy + SLOT_H - 1, 0x33CC88FF);
 
-            // Show abbreviated mB amount if filled
             if (e.fluidExpr != null) {
                 String amt = RecipeBuilderScreen.formatAmount(e.amount);
                 g.drawString(parent.getFont(), amt, sx + 2, sy + 6, 0xEEDDFF, false);
@@ -120,7 +109,6 @@ public class FluidSlotPanel extends AbstractWidget {
         return true;
     }
 
-    /** Returns the slot index the mouse is over, or -1. */
     private int colAt(double mx, double my) {
         for (int i = 0; i < slotCount; i++) {
             int sx = getX() + i * (SLOT_W + GAP);
@@ -141,12 +129,11 @@ public class FluidSlotPanel extends AbstractWidget {
         g.fill(x1 - 1, y0, x1, y1, col);
     }
 
-    /** Generates a stable purple-tinted color from a fluid registry string. */
     private int hashColor(String s) {
         int h = s.hashCode();
-        int r = 80 + (h & 0x5F); // keep red modest
-        int g = 20 + ((h >> 7) & 0x3F); // low green → purple feel
-        int b = 150 + ((h >> 14) & 0x6F); // high blue
+        int r = 80 + (h & 0x5F); 
+        int g = 20 + ((h >> 7) & 0x3F); 
+        int b = 150 + ((h >> 14) & 0x6F); 
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 

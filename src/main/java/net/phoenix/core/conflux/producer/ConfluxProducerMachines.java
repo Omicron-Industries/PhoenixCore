@@ -11,16 +11,8 @@ import java.util.Map;
 
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
-/**
- * Registers one tiered GTCEu machine per {@link ConfluxDataType}.
- *
- * Naming: {@code lv_material_data_producer}, {@code mv_material_data_producer}, …
- * Tiers: LV → UV (1–9), same as standard GT machines.
- * ARCANE producers are only added to creative tabs when Ars Nouveau is loaded.
- */
 public final class ConfluxProducerMachines {
 
-    /** [ConfluxDataType][tier] — index by {@link GTValues} tier constants. */
     public static final Map<ConfluxDataType, MachineDefinition[]> PRODUCERS = new EnumMap<>(ConfluxDataType.class);
 
     private static final int[] TIERS = {
@@ -51,7 +43,7 @@ public final class ConfluxProducerMachines {
         }
     }
 
-    public static void init() { /* triggers static initializer */ }
+    public static void init() {  }
 
     private ConfluxProducerMachines() {}
 }

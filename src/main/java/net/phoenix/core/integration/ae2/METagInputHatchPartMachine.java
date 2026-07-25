@@ -88,23 +88,17 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
 
     @Override
     public void removedFromController(com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller) {
-        // Triggers the exact second the multiblock structure unforms or breaks
+        
         flushInventory();
         super.removedFromController(controller);
     }
 
     @Override
     public void onUnload() {
-        // Triggers when the block is broken, or the chunk unloads
+        
         flushInventory();
         super.onUnload();
     }
-
-    /*
-     * =========================
-     * == ME SYNC ==
-     * =========================
-     */
 
     @Override
     protected void autoIO() {
@@ -232,12 +226,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
         }
     }
 
-    /*
-     * =========================
-     * == TAG LOGIC ==
-     * =========================
-     */
-
     protected boolean isAllowed(AEFluidKey key) {
         if (whitelistExpr.isBlank() && blacklistExpr.isBlank()) return false;
         if (!blacklistExpr.isBlank() && TagMatcher.doesFluidMatch(key, blacklistExpr)) return false;
@@ -301,12 +289,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
         }
     }
 
-    /*
-     * =========================
-     * == GUI ==
-     * =========================
-     */
-
     @Override
     public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager, UISettings settings) {
         StringSyncValue whitelistSync = new StringSyncValue(() -> whitelistExpr, val -> {
@@ -335,12 +317,6 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
                                 .filter(f -> f != null && !f.isEmpty()).count()))))
         );
     }
-
-    /*
-     * =========================
-     * == DATA STICK ==
-     * =========================
-     */
 
     @Override
     public InteractionResult onDataStickShiftUse(Player player, ItemStack stick) {

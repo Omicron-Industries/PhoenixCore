@@ -20,11 +20,9 @@ public class KeyInputHandler {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.screen != null) return;
 
-        // Check if our specific key was pressed
         while (PhoenixKeybinds.MANIPULATOR_MENU.consumeClick()) {
             ItemStack stack = mc.player.getMainHandItem();
 
-            // Only open if holding the Manipulator
             if (stack.getItem() instanceof PhoenixManipulatorItem) {
                 mc.setScreen(new PhoenixRadialMenu());
             }
@@ -33,13 +31,11 @@ public class KeyInputHandler {
             ItemStack stack = mc.player.getMainHandItem();
 
             if (stack.getItem() instanceof PhoenixManipulatorItem) {
-                // --- SMART SWAP LOGIC ---
-                // If off-hand is empty, try to find the last used pipe or any pipe
+
                 if (mc.player.getOffhandItem().isEmpty()) {
-                    PhoenixInventoryService.findMatchingPipe(mc.player, ItemStack.EMPTY) // Pass EMPTY to find ANY pipe
+                    PhoenixInventoryService.findMatchingPipe(mc.player, ItemStack.EMPTY) 
                             .ifPresent(foundStack -> {
-                                // Note: In a real mod, you'd send a packet to swap slots on the server
-                                // For now, this just helps the player realize they have pipes available
+
                             });
                 }
 

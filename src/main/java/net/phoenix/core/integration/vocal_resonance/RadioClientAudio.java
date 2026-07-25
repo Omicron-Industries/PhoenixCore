@@ -28,15 +28,6 @@ import java.util.List;
 
 import javax.sound.sampled.*;
 
-/**
- * Client-side audio stream player for the Resonant Jukebox.
- *
- * Acts as a SILENT dummy {@link AbstractSoundInstance} so Minecraft's sound engine
- * has a lifecycle handle (stop/isStopped), while all actual audio output goes through
- * a {@link javax.sound.sampled.SourceDataLine} written directly by a background thread.
- *
- * Accepts any direct HTTP audio URL (MP3, OGG, M4A/AAC). Pass the stream URL directly.
- */
 @OnlyIn(Dist.CLIENT)
 public class RadioClientAudio extends AbstractSoundInstance implements TickableSoundInstance {
 
@@ -54,8 +45,7 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
     private int debugLogTick = 0;
 
     public RadioClientAudio(String url, BlockPos pos, float range, float baseVolume) {
-        // intentionally_empty is Minecraft's built-in silent sound event.
-        // Volume must be > 0 or SoundEngine skips registration and never calls tick().
+
         super(new ResourceLocation("minecraft", "intentionally_empty"),
                 SoundSource.RECORDS, RandomSource.create());
         this.rawUrl = url;
@@ -64,7 +54,7 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         this.x = pos.getX() + 0.5;
         this.y = pos.getY() + 0.5;
         this.z = pos.getZ() + 0.5;
-        this.volume = 1.0f;     // Must be non-zero; actual audio goes through SourceDataLine
+        this.volume = 1.0f;     
         this.attenuation = Attenuation.NONE;
         this.looping = false;
 
@@ -77,18 +67,14 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         return maxRange;
     }
 
-    // ── TickableSoundInstance ────────────────────────────────────────────────
-
     @Override
     public void tick() {
-        // Volume is updated externally by ClientTickHandler to guarantee it runs
-        // regardless of whether Minecraft's SoundEngine ticks this instance.
+
         if (stopped || !playing) return;
         var player = Minecraft.getInstance().player;
         if (player == null) stopStreaming();
     }
 
-    /** Called every client tick by ClientTickHandler — independent of SoundEngine. */
     public void updateVolume(net.minecraft.world.entity.player.Player player) {
         if (stopped || !playing) return;
         double dx = player.getX() - x, dy = player.getY() - y, dz = player.getZ() - z;
@@ -117,8 +103,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
             stopStreaming();
         }
     }
-
-    // ── Audio streaming ──────────────────────────────────────────────────────
 
     private void openStream(String streamUrl) {
         HttpURLConnection conn = null;
@@ -166,15 +150,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         }
     }
 
-    /**
-     * Streams the M4A/AAC connection using a demand-buffered SeekableByteChannel.
-     *
-     * jcodec parses the moov atom (typically at the front of the stream) and then
-     * reads mdat frame-by-frame on demand. Audio starts
-     * playing as soon as moov is parsed — no full-file download required.
-     *
-     * All data lives in a heap byte array; nothing is written to disk.
-     */
     private void openM4aStream(HttpURLConnection conn) throws Exception {
         PhoenixCore.LOGGER.info("VocalResonance: opening M4A stream via jcodec");
         InputStream httpIn = new BufferedInputStream(conn.getInputStream(), 65536);
@@ -244,19 +219,11 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         }
     }
 
-    /**
-     * Wraps an HTTP InputStream as a jcodec SeekableByteChannel.
-     *
-     * Bytes are fetched on demand and kept in a growing heap buffer so jcodec can
-     * seek freely within already-read regions (e.g. re-reading moov while decoding
-     * the first audio chunk). Forward seeks trigger additional HTTP reads.
-     * Nothing is ever written to disk.
-     */
     private static final class HttpStreamingM4aChannel implements SeekableByteChannel {
 
         private final InputStream http;
-        private byte[] buf = new byte[131072]; // starts at 128 KB, grows as needed
-        private int filled = 0;                // bytes pulled from HTTP so far
+        private byte[] buf = new byte[131072]; 
+        private int filled = 0;                
         private long pos = 0;
         private boolean done = false;
 
@@ -264,7 +231,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
             this.http = http;
         }
 
-        /** Reads from HTTP until `buf` contains at least `target` bytes (or stream ends). */
         private void fetchUpTo(long target) throws java.io.IOException {
             if (done || filled >= target) return;
             if (target > buf.length) {
@@ -330,17 +296,11 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         }
     }
 
-    /**
-     * Handles MP3 streams using jlayer's low-level decoder (javazoom.jl.decoder.*).
-     * AudioSystem can't find the jlayer SPI in Forge's mod classloader, so we drive
-     * the Bitstream/Decoder loop ourselves and write raw PCM to the SourceDataLine.
-     */
     private void openMp3Stream(HttpURLConnection conn) throws Exception {
         InputStream raw = new BufferedInputStream(conn.getInputStream(), 65536);
         javazoom.jl.decoder.Bitstream bitstream = new javazoom.jl.decoder.Bitstream(raw);
         javazoom.jl.decoder.Decoder decoder = new javazoom.jl.decoder.Decoder();
 
-        // Read the first frame to discover sample rate and channel count
         javazoom.jl.decoder.Header header = bitstream.readFrame();
         if (header == null) {
             PhoenixCore.LOGGER.error("VocalResonance: MP3 stream has no frames");
@@ -366,7 +326,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         PhoenixCore.LOGGER.info("VocalResonance: MP3 stream open — {}Hz {}ch MASTER_GAIN_supported={}",
                 sampleRate, channels, outputLine.isControlSupported(FloatControl.Type.MASTER_GAIN));
 
-        // Decode frame-by-frame; convert short[] samples to little-endian PCM bytes
         int frameCount = 0;
         while (playing && !stopped) {
             javazoom.jl.decoder.SampleBuffer samples = (javazoom.jl.decoder.SampleBuffer) decoder.decodeFrame(header,
@@ -392,7 +351,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         }
     }
 
-    /** Handles non-MP3 direct-stream formats (OGG, etc.) via javax.sound SPI. */
     private void openJavaxStream(HttpURLConnection conn) throws Exception {
         try (InputStream raw = new BufferedInputStream(conn.getInputStream(), 65536)) {
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(raw);
@@ -434,7 +392,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         }
     }
 
-    /** Scales 16-bit little-endian PCM samples in-place by currentVolume. */
     private void scalePcm(byte[] buf, int len) {
         float vol = currentVolume;
         for (int i = 0; i + 1 < len; i += 2) {
@@ -450,7 +407,7 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         stopped = true;
         if (outputLine != null) outputLine.stop();
         if (streamThread != null) streamThread.interrupt();
-        // SoundManager is main-thread-only; submit() marshals back correctly from bg threads.
+        
         Minecraft.getInstance().submit(() -> Minecraft.getInstance().getSoundManager().stop(this));
     }
 }

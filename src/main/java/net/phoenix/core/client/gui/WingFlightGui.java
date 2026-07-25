@@ -65,15 +65,12 @@ public class WingFlightGui implements IItemUIHolder {
         panelSyncManager.syncValue("flight_speed", 1, speedValue);
         panelSyncManager.syncValue("flight_drift", 2, driftValue);
 
-        // 1. Explicitly isolate layout spacer properties
         Flow layoutSpacer = Flow.row();
         layoutSpacer.resizer().expanded(true);
 
-        // 2. Define the header text explicitly to retain its widget type
         TextWidget headerText = new TextWidget(Component.literal("Wing Flight Control").withStyle(ChatFormatting.DARK_PURPLE));
         headerText.margin(2, 0, 4, 0);
 
-        // 3. Define the info status box explicitly to retain its widget type
         TextWidget infoStatusBox = new TextWidget(() -> {
             boolean isPowered = MODE_POWERED.equals(modeValue.getStringValue());
             String modeText = isPowered ? "⚡ Powered" : "✦ Creative";
@@ -86,7 +83,6 @@ public class WingFlightGui implements IItemUIHolder {
         });
         infoStatusBox.widthRel(1f).height(32).margin(0, 0, 6, 0);
 
-        // 4. Define Section Headers explicitly to prevent type degradation
         TextWidget speedHeader = new TextWidget(Component.literal("Flight Speed").withStyle(ChatFormatting.GRAY));
         speedHeader.margin(0, 0, 2, 0);
 
@@ -100,13 +96,10 @@ public class WingFlightGui implements IItemUIHolder {
                         .heightRel(1f)
                         .crossAxisAlignment(Alignment.CrossAxis.START)
 
-                        // Title Header
                         .child(headerText)
 
-                        // Info Status Box
                         .child(infoStatusBox)
 
-                        // Mode Swap Toggle Button
                         .child(new ButtonWidget<>()
                                 .onMousePressed((context, button) -> {
                                     modeValue.setStringValue(MODE_POWERED.equals(modeValue.getStringValue()) ? MODE_CREATIVE : MODE_POWERED);
@@ -123,22 +116,17 @@ public class WingFlightGui implements IItemUIHolder {
                                 .getThis()
                         )
 
-                        // Controls for Speed Section Header
                         .child(speedHeader)
                         .child(buildStepControl(speedValue, "Speed"))
 
-                        // Controls for Drift Section Header
                         .child(driftHeader)
                         .child(buildStepControl(driftValue, "Drift"))
 
-                        // Layout Spacing Spacer
                         .child(layoutSpacer)
 
-                        // Footer Tip
                         .child(new TextWidget(Component.literal("Press Numpad9 or Esc to close").withStyle(ChatFormatting.DARK_GRAY)))
                 );
     }
-
 
     private static Flow buildStepControl(IntSyncValue valueTracker, String label) {
         Flow controlRow = Flow.row()
@@ -147,7 +135,6 @@ public class WingFlightGui implements IItemUIHolder {
                 .mainAxisAlignment(Alignment.MainAxis.SPACE_BETWEEN)
                 .crossAxisAlignment(Alignment.CrossAxis.CENTER);
 
-        // Minus (-) Adjustment Button
         controlRow.child(new ButtonWidget<>()
                 .onMousePressed((context, button) -> {
                     valueTracker.setIntValue(Math.max(0, valueTracker.getIntValue() - 1));
@@ -159,7 +146,6 @@ public class WingFlightGui implements IItemUIHolder {
                 .getThis()
         );
 
-        // Progress Segments Flex Box
         Flow segmentsGroup = Flow.row();
         segmentsGroup.resizer().expanded(true);
         segmentsGroup.margin(4, 0)
@@ -183,7 +169,6 @@ public class WingFlightGui implements IItemUIHolder {
         }
         controlRow.child(segmentsGroup);
 
-        // Plus (+) Adjustment Button
         controlRow.child(new ButtonWidget<>()
                 .onMousePressed((context, button) -> {
                     valueTracker.setIntValue(Math.min(STEPS, valueTracker.getIntValue() + 1));
@@ -195,7 +180,6 @@ public class WingFlightGui implements IItemUIHolder {
                 .getThis()
         );
 
-        // Explicitly define the TextWidget to stop Java from degrading the generic parameter type
         TextWidget footerText = new TextWidget(() -> Component.literal(
                         String.format("%s: %d / %d", label, valueTracker.getIntValue(), STEPS))
                 .withStyle(ChatFormatting.DARK_GRAY)
@@ -205,6 +189,6 @@ public class WingFlightGui implements IItemUIHolder {
         return Flow.col()
                 .widthRel(1f)
                 .child(controlRow)
-                .child(footerText); // Safe, clean, and compiles perfectly
+                .child(footerText); 
     }
 }

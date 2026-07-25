@@ -45,11 +45,6 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_R,
             "key.categories.phoenixcore");
 
-
-
-
-
-
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);

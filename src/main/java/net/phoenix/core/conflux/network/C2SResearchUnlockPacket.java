@@ -15,11 +15,6 @@ import net.phoenix.core.conflux.terminal.ResearchTerminalBlockEntity;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-/**
- * Client → Server: player requests to unlock a research node.
- * Server validates prerequisites, spends data from the terminal, applies unlock.
- * Research state is stored per-team (FTB Teams when present, else per-player).
- */
 public class C2SResearchUnlockPacket {
 
     private final ResourceLocation nodeId;
@@ -45,7 +40,6 @@ public class C2SResearchUnlockPacket {
             if (player == null) return;
             if (!(player.level() instanceof ServerLevel level)) return;
 
-            // Validate terminal is still there and in range
             if (!(level.getBlockEntity(pkt.terminalPos) instanceof ResearchTerminalBlockEntity terminal)) return;
             if (player.distanceToSqr(pkt.terminalPos.getX() + 0.5, pkt.terminalPos.getY() + 0.5, pkt.terminalPos.getZ() + 0.5) > 64) return;
 

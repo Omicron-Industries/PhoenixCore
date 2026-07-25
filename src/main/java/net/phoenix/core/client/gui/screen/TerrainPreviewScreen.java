@@ -27,13 +27,11 @@ import java.util.stream.IntStream;
 @OnlyIn(Dist.CLIENT)
 public class TerrainPreviewScreen extends Screen {
 
-    // ── layout ────────────────────────────────────────────────────────────────
     private static final double PREVIEW_FRAC = 0.65;
     private static final int PANEL_PAD = 8;
     private static final int CTRL_H = 20;
     private static final int CTRL_GAP = 4;
 
-    // ── texture ───────────────────────────────────────────────────────────────
     private static final ResourceLocation TEXTURE_RL =
             new ResourceLocation("phoenixcore", "terrain_preview");
     private DynamicTexture dynamicTexture;
@@ -45,16 +43,13 @@ public class TerrainPreviewScreen extends Screen {
     private int previewW;
     private int previewH;
 
-    // ── state ─────────────────────────────────────────────────────────────────
     private TerrainProfile currentProfile;
     private boolean showVeins = true;
 
-    // ── presets ───────────────────────────────────────────────────────────────
     private final List<Map.Entry<String, LongFunction<TerrainProfile>>> presets =
             PhoenixTerrainPresets.all();
     private int presetIndex = 0;
 
-    // ── controls ──────────────────────────────────────────────────────────────
     private PreviewSlider sliderBaseY;
     private PreviewSlider sliderAmplitude;
     private PreviewSlider sliderFrequency;
@@ -64,11 +59,9 @@ public class TerrainPreviewScreen extends Screen {
     private ToggleCheckbox cbVeins;
     private EditBox seedField;
 
-    // ── export overlay ────────────────────────────────────────────────────────
     private boolean showExport = false;
     private String exportCode = "";
 
-    // ── ore layers ────────────────────────────────────────────────────────────
     private record OreLayer(String name, int minY, int maxY, int argb, double scale, double threshold, long seedOff) {}
 
     private static final OreLayer[] ORE_LAYERS = {
@@ -80,8 +73,6 @@ public class TerrainPreviewScreen extends Screen {
         new OreLayer("Diamond",       -64,  16, 0xFF40EEEE, 0.14, 0.065, 60L),
         new OreLayer("Ancient Debris",  8,  22, 0xFFAA44AA, 0.18, 0.055, 70L),
     };
-
-    // ── init ──────────────────────────────────────────────────────────────────
 
     public TerrainPreviewScreen() {
         super(Component.literal("Terrain Preview"));
@@ -108,7 +99,6 @@ public class TerrainPreviewScreen extends Screen {
         int panelW = this.width - panelX - PANEL_PAD;
         int cy = PANEL_PAD + 20;
 
-        // ── Preset arrows ──
         int arrowW = 20;
         int presetLabelW = panelW - arrowW * 2 - 4;
         addRenderableWidget(Button.builder(Component.literal("<"), b -> {
@@ -121,7 +111,6 @@ public class TerrainPreviewScreen extends Screen {
         }).bounds(panelX + arrowW + presetLabelW + 4, cy, arrowW, CTRL_H).build());
         cy += CTRL_H + CTRL_GAP + 2;
 
-        // ── Sliders ──
         sliderBaseY = new PreviewSlider(panelX, cy, panelW, CTRL_H,
                 "Base Y", currentProfile.minY(), currentProfile.maxY(), currentProfile.baseY());
         addRenderableWidget(sliderBaseY);
@@ -142,7 +131,6 @@ public class TerrainPreviewScreen extends Screen {
         addRenderableWidget(sliderOctaves);
         cy += CTRL_H + CTRL_GAP + 4;
 
-        // ── Checkboxes ──
         cbCaves = new ToggleCheckbox(panelX, cy, panelW, CTRL_H,
                 Component.literal("Caves"), currentProfile.caves());
         addRenderableWidget(cbCaves);
@@ -153,7 +141,6 @@ public class TerrainPreviewScreen extends Screen {
         addRenderableWidget(cbVolumetric);
         cy += CTRL_H + CTRL_GAP;
 
-        // Veins checkbox re-renders immediately since it doesn't change the terrain sampler
         cbVeins = new ToggleCheckbox(panelX, cy, panelW, CTRL_H,
                 Component.literal("Show Veins"), showVeins) {
             @Override
@@ -166,14 +153,12 @@ public class TerrainPreviewScreen extends Screen {
         addRenderableWidget(cbVeins);
         cy += CTRL_H + CTRL_GAP + 4;
 
-        // ── Seed ──
         seedField = new EditBox(this.font, panelX, cy, panelW, CTRL_H, Component.literal("Seed"));
         seedField.setMaxLength(20);
         seedField.setValue(String.valueOf(currentProfile.seed()));
         addRenderableWidget(seedField);
         cy += CTRL_H + CTRL_GAP + 4;
 
-        // ── Buttons ──
         addRenderableWidget(Button.builder(Component.literal("Regenerate"), b -> regenerate())
                 .bounds(panelX, cy, panelW, CTRL_H).build());
         cy += CTRL_H + CTRL_GAP;
@@ -183,8 +168,6 @@ public class TerrainPreviewScreen extends Screen {
 
         scheduleRender(currentProfile);
     }
-
-    // ── preset / regenerate ───────────────────────────────────────────────────
 
     private void applyPreset() {
         long seed = parseSeed();
@@ -219,8 +202,6 @@ public class TerrainPreviewScreen extends Screen {
         catch (NumberFormatException e) { return seedField.getValue().hashCode(); }
     }
 
-    // ── async render ──────────────────────────────────────────────────────────
-
     private void scheduleRender(TerrainProfile profile) {
         if (generating.getAndSet(true)) return;
         int imgW = previewW;
@@ -242,7 +223,6 @@ public class TerrainPreviewScreen extends Screen {
         int minY = profile.minY(), maxY = profile.maxY(), seaLevel = profile.seaLevel();
         int yRange = maxY - minY;
 
-        // Build vein samplers once per render (not per pixel)
         final TerrainSampler[] veinSamplers;
         if (withVeins) {
             veinSamplers = new TerrainSampler[ORE_LAYERS.length];
@@ -256,13 +236,11 @@ public class TerrainPreviewScreen extends Screen {
             veinSamplers = null;
         }
 
-        // Write to int[] in parallel (each column is independent)
         int[] pixels = new int[imgW * imgH];
 
         IntStream.range(0, imgW).parallel().forEach(px -> {
             int worldX = (int) (px / (double) imgW * 256) - 128;
 
-            // Single downward pass: track surface + build solid[] simultaneously
             boolean[] solidCol = new boolean[imgH];
             int surf = minY;
             boolean foundSurface = false;
@@ -276,7 +254,6 @@ public class TerrainPreviewScreen extends Screen {
                 }
             }
 
-            // Color pass — no sampler calls, uses precomputed solid[]
             final int surfFinal = surf;
             for (int py = 0; py < imgH; py++) {
                 int worldY = maxY - (int) (py / (double) imgH * yRange);
@@ -285,7 +262,6 @@ public class TerrainPreviewScreen extends Screen {
             }
         });
 
-        // Bulk-copy to NativeImage (single-threaded section)
         NativeImage img = nativeImage;
         if (img == null || closed) return;
         synchronized (img) {
@@ -316,7 +292,6 @@ public class TerrainPreviewScreen extends Screen {
             }
         }
 
-        // Vein overlay — checked before terrain color so ore pixels pop visually
         if (veinSamplers != null) {
             for (int i = 0; i < ORE_LAYERS.length; i++) {
                 OreLayer ore = ORE_LAYERS[i];
@@ -327,7 +302,6 @@ public class TerrainPreviewScreen extends Screen {
             }
         }
 
-        // Terrain depth shading
         int distFromSurface = surfY - worldY;
         int totalDepth = surfY - minY;
         float depthFrac = totalDepth > 0 ? (float) distFromSurface / totalDepth : 0;
@@ -358,8 +332,6 @@ public class TerrainPreviewScreen extends Screen {
         return toABGR((argb >> 24) & 0xFF, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
     }
 
-    // ── export ────────────────────────────────────────────────────────────────
-
     private void openExport() {
         TerrainProfile p = currentProfile;
         exportCode = String.format("""
@@ -376,8 +348,6 @@ public class TerrainPreviewScreen extends Screen {
                 p.caves(), p.volumetric());
         showExport = true;
     }
-
-    // ── render ────────────────────────────────────────────────────────────────
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
@@ -396,18 +366,15 @@ public class TerrainPreviewScreen extends Screen {
             g.drawString(this.font, "Generating...", 4, 2, 0xFFFF55);
         }
 
-        // Sea level line
         TerrainProfile p = currentProfile;
         int seaLineY = (int) ((double) (p.maxY() - p.seaLevel()) / (p.maxY() - p.minY()) * previewH);
         g.fill(0, seaLineY, previewW, seaLineY + 1, 0xAA0066FF);
 
-        // Right panel
         int panelX = previewW;
         g.fill(panelX, 0, this.width, this.height, 0xCC1A1A2E);
         g.drawCenteredString(this.font, "§b§lTerrain Preview",
                 panelX + (this.width - panelX) / 2, PANEL_PAD, 0xFFFFFF);
 
-        // Preset name
         int panelW = this.width - panelX - PANEL_PAD;
         int arrowW = 20;
         String presetName = presets.get(presetIndex).getKey();
@@ -418,7 +385,6 @@ public class TerrainPreviewScreen extends Screen {
 
         super.render(g, mouseX, mouseY, partialTick);
 
-        // Ore legend (below buttons, only when veins on)
         if (showVeins) {
             int legendY = this.height - ORE_LAYERS.length * 10 - 6;
             for (OreLayer ore : ORE_LAYERS) {
@@ -433,7 +399,6 @@ public class TerrainPreviewScreen extends Screen {
             }
         }
 
-        // Export overlay
         if (showExport) {
             int ox = 20, oy = 20, ow = this.width - 40, oh = this.height - 40;
             g.fill(ox, oy, ox + ow, oy + oh, 0xEE0A0A14);
@@ -470,8 +435,6 @@ public class TerrainPreviewScreen extends Screen {
         }
         super.onClose();
     }
-
-    // ── inner widgets ─────────────────────────────────────────────────────────
 
     private static class PreviewSlider extends AbstractSliderButton {
         private final String label;

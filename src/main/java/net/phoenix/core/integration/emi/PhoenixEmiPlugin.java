@@ -23,20 +23,14 @@ import dev.emi.emi.api.widget.Bounds;
 @EmiEntrypoint
 public class PhoenixEmiPlugin implements EmiPlugin {
 
-    // ── Registration ──────────────────────────────────────────────────────────
     @Override
     public void register(EmiRegistry registry) {
 
-
-
-        // ── Recipe Builder exclusion + drag-drop ─────────────────────────────
         registry.addExclusionArea(RecipeBuilderScreen.class, (screen, consumer) -> consumer.accept(new Bounds(
                 screen.getGuiLeft(), screen.getGuiTop(),
                 screen.getXSize(), screen.getYSize())));
         registry.addDragDropHandler(RecipeBuilderScreen.class, new RecipeBuilderDragDrop());
     }
-
-    // ── Drag-drop handler ─────────────────────────────────────────────────────
 
     private static class RecipeBuilderDragDrop implements EmiDragDropHandler<RecipeBuilderScreen> {
 

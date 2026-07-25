@@ -29,8 +29,6 @@ public final class ConfluxRegistry {
     private static final DeferredRegister<Item>               ITEMS  = DeferredRegister.create(ForgeRegistries.ITEMS,             PhoenixCore.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BES    = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
 
-    // ── Pipe blocks ───────────────────────────────────────────────────────────
-
     public static final Map<ConfluxDataType, RegistryObject<ConfluxPipeBlock>>                       PIPES    = new EnumMap<>(ConfluxDataType.class);
     public static final Map<ConfluxDataType, RegistryObject<BlockEntityType<ConfluxPipeBlockEntity>>> PIPE_BES = new EnumMap<>(ConfluxDataType.class);
 
@@ -60,8 +58,6 @@ public final class ConfluxRegistry {
         }
     }
 
-    // ── Registration entry point ──────────────────────────────────────────────
-
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
@@ -73,8 +69,6 @@ public final class ConfluxRegistry {
         ConfluxDataCapability.register(event);
         ConfluxMultiHandlerCapability.register(event);
     }
-
-    // ── Block properties per type ─────────────────────────────────────────────
 
     private static BlockBehaviour.Properties pipeProps(ConfluxDataType type) {
         return BlockBehaviour.Properties.of()

@@ -1,7 +1,7 @@
 package net.phoenix.core.client.renderer.machine;
 
 import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
-import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection; // FIXED: Corrected path
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection; 
 import com.gregtechceu.gtceu.client.renderer.block.FluidBlockRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
@@ -19,7 +19,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.phoenix.core.client.renderer.PhoenixRenderTypes;
-
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -83,7 +82,7 @@ public class HoneyChamberDynamicRender extends
         float progress = (logic != null && logic.isWorking()) ? (float) logic.getProgressPercent() : 0f;
 
         stack.pushPose();
-        // FIXED: Now feeding packedLight downwards into fluid drawing context
+        
         renderFluid(machine, stack, buffer, packedLight, packedOverlay);
 
         stack.translate(0.5, 0.5, 0.5);
@@ -107,7 +106,6 @@ public class HoneyChamberDynamicRender extends
         var recipeLogic = machine.getRecipeLogic();
         if (recipeLogic == null || recipeLogic.getLastRecipe() == null) return;
 
-        // FIXED: Changed machine.isActive() to recipeLogic.isActive()
         if (recipeLogic.isActive()) {
             if (cachedFluid == null || machine.getOffsetTimer() % 20 == 0) {
                 cachedFluid = RenderUtil.getRecipeFluidToRender(recipeLogic.getLastRecipe());
@@ -123,12 +121,11 @@ public class HoneyChamberDynamicRender extends
 
         for (RelativeDirection face : fluidFaces) {
             stack.pushPose();
-            // FIXED: Changed face.getRelative to face.getRelativeFacing
+            
             var dir = face.getRelativeFacing(machine.getFrontFacing(), machine.getUpwardsFacing(), machine.isFlipped());
 
             if (dir.getAxis() != Direction.Axis.Y) dir = dir.getOpposite();
 
-            // FIXED: Realigned inputs to match modern drawPlane(dir, offsets, poseStack, consumer, fluid, tex, overlay, light)
             fluidRenderer.drawPlane(
                     dir,
                     offsets,

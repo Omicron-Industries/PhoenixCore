@@ -7,17 +7,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-/**
- * Immutable per-frame snapshot passed to every {@link DisciplineRenderer} method.
- * Keeps method signatures sane and makes it easy to add data without breaking
- * every renderer.
- */
 public record RenderContext(
         ResearchTree tree,
         Set<ResourceLocation> unlocked,
         Set<ResourceLocation> lockedOut,
         @Nullable ResearchNode selected,
-        /** Mouse position in canvas space (after pan/zoom transform). */
+        
         float canvasMx,
         float canvasMy,
         int canvasW,

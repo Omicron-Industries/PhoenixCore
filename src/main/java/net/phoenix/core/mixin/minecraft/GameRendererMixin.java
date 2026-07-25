@@ -15,8 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 
-    // ── Existing: inject uniforms into the vanilla PostChain (soul_vision, etc.) ──
-
     @Inject(method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PostChain;process(F)V"))
     private void phoenixcore$injectUniforms(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
@@ -24,8 +22,7 @@ public class GameRendererMixin {
         if (mc.gameRenderer.currentEffect() instanceof PostChainAccessor accessor) {
             for (PostPass pass : accessor.getPasses()) {
                 if (pass.getEffect().getName().equals("phoenixcore:soul_vision")) {
-                    // --- ALWAYS-ON SHADER TEST ---
-                    // Hardcode saturation to 0.0 for grayscale.
+
                     Uniform uniform = pass.getEffect().getUniform("Saturation");
                     if (uniform != null) {
                         uniform.set(0.0f);
@@ -34,8 +31,6 @@ public class GameRendererMixin {
             }
         }
     }
-
-    // ── Phoenix screen effects — run after vanilla PostChain finishes ──────────
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",

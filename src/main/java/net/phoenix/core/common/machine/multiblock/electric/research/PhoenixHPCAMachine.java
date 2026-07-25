@@ -190,7 +190,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     public void tick() {
         if (isWorkingEnabled()) consumeEnergy();
         if (isActive()) {
-            // forcibly use active coolers at full rate if temperature is half-way to damaging temperature
+            
             double midpoint = (DAMAGE_TEMPERATURE - IDLE_TEMPERATURE) / 2;
             double temperatureChange = hpcaHandler.calculateTemperatureChange(coolantHandler, temperature >= midpoint) /
                     2.0;
@@ -205,7 +205,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             hpcaHandler.tick();
         } else {
             hpcaHandler.clearComputationCache();
-            // passively cool (slowly) if not active
+            
             temperature = Math.max(IDLE_TEMPERATURE, temperature - 0.25);
         }
     }
@@ -214,7 +214,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         long energyToConsume = hpcaHandler.getCurrentEUt();
         boolean hasMaintenance = ConfigHolder.INSTANCE.machines.enableMaintenance && this.maintenance != null;
         if (hasMaintenance) {
-            // 10% more energy per maintenance problem
+            
             energyToConsume += maintenance.getNumMaintenanceProblems() * energyToConsume / 10;
         }
 
@@ -238,10 +238,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
     }
 
-    /**
-     * MUI2 multiblock display widgets. These get appended into the standard multiblock
-     * info panel rather than building a whole standalone ModularPanel ourselves.
-     */
     public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
         if (isRemote()) {
             hpcaHandler.clearClientComponents();
@@ -283,26 +279,20 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         return ChatFormatting.RED;
     }
 
-    // Handles the logic of this structure's specific HPCA component grid
     public static class HPCAGridHandler implements ISyncManaged {
 
         private final SyncDataHolder syncDataHolder = new SyncDataHolder(this);
 
-        @Nullable // for testing
+        @Nullable 
         private final PhoenixHPCAMachine controller;
 
-        // structure info
         private final List<HPCAComponentTrait> components = new ObjectArrayList<>();
         private final Set<HPCACoolantProviderTrait> coolantProviders = new ObjectOpenHashSet<>();
         private final Set<HPCAComputationProviderTrait> computationProviders = new ObjectOpenHashSet<>();
         private int numBridges;
 
-        // transaction info
-        /** How much CWU/t is currently allocated for this tick. */
         private int allocatedCWUt;
 
-        // cached gui info
-        // holding these values past the computation clear because GUI is too "late" to read the state in time
         @SyncToClient
         private long cachedEUt;
         @SyncToClient
@@ -361,23 +351,12 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             }
         }
 
-        /**
-         * Calculate the temperature differential this tick given active computation and consume coolant.
-         *
-         * @param coolantTank         The tank to drain coolant from.
-         * @param forceCoolWithActive Whether active coolers should forcibly cool even if temperature is already
-         *                            decreasing due to passive coolers. Used when the HPCA is running very hot.
-         * @return The temperature change, can be positive or negative.
-         */
         public double calculateTemperatureChange(IFluidHandler coolantTank, boolean forceCoolWithActive) {
-            int maxCWUt = Math.max(1, getMaxCWUt()); // avoids dividing by 0 and the behavior is no different
+            int maxCWUt = Math.max(1, getMaxCWUt()); 
             int maxCoolingDemand = getMaxCoolingDemand();
 
-            // temperature increase is proportional to the amount of actively used computation
-            // a * (b / c)
             int temperatureIncrease = (int) Math.round(1.0 * maxCoolingDemand * allocatedCWUt / maxCWUt);
 
-            // calculate temperature decrease
             long maxPassiveCooling = 0;
             long maxActiveCooling = 0;
             int maxCoolantDrain = 0;
@@ -458,14 +437,10 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             };
         }
 
-        /**
-         * Roll a 1/200 chance to damage a HPCA component marked as damageable. Randomly selects the component.
-         * If called every tick, this succeeds on average once every 10 seconds.
-         */
         public void attemptDamageHPCA() {
-            // 1% chance each tick to damage a component if running too hot
+            
             if (GTValues.RNG.nextInt(200) == 0) {
-                // randomize which component is actually damaged
+                
                 List<HPCAComponentTrait> candidates = new ArrayList<>();
                 for (var component : components) {
                     if (component.canBeDamaged()) {
@@ -478,7 +453,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             }
         }
 
-        /** Allocate computation on a given request. Allocates for one tick. */
         public int allocateCWUt(int cwut, boolean simulate) {
             if (cwut == 0) return 0;
             int maxCWUt = getMaxCWUt();
@@ -506,7 +480,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             }
         }
 
-        /** The maximum amount of CWUs (Compute Work Units) created per tick. */
         public int getMaxCWUt() {
             int maxCWUt = 0;
             for (var computationProvider : computationProviders) {
@@ -518,9 +491,8 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return Math.max(0, maxCWUt);
         }
 
-        /** The current EU/t this HPCA should use, considering passive drain, current computation, etc.. */
         public long getCurrentEUt() {
-            long maximumCWUt = Math.max(1, getMaxCWUt()); // behavior is no different setting this to 1 if it is 0
+            long maximumCWUt = Math.max(1, getMaxCWUt()); 
             long maximumEUt = getMaxEUt();
             long upkeepEUt = getUpkeepEUt();
 
@@ -528,12 +500,9 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
                 return maximumEUt;
             }
 
-            // energy draw is proportional to the amount of actively used computation
-            // a + c(b - a) / d
             return upkeepEUt + ((maximumEUt - upkeepEUt) * allocatedCWUt / maximumCWUt);
         }
 
-        /** The amount of EU/t this HPCA uses just to stay on with 0 output computation. */
         public long getUpkeepEUt() {
             long upkeepEUt = 0;
             for (var component : components) {
@@ -542,7 +511,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return upkeepEUt;
         }
 
-        /** The maximum EU/t that this HPCA could ever use with the given configuration. */
         public long getMaxEUt() {
             long maximumEUt = 0;
             for (var component : components) {
@@ -551,12 +519,10 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return maximumEUt;
         }
 
-        /** Whether this HPCA has a Bridge to allow connecting to other HPCA's */
         public boolean hasHPCABridge() {
             return numBridges > 0;
         }
 
-        /** Whether this HPCA has any cooling providers which are actively cooled. */
         public boolean hasActiveCoolers() {
             for (var coolantProvider : coolantProviders) {
                 if (coolantProvider.isActiveCooler()) return true;
@@ -564,7 +530,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return false;
         }
 
-        /** How much cooling this HPCA can provide. NOT related to coolant fluid consumption. */
         public int getMaxCoolingAmount() {
             int maxCooling = 0;
             for (var coolantProvider : coolantProviders) {
@@ -573,7 +538,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return maxCooling;
         }
 
-        /** How much cooling this HPCA can require. NOT related to coolant fluid consumption. */
         public int getMaxCoolingDemand() {
             int maxCooling = 0;
             for (var computationProvider : computationProviders) {
@@ -582,7 +546,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return maxCooling;
         }
 
-        /** How much coolant this HPCA can consume in a tick, in mB/t. */
         public int getMaxCoolantDemand() {
             int maxCoolant = 0;
             for (var coolantProvider : coolantProviders) {
@@ -592,12 +555,11 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public void addInfo(List<Component> textList) {
-            // Max Computation
+            
             MutableComponent data = Component.literal(Integer.toString(getMaxCWUt())).withStyle(ChatFormatting.AQUA);
             textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_computation", data)
                     .withStyle(ChatFormatting.GRAY));
 
-            // Cooling
             ChatFormatting coolingColor = getMaxCoolingAmount() < getMaxCoolingDemand() ? ChatFormatting.RED :
                     ChatFormatting.GREEN;
             data = Component.literal(Integer.toString(getMaxCoolingDemand())).withStyle(coolingColor);
@@ -608,7 +570,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_cooling_available", data)
                     .withStyle(ChatFormatting.GRAY));
 
-            // Coolant Required
             if (getMaxCoolantDemand() > 0) {
                 data = Component.translatable("gtceu.universal.liters", getMaxCoolantDemand())
                         .withStyle(ChatFormatting.YELLOW).append(" ");
@@ -625,7 +586,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_coolant_required", data)
                     .withStyle(ChatFormatting.GRAY));
 
-            // Bridging
             if (numBridges > 0) {
                 textList.add(Component.translatable("gtceu.multiblock.hpca.info_bridging_enabled")
                         .withStyle(ChatFormatting.GREEN));
@@ -663,7 +623,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             }
         }
 
-        /** The icon to display for the component in this slot, or a blank placeholder if the slot is unfilled. */
         public IDrawable getComponentTexture(int index) {
             if (components.size() <= index) {
                 return GTGuiTextures.BLANK_TRANSPARENT;
@@ -675,7 +634,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             return GTGuiTextures.BLANK_TRANSPARENT;
         }
 
-        /** The tooltip to display for the component in this slot, or empty if the slot is unfilled. */
         public RichTooltip getComponentTooltip(int index) {
             if (components.size() <= index) {
                 return new RichTooltip();
@@ -709,7 +667,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
                                 components.add(trait);
                             }
                         }
-                        // if here without a trait, something went wrong, better to skip than add a null into the mix.
+                        
                     }
                 }
             }

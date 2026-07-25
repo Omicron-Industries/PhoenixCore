@@ -41,13 +41,12 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
 
     @SaveField
     @NotNull
-// Pass: slots, inputIO, outputIO
+
     private final NotifiableItemStackHandler discInventory = attachTrait(new NotifiableItemStackHandler(1, IO.IN, IO.NONE));
 
     @NotNull
-// This one remains correct because your custom constructor expects (controller, io)
-    private final NotifiableSoundHandler soundHandler = attachTrait(new NotifiableSoundHandler(this, IO.IN));
 
+    private final NotifiableSoundHandler soundHandler = attachTrait(new NotifiableSoundHandler(this, IO.IN));
 
     @SaveField
     @SyncToClient
@@ -115,7 +114,6 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
     public void formStructure(@NotNull String substructureName) {
         super.formStructure(substructureName);
 
-        // Safety hook: initialize data parsing only on the server logical frame
         if (getLevel() == null || getLevel().isClientSide) return;
 
         PatternState patternState = this.getPatternState(substructureName);
@@ -129,11 +127,9 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
         int totalSpeakerValue = 0;
         int resonancePowerPercentage = 100;
 
-        // FIXED: Replaced getMultiblockState() by processing the native block cache safely
         for (var entry : patternState.getCache().long2ObjectEntrySet()) {
             BlockEntity blockEntity = entry.getValue().getBlockEntity();
 
-            // Collect any valid active SoundHatch multi-parts from the structure frame
             if (blockEntity instanceof SoundHatchPartMachine hatch) {
                 if (hatch.getSoundType() != null) {
                     switch (hatch.getSoundType()) {
@@ -144,11 +140,8 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
                 }
             }
 
-            // If your custom contextual properties are attached to custom components:
-            // Extract values via direct match checks or cast properties here if needed.
         }
 
-        // Apply properties safely with runtime overrides
         this.totalSpeakerRange = totalSpeakerValue;
         this.resonancePower = resonancePowerPercentage / 100.0f;
         this.lastPlayingStreamUrl = "";
@@ -189,7 +182,6 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
 
         energyContainer.changeEnergy(-MUSIC_ENERGY_DRAIN);
 
-        // Stream Audio Handling
         if (hasStreamHatch && !currentStreamUrl.isEmpty()) {
             if (!currentStreamUrl.equals(lastPlayingStreamUrl)) {
                 this.selectedLibrarySound = "";
@@ -209,7 +201,6 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
             }
         }
 
-        // Standard Resource Library Audio Handling
         if (hasLibraryHatch && !selectedLibrarySound.isEmpty() && currentStreamUrl.isEmpty()) {
             if (!selectedLibrarySound.equals(lastPlayingLibrarySound)) {
                 playLibrarySound();

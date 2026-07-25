@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
-
 import brachy.modularui.api.drawable.Text;
 import brachy.modularui.api.widget.IWidget;
 import brachy.modularui.value.sync.PanelSyncManager;
@@ -74,12 +73,11 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
     private int consumptionTimer = 0;
 
     public HighPressurePlasmaArcFurnaceMachine(BlockEntityCreationInfo holder) {
-        // FIXED: Pass an explicit RecipeLogic instance to the super constructor
+        
         super(holder, new RecipeLogic());
 
         this.shieldHandler = new ConditionalSubscriptionHandler(this, this::shieldTick, this::isFormed);
 
-        // FIXED: Strip 'this' from the constructor and call attachTrait directly on it
         this.shieldContainer = attachTrait(new NotifiableShieldContainer());
     }
 

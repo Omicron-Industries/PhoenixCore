@@ -59,20 +59,18 @@ public class PhoenixMaterials {
 
     @NotNull
     public static Material get(String name) {
-        // FIXED FOR 8.0.0: Unified material lookup replaces the old local addon manager.
-        // Assuming custom addon materials are under your "phoenixcore" namespace.
-        // If searching a vanilla material string, use "gtceu" as the namespace variant.
+
         Material mat = GTRegistries.MATERIALS.get(new ResourceLocation("phoenixcore", name));
 
         if (mat == null) {
             PhoenixAPI.LOGGER.warn("{} is not a known Material", name);
-            return GTMaterials.get(null); // FIXED FOR 8.0.0: Replaced GTMaterials.NULL
+            return GTMaterials.get(null); 
         }
         return mat;
     }
 
     public static void modifyMaterials() {
-        // --- Crystal Rose Flags ---
+        
         CrystalRoseHelper.addCrystalRoseFlags(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -106,7 +104,6 @@ public class PhoenixMaterials {
                 Tungsten
         );
 
-        // --- Bee Comb Flags ---
         BeePrefixHelper.addBeeCombFlag(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -123,7 +120,6 @@ public class PhoenixMaterials {
                 PRISMARINE
         );
 
-        // --- Tier One Bee Flags ---
         BeePrefixHelper.addTierOneBeeFlag(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -140,7 +136,6 @@ public class PhoenixMaterials {
                 PRISMARINE
         );
 
-        // FIXED FOR 8.0.0: .getRegisteredMaterials() was renamed to .values()
         for (Material material : GTRegistries.MATERIALS.values()) {
             ToolProperty toolProperty = material.getProperty(PropertyKey.TOOL);
 

@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.jade.provider;
 
-// FIXED FOR 8.0.0: Removed duplicate imports. MetaMachine is now the single target block entity class.
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 
@@ -38,10 +37,9 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        // FIXED FOR 8.0.0: Accessor directly yields the MetaMachine object
+        
         if (!(accessor.getBlockEntity() instanceof MetaMachine machine)) return;
 
-        // FIXED: Resolved the broken logical sequence where this check ran while machine was always null
         if (machine instanceof SourceMultiblockTankMachine) return;
 
         if (machine instanceof IRecipeLogicMachine rlm) {
@@ -101,7 +99,7 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
     private long sumSource(List<com.gregtechceu.gtceu.api.recipe.content.Content> contents) {
         long sum = 0;
         for (var c : contents) {
-            // FIXED FOR 8.0.0: Use the public getter method instead of the private field
+            
             Object inner = c.content();
             if (inner != null) {
                 sum += SourceRecipeCapability.CAP.of(inner).getSource();
@@ -121,7 +119,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         if (!config.get(UID)) return;
 
-        // FIXED FOR 8.0.0: Explicit instance check matching the data rendering framework
         if (!(accessor.getBlockEntity() instanceof MetaMachine)) return;
 
         CompoundTag data = accessor.getServerData();

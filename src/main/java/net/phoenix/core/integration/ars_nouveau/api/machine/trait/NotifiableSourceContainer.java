@@ -8,7 +8,6 @@ import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableRecipeHandlerTrait;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 
-// GTM 8.0 Native Syncing Annotations
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
@@ -22,7 +21,6 @@ import java.util.List;
 
 public class NotifiableSourceContainer extends NotifiableRecipeHandlerTrait<SourceIngredient> implements ISourceTile {
 
-    // Instantiating a clean trait type lookup for your custom container
     public static final MachineTraitType<NotifiableSourceContainer> TRAIT_TYPE =
             new MachineTraitType<>(NotifiableSourceContainer.class);
 
@@ -57,7 +55,7 @@ public class NotifiableSourceContainer extends NotifiableRecipeHandlerTrait<Sour
 
     public int getCurrentFlow() {
         if (getLevel() != null && !(getMachine() instanceof WorkableElectricMultiblockMachine)) {
-            // Updated to use the native getLevel() directly from MachineTrait decompile!
+            
             long time = getLevel().getGameTime();
             if (time - lastFlowUpdate > 20) {
                 this.currentFlow = 0;
@@ -125,7 +123,6 @@ public class NotifiableSourceContainer extends NotifiableRecipeHandlerTrait<Sour
         return left;
     }
 
-    // FIXED CLASH: Using a raw list override explicitly matches the expected base signature of your compilation layer
     @Override
     @SuppressWarnings("rawtypes")
     public @NotNull List getContents() {
@@ -190,7 +187,6 @@ public class NotifiableSourceContainer extends NotifiableRecipeHandlerTrait<Sour
         return extracted;
     }
 
-    // FIXED: Returning the static custom trait type instance matching your class structure
     @Override
     public MachineTraitType<?> getTraitType() {
         return TRAIT_TYPE;

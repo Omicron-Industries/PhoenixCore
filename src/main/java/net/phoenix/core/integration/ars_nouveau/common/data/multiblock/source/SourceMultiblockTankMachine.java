@@ -18,7 +18,6 @@ import brachy.modularui.screen.UISettings;
 import brachy.modularui.value.sync.PanelSyncManager;
 import brachy.modularui.widget.ParentWidget;
 
-
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.phoenix.core.integration.ars_nouveau.api.machine.trait.NotifiableSourceContainer;
@@ -46,18 +45,6 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
         super(info);
         this.sourceTank = attachTrait(new NotifiableSourceContainer(IO.BOTH, capacity, maxConsumption));
     }
-
-    // NOTE: this onUse override is UNVERIFIED. I don't have a confirmed signature for
-    // ExtendedUseOnContext or tryToOpenUI in your 8.0 codebase, and the person hasn't
-    // either, so treat this as a starting guess to check against the real API rather
-    // than working code. If MultiblockControllerMachine already opens the UI on right
-    // click by default (worth checking before assuming an override is even needed),
-    // this whole method may be unnecessary.
-    // @Override
-    // public InteractionResult onUse(ExtendedUseOnContext context) {
-    //     if (!isFormed()) return InteractionResult.FAIL;
-    //     return this.tryToOpenUI(context.getPlayer(), context.getHand());
-    // }
 
     @Override
     public void onLoad() {
@@ -106,30 +93,19 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
         }
     }
 
-    /**
-     * MUI2 panel for the Source Tank controller.
-     *
-     * Recreates the purple HUD that was previously in SourceTankFancyUIWidget:
-     *  - Purple gradient + grid + animated mist background
-     *  - "SOURCE TANK" title
-     *  - "Capacity X/Y – Z%" label
-     *  - Colour-coded fill bar (cyan → lavender → bright purple)
-     */
     @Override
     public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData data, PanelSyncManager syncManager,
                             UISettings settings) {
-        // Purple background — same drawable as the hatch, fixed accent colour for the tank
+        
         if (isRemote()) {
             mainWidget.background(new SourceHatchBackground(0xAA8F00FF));
         }
 
-        // ----- Title -----
         mainWidget.child(Text.dynamic(() -> Component.literal("SOURCE TANK"))
                 .asWidget()
                 .pos(8, 6)
                 .color(0xFF8F00FF));
 
-        // ----- Capacity label (dynamic) -----
         mainWidget.child(Text.dynamic(() -> {
             int cur = (int) sourceTank.getSource();
             int max = Math.max(1, sourceTank.getMaxSource());
@@ -139,27 +115,19 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
                 .pos(8, 24)
                 .color(0xFFE6E6FF));
 
-        // ----- Fill bar (background + filled portion) -----
-        // Background rectangle
         mainWidget.child(new Rectangle()
                 .color(0xFF120520)
                 .asWidget()
                 .pos(8, 38)
                 .size(160, 5));
 
-        // Filled portion — uses a DynamicWidget or we approximate with a fixed-width rectangle
-        // driven by a sync value.  For simplicity we embed a rectangle whose width is set
-        // each frame via a Text overlay hack; a proper ProgressWidget is the cleaner solution
-        // but requires a DoubleSyncValue that is beyond the current sync wiring here.
-        // For now, attach the fill as a child that redraws itself using Text.dynamic width trick:
         mainWidget.child(Text.dynamic(() -> {
             int cur = (int) sourceTank.getSource();
             int max = Math.max(1, sourceTank.getMaxSource());
             int pct = (int) ((cur * 100L) / max);
-            // Pick bar colour
+            
             int barColor = pct < 30 ? 0xFF00E5FF : pct < 75 ? 0xFFD466FF : 0xFFBD00FF;
-            // We can't resize a widget here, so just show a coloured string of '|' characters
-            // to approximate a bar (16 chars wide at ~10 px each = 160 px).
+
             int filled = (int) ((pct / 100.0) * 20);
             String bar = "|".repeat(filled);
             return Component.literal(bar).withStyle(style -> style.withColor(barColor));
@@ -167,7 +135,6 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
                 .pos(8, 37)
                 .height(10));
 
-        // ----- Separator line -----
         mainWidget.child(new Rectangle()
                 .color(0x448F00FF)
                 .asWidget()
@@ -175,7 +142,6 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
                 .size(160, 1));
     }
 
-    /** Compact number formatter used in the source-level capacity label. */
     private static String fmtSrc(long v) {
         if (v < 1_000)       return String.valueOf(v);
         if (v < 10_000)      return String.format("%.1fk", v / 1_000.0);

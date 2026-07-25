@@ -10,8 +10,5 @@ public interface ISourceProviderCapability {
 
     Capability<ISourceProviderCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
-    /**
-     * @return The source tile provided by this capability.
-     */
     ISourceTile getSource();
 }

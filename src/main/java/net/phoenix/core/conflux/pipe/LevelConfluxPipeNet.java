@@ -4,10 +4,6 @@ import com.gregtechceu.gtceu.api.pipenet.LevelPipeNet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 
-/**
- * Per-level storage for all Conflux pipe networks.
- * GTCEu manages persistence automatically via {@link net.minecraft.world.level.saveddata.SavedData}.
- */
 public class LevelConfluxPipeNet extends LevelPipeNet<ConfluxPipeData, ConfluxPipeNet> {
 
     private static final String DATA_ID = "phoenix_conflux_pipe_net";

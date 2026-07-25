@@ -133,14 +133,12 @@ public class PhoenixClient {
             MenuScreens.register(PhoenixCore.RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);
         });
 
-        // Register sprite bakers
         SpriteCaptureRegistry.register(new AxiomVoidBaker());
         SpriteCaptureRegistry.register(new AxiomPhoenixBaker());
         SpriteCaptureRegistry.register(new AxiomSculkBaker());
         SpriteCaptureRegistry.register(new AxiomSealedBaker());
     }
 
-    // Nested subscriber specifically targeting Bus.FORGE for client events
     @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
     public static class ForgeClientEvents {
         @SubscribeEvent

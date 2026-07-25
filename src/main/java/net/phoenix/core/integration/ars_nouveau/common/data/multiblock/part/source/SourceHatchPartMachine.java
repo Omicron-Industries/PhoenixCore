@@ -40,17 +40,10 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
         return sourceContainer;
     }
 
-    /**
-     * MUI2 buildMainUI — recreates the purple source-hatch HUD that was previously in
-     * SourceHatchFancyUIWidget.  The visual background (gradient + grid + animated mist)
-     * is handled by {@link SourceHatchBackground}; the text lines mirror what the old
-     * drawOverlayHUD() method rendered.
-     */
     @Override
     public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager,
                             UISettings settings) {
-        // Only set the fancy background on the client side to avoid touching render state
-        // from server logic.
+
         if (isRemote()) {
             mainWidget.background(new SourceHatchBackground(getBorderColor()));
         }
@@ -81,7 +74,7 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
     public void onLoad() {
         super.onLoad();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            // GTM 8.0 update: getBlockPos() replaced with getBlockPos()
+            
             SourceHatchTracker.add(serverLevel.dimension(), getBlockPos());
         }
     }
@@ -90,7 +83,7 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
     public void onUnload() {
         super.onUnload();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            // GTM 8.0 update: getBlockPos() replaced with getBlockPos()
+            
             SourceHatchTracker.remove(serverLevel.dimension(), getBlockPos());
         }
     }
@@ -103,7 +96,6 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
         return 500 * tier;
     }
 
-    /** ARGB accent colour for the "SOURCE HATCH" title, keyed on IO direction. */
     private int getAccentColor() {
         return switch (io) {
             case IN   -> 0xFF8F00FF;
@@ -113,10 +105,9 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
         };
     }
 
-    /** ARGB border colour passed to {@link SourceHatchBackground}. */
     private int getBorderColor() {
         int accent = getAccentColor();
-        // 0xAA alpha, then the RGB from accentColor
+        
         return (0xAA << 24) | (accent & 0x00FFFFFF);
     }
 }
