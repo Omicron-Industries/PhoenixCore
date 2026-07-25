@@ -28,7 +28,6 @@ public class PhoenixNetwork {
     private static int id = 0;
 
     public static void init() {
-        
         CHANNEL.registerMessage(id++,
                 SelectColorPacket.class,
                 SelectColorPacket::encode,
@@ -123,7 +122,7 @@ public class PhoenixNetwork {
         CHANNEL.registerMessage(id++,
                 C2SToggleTeslaModePacket.class,
                 C2SToggleTeslaModePacket::encode,
-                C2SToggleTeslaModePacket::new, 
+                C2SToggleTeslaModePacket::new,
                 C2SToggleTeslaModePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
 

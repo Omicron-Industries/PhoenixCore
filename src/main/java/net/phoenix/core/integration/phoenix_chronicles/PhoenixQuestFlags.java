@@ -55,7 +55,7 @@ public final class PhoenixQuestFlags {
 
     public static boolean evaluate(@Nullable String expression, @Nullable MinecraftServer server) {
         if (expression == null || expression.isBlank()) return true;
-        
+
         for (String orClause : expression.split("\\|")) {
             boolean andResult = true;
             for (String part : orClause.split(",")) {
@@ -65,7 +65,7 @@ public final class PhoenixQuestFlags {
                     break;
                 }
             }
-            if (andResult) return true; 
+            if (andResult) return true;
         }
         return false;
     }

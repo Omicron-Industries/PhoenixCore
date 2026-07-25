@@ -66,8 +66,8 @@ public class SourceTankFancyUIWidget extends FancyMachineUIWidget {
                     () -> () -> Minecraft.getInstance().setScreen(null));
         }));
 
-        int textWidth = 22; 
-        int textHeight = 9; 
+        int textWidth = 22;
+        int textHeight = 9;
         int tx = bx + (bw - textWidth) / 2;
         int ty = by + (bh - textHeight) / 2;
 

@@ -14,7 +14,7 @@ public class StatTrackerTask extends QuestTask {
 
     private ResourceLocation statId;
     private int targetValue;
-    private boolean consume; 
+    private boolean consume;
 
     public StatTrackerTask(ResourceLocation taskId, Component description, ResourceLocation statId, int targetValue,
                            boolean consume) {
@@ -43,7 +43,7 @@ public class StatTrackerTask extends QuestTask {
         if (player instanceof ServerPlayer serverPlayer) {
             net.minecraft.stats.StatType<?> type = BuiltInRegistries.STAT_TYPE.get(statId);
             if (type != null) {
-                
+
                 int rawStat = serverPlayer.getStats().getValue(Stats.CUSTOM.get(statId));
 
                 int baselineOffset = player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
@@ -57,7 +57,7 @@ public class StatTrackerTask extends QuestTask {
     }
 
     public void tryConsume(Player player) {
-        if (!consume) return; 
+        if (!consume) return;
 
         if (player instanceof ServerPlayer serverPlayer && statId != null) {
             net.minecraft.stats.StatType<?> type = BuiltInRegistries.STAT_TYPE.get(statId);
@@ -90,7 +90,7 @@ public class StatTrackerTask extends QuestTask {
         tag.putString("type", "stat");
         tag.putString("stat_id", statId != null ? statId.toString() : "minecraft:jump");
         tag.putInt("target", targetValue);
-        tag.putBoolean("consume", consume); 
+        tag.putBoolean("consume", consume);
         return tag;
     }
 
@@ -100,6 +100,6 @@ public class StatTrackerTask extends QuestTask {
             this.statId = new ResourceLocation(nbt.getString("stat_id"));
         }
         this.targetValue = nbt.getInt("target");
-        this.consume = nbt.getBoolean("consume"); 
+        this.consume = nbt.getBoolean("consume");
     }
 }

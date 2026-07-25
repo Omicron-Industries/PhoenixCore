@@ -90,7 +90,7 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
 
     public ResonantJukeboxMachine(IMachineBlockEntity holder) {
         super(holder);
-        
+
         this.acousticTickHandler = new ConditionalSubscriptionHandler(this, this::acousticStateMachineTick,
                 this::isFormed);
     }
@@ -124,19 +124,19 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
         this.totalSpeakerRange = matchContext.getOrDefault("TotalSpeakerRange", 0);
 
         this.resonancePower = matchContext.getOrDefault("ResonancePower", 100) / 100.0f;
-        
+
         this.lastPlayingStreamUrl = "";
         this.lastPlayingLibrarySound = "";
         this.resetAcousticData();
 
         this.acousticTickHandler.updateSubscription();
-        
+
         WorldAcousticSensor.register(getPos(), getFinalRange());
     }
 
     @Override
     public void onStructureInvalid() {
-        killAllMachineAudio(); 
+        killAllMachineAudio();
         super.onStructureInvalid();
         this.lastPlayingStreamUrl = "";
         this.resetAcousticData();
@@ -161,7 +161,7 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
 
         var energyContainer = this.getEnergyContainer();
         if (energyContainer == null || energyContainer.getEnergyStored() < MUSIC_ENERGY_DRAIN) {
-            
+
             killAllMachineAudio();
             return;
         }
@@ -182,7 +182,7 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine {
                 lastPlayingStreamUrl = currentStreamUrl;
             }
         } else {
-            
+
             if (!lastPlayingStreamUrl.isEmpty()) {
                 killAllMachineAudio();
                 this.lastPlayingStreamUrl = "";

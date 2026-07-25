@@ -35,7 +35,7 @@ public class ChapterYamlWriter {
             if (Files.exists(chapterFile)) {
                 lines = new ArrayList<>(Files.readAllLines(chapterFile, StandardCharsets.UTF_8));
             } else {
-                
+
                 lines = new ArrayList<>();
                 lines.add("id: " + chapterId.getPath());
                 lines.add("display_name: \"" + chapterId.getPath() + "\"");
@@ -51,17 +51,17 @@ public class ChapterYamlWriter {
 
             int existingStart = findNodeBlockStart(lines, questPath);
             if (existingStart >= 0) {
-                
+
                 int existingEnd = findNodeBlockEnd(lines, existingStart);
                 lines.subList(existingStart, existingEnd).clear();
                 lines.addAll(existingStart, block);
             } else {
-                
+
                 if (!lines.contains("nodes:")) {
                     lines.add("");
                     lines.add("nodes:");
                 }
-                
+
                 lines.add("");
                 lines.addAll(block);
             }
@@ -107,7 +107,7 @@ public class ChapterYamlWriter {
         for (int i = startIdx + 1; i < lines.size(); i++) {
             String trimmed = lines.get(i).trim();
             if (trimmed.isEmpty()) continue;
-            
+
             if (trimmed.startsWith("- quest:") || (leadingSpaces(lines.get(i)) == 0 && !trimmed.startsWith("-"))) {
                 return i;
             }

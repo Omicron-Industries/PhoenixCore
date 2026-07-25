@@ -14,15 +14,15 @@ import java.util.Set;
 public class PlayerQuestData {
 
     private final Map<ResourceLocation, QuestState> questStates = new HashMap<>();
-    
+
     private final Map<ResourceLocation, CompoundTag> taskProgress = new HashMap<>();
-    
+
     private final Map<ResourceLocation, Long> lastCompleted = new HashMap<>();
-    
+
     private final Set<ResourceLocation> claimedRewards = new HashSet<>();
-    
+
     private final Map<ResourceLocation, Integer> chosenRewardIndex = new HashMap<>();
-    
+
     private ResourceLocation pinnedQuestId = null;
 
     public QuestState getQuestState(ResourceLocation questId, QuestState defaultState) {

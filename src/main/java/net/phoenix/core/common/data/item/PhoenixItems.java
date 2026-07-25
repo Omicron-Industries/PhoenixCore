@@ -16,7 +16,6 @@ import net.minecraft.world.item.Rarity;
 import net.minecraftforge.common.Tags;
 import net.phoenix.core.common.item.ChameleonSprayCanItem;
 import net.phoenix.core.integration.ars_nouveau.common.data.item.SoulLensItem;
-import net.phoenix.core.integration.phoenix_chronicles.item.ChronicleBookItem;
 
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -29,13 +28,6 @@ public class PhoenixItems {
     static {
         REGISTRATE.creativeModeTab(() -> PHOENIX_CREATIVE_TAB);
     }
-
-    public static final ItemEntry<ChronicleBookItem> CHRONICLE_BOOK = REGISTRATE
-            .item("chronicle_book", ChronicleBookItem::new)
-            .lang("§dPhoenix Chronicle")
-            .properties(p -> p.stacksTo(1))
-            .model((ctx, prov) -> prov.generated(ctx, prov.modLoc("item/chronicle_book")))
-            .register();
 
     public static ItemEntry<ComponentItem> POWER_UNIT_LUV = REGISTRATE.item("luv_power_unit", ComponentItem::create)
             .lang("LuV Power Unit")
@@ -271,7 +263,7 @@ public class PhoenixItems {
                     () -> Component.literal(
                             "The titanium core stabilizes the flux, allowing it to dissolve the toughest bonds at a molecular level.")
                             .withStyle(ChatFormatting.DARK_PURPLE)))
-            .lang("§dSource Imbued Titanium Drill Head") 
+            .lang("§dSource Imbued Titanium Drill Head")
             .register();
 
     public static final ItemEntry<TooltipItem> FLAMING_MESH = REGISTRATE
@@ -457,6 +449,21 @@ public class PhoenixItems {
                         "A stabilizing unit for ultra-high-voltage wireless power.\nIs this the peak of power? Or merely the beginning?");
             })
             .model((ctx, prov) -> prov.generated(ctx, prov.modLoc("item/tesla_stabilizer/uhv_tesla_stabilizer")))
+            .register();
+
+    public static final ItemEntry<Item> GRAPHITE_PRESSED_CUPRONICKEL_FOIL = REGISTRATE
+            .item("graphite_pressed_cupronickel_foil", Item::new)
+            .lang("Graphite Pressed Cupronickel Foil")
+            .register();
+
+    public static final ItemEntry<Item> GRAPHITE_WELDED_CUPRONICKEL_FOIL = REGISTRATE
+            .item("graphite_welded_cupronickel_foil", Item::new)
+            .lang("Graphite Welded Cupronickel Foil")
+            .register();
+
+    public static final ItemEntry<Item> OXYGEN_FREE_GRAPHITE_WELDED_CUPRONICKEL_FOIL = REGISTRATE
+            .item("oxygen_free_graphite_welded_cupronickel_foil", Item::new)
+            .lang("Oxygen Free Graphite Welded Cupronickel Foil")
             .register();
 
     public static void init() {}

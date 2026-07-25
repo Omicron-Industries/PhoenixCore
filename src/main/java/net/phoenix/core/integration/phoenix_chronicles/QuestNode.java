@@ -29,11 +29,11 @@ public class QuestNode {
     private String subtitle = "";
 
     public enum Visibility {
-        NORMAL,   
-        HIDDEN,   
-        MYSTERY,  
-        DISABLED  
-                  
+        NORMAL,
+        HIDDEN,
+        MYSTERY,
+        DISABLED
+
     }
 
     private Visibility visibility = Visibility.NORMAL;
@@ -93,7 +93,7 @@ public class QuestNode {
     }
 
     private RepeatMode repeatMode = RepeatMode.NONE;
-    private int repeatCooldownHours = 24; 
+    private int repeatCooldownHours = 24;
 
     private boolean requireAllPrerequisites = true;
 
@@ -283,7 +283,7 @@ public class QuestNode {
     public void setPrereqForbidden(ResourceLocation prereqId, boolean forbidden) {
         if (forbidden) {
             prereqForbidden.add(prereqId);
-            prereqRequired.remove(prereqId); 
+            prereqRequired.remove(prereqId);
         } else {
             prereqForbidden.remove(prereqId);
         }

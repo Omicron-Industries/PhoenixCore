@@ -17,7 +17,7 @@ public class PhoenixCapabilityBridge {
         var beB = level.getBlockEntity(posB);
 
         if (beA instanceof IPipeNode<?, ?> pipeA && beB instanceof IPipeNode<?, ?> pipeB) {
-            
+
             if (pipeA.getNodeData() instanceof WireProperties propsA &&
                     pipeB.getNodeData() instanceof WireProperties propsB) {
 
@@ -36,7 +36,7 @@ public class PhoenixCapabilityBridge {
         IEnergyContainer energyB = GTCapabilityHelper.getEnergyContainer(level, posB, null);
 
         if (energyA != null && energyB != null) {
-            
+
             if (Math.abs(energyA.getInputVoltage() - energyB.getOutputVoltage()) > energyA.getInputVoltage() * 4) {
                 player.displayClientMessage(Component.literal("§4Phoenix: High Risk! Voltage Tier gap too large."),
                         true);

@@ -99,7 +99,6 @@ public class QuestFileLoader {
     }
 
     private static void wireAndRegister(List<QuestRecord> records) {
-        
         for (QuestRecord rec : records) {
             QuestNode node = new QuestNode(rec.id(),
                     Component.literal(rec.title()), Component.literal(rec.description()));
@@ -141,7 +140,7 @@ public class QuestFileLoader {
             } else {
                 QuestTreeRegistry.registerRootChapter(node);
             }
-            
+
             for (String pid : rec.prereqRequired().keySet()) {
                 if (QuestTreeRegistry.getQuest(new ResourceLocation("phoenixcore", pid)) == null)
                     LOAD_ERRORS.add("Quest '" + rec.id().getPath() + "': prereq '" + pid + "' not found.");

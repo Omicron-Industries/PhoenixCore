@@ -55,5 +55,4 @@ public class BeeRender {
             poseStack.popPose();
         }
     }
-
 }

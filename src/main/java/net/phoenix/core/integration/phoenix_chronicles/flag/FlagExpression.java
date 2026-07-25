@@ -61,7 +61,7 @@ public final class FlagExpression {
                     default -> false;
                 };
             } catch (NumberFormatException ignored) {
-                return false; 
+                return false;
             }
         }
 

@@ -42,9 +42,8 @@ public class CustomFluidRender extends DynamicRender<IFluidRenderMulti, CustomFl
                 .getRenderer();
 
         this.drawFaces = List.of(
-                RelativeDirection.DOWN,  
-                RelativeDirection.UP     
-        );
+                RelativeDirection.DOWN,
+                RelativeDirection.UP);
     }
 
     @Override

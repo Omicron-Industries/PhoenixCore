@@ -53,7 +53,6 @@ public class SettingsScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
-        
         g.fill(0, 0, width, height, C_BG);
 
         g.fill(0, 0, width, HEADER_H, C_HEADER);
@@ -212,7 +211,7 @@ public class SettingsScreen extends Screen {
             }
             y += ROW_H + ROW_GAP * 2;
 
-            y += ROW_H + ROW_GAP; 
+            y += ROW_H + ROW_GAP;
 
             if (handleSettingClick(x, y, w, mx, my)) {
                 HUDPosition[] positions = HUDPosition.values();

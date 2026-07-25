@@ -37,7 +37,7 @@ public class CPacketManipulatorAction {
 
             ItemStack stack = player.getMainHandItem();
             if (stack.getItem() instanceof PhoenixManipulatorItem tool) {
-                
+
                 PhoenixPlacementEngine.fillPipeArea(
                         player.level(),
                         player,

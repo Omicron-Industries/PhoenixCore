@@ -28,7 +28,6 @@ public class PhoenixRadialMenu extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        
         graphics.fill(0, 0, this.width, this.height, 0x55000000);
 
         int centerX = this.width / 2;
@@ -46,7 +45,7 @@ public class PhoenixRadialMenu extends Screen {
             boolean hovered = isMouseInSector(mouseX, mouseY, centerX, centerY, angle, stepRad);
             if (hovered) {
                 hoveredMode = modes[i];
-                
+
                 drawArc(graphics, centerX, centerY, innerRadius, radius, (float) angle, (float) stepRad, 0x66FFAA00);
             }
 

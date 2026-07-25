@@ -18,5 +18,4 @@ public class SoundEngineMixin {
             VibrancyEvents.onSoundStarted(sound);
         }
     }
-
 }

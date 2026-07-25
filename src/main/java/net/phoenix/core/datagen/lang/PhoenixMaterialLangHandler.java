@@ -5,7 +5,6 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 public class PhoenixMaterialLangHandler {
 
     public static void init(RegistrateLangProvider provider) {
-        
         provider.add("tagprefix.nanites", "%s Nanites");
         provider.add("tagprefix.crystal_rose", "%s Crystal Rose");
         provider.add("tagprefix.tier_one_bee", "%s Lively Bee");
@@ -161,6 +160,26 @@ public class PhoenixMaterialLangHandler {
         addMaterialLang(provider, "exotic_fission_concentrate", "Exotic Fission Concentrate");
         addMaterialLang(provider, "plutonium_fission_ash", "Plutonium Fission Ash");
         addMaterialLang(provider, "trace_actinides", "Trace Actinides");
+        addMaterialLang(provider, "naquadatite_acidic", "Naquadatite Acidic");
+        addMaterialLang(provider, "heavily_fluorine_contaminated_naquadatite",
+                "Heavily Fluorine Contaminated Naquadatite");
+        addMaterialLang(provider, "radioactive_and_heavy_metal_contaminated_naquadatite",
+                "Radioactive and Heavy Metal Contaminated Naquadatite");
+        addMaterialLang(provider, "radioactive_contaminated_naquadatite", "Radioactive Contaminated Naquadatite");
+        addMaterialLang(provider, "radioactive_naquadacid", "Radioactive Naquadacid");
+        addMaterialLang(provider, "naquadah_dioxide", "Naquadah Dioxide");
+        addMaterialLang(provider, "lightly_chlorine_contaminated_waste", "Lightly Chlorine Contaminated Waste");
+        addMaterialLang(provider, "calcium_fluorine", "Calcium Fluorine");
+        addMaterialLang(provider, "aluminium_caesium_chloride", "Aluminium Caesium Chloride");
+        addMaterialLang(provider, "astatine", "Astatine");
+        addMaterialLang(provider, "naquadatia_astatine", "Naquadatia Astatine");
+        addMaterialLang(provider, "sodium_astatine_bisulfate", "Sodium Astatine Bisulfate");
+        addMaterialLang(provider, "heavy_metal_sludge", "Heavy Metal Sludge");
+        addMaterialLang(provider, "acidic_waste_sludge", "Acidic Waste Sludge");
+        addMaterialLang(provider, "heavily_acidic_naquadatite", "Heavily Acidic Naquadatite");
+        addMaterialLang(provider, "chlorine_waste_naquadatia_astatine", "Chlorine Waste Naquadatia Astatine");
+        addMaterialLang(provider, "naquadatite", "Naquadatite");
+        addMaterialLang(provider, "graphene_sludge", "Graphene Sludge");
 
         addMaterialLang(provider, "peanut", "Peanut");
         addMaterialLang(provider, "fissile_ash", "Fissile Ash");

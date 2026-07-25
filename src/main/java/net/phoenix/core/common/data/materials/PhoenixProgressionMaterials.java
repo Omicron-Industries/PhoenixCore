@@ -46,6 +46,12 @@ public class PhoenixProgressionMaterials {
             ABSOLUTE_ZERO_ZERONIUM;
     public static Material MULTIVERSAL_HYPERALLOY, GLITCHED_CORRUPTION_SUBSTRATE, EVENT_HORIZON_MATTER, ANTIMATTER,
             RESONANT_ENDER, PRISMATIC_PAINT;
+    public static Material NAQUADATITE_ACIDIC, HEAVILY_FLUORINE_CONTAMINATED_NAQUADATITE,
+            RADIOACTIVE_AND_HEAVY_METAL_CONTAMINATED_NAQUADATITE, RADIOACTIVE_CONTAMINATED_NAQUADATITE,
+            RADIOACTIVE_NAQUADACID, NAQUADAH_DIOXIDE, LIGHTLY_CHLORINE_CONTAMINATED_WASTE,
+            CALCIUM_FLUORINE, ALUMINIUM_CAESIUM_CHLORIDE, ASTATINE, NAQUADATIA_ASTATINE,
+            SODIUM_ASTATINE_BISULFATE, HEAVY_METAL_SLUDGE, ACIDIC_WASTE_SLUDGE,
+            HEAVILY_ACIDIC_NAQUADATITE, CHLORINE_WASTE_NAQUADATIA_ASTATINE, NAQUADATITE, GRAPHENE_SLUDGE;
 
     public static void register() {
         PRISMATIC_PAINT = new Material.Builder(PhoenixCore.id("prismatic_paint"))
@@ -428,5 +434,115 @@ public class PhoenixProgressionMaterials {
         ANTIMATTER = new Material.Builder(PhoenixCore.id("antimatter")).ingot().fluid().color(0x000000)
                 .cableProperties(GTValues.V[GTValues.MAX], 8192, 1024, true)
                 .blastTemp(2800, MID, GTValues.VA[GTValues.MAX], 2500000).flags(GENERATE_PLATE).buildAndRegister();
+
+        NAQUADATITE_ACIDIC = new Material.Builder(PhoenixCore.id("naquadatite_acidic"))
+                .dust()
+                .color(0x3B5A40)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        HEAVILY_FLUORINE_CONTAMINATED_NAQUADATITE = new Material.Builder(
+                PhoenixCore.id("heavily_fluorine_contaminated_naquadatite"))
+                .dust()
+                .color(0x4E7C59)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        RADIOACTIVE_AND_HEAVY_METAL_CONTAMINATED_NAQUADATITE = new Material.Builder(
+                PhoenixCore.id("radioactive_and_heavy_metal_contaminated_naquadatite"))
+                .dust()
+                .color(0x2B3A2C)
+                .iconSet(MaterialIconSet.RADIOACTIVE)
+                .buildAndRegister();
+
+        RADIOACTIVE_CONTAMINATED_NAQUADATITE = new Material.Builder(
+                PhoenixCore.id("radioactive_contaminated_naquadatite"))
+                .dust()
+                .color(0x334D37)
+                .iconSet(MaterialIconSet.RADIOACTIVE)
+                .buildAndRegister();
+
+        RADIOACTIVE_NAQUADACID = new Material.Builder(PhoenixCore.id("radioactive_naquadacid"))
+                .dust()
+                .color(0x1E4620)
+                .iconSet(MaterialIconSet.RADIOACTIVE)
+                .buildAndRegister();
+
+        NAQUADAH_DIOXIDE = new Material.Builder(PhoenixCore.id("naquadah_dioxide"))
+                .dust()
+                .color(0x222222)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        LIGHTLY_CHLORINE_CONTAMINATED_WASTE = new Material.Builder(
+                PhoenixCore.id("lightly_chlorine_contaminated_waste"))
+                .dust()
+                .color(0x8FBC8F)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        CALCIUM_FLUORINE = new Material.Builder(PhoenixCore.id("calcium_fluorine"))
+                .dust()
+                .color(0xE0EEEE)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        ALUMINIUM_CAESIUM_CHLORIDE = new Material.Builder(PhoenixCore.id("aluminium_caesium_chloride"))
+                .dust()
+                .color(0x778899)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        ASTATINE = new Material.Builder(PhoenixCore.id("astatine"))
+                .dust()
+                .color(0xBF00FF)
+                .secondaryColor(0x41006F)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        NAQUADATIA_ASTATINE = new Material.Builder(PhoenixCore.id("naquadatia_astatine"))
+                .dust()
+                .color(0x5B1382)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        SODIUM_ASTATINE_BISULFATE = new Material.Builder(PhoenixCore.id("sodium_astatine_bisulfate"))
+                .dust()
+                .color(0x8A2BE2)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        HEAVY_METAL_SLUDGE = new Material.Builder(PhoenixCore.id("heavy_metal_sludge"))
+                .dust()
+                .liquid()
+                .color(0x2F4F4F)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        ACIDIC_WASTE_SLUDGE = new Material.Builder(PhoenixCore.id("acidic_waste_sludge"))
+                .dust()
+                .liquid()
+                .color(0x4B5320)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        HEAVILY_ACIDIC_NAQUADATITE = new Material.Builder(PhoenixCore.id("heavily_acidic_naquadatite"))
+                .dust()
+                .color(0x1B4D3E)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        CHLORINE_WASTE_NAQUADATIA_ASTATINE = new Material.Builder(PhoenixCore.id("chlorine_waste_naquadatia_astatine"))
+                .dust()
+                .color(0x3D6346)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
+
+        GRAPHENE_SLUDGE = new Material.Builder(PhoenixCore.id("graphene_sludge"))
+                .dust()
+                .liquid()
+                .color(0x1C1C1C)
+                .iconSet(MaterialIconSet.DULL)
+                .buildAndRegister();
     }
 }

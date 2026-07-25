@@ -34,7 +34,7 @@ public class ChapterLoader {
         try (Stream<Path> walk = Files.walk(chaptersFolder)) {
             walk.filter(Files::isRegularFile)
                     .filter(p -> p.toString().endsWith(".yml"))
-                    .sorted() 
+                    .sorted()
                     .forEach(ChapterLoader::loadChapterFile);
         } catch (IOException e) {
             LOGGER.error("[Chronicles] Failed to walk chapters directory", e);
@@ -71,7 +71,7 @@ public class ChapterLoader {
         boolean inDependsOn = false;
 
         for (String rawLine : lines) {
-            
+
             int indent = leadingSpaces(rawLine);
             String line = rawLine.trim();
 
@@ -82,7 +82,7 @@ public class ChapterLoader {
                 inDependsOn = false;
 
                 if (line.equals("nodes:")) {
-                    
+
                     if (currentQuestId != null) {
                         nodes.add(buildEntry(currentQuestId, currentShape, currentX, currentY, currentVisible,
                                 currentDeps));
@@ -104,12 +104,12 @@ public class ChapterLoader {
             }
 
             if (inNodes && indent == 2 && line.startsWith("- ")) {
-                
+
                 if (currentQuestId != null) {
                     nodes.add(
                             buildEntry(currentQuestId, currentShape, currentX, currentY, currentVisible, currentDeps));
                 }
-                
+
                 currentQuestId = null;
                 currentShape = "SQUARE";
                 currentX = 0;
@@ -161,7 +161,7 @@ public class ChapterLoader {
         }
 
         if (id == null) {
-            
+
             id = fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
         }
         if (displayName == null) displayName = id;

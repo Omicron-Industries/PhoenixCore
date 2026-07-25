@@ -172,7 +172,7 @@ public class FtbQuestsImporter {
                 String itemId = itemTag != null ? extractItemId(itemTag) : "minecraft:air";
                 long count = t.contains("count") ? t.getLong("count") : 1L;
                 if (count <= 0) count = 1;
-                
+
                 String desc = t.contains("title") ? stripFormatting(t.getString("title")) :
                         itemId.substring(itemId.lastIndexOf(':') + 1).replace('_', ' ');
                 yield "{type: \"item_check\", task_id: \"" + taskId + "\"" + ", item_id: \"" + itemId + "\"" +
@@ -183,13 +183,13 @@ public class FtbQuestsImporter {
                 String desc = t.contains("title") ? stripFormatting(t.getString("title")) : "Complete";
                 yield "{type: \"checkmark\", task_id: \"" + taskId + "\"" + ", description: \"" + escape(desc) + "\"}";
             }
-            default -> null; 
+            default -> null;
         };
     }
 
     private static String convertReward(CompoundTag r) {
         String type = r.getString("type");
-        if (!"item".equals(type)) return null; 
+        if (!"item".equals(type)) return null;
         String itemId = r.getString("item");
         if (itemId.isEmpty()) return null;
         int count = r.contains("count") ? r.getInt("count") : 1;
@@ -209,10 +209,10 @@ public class FtbQuestsImporter {
             ListTag items = ct.getCompound("tag").getList("items", Tag.TAG_COMPOUND);
             if (!items.isEmpty()) return items.getCompound(0).getString("id");
         }
-        
+
         if ("itemfilters:tag".equals(id)) {
             String tagValue = ct.getCompound("tag").getString("value");
-            return tagValue.isEmpty() ? "minecraft:air" : "minecraft:air"; 
+            return tagValue.isEmpty() ? "minecraft:air" : "minecraft:air";
         }
         return id.isEmpty() ? "minecraft:air" : id;
     }
@@ -222,7 +222,7 @@ public class FtbQuestsImporter {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.getString(i);
-            
+
             if (line.startsWith("{@pagebreak}") || line.startsWith("{image:")) continue;
             line = stripFormatting(line).trim();
             if (line.isEmpty()) {
@@ -242,7 +242,7 @@ public class FtbQuestsImporter {
             case "diamond" -> "DIAMOND";
             case "hexagon" -> "HEXAGON";
             case "pentagon" -> "PENTAGON";
-            default -> "SQUARE"; 
+            default -> "SQUARE";
         };
     }
 
@@ -250,7 +250,7 @@ public class FtbQuestsImporter {
         String base = titleSlug(title);
         if (base.isEmpty()) base = "q_" + hexId.toLowerCase();
         if (!usedPaths.contains(base)) return base;
-        
+
         String candidate = base + "_" + hexId.substring(0, 4).toLowerCase();
         int n = 2;
         while (usedPaths.contains(candidate)) candidate = base + "_" + (n++);
@@ -276,7 +276,7 @@ public class FtbQuestsImporter {
         if (s == null) return "";
         return s.replaceAll("&#[0-9A-Fa-f]{6}", "")
                 .replaceAll("&[0-9a-fklmnorA-FKLMNORxX]", "")
-                .replaceAll(">\\?", "") 
+                .replaceAll(">\\?", "")
                 .trim();
     }
 

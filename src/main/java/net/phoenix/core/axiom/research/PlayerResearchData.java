@@ -15,7 +15,7 @@ public class PlayerResearchData {
 
     private final Set<ResourceLocation> unlocked = new HashSet<>();
     private final Set<ResourceLocation> lockedOut = new HashSet<>();
-    
+
     private final Set<String> flags = new HashSet<>();
 
     public boolean isUnlocked(ResourceLocation nodeId) {
@@ -51,7 +51,7 @@ public class PlayerResearchData {
 
         for (ResearchUnlock unlock : node.unlocks) {
             if (unlock.type().equals("flag")) flags.add(unlock.value());
-            
+
         }
 
         if (node.exclusionGroup != null) {

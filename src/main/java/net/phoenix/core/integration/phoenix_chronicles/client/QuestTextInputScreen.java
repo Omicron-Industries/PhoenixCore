@@ -76,14 +76,13 @@ public class QuestTextInputScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
-
         ChronicleOverviewScreen overview = findOverview();
         if (overview != null) {
             overview.renderBackdrop(g);
         } else {
             g.fill(0, 0, width, height, 0xFF0B0B0F);
         }
-        
+
         g.fill(0, 0, width, height, 0xBB000000);
 
         g.fill(px, py, px + pw, py + ph, C_PANEL);
@@ -91,7 +90,7 @@ public class QuestTextInputScreen extends Screen {
         g.fill(px, py + ph - 1, px + pw, py + ph, C_BORDER);
         g.fill(px, py, px + 1, py + ph, C_BORDER);
         g.fill(px + pw - 1, py, px + pw, py + ph, C_BORDER);
-        
+
         g.fill(px + 1, py, px + pw - 1, py + 2, C_ACCENT);
 
         g.drawCenteredString(font, "§f" + fieldLabel, px + pw / 2, py + 7, C_TEXT);
@@ -143,12 +142,12 @@ public class QuestTextInputScreen extends Screen {
         if (super.mouseClicked(mx, my, btn)) return true;
 
         int half = pw / 2 - 6;
-        
+
         if (mx >= px + 6 && mx < px + 6 + half && my >= btnY && my < btnY + 16) {
             confirm();
             return true;
         }
-        
+
         if (mx >= px + pw / 2 + 3 && mx < px + pw - 3 && my >= btnY && my < btnY + 16) {
             Minecraft.getInstance().setScreen(parent);
             return true;
@@ -290,7 +289,7 @@ public class QuestTextInputScreen extends Screen {
                         int x1 = textX + QuestTextInputScreen.this.font.width(line.text.substring(0, a));
                         int x2 = textX + QuestTextInputScreen.this.font.width(line.text.substring(0, b));
                         g.fill(x1, lineY, x2, lineY + 9, C_HOVER_FILL);
-                        
+
                         g.fill(x1, lineY, x2, lineY + 1, C_HOVER_OUTLINE);
                         g.fill(x1, lineY + 8, x2, lineY + 9, C_HOVER_OUTLINE);
                         g.fill(x1, lineY, x1 + 1, lineY + 9, C_HOVER_OUTLINE);
@@ -344,7 +343,7 @@ public class QuestTextInputScreen extends Screen {
             if (lineIdx < 0 || lineIdx >= lines.size()) return;
             LinePos line = lines.get(lineIdx);
             int localX = mx - textX;
-            
+
             int offset = 0;
             while (offset < line.text.length()) {
                 char ch = line.text.charAt(offset);
@@ -357,7 +356,7 @@ public class QuestTextInputScreen extends Screen {
             }
             int absPos = line.start + offset;
             if (absPos >= full.length()) return;
-            
+
             int ws = absPos;
             while (ws > 0 && !Character.isWhitespace(full.charAt(ws - 1))) ws--;
             int we = absPos;
@@ -379,9 +378,9 @@ public class QuestTextInputScreen extends Screen {
                     int localX = (int) (mx - (getX() + 6));
                     int rawOffset = 0;
                     while (rawOffset < line.text.length()) {
-                        
+
                         char ch = line.text.charAt(rawOffset);
-                        if (ch == 167 && rawOffset + 1 < line.text.length()) { 
+                        if (ch == 167 && rawOffset + 1 < line.text.length()) {
                             rawOffset += 2;
                             continue;
                         }

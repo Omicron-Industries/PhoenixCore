@@ -19,7 +19,7 @@ public class PhoenixInventoryService {
             ItemStack foundStack = stackOpt.get();
             if (!foundStack.isEmpty()) {
                 foundStack.shrink(1);
-                
+
                 player.getInventory().setChanged();
                 return true;
             }

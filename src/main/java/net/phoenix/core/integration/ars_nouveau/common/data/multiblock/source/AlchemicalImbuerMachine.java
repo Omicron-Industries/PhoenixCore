@@ -109,13 +109,13 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
 
         switch (registryName) {
             case "ars_nouveau:whirlisprig_flower":
-                return 0.20f; 
+                return 0.20f;
             case "ars_nouveau:magebloom_crop":
-                return 0.05f; 
+                return 0.05f;
             case "ars_nouveau:sourceberry_bush":
-                return 0.01f; 
+                return 0.01f;
             default:
-                
+
                 if (state.is(net.minecraft.tags.BlockTags.FLOWERS)) {
                     return 0.002f;
                 }

@@ -19,7 +19,7 @@ public class FissionFuelInfoEmiRecipe implements EmiRecipe {
     private static final int H = 140;
 
     private static final String[] LOGS = {
-            
+
             "LOG-001 // Standard fissile charge. Stable neutron cross-section. " +
                     "Recommended for initial reactor commissioning and baseline calibration runs.",
 

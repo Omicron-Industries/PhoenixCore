@@ -47,7 +47,6 @@ public class MaterialGeneratorGUI extends JFrame {
             "Old-Cheese", "Dish-Water", "Pet-Hair", "Loose-Change", "Packing-Peanut");
 
     public MaterialGeneratorGUI() {
-        
         setTitle("Phoenix Core: Random Material Forge");
         setSize(500, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -119,7 +119,7 @@ public class GuildManager extends SavedData {
         GuildRank current = g.getRank(targetUUID);
         if (current == GuildRank.OWNER) return "already_owner";
         if (current == GuildRank.OFFICER) {
-            
+
             g.setOwner(targetUUID);
         } else {
             g.getMemberRanks().put(targetUUID, GuildRank.OFFICER);

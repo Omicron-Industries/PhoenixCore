@@ -7,9 +7,9 @@ public class Shield {
     @Getter
     public enum ShieldTypes {
 
-        NORMAL(1, 10, true, 20 * 60, 1, 1, 1000, "shield.PhoenixCore.type.normal"), 
+        NORMAL(1, 10, true, 20 * 60, 1, 1, 1000, "shield.PhoenixCore.type.normal"),
         INACTIVE(2, 0, false, 0, 0, 0, 0, "shield.PhoenixCore.type.inactive"),
-        DECAYED(3, 0, false, 20 * 60 * 5, 0, 0, 0, "shield.PhoenixCore.type.decayed"); 
+        DECAYED(3, 0, false, 20 * 60 * 5, 0, 0, 0, "shield.PhoenixCore.type.decayed");
 
         public static final ShieldTypes[] SHIELDS = ShieldTypes.values();
 

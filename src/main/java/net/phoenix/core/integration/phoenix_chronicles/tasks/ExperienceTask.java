@@ -24,9 +24,7 @@ public class ExperienceTask extends QuestTask {
         return player.experienceLevel >= requiredLevel;
     }
 
-    public void checkPlayerLevel(Player player) {
-        
-    }
+    public void checkPlayerLevel(Player player) {}
 
     @Override
     public CompoundTag serializeNBT() {
@@ -38,7 +36,6 @@ public class ExperienceTask extends QuestTask {
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        
         this.requiredLevel = nbt.getInt("RequiredLevel");
     }
 }

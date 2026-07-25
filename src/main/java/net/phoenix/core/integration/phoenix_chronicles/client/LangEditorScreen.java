@@ -43,8 +43,8 @@ public class LangEditorScreen extends Screen {
 
     private static final int SIDEBAR_W = 120;
     private static final int HEADER_H = 36;
-    private static final int GROUP_H = 16;   
-    private static final int ROW_H = 38;   
+    private static final int GROUP_H = 16;
+    private static final int ROW_H = 38;
     private static final int FIELD_H = 13;
     private static final int FOOTER_H = 20;
 
@@ -54,10 +54,10 @@ public class LangEditorScreen extends Screen {
     private int sidebarScrollPx = 0;
 
     private final List<TextEntry> entries = new ArrayList<>();
-    
+
     private final Map<String, String> dirty = new LinkedHashMap<>();
 
-    private int scrollPx = 0;    
+    private int scrollPx = 0;
     private EditBox searchBox;
     private String statusMsg = "";
     private int statusTimer = 0;
@@ -197,11 +197,11 @@ public class LangEditorScreen extends Screen {
 
         for (int ei = 0; ei < entries.size(); ei++) {
             int rowY = top + entryY(ei) - scrollPx;
-            if (rowY + ROW_H <= top) continue;  
-            if (rowY >= bott) break;             
+            if (rowY + ROW_H <= top) continue;
+            if (rowY >= bott) break;
 
             TextEntry entry = entries.get(ei);
-            
+
             int boxY = rowY + ROW_H - FIELD_H - 3;
             EditBox box = new EditBox(font, fieldX, boxY, fieldW, FIELD_H, Component.empty());
             box.setMaxLength(512);
@@ -339,7 +339,6 @@ public class LangEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
-        
         if (mx < SIDEBAR_W && my > HEADER_H) {
             List<String> cats = buildCategoryList();
             int ty = HEADER_H + 4 - sidebarScrollPx;
@@ -363,7 +362,7 @@ public class LangEditorScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
         if (mx < SIDEBAR_W) {
-            
+
             List<String> cats = buildCategoryList();
             int sidebarContentH = cats.size() * 15;
             int sidebarViewH = height - HEADER_H - 4;
@@ -379,7 +378,7 @@ public class LangEditorScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        if (key == 256) { 
+        if (key == 256) {
             if (minecraft != null) minecraft.setScreen(parent);
             return true;
         }
@@ -387,7 +386,7 @@ public class LangEditorScreen extends Screen {
         if (ctrl && key == 83) {
             saveAll();
             return true;
-        } 
+        }
         return super.keyPressed(key, scan, mods);
     }
 
@@ -425,12 +424,12 @@ public class LangEditorScreen extends Screen {
                 }
 
                 if (Files.exists(mdFile)) {
-                    
+
                     String existing = Files.readString(mdFile, StandardCharsets.UTF_8);
                     String patched = patchMdFile(existing, newTitle, newDesc);
                     Files.writeString(mdFile, patched, StandardCharsets.UTF_8);
                 } else {
-                    
+
                     String t = newTitle != null ? newTitle : questPath;
                     String d = newDesc != null ? newDesc : "";
                     Files.writeString(mdFile, buildMdFile(t, d), StandardCharsets.UTF_8);
@@ -443,14 +442,14 @@ public class LangEditorScreen extends Screen {
             Path snbt = base.resolve(questPath + ".snbt");
             if (Files.exists(snbt)) {
                 try {
-                    
+
                     boolean hasTaskChanges = fields.stream().anyMatch(e -> e.fieldType().startsWith("task_"));
 
                     if (hasTaskChanges) {
-                        
+
                         net.minecraft.nbt.CompoundTag tag = net.minecraft.nbt.TagParser.parseTag(
                                 Files.readString(snbt, StandardCharsets.UTF_8));
-                        
+
                         for (TextEntry e : fields) {
                             String v = dirty.get(e.key());
                             if (v == null) continue;
@@ -469,7 +468,7 @@ public class LangEditorScreen extends Screen {
                                         taskList.set(idx, tTag);
                                     }
                                 }
-                                
+
                                 QuestNode qNode = QuestTreeRegistry.getQuest(
                                         new net.minecraft.resources.ResourceLocation("phoenixcore", questPath));
                                 if (qNode != null) {
@@ -482,7 +481,7 @@ public class LangEditorScreen extends Screen {
                         }
                         Files.writeString(snbt, tag.toString(), StandardCharsets.UTF_8);
                     } else {
-                        
+
                         String content = Files.readString(snbt, StandardCharsets.UTF_8);
                         for (TextEntry e : fields) {
                             String v = dirty.get(e.key());
@@ -509,7 +508,7 @@ public class LangEditorScreen extends Screen {
         writeEnUsJson(base);
 
         dirty.clear();
-        
+
         QuestContentLoader.reloadAllQuestsFromDisk();
         QuestFileLoader.loadAdditiveFromDisk(base);
         rebuildEntries();
@@ -518,7 +517,6 @@ public class LangEditorScreen extends Screen {
     }
 
     static String patchMdFile(String original, String newTitle, String newDesc) {
-        
         boolean hasFrontMatter = original.startsWith("---");
         String frontMatter = "";
         String body = original;
@@ -536,11 +534,11 @@ public class LangEditorScreen extends Screen {
                 frontMatter = frontMatter.replaceAll("(?m)^title:.*$",
                         "title: \"" + newTitle.replace("\"", "\\\"") + "\"");
             } else if (hasFrontMatter) {
-                
+
                 frontMatter = frontMatter.substring(0, frontMatter.lastIndexOf("---")) + "title: \"" +
                         newTitle.replace("\"", "\\\"") + "\"\n---";
             } else {
-                
+
                 frontMatter = "---\ntitle: \"" + newTitle.replace("\"", "\\\"") + "\"\n---\n";
                 hasFrontMatter = true;
             }

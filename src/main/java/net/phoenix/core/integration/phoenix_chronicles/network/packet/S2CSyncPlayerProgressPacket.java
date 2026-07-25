@@ -44,7 +44,7 @@ public class S2CSyncPlayerProgressPacket {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         mc.player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
-            
+
             Map<ResourceLocation, QuestState> oldStates = new HashMap<>();
             for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
                 oldStates.put(node.getId(), data.getQuestState(node.getId(), QuestState.LOCKED));

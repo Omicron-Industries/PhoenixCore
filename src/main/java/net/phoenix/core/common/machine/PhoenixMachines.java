@@ -212,7 +212,7 @@ public class PhoenixMachines {
                                                           SoundHatchPartMachine.SoundHatchType type,
                                                           PartAbility ability) {
         return registerTieredMachines(name,
-                (holder, tier) -> new SoundHatchPartMachine(holder, tier, type), 
+                (holder, tier) -> new SoundHatchPartMachine(holder, tier, type),
                 (tier, builder) -> builder
                         .langValue(GTValues.VNF[tier] + ' ' + displayName)
                         .abilities(ability)
@@ -1612,8 +1612,7 @@ public class PhoenixMachines {
             })
             .workableCasingModel(
                     GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
-                    new ResourceLocation("minecraft", "block/note_block") 
-            )
+                    new ResourceLocation("minecraft", "block/note_block"))
             .register();
 
     public static void init() {}

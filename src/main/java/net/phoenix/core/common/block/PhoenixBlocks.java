@@ -219,7 +219,7 @@ public class PhoenixBlocks {
                 .initialProperties(() -> Blocks.IRON_BLOCK)
                 .lang(speakerData.getName() + " Speaker Component")
                 .blockstate((ctx, prov) -> {
-                    
+
                     String folder = "block/casings/speakers/";
                     var side = PhoenixCore.id(folder + "side");
                     var front = PhoenixCore.id(folder + tierName + "_front");

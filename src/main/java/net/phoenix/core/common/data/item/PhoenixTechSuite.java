@@ -100,11 +100,11 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         boolean networkOnline;
         if (serverLevel != null) {
-            
+
             networkOnline = teslaData != null && teslaData.isOnline(teamID);
             data.putBoolean("TeslaNetworkOnline", networkOnline);
         } else {
-            
+
             networkOnline = data.getBoolean("TeslaNetworkOnline");
         }
 
@@ -248,7 +248,6 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
     private void handleBootsLogic(IElectricItem item, Player player, CompoundTag data, ServerLevel serverLevel,
                                   boolean isClientSide) {
-        
         boolean jumping = player.getDeltaMovement().y > 0 && !player.onGround();
         boolean sneaking = player.isShiftKeyDown();
         boolean boostedJump = data.getBoolean("boostedJump");
@@ -280,14 +279,14 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         if (toggleBootsTimer > 0) data.putInt("toggleBootsTimer", toggleBootsTimer - 1);
 
         if (boostedJump) {
-            if (serverLevel == null) { 
+            if (serverLevel == null) {
                 if (item.canUse(energyPerUse / 100) && player.onGround()) {
                     this.charge = 1.0F;
                 }
                 Vec3 delta = player.getDeltaMovement();
-                
+
                 if (delta.y >= 0.0D && this.charge > 0.0F && !player.isInWater()) {
-                    if (player.getDeltaMovement().y > 0.05 ) {
+                    if (player.getDeltaMovement().y > 0.05) {
                         if (this.charge == 1.0F) player.setDeltaMovement(delta.x * 3.6D, delta.y, delta.z * 3.6D);
                         player.addDeltaMovement(new Vec3(0.0, this.charge * 0.32, 0.0));
                         this.charge *= 0.7F;
@@ -295,7 +294,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
                         this.charge = 0.0F;
                     }
                 }
-            } else { 
+            } else {
                 boolean prevOnGround = data.getBoolean("onGround");
                 if (prevOnGround && !player.onGround() && jumping && !sneaking) {
                     item.discharge(energyPerUse / 100, item.getTier(), true, false, false);
@@ -430,7 +429,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
 
         if (!player.onGround() && !player.isFallFlying() && world.isClientSide) {
             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            
+
             if (mc.options.keyJump.consumeClick() && player.getDeltaMovement().y < 0.0) {
                 player.startFallFlying();
             }
@@ -520,7 +519,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         if (flightMode.equals("creative+wings")) {
             if (!player.getAbilities().flying && !player.isFallFlying() && !player.onGround() && world.isClientSide) {
                 net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-                
+
                 if (mc.options.keyJump.consumeClick() && player.getDeltaMovement().y < 0.0) {
                     player.startFallFlying();
                 }
@@ -737,7 +736,7 @@ public class PhoenixTechSuite extends ArmorLogicSuite implements IStepAssist, Ge
         boolean networkIsOnline = nbt.getBoolean("TeslaNetworkOnline");
 
         if (!networkIsOnline) {
-            
+
             this.HUD.newString(
                     Component.literal("⚡ NETWORK: OFFLINE").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         } else {

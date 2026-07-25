@@ -29,7 +29,7 @@ public abstract class GuiGraphicsCountSuffixMixin {
             cancellable = true)
     private void phoenix$compactString(Font font, String text, int x, int y, int color, boolean dropShadow,
                                        CallbackInfoReturnable<Integer> cir) {
-        if (text == null || phoenix$isInsideTextField()) return; 
+        if (text == null || phoenix$isInsideTextField()) return;
 
         String compacted = CompactCount.compactIfNumeric(text);
 

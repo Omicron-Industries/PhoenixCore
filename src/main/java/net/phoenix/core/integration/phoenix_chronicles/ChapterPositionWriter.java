@@ -61,7 +61,7 @@ public class ChapterPositionWriter {
             }
 
             if (inTargetNode && trimmed.startsWith("position:")) {
-                
+
                 out.add(newPositionLine);
                 positionWritten = true;
                 continue;
@@ -70,7 +70,7 @@ public class ChapterPositionWriter {
             out.add(raw);
 
             if (inTargetNode && !positionWritten && trimmed.startsWith("- quest:")) {
-                
+
                 boolean nextIsPosition = false;
                 for (int j = i + 1; j < lines.size(); j++) {
                     String peek = lines.get(j).trim();

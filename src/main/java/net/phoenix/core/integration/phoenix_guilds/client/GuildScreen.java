@@ -163,7 +163,7 @@ public class GuildScreen extends Screen {
         String title = ClientGuildCache.isInGuild() ? "  " + ClientGuildCache.guildName : "  GUILDS";
         g.drawCenteredString(font, title, px + W / 2, py + (HEADER - 8) / 2,
                 ClientGuildCache.isInGuild() ? C_GOLD() : C_TEXT());
-        
+
         g.drawString(font, "Themes", px + W - 46, py + (HEADER - 8) / 2, C_DIM(), false);
     }
 
@@ -512,7 +512,7 @@ public class GuildScreen extends Screen {
                 }
             }
         }
-        
+
         int themesBtnX = px + W - 46;
         int themesBtnY = py + (HEADER - 8) / 2;
         if (mx >= themesBtnX && mx < themesBtnX + 40 && my >= themesBtnY && my < themesBtnY + 8) {

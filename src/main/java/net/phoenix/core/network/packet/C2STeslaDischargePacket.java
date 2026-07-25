@@ -20,9 +20,7 @@ public class C2STeslaDischargePacket {
 
     public C2STeslaDischargePacket(FriendlyByteBuf buf) {}
 
-    public void encode(FriendlyByteBuf buf) {
-        
-    }
+    public void encode(FriendlyByteBuf buf) {}
 
     public static void handle(C2STeslaDischargePacket msg, Supplier<NetworkEvent.Context> ctxGetter) {
         NetworkEvent.Context ctx = ctxGetter.get();

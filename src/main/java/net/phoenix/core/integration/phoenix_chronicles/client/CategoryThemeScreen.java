@@ -110,7 +110,7 @@ public class CategoryThemeScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(@NotNull GuiGraphics g) {  }
+    public void renderBackground(@NotNull GuiGraphics g) {}
 
     @Override
     public void render(@NotNull GuiGraphics g, int mx, int my, float partial) {
@@ -137,7 +137,7 @@ public class CategoryThemeScreen extends Screen {
         int bg = (cachedColor != 0) ? (0xFF000000 | cachedColor) : 0xFF0B0B0F;
         g.fill(fx, previewY, fx + fw, previewY + 22, bg);
         drawBorder(g, fx, previewY, fw, 22, 0xFF333344);
-        
+
         renderStylePreview(g, fx + 1, previewY + 1, fw - 2, 20);
 
         super.render(g, mx, my, partial);
@@ -172,7 +172,7 @@ public class CategoryThemeScreen extends Screen {
                 for (int py = y; py < y + h; py += 10) g.fill(x, py, x + w, py + 1, 0x22FFFFFF);
             }
             case HEX_GRID -> {
-                
+
                 for (int row = 0; row < 3; row++) {
                     int ox = (row % 2 == 0) ? 0 : 6;
                     for (int col = 0; col < 5; col++) {
@@ -186,7 +186,7 @@ public class CategoryThemeScreen extends Screen {
                 for (int d = 0; d < w + h; d += 8) {
                     int x0 = x + d, y0 = y;
                     int x1 = x, y1 = y + d;
-                    
+
                     int len = Math.min(d, Math.min(w, h));
                     for (int i = 0; i < len; i++) {
                         int px = x0 - i, py = y0 + i;
@@ -195,7 +195,7 @@ public class CategoryThemeScreen extends Screen {
                     }
                 }
             }
-            case SOLID -> {} 
+            case SOLID -> {}
             case CUSTOM -> g.drawCenteredString(font, "§8custom", x + w / 2, y + h / 2 - 4, 0xFF555566);
         }
     }

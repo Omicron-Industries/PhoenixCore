@@ -40,14 +40,13 @@ public class TerminalScreen extends Screen {
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
-        
         if (codePoint >= 32 && codePoint != 127) {
-            
+
             String left = inputBuffer.substring(0, cursorPosition);
             String right = inputBuffer.substring(cursorPosition);
 
             inputBuffer = left + codePoint + right;
-            cursorPosition++; 
+            cursorPosition++;
             return true;
         }
         return super.charTyped(codePoint, modifiers);
@@ -110,7 +109,6 @@ public class TerminalScreen extends Screen {
     }
 
     private void executeTerminalDirective(String command) {
-        
         String formattedCmd = command.replace("&", "§");
 
         consoleHistory.add("§7$ " + formattedCmd);
@@ -119,7 +117,7 @@ public class TerminalScreen extends Screen {
             consoleHistory.clear();
             consoleHistory.add("§b[SYS] Console buffer cleared.");
         } else {
-            
+
             consoleHistory.add("§cUnknown Directive System Response: §f" + formattedCmd);
         }
 
@@ -130,7 +128,7 @@ public class TerminalScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        frameTickCounter++; 
+        frameTickCounter++;
     }
 
     @Override

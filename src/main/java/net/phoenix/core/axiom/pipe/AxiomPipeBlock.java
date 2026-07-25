@@ -93,9 +93,9 @@ public class AxiomPipeBlock extends BaseEntityBlock {
 
     private boolean canConnect(LevelAccessor level, BlockPos neighbourPos, Direction fromSide) {
         BlockState ns = level.getBlockState(neighbourPos);
-        
+
         if (ns.getBlock() instanceof AxiomPipeBlock other && other.dataType == dataType) return true;
-        
+
         if (level instanceof net.minecraft.world.level.Level lvl) {
             BlockEntity be = lvl.getBlockEntity(neighbourPos);
             if (be != null) {

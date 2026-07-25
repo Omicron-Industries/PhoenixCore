@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static net.phoenix.core.common.data.materials.PhoenixOres.*;
 import static net.phoenix.core.common.data.materials.PhoenixOres.IGNISIUM;
+import static net.phoenix.core.common.data.materials.PhoenixOres.NAQUADATITE;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
 
 public class PhoenixMaterials {
@@ -69,7 +70,6 @@ public class PhoenixMaterials {
     }
 
     public static void modifyMaterials() {
-        
         CrystalRoseHelper.addCrystalRoseFlags(
                 Amethyst, Apatite, Bauxite, Cinnabar, Cobalt, Cobaltite, Copper, Diamond, PERMAFROST, DORMANT_EMBER,
                 Electrotine, Emerald, Galena, Gold, Ilmenite, Invar, Iron, Lapis,
@@ -85,7 +85,7 @@ public class PhoenixMaterials {
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE, Goethite,
                 Magnetite, Vanadium,
-                Bentonite, Olivine,
+                Bentonite, Olivine, NAQUADATITE,
                 Almandine, Spessartine, Grossular,
                 Chalcopyrite, Pyrite,
                 Cassiterite, CassiteriteSand,
@@ -101,7 +101,7 @@ public class PhoenixMaterials {
                 Garnierite,
                 Cooperite, Palladium,
                 Tungsten
-        
+
         );
 
         BeePrefixHelper.addBeeCombFlag(
@@ -118,7 +118,7 @@ public class PhoenixMaterials {
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, PhoenixOres.IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE
-        
+
         );
 
         BeePrefixHelper.addTierOneBeeFlag(
@@ -135,7 +135,7 @@ public class PhoenixMaterials {
                 PhoenixOres.FLUORITE, PhoenixProgressionMaterials.SOURCE_GEM, Glowstone, Ice, PhoenixOres.IGNISIUM,
                 RESONANT_ENDER, FLUIX, SPONGE, Sculk, SLIME, MAGMA, Blaze, Salt, Bone, ZOMBIE, WITHERED, GHOSTLY, SILKY,
                 PRISMARINE
-        
+
         );
 
         for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {

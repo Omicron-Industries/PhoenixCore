@@ -57,7 +57,7 @@ public class QuestFileSaver {
         String desc = node.getDescription().getString();
         String category = node.getCategory() != null ? node.getCategory() : "MAIN";
         String shape = node.getShapeType() != null ? node.getShapeType() : "SQUARE";
-        String iconItem = node.getIconItemId();        
+        String iconItem = node.getIconItemId();
         String parent = parentId != null ? parentId.getPath() : "none";
 
         CompoundTag tag = new CompoundTag();
@@ -129,7 +129,7 @@ public class QuestFileSaver {
         Files.writeString(snbtPath, tag.toString(), StandardCharsets.UTF_8);
 
         Path mdPath = base.resolve(id + ".md");
-        
+
         if (!Files.exists(mdPath)) {
             Files.writeString(mdPath,
                     "# " + title + "\n\n" + (desc.isEmpty() ? "" : desc + "\n"),
@@ -139,7 +139,7 @@ public class QuestFileSaver {
 
     private static void saveStubCategories(Path base) {
         try {
-            
+
             Set<String> questCats = new HashSet<>();
             questCats.add("ALL");
             for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {

@@ -38,7 +38,7 @@ public final class SourceHatchJarTransferTick {
 
             BlockEntity be = level.getBlockEntity(hatchPos);
             if (!(be instanceof MetaMachineBlockEntity metaBE)) {
-                
+
                 continue;
             }
 
@@ -47,7 +47,7 @@ public final class SourceHatchJarTransferTick {
 
             ISourceTile tank = hatch.getSource();
             if (tank == null) {
-                
+
                 continue;
             }
 

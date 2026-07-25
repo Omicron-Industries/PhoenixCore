@@ -140,11 +140,11 @@ public class FissionFuelRodBlock extends ActiveBlock {
         @Getter
         private final int tier;
         private final int defaultDuration;
-        private final int defaultAmount; 
+        private final int defaultAmount;
         @NotNull
-        private final String defaultFuelKey; 
+        private final String defaultFuelKey;
         @NotNull
-        private final String defaultOutputKey; 
+        private final String defaultOutputKey;
         @Getter
         private final int tintColor;
 

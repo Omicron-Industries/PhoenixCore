@@ -14,7 +14,6 @@ public class ModLoadedFlagProvider implements QuestFlagProvider {
 
     @Override
     public boolean evaluate(String expression, @Nullable MinecraftServer server) {
-        
         return ModList.get().isLoaded(expression.trim());
     }
 }

@@ -13,13 +13,13 @@ public class WorldAcousticSensor {
         public final int listenRadius;
 
         public volatile float bass = 0f;
-        
+
         public volatile int bpm = 0;
-        
+
         public volatile float mid = 0f;
-        
+
         public volatile float treble = 0f;
-        
+
         public volatile int durationTicks = -1;
 
         public SensorData(int listenRadius) {

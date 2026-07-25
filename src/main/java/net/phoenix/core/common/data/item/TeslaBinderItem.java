@@ -194,7 +194,6 @@ public class TeslaBinderItem extends ComponentItem
     }
 
     private void bindToPlayer(Player player, ItemStack stack) {
-        
         UUID resolvedId = TeamUtils.getTeamIdOrPlayerFallback(player.getUUID());
         var tag = stack.getOrCreateTag();
 
@@ -202,11 +201,11 @@ public class TeslaBinderItem extends ComponentItem
 
         tag.putUUID("TargetTeam", resolvedId);
         tag.putString("TeamName", teamName);
-        
+
         tag.putString("OwnerName", player.getName().getString());
 
         if (player.level() instanceof ServerLevel server) {
-            
+
             TeslaTeamEnergyData.get(server).getOrCreate(resolvedId);
 
             server.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + 1.1, player.getZ(), 20, 0.2, 0.2,
@@ -451,7 +450,7 @@ public class TeslaBinderItem extends ComponentItem
 
         switch (type) {
             case "hatch" -> {
-                boolean isInput = data.getBoolean("isOut"); 
+                boolean isInput = data.getBoolean("isOut");
                 typeLabel = isInput ? "[I]" : "[O]";
                 colorCode = isInput ? "§a" : "§c";
                 sign = isInput ? "+" : "-";
@@ -461,7 +460,7 @@ public class TeslaBinderItem extends ComponentItem
                 colorCode = "§b";
                 sign = "-";
             }
-            default -> { 
+            default -> {
                 typeLabel = "[S]";
                 if (flowVal < 0) {
                     colorCode = "§a";

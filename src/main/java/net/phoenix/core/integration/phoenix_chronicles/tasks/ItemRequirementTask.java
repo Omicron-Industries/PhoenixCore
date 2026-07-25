@@ -17,7 +17,7 @@ public class ItemRequirementTask extends QuestTask {
     private Item item;
     private int requiredCount;
     private boolean consume;
-    
+
     private CompoundTag nbtFilter = null;
 
     public ItemRequirementTask(ResourceLocation taskId, Component description, Item item, int requiredCount,
@@ -58,7 +58,7 @@ public class ItemRequirementTask extends QuestTask {
         if (nbtFilter == null || nbtFilter.isEmpty()) return true;
         CompoundTag stackTag = stack.getTag();
         if (stackTag == null) return false;
-        
+
         for (String key : nbtFilter.getAllKeys()) {
             if (!stackTag.contains(key)) return false;
             if (!stackTag.get(key).equals(nbtFilter.get(key))) return false;
@@ -89,7 +89,7 @@ public class ItemRequirementTask extends QuestTask {
     public void tryConsume(Player player) {
         if (item == null || !consume) return;
         int remaining = requiredCount;
-        
+
         for (ItemStack stack : allSlots(player)) {
             if (!stackMatches(stack)) continue;
             int take = Math.min(remaining, stack.getCount());

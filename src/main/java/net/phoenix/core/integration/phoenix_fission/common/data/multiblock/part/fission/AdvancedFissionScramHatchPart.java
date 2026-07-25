@@ -85,7 +85,7 @@ public class AdvancedFissionScramHatchPart extends TieredPartMachine {
                 notifyController();
             }
         } else {
-            
+
             if (sustainCounter > 0 || isScrammed) {
                 sustainCounter = 0;
                 isScrammed = false;
@@ -95,7 +95,6 @@ public class AdvancedFissionScramHatchPart extends TieredPartMachine {
     }
 
     private void updateScramStatus() {
-
         Level level = getLevel();
         if (level == null || level.isClientSide) return;
         if (level.getBestNeighborSignal(getPos()) < signalThreshold) {
@@ -105,7 +104,6 @@ public class AdvancedFissionScramHatchPart extends TieredPartMachine {
                 notifyController();
             }
         }
-
     }
 
     private void notifyController() {

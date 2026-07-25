@@ -14,7 +14,7 @@ public class S2CPlaySoundPacket {
     private final ResourceLocation soundLocation;
     private final float volume;
     private final float pitch;
-    private final float range; 
+    private final float range;
 
     public S2CPlaySoundPacket(BlockPos pos, ResourceLocation soundLocation, float volume, float pitch, float range) {
         this.pos = pos;

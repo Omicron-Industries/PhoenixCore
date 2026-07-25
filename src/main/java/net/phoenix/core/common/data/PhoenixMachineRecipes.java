@@ -43,7 +43,6 @@ import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials
 public class PhoenixMachineRecipes {
 
     public static void init(Consumer<FinishedRecipe> provider) {
-        
         PhoenixRecipeTypes.PHOENIXWARE_FUSION_MK1.recipeBuilder("carbon_and_helium_3_to_oxygen_plasma")
                 .inputFluids(GTMaterials.Carbon.getFluid(16))
                 .inputItems(GTMachines.MIXER[LV])

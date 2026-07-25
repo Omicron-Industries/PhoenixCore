@@ -76,7 +76,7 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         this.maxLength = Math.max(0, maxLength);
         if (isRemote() && textField != null) {
             textField.setCharacterLimit(this.maxLength);
-            
+
             String v = safe(textField.value());
             if (v.length() > this.maxLength) {
                 setValueClient(v.substring(0, this.maxLength));
@@ -366,7 +366,7 @@ public class MultilineTextFieldWidget extends WidgetGroup {
         if (!hasFocus || textField == null) return false;
 
         if (keyCode == KEY_ESCAPE) {
-            
+
             return false;
         }
 

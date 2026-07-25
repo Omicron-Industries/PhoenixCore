@@ -182,9 +182,7 @@ public class PhoenixCore {
     }
 
     @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event) {
-        
-    }
+    public void onRegisterCommands(RegisterCommandsEvent event) {}
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {}
 

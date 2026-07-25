@@ -10,7 +10,7 @@ import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilit
 public class LocationOrTerminalTask extends QuestTask {
 
     private ResourceLocation targetTerminalId;
-    private boolean consume; 
+    private boolean consume;
 
     public LocationOrTerminalTask(ResourceLocation taskId, Component description, ResourceLocation targetTerminalId,
                                   boolean consume) {
@@ -45,7 +45,7 @@ public class LocationOrTerminalTask extends QuestTask {
     }
 
     public void tryConsume(Player player) {
-        if (!consume) return; 
+        if (!consume) return;
 
         player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
             CompoundTag nbt = data.getOrCreateTaskProgress(this.getTaskId());
@@ -59,7 +59,7 @@ public class LocationOrTerminalTask extends QuestTask {
         nbt.putString("type", "location_terminal");
         nbt.putString("TargetTerminal",
                 this.targetTerminalId != null ? this.targetTerminalId.toString() : "minecraft:air");
-        nbt.putBoolean("consume", consume); 
+        nbt.putBoolean("consume", consume);
         return nbt;
     }
 
@@ -68,6 +68,6 @@ public class LocationOrTerminalTask extends QuestTask {
         if (nbt.contains("TargetTerminal")) {
             this.targetTerminalId = new ResourceLocation(nbt.getString("TargetTerminal"));
         }
-        this.consume = nbt.getBoolean("consume"); 
+        this.consume = nbt.getBoolean("consume");
     }
 }

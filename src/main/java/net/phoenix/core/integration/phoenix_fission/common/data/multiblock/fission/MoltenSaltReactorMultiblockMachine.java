@@ -186,9 +186,7 @@ public class MoltenSaltReactorMultiblockMachine extends FissionWorkableElectricM
     }
 
     @Override
-    protected void tickFuelConsumptionMachineDriven(int parallels) {
-        
-    }
+    protected void tickFuelConsumptionMachineDriven(int parallels) {}
 
     @Override
     public void addDisplayText(@NotNull List<Component> textList) {

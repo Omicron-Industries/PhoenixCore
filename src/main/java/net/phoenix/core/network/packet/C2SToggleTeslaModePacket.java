@@ -18,9 +18,7 @@ public class C2SToggleTeslaModePacket {
 
     public C2SToggleTeslaModePacket(FriendlyByteBuf buf) {}
 
-    public static void encode(C2SToggleTeslaModePacket packet, FriendlyByteBuf buf) {
-        
-    }
+    public static void encode(C2SToggleTeslaModePacket packet, FriendlyByteBuf buf) {}
 
     public static void handle(C2SToggleTeslaModePacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();

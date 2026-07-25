@@ -152,7 +152,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     }
 
     @Override
-    protected void renderLabels(@NotNull GuiGraphics g, int mx, int my) {  }
+    protected void renderLabels(@NotNull GuiGraphics g, int mx, int my) {}
 
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
@@ -188,7 +188,7 @@ public class RecipeBuilderScreen extends AbstractContainerScreen<RecipeBuilderMe
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (amountEditor.visible) return amountEditor.mouseClicked(mx, my, btn);
-        
+
         if (my < topPos + RecipeBuilderMenu.INV_Y - 8) {
             if (currentPage == Page.ITEMS) {
                 if (itemInputPanel.mouseClicked(mx, my, btn)) return true;

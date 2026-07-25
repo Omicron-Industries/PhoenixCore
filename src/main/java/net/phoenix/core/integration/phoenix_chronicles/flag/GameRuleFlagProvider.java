@@ -55,7 +55,7 @@ public class GameRuleFlagProvider implements QuestFlagProvider {
         synchronized (GameRuleFlagProvider.class) {
             if (ruleKeys != null) return ruleKeys;
             Map<String, GameRules.Key<?>> map = new LinkedHashMap<>();
-            
+
             Field idField = null;
             for (Field f : GameRules.Key.class.getDeclaredFields()) {
                 if (f.getType() == String.class) {

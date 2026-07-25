@@ -194,7 +194,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     public void tick() {
         if (isWorkingEnabled()) consumeEnergy();
         if (isActive()) {
-            
+
             double midpoint = (DAMAGE_TEMPERATURE - IDLE_TEMPERATURE) / 2;
             double temperatureChange = hpcaHandler.calculateTemperatureChange(coolantHandler, temperature >= midpoint) /
                     2.0;
@@ -209,7 +209,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             hpcaHandler.tick();
         } else {
             hpcaHandler.clearComputationCache();
-            
+
             temperature = Math.max(IDLE_TEMPERATURE, temperature - 0.25);
         }
     }
@@ -218,7 +218,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         long energyToConsume = hpcaHandler.getCurrentEUt();
         boolean hasMaintenance = ConfigHolder.INSTANCE.machines.enableMaintenance && this.maintenance != null;
         if (hasMaintenance) {
-            
+
             energyToConsume += maintenance.getNumMaintenanceProblems() * energyToConsume / 10;
         }
 
@@ -245,7 +245,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     @Override
     public Widget createUIWidget() {
         WidgetGroup builder = (WidgetGroup) super.createUIWidget();
-        
+
         builder.addWidget(new ExtendedProgressWidget(
                 () -> hpcaHandler.getAllocatedCWUt() > 0 ? progressSupplier.getAsDouble() : 0,
                 74, 65, 47, 47, PhoenixGuiTextures.PHOENIX_HPCA_COMPONENT_OUTLINE)
@@ -275,15 +275,15 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     @Override
     public void addDisplayText(List<Component> textList) {
         MultiblockDisplayText.builder(textList, isFormed())
-                .setWorkingStatus(true, hpcaHandler.getAllocatedCWUt() > 0) 
-                
+                .setWorkingStatus(true, hpcaHandler.getAllocatedCWUt() > 0)
+
                 .setWorkingStatusKeys(
                         "gtceu.multiblock.idling",
                         "gtceu.multiblock.idling",
                         "gtceu.multiblock.data_bank.providing")
                 .addCustom(tl -> {
                     if (isFormed()) {
-                        
+
                         tl.add(Component.translatable(
                                 "gtceu.multiblock.hpca.energy",
                                 FormattingUtil.formatNumbers(hpcaHandler.cachedEUt),
@@ -317,7 +317,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         @Getter
         private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
 
-        @Nullable 
+        @Nullable
         private final PhoenixHPCAMachine controller;
 
         private final List<IHPCAComponentHatch> components = new ObjectArrayList<>();
@@ -380,7 +380,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public double calculateTemperatureChange(IFluidHandler coolantTank, boolean forceCoolWithActive) {
-            int maxCWUt = Math.max(1, getMaxCWUt()); 
+            int maxCWUt = Math.max(1, getMaxCWUt());
             int maxCoolingDemand = getMaxCoolingDemand();
 
             int temperatureIncrease = (int) Math.round(1.0 * maxCoolingDemand * allocatedCWUt / maxCWUt);
@@ -466,9 +466,8 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public void attemptDamageHPCA() {
-            
             if (GTValues.RNG.nextInt(200) == 0) {
-                
+
                 List<IHPCAComponentHatch> candidates = new ArrayList<>();
                 for (var component : components) {
                     if (component.canBeDamaged()) {
@@ -520,7 +519,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public long getCurrentEUt() {
-            long maximumCWUt = Math.max(1, getMaxCWUt()); 
+            long maximumCWUt = Math.max(1, getMaxCWUt());
             long maximumEUt = getMaxEUt();
             long upkeepEUt = getUpkeepEUt();
 
@@ -583,7 +582,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public void addInfo(List<Component> textList) {
-            
             MutableComponent data = Component.literal(Integer.toString(getMaxCWUt())).withStyle(ChatFormatting.AQUA);
             textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_computation", data)
                     .withStyle(ChatFormatting.GRAY));
@@ -679,7 +677,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
                                 components.add(hatch);
                             }
                         }
-                        
+
                     }
                 }
             }

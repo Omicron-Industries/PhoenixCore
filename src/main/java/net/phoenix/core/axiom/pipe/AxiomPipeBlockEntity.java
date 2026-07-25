@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 public class AxiomPipeBlockEntity extends BlockEntity {
 
     public static final long THROUGHPUT = 64L;
-    
+
     public static final long BUFFER = 256L;
 
     private long stored = 0L;

@@ -34,7 +34,6 @@ public abstract class ChannelMixin {
 
     @Inject(method = "updateStream", at = @At("HEAD"))
     private void phoenix$liveUpdateEffects(CallbackInfo ci) {
-
         AcousticEffectApplier.applyPhysicalProperties(this.source, this.lastPos, 1.0f);
     }
 }

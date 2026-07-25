@@ -43,7 +43,7 @@ public class GuildThemeEditorScreen extends Screen {
     private String pendingAction = null;
 
     private int scrollOffset = 0;
-    private int lastListItemY = 200; 
+    private int lastListItemY = 200;
 
     public GuildThemeEditorScreen(Screen parent) {
         super(Component.literal("Guild Theme Editor"));

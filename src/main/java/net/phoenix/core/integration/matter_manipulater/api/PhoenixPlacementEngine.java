@@ -39,7 +39,7 @@ public class PhoenixPlacementEngine {
 
                 if (isAir) {
                     if (offhandStack.getItem() instanceof PipeBlockItem pipeItem) {
-                        
+
                         if (!PhoenixInventoryService.consumePipe(player, offhandStack)) break;
                         level.setBlock(pos, pipeItem.getBlock().defaultBlockState(), 3);
                         actionCount++;
@@ -154,7 +154,7 @@ public class PhoenixPlacementEngine {
                         for (int y = minY; y <= maxY; y++) positions.add(new BlockPos(x, y, anchorZ));
                 }
             }
-            default -> { 
+            default -> {
                 for (int x = minX; x <= maxX; x++)
                     for (int y = minY; y <= maxY; y++)
                         for (int z = minZ; z <= maxZ; z++) positions.add(new BlockPos(x, y, z));

@@ -162,7 +162,7 @@ public class WikiEditScreen extends Screen {
         String title = titleBox != null ? titleBox.getValue().trim() : "";
         String content = contentArea != null ? contentArea.getValue() : "";
         if (title.isEmpty()) return;
-        
+
         PhoenixNetwork.CHANNEL.sendToServer(
                 new C2SGuildActionPacket(C2SGuildActionPacket.Action.WIKI_SET, title + '' + content));
         Minecraft.getInstance().setScreen(parent);

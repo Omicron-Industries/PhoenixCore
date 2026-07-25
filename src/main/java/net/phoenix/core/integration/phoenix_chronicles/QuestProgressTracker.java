@@ -31,9 +31,9 @@ public class QuestProgressTracker {
         Player player = event.player;
         player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
             for (QuestNode node : QuestTreeRegistry.getAllQuests().values()) {
-                
+
                 if (node.isFlagDisabled()) continue;
-                
+
                 if (node.getVisibility() == QuestNode.Visibility.DISABLED) continue;
 
                 QuestState state = data.getQuestState(node.getId(), QuestState.LOCKED);
@@ -48,7 +48,7 @@ public class QuestProgressTracker {
                 if (state == QuestState.COMPLETED || state == QuestState.LOCKED) continue;
 
                 if (!MinecraftForge.EVENT_BUS.post(new QuestEvent.PlayerTick(player, node))) {
-                    
+
                     for (QuestTask task : node.getTasks()) {
                         if (!task.isCompletedFor(player)) task.onTick(player);
                     }
@@ -59,7 +59,6 @@ public class QuestProgressTracker {
     }
 
     public static void checkAndTryComplete(Player player, QuestNode node) {
-        
         if (node.isFlagDisabled() || node.getVisibility() == QuestNode.Visibility.DISABLED) return;
         player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
             QuestState state = data.getQuestState(node.getId(), QuestState.LOCKED);
@@ -70,12 +69,12 @@ public class QuestProgressTracker {
 
             boolean complete;
             if (minCount > 0) {
-                
+
                 int done = 0;
                 for (QuestTask task : tasks) if (task.isCompletedFor(player)) done++;
                 complete = done >= minCount;
             } else {
-                
+
                 complete = true;
                 for (QuestTask task : tasks) {
                     if (!task.isOptional() && !task.isCompletedFor(player)) {
@@ -112,7 +111,6 @@ public class QuestProgressTracker {
     }
 
     private static void propagateSharedCompletion(net.minecraft.server.level.ServerPlayer source, QuestNode node) {
-        
         net.phoenix.core.integration.phoenix_guilds.GuildManager guildMgr = net.phoenix.core.integration.phoenix_guilds.GuildManager
                 .get(source.getServer().overworld());
         var pTeam = guildMgr.getGuildFor(source.getUUID());
@@ -204,14 +202,14 @@ public class QuestProgressTracker {
                 if (node.isPrereqRequired(p.getId())) required.add(p);
                 else optional.add(p);
             }
-            
+
             for (QuestNode p : required) {
                 if (data.getQuestState(p.getId(), QuestState.LOCKED) != QuestState.COMPLETED) return false;
             }
-            
+
             if (!optional.isEmpty()) {
                 int minCount = node.getOptionalPrereqMinCount();
-                if (minCount < 0) return true; 
+                if (minCount < 0) return true;
                 int doneOptional = 0;
                 for (QuestNode p : optional) {
                     if (data.getQuestState(p.getId(), QuestState.LOCKED) == QuestState.COMPLETED) doneOptional++;
@@ -237,7 +235,7 @@ public class QuestProgressTracker {
 
     public static boolean canRepeatNow(QuestNode node, PlayerQuestData data) {
         long last = data.getLastCompletedTime(node.getId());
-        if (last == 0) return true; 
+        if (last == 0) return true;
 
         return switch (node.getRepeatMode()) {
             case NONE -> false;
@@ -256,14 +254,13 @@ public class QuestProgressTracker {
     }
 
     private static void resetForRepeat(Player player, QuestNode node, PlayerQuestData data) {
-        
         for (QuestTask task : node.getTasks()) {
             data.clearTaskProgress(task.getTaskId());
         }
-        
+
         data.clearClaimedRewards(node.getId());
         data.clearChosenRewardIndex(node.getId());
-        
+
         changeQuestState(player, node, QuestState.UNLOCKED);
     }
 
@@ -272,7 +269,7 @@ public class QuestProgressTracker {
             if (data.hasClaimedRewards(node.getId())) return;
             if (MinecraftForge.EVENT_BUS.post(
                     new net.phoenix.core.integration.phoenix_chronicles.event.QuestEvent.RewardClaimed(player, node)))
-                return; 
+                return;
             for (QuestReward reward : node.getRewards()) {
                 reward.grant(player);
             }

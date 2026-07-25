@@ -9,7 +9,7 @@ import net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilit
 
 public class ViewMachineTask extends QuestTask {
 
-    private String machineId;   
+    private String machineId;
     private float minSeconds;
 
     public ViewMachineTask(ResourceLocation taskId, Component description, String machineId, float minSeconds) {

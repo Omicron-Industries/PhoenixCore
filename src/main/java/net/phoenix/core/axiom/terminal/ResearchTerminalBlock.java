@@ -29,7 +29,7 @@ public class ResearchTerminalBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos,
                                  Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) {
-            
+
             if (level.getBlockEntity(pos) instanceof ResearchTerminalBlockEntity terminal) {
                 net.minecraft.client.Minecraft.getInstance()
                         .setScreen(new net.phoenix.core.axiom.client.ResearchTerminalScreen(terminal));

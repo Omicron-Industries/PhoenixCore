@@ -36,11 +36,11 @@ public class QuestCreatorScreen extends Screen {
     private static final int LABEL_H = 8;
     private static final int FIELD_H = 16;
     private static final int ROW_GAP = 10;
-    private static final int STRIDE = LABEL_H + 3 + FIELD_H + ROW_GAP; 
-    private static final int DIV_H = 14; 
+    private static final int STRIDE = LABEL_H + 3 + FIELD_H + ROW_GAP;
+    private static final int DIV_H = 14;
     private static final int EDIT_W = 20;
     private static final int COL_GAP = 8;
-    private static final int SEC_PAD = 6;  
+    private static final int SEC_PAD = 6;
 
     private static final String[] TAB_LABELS = { "Info", "Settings", "Advanced" };
     private static final int TAB_H = 20;
@@ -88,10 +88,10 @@ public class QuestCreatorScreen extends Screen {
     private String statusMsg = "";
     private boolean statusIsErr = false;
 
-    private int cx, cw;                    
-    private int[] fieldY;                  
-    private int secPanelTop, secPanelBot;  
-    private int activeTab = 0;             
+    private int cx, cw;
+    private int[] fieldY;
+    private int secPanelTop, secPanelBot;
+    private int activeTab = 0;
 
     public QuestCreatorScreen(Screen parent) {
         super(Component.literal("New Quest"));
@@ -178,7 +178,7 @@ public class QuestCreatorScreen extends Screen {
         secPanelTop = contentTop;
 
         if (activeTab == 0) {
-            
+
             fieldY[0] = y + LABEL_H + 2;
             titleBox = new EditBox(font, cx, fieldY[0], cw - EDIT_W - 2, FIELD_H, Component.empty());
             titleBox.setMaxLength(64);
@@ -296,7 +296,7 @@ public class QuestCreatorScreen extends Screen {
         }
 
         if (activeTab == 1) {
-            
+
             fieldY[4] = y + LABEL_H + 2;
             int visW = 90;
             addRenderableWidget(Button.builder(
@@ -407,7 +407,7 @@ public class QuestCreatorScreen extends Screen {
         }
 
         if (activeTab == 2) {
-            
+
             fieldY[7] = y + LABEL_H + 2;
             int lockW = 36;
             idBox = new EditBox(font, cx, fieldY[7], cw - lockW - 2, FIELD_H, Component.empty());
@@ -537,7 +537,7 @@ public class QuestCreatorScreen extends Screen {
             int iconColW2 = (int) (cw * 0.35f);
             g.drawString(font, "§8Icon", cx, labelY[3], C_TEXT_FAINT, false);
             g.drawString(font, "§8Shape  §7" + cachedShape, cx + iconColW2 + COL_GAP, labelY[3], C_TEXT_FAINT, false);
-            
+
             int shapeColW2 = cw - iconColW2 - COL_GAP;
             int shapeX2 = cx + iconColW2 + COL_GAP;
             int slotW = shapeColW2 / SHAPES.length;

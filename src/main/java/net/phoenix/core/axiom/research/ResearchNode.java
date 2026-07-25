@@ -17,13 +17,13 @@ public class ResearchNode {
     public final ResourceLocation id;
     public final String title;
     public final String lore;
-    
+
     public final String icon;
-    
+
     public final int posX;
     public final int posY;
     public final List<ResourceLocation> prerequisites;
-    
+
     public final String exclusionGroup;
     public final Map<AxiomDataType, Long> cost;
     public final List<ResearchUnlock> unlocks;

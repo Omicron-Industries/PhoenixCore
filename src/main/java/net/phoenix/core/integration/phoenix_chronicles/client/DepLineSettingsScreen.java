@@ -19,7 +19,7 @@ public class DepLineSettingsScreen extends Screen {
 
     private static final int MARGIN = 8;
     private static final int HEADER_H = 28;
-    private static final int SEARCH_H = 22;   
+    private static final int SEARCH_H = 22;
     private static final int FOOTER_H = 28;
     private static final int ROW_H = 22;
     private static final int ROW_GAP = 3;
@@ -242,7 +242,7 @@ public class DepLineSettingsScreen extends Screen {
                     g.fill(px - 2, py - 2, px + 3, py + 3, rgb | 0xAA000000);
                     g.fill(px - 1, py - 1, px + 2, py + 2, col);
                 }
-                default -> {  
+                default -> {
                     g.fill(px - 1, py - 1, px + 2, py + 2, col);
                     g.fill(px - 2, py - 1, px - 1, py + 2, rgb | 0x33000000);
                     g.fill(px + 2, py - 1, px + 3, py + 2, rgb | 0x33000000);
@@ -319,7 +319,7 @@ public class DepLineSettingsScreen extends Screen {
         y += ROW_H + ROW_GAP;
 
         y += 4 + PREVIEW_H + PREVIEW_GAP;
-        
+
         y += DIVIDER_H + PER_QUEST_LABEL_H;
 
         List<QuestNode> quests = QuestTreeRegistry.getAllQuests().values().stream()
@@ -370,7 +370,7 @@ public class DepLineSettingsScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        if (key == 256) {  
+        if (key == 256) {
             if (searchBox != null && searchBox.isFocused() && !searchQuery.isEmpty()) {
                 searchBox.setValue("");
                 return true;

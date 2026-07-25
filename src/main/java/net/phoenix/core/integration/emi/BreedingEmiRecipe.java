@@ -62,7 +62,6 @@ public class BreedingEmiRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayHeight() {
-        
         int outputCount = outputs.size();
         int outputRows = (int) Math.ceil(outputCount / (double) MAX_COLS);
         return 14 + 20 + 14 + (outputRows * (SLOT_SIZE + SLOT_GAP)) + 18;

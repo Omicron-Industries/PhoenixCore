@@ -52,8 +52,8 @@ public class ChronicleEvents {
         java.nio.file.Path configDir = event.getServer().getServerDirectory().toPath()
                 .resolve("config").resolve("phoenix_chronicles");
         PhoenixTaskRegistry.registerBuiltins();
-        KubeJsTaskTypeLoader.load(configDir); 
-        PhoenixQuestFlags.invalidateCaches(); 
+        KubeJsTaskTypeLoader.load(configDir);
+        PhoenixQuestFlags.invalidateCaches();
         CategoryFlagRegistry.load(configDir);
         QuestFileLoader.loadAdditiveFromDisk(configDir);
     }
@@ -74,11 +74,11 @@ public class ChronicleEvents {
 
                 for (QuestTask task : node.getTasks()) {
                     if (task instanceof CraftItemTask craftTask) {
-                        
+
                         craftTask.onItemCrafted(player, itemId, amount);
                     }
                 }
-                
+
                 QuestProgressTracker.checkAndTryComplete(player, node);
             }
         });
@@ -99,7 +99,7 @@ public class ChronicleEvents {
 
                     for (QuestTask task : node.getTasks()) {
                         if (task instanceof KillEntityTask killTask) {
-                            
+
                             killTask.onEntityKilled(player, entityId);
                         }
                     }
@@ -301,7 +301,7 @@ public class ChronicleEvents {
                         .requires(src -> src.hasPermission(2))
                         .executes(ctx -> {
                             List<String> errors = QuestFileLoader.LOAD_ERRORS;
-                            
+
                             List<String> noTask = new ArrayList<>();
                             for (QuestNode n : QuestTreeRegistry.getAllQuests().values()) {
                                 if (n.getTasks().isEmpty()) noTask.add(n.getId().getPath());
@@ -354,7 +354,7 @@ public class ChronicleEvents {
                 net.phoenix.core.integration.phoenix_chronicles.capability.QuestCapabilityProvider.PLAYER_QUESTS)
                 .ifPresent(data -> {
                     data.setQuestState(questId, target);
-                    
+
                     PhoenixNetwork.CHANNEL.send(
                             net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> fsp),
                             new net.phoenix.core.integration.phoenix_chronicles.network.packet.S2CSyncPlayerProgressPacket(
@@ -393,7 +393,7 @@ public class ChronicleEvents {
             PhoenixNetwork.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> serverPlayer),
                     new S2CSyncQuestsPacket(serverQuests));
-            
+
             serverPlayer.getCapability(QuestCapabilityProvider.PLAYER_QUESTS)
                     .ifPresent(data -> PhoenixNetwork.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> serverPlayer),

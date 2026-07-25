@@ -64,7 +64,7 @@ public final class PhoenixTaskRegistry {
     }
 
     private static final Map<String, TaskEntry> REGISTRY = new LinkedHashMap<>();
-    
+
     private static final List<TaskEntry> EDITOR_ORDER = new ArrayList<>();
 
     public static Builder register(String typeId, Function<CompoundTag, QuestTask> deserializer) {

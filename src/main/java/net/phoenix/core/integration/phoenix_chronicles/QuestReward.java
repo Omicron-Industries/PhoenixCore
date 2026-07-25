@@ -76,7 +76,7 @@ public abstract class QuestReward {
         public void grant(ServerPlayer player) {
             ItemStack stack = new ItemStack(item, count);
             if (!player.addItem(stack)) {
-                
+
                 player.drop(stack, false);
             }
         }

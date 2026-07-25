@@ -120,7 +120,7 @@ public class AdvancedFissionStabilitySensorPart extends SensorHatchPartMachine {
 
         double heatPct = (fission.getHeat() / maxSafe) * 100.0;
         boolean inRange = heatPct >= minPercent && heatPct <= maxPercent;
-        boolean emit = inverted != inRange; 
+        boolean emit = inverted != inRange;
 
         return emit ? Mth.clamp(emitStrength, 1, 15) : 0;
     }

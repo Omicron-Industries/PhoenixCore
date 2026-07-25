@@ -22,8 +22,8 @@ import java.util.List;
 public class QuestHudOverlay {
 
     private static final int WIDGET_W = 164;
-    private static final int MARGIN_R = 6;   
-    private static final int MARGIN_T = 6;   
+    private static final int MARGIN_R = 6;
+    private static final int MARGIN_T = 6;
     private static final int PAD = 5;
     private static final int ROW_H = 11;
     private static final int BAR_H = 4;
@@ -31,7 +31,7 @@ public class QuestHudOverlay {
     private static final int C_BG = 0xCC0B0B0F;
     private static final int C_BORDER = 0xFF252530;
     private static final int C_TITLE_BG = 0xDD09090D;
-    private static final int C_DONE_ROW = 0x220044FF; 
+    private static final int C_DONE_ROW = 0x220044FF;
     private static final int C_PROG_BG = 0xFF141420;
     private static final int C_PROG_FILL = 0xFF00AA55;
     private static final int C_PROG_ACT = 0xFFBB8800;
@@ -139,7 +139,7 @@ public class QuestHudOverlay {
             default -> {
                 wx = screenW - WIDGET_W - MARGIN_R;
                 wy = MARGIN_T;
-            } 
+            }
         }
 
         int bgAlpha = (int) (cfg.getHudOpacity() * 0xCC);
@@ -154,7 +154,7 @@ public class QuestHudOverlay {
         int ty = wy + PAD;
 
         if (showTitle) {
-            
+
             g.fill(wx + 1, wy + 1, wx + WIDGET_W - 1, wy + PAD + ROW_H + 1, C_TITLE_BG);
 
             String stateGlyph = switch (state) {
@@ -194,7 +194,7 @@ public class QuestHudOverlay {
             String rawLabel = task.getDescription().getString();
             String label;
             if (progress != null) {
-                
+
                 String suffix = " §8(" + progress + ")";
                 int suffixW = font.width(suffix.replaceAll("§.", ""));
                 int maxLabelW = WIDGET_W - PAD * 2 - 14 - suffixW;
@@ -213,7 +213,7 @@ public class QuestHudOverlay {
         if (showProgress && !tasks.isEmpty()) {
             ty += 3;
             int n = tasks.size();
-            int maxPips = Math.min(n, 20); 
+            int maxPips = Math.min(n, 20);
             int pipAreaW = WIDGET_W - PAD * 2 - 2;
             int pipW = Math.max(3, Math.min(9, (pipAreaW - (maxPips - 1)) / maxPips));
             int gap = 1;
@@ -223,15 +223,15 @@ public class QuestHudOverlay {
             for (int pi = 0; pi < maxPips; pi++) {
                 boolean pipDone = pi < done;
                 int px = pipX + pi * (pipW + gap);
-                
+
                 g.fill(px, ty, px + pipW, ty + BAR_H, C_PROG_BG);
-                
+
                 if (pipDone) g.fill(px, ty, px + pipW, ty + BAR_H, barCol);
-                
+
                 if (pipDone) g.fill(px, ty, px + pipW, ty + 1, 0x33FFFFFF);
             }
             if (n > maxPips) {
-                
+
                 g.drawString(font, "§8+" + (n - maxPips), pipX + totalPipW + 3, ty - 1, C_TEXT_DIM, false);
             } else {
                 g.drawString(font, "§8" + done + "/" + n, wx + PAD + pipAreaW - font.width(done + "/" + n) + 1, ty - 1,

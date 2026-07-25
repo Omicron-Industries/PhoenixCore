@@ -33,8 +33,8 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
     private static final int RING_SEGMENTS = 16;
     private static final int RING_VERTS = RING_SEGMENTS + 1;
 
-    private static final float OUTER_RADIUS = 0.45f * 0.6f; 
-    private static final float INNER_RADIUS = 0.60f * 0.6f; 
+    private static final float OUTER_RADIUS = 0.45f * 0.6f;
+    private static final float INNER_RADIUS = 0.60f * 0.6f;
 
     private static final float TWIST_SPEED = 10.0f;
 
@@ -329,4 +329,3 @@ public class HelicalFusionRenderer extends DynamicRender<FusionReactorMachine, H
         return new AABB(m.getPos()).inflate(40);
     }
 }
-

@@ -80,12 +80,12 @@ public class ShieldRecipeCapability extends RecipeCapability<ShieldTypes> {
         }
 
         @Override
-        public Class<ShieldTypes> contentClass() { 
+        public Class<ShieldTypes> contentClass() {
             return ShieldTypes.class;
         }
 
         @Override
-        public Codec<ShieldTypes> codec() { 
+        public Codec<ShieldTypes> codec() {
             return CODEC;
         }
     }

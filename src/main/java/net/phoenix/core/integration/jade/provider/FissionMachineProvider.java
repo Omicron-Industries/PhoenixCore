@@ -80,10 +80,10 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         if (meltdownSeconds > 0) {
             tooltip.add(Component.translatable("jade.phoenixcore.fission_meltdown_timer", meltdownSeconds)
                     .withStyle(s -> s.withColor(0xFFAA00)));
-            
+
             tooltip.add(Component.literal("Current Heat: " + (long) heat));
         } else {
-            
+
             if (heat <= 0) {
                 tooltip.add(Component.translatable("jade.phoenixcore.fission_safe")
                         .withStyle(s -> s.withColor(0x33FF33)));
@@ -180,7 +180,7 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
         tag.putInt(NBT_MODS, machine.getActiveModerators().size());
         tag.putInt(NBT_BLANKETS, machine.getActiveBlankets().size());
 
-        tag.putBoolean(NBT_IS_SCRAMMED, machine.isScramActive()); 
+        tag.putBoolean(NBT_IS_SCRAMMED, machine.isScramActive());
         tag.putBoolean(NBT_RUNNING, machine.wasRunningLastTick());
 
         tag.putDouble(NBT_HEAT, machine.getHeat());
@@ -278,21 +278,20 @@ public class FissionMachineProvider implements IBlockComponentProvider, IServerD
     }
 
     private Component getVoltageFormattedOutput(long euOut) {
-        
         int tier = 0;
 
         for (int i = 0; i < GTValues.V.length; i++) {
             if (euOut >= GTValues.V[i]) {
                 tier = i;
             } else {
-                
+
                 break;
             }
         }
 
         return Component.translatable("phoenixcore.eu_generation", euOut)
                 .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(GTValues.VNF[tier])) 
+                .append(Component.literal(GTValues.VNF[tier]))
                 .append(Component.literal(")").withStyle(ChatFormatting.GRAY));
     }
 

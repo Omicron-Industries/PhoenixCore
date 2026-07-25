@@ -79,7 +79,6 @@ public class SearchOverlayScreen extends Screen {
 
     @Override
     public void onClose() {
-        
         if (minecraft != null) minecraft.setScreen(parent);
     }
 
@@ -90,7 +89,6 @@ public class SearchOverlayScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float partial) {
-
         g.fill(0, 0, width, height, 0xFF000000);
 
         if (searchBox == null) return;
@@ -236,20 +234,20 @@ public class SearchOverlayScreen extends Screen {
     public boolean keyPressed(int key, int scan, int mods) {
         boolean ctrl = (mods & 2) != 0;
 
-        if (key == 256 || (key == 70 && ctrl)) { 
+        if (key == 256 || (key == 70 && ctrl)) {
             onClose();
             return true;
         }
-        if (key == 257 || key == 335) { 
+        if (key == 257 || key == 335) {
             if (!results.isEmpty()) selectResult(results.get(Math.min(selectedIdx, results.size() - 1)));
             return true;
         }
-        if (key == 264) { 
+        if (key == 264) {
             selectedIdx = Math.min(selectedIdx + 1, results.size() - 1);
             ensureSelectionVisible(OVL_MAX_ROWS * OVL_ROW_H);
             return true;
         }
-        if (key == 265) { 
+        if (key == 265) {
             selectedIdx = Math.max(0, selectedIdx - 1);
             ensureSelectionVisible(OVL_MAX_ROWS * OVL_ROW_H);
             return true;
@@ -288,7 +286,7 @@ public class SearchOverlayScreen extends Screen {
         }
 
         if (btn == 0) {
-            
+
             List<String> cats = parent.buildCategoryList();
             int cpx = panX + 14, cpy = panY + searchRowH + 4, cph = 14;
             int allW = font.width("All") + 10;
@@ -323,7 +321,7 @@ public class SearchOverlayScreen extends Screen {
                 ry += OVL_ROW_H;
             }
         }
-        return true; 
+        return true;
     }
 
     private List<QuestNode> computeResults() {
@@ -391,7 +389,6 @@ public class SearchOverlayScreen extends Screen {
     }
 
     private void selectResult(QuestNode node) {
-        
         if (minecraft != null) minecraft.setScreen(parent);
         parent.navigateToNode(node);
     }

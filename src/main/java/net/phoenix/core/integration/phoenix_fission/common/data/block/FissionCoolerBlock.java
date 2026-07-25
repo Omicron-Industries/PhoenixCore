@@ -74,7 +74,7 @@ public class FissionCoolerBlock extends ActiveBlock {
         }
 
         ResourceLocation rl = ResourceLocation.tryParse(fluidId);
-        
+
         if (rl == null) return Component.translatable(fluidId).withStyle(ChatFormatting.YELLOW);
 
         Fluid f = ForgeRegistries.FLUIDS.getValue(rl);

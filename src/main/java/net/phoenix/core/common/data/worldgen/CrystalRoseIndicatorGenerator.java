@@ -107,7 +107,7 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
                                             BlockState blockState) {
         return (access) -> {
             for (BlockPos initialPos : positionsWithoutY) {
-                
+
                 BlockPos pos = findTrueSurfacePos(level, initialPos);
 
                 if (pos == null || level.isOutsideBuildHeight(pos)) {
@@ -157,7 +157,6 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
     }
 
     private BlockPos findTrueSurfacePos(WorldGenLevel level, BlockPos startPos) {
-        
         BlockPos exactPos = findDryLandAt(level, startPos.getX(), startPos.getZ());
         if (exactPos != null) {
             return exactPos;
@@ -166,11 +165,11 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
         for (int radius = 1; radius <= 10; radius++) {
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    
+
                     if (Math.abs(dx) == radius || Math.abs(dz) == radius) {
                         BlockPos shorePos = findDryLandAt(level, startPos.getX() + dx, startPos.getZ() + dz);
                         if (shorePos != null) {
-                            return shorePos; 
+                            return shorePos;
                         }
                     }
                 }
@@ -183,7 +182,7 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
     @SuppressWarnings("unchecked")
     public static void register() {
         try {
-            
+
             net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.Codec<? extends com.gregtechceu.gtceu.api.data.worldgen.generator.IndicatorGenerator>>> registryKey = net.minecraft.resources.ResourceKey
                     .createRegistryKey(new net.minecraft.resources.ResourceLocation("gtceu", "indicator_generator"));
 
@@ -191,7 +190,7 @@ public class CrystalRoseIndicatorGenerator extends IndicatorGenerator {
                     .get(registryKey.location());
 
             if (registry != null) {
-                
+
                 net.minecraft.core.Registry.register(
                         registry,
                         new net.minecraft.resources.ResourceLocation("phoenix", "crystal_rose_indicator"),

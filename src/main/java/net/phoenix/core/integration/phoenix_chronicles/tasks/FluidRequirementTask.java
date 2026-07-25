@@ -16,7 +16,7 @@ public class FluidRequirementTask extends QuestTask {
 
     private ResourceLocation fluidId;
     private int requiredAmount;
-    private boolean consume; 
+    private boolean consume;
 
     public FluidRequirementTask(ResourceLocation taskId, Component description, ResourceLocation fluidId,
                                 int requiredAmount, boolean consume) {
@@ -67,7 +67,7 @@ public class FluidRequirementTask extends QuestTask {
     }
 
     public void tryConsume(Player player) {
-        if (fluidId == null || !consume || requiredAmount <= 0) return; 
+        if (fluidId == null || !consume || requiredAmount <= 0) return;
 
         int remainingToDrain = requiredAmount;
 
@@ -106,7 +106,7 @@ public class FluidRequirementTask extends QuestTask {
         tag.putString("type", "fluid_check");
         tag.putString("fluid_id", fluidId != null ? fluidId.toString() : "minecraft:empty");
         tag.putInt("amount", requiredAmount);
-        tag.putBoolean("consume", consume); 
+        tag.putBoolean("consume", consume);
         return tag;
     }
 
@@ -116,6 +116,6 @@ public class FluidRequirementTask extends QuestTask {
             this.fluidId = new ResourceLocation(nbt.getString("fluid_id"));
         }
         this.requiredAmount = nbt.getInt("amount");
-        this.consume = nbt.getBoolean("consume"); 
+        this.consume = nbt.getBoolean("consume");
     }
 }

@@ -35,17 +35,17 @@ public class QuestChroniclesSettings {
     }
 
     public enum LineStyle {
-        SPLINE,   
-        STRAIGHT  
+        SPLINE,
+        STRAIGHT
     }
 
     public enum LineVisualStyle {
-        THIN,    
-        NORMAL,  
-        BOLD,    
-        THICK,   
-        WIDE,    
-        GLOW     
+        THIN,
+        NORMAL,
+        BOLD,
+        THICK,
+        WIDE,
+        GLOW
     }
 
     public enum LineAnimSpeed {

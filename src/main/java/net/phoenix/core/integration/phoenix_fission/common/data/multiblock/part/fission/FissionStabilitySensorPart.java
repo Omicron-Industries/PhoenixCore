@@ -113,7 +113,7 @@ public class FissionStabilitySensorPart extends SensorHatchPartMachine {
         strength = Mth.clamp(strength, 0, 15);
 
         boolean inRange = heatPct >= minPercent && heatPct <= maxPercent;
-        boolean emit = inverted != inRange; 
+        boolean emit = inverted != inRange;
 
         return emit ? strength : 0;
     }

@@ -94,7 +94,7 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
             if (v.isJsonObject()) {
                 flattenJsonObject(v.getAsJsonObject(), key, out);
             } else if (v.isJsonArray()) {
-                out.put(key, v.toString()); 
+                out.put(key, v.toString());
             } else {
                 String raw = v.getAsString();
                 out.put(key, raw);
@@ -126,10 +126,9 @@ public class ConfigFileFlagProvider implements QuestFlagProvider {
     }
 
     private String stripTomlValue(String raw) {
-        
         int comment = raw.indexOf('#');
         if (comment > 0) raw = raw.substring(0, comment).trim();
-        
+
         if ((raw.startsWith("\"") && raw.endsWith("\"")) || (raw.startsWith("'") && raw.endsWith("'"))) {
             raw = raw.substring(1, raw.length() - 1);
         }

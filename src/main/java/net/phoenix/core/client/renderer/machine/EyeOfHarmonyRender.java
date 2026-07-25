@@ -106,13 +106,13 @@ public class EyeOfHarmonyRender extends DynamicRender<WorkableElectricMultiblock
 
             float orbitRadius;
             switch (a) {
-                case 0: 
+                case 0:
                     orbitRadius = 3.99f;
                     break;
-                case 1: 
+                case 1:
                     orbitRadius = 3.99f + (1 * 2.99f);
                     break;
-                case 2: 
+                case 2:
                     orbitRadius = 3.99f + (2 * 2.99f);
                     break;
                 default:
@@ -138,7 +138,7 @@ public class EyeOfHarmonyRender extends DynamicRender<WorkableElectricMultiblock
                     g = 0.6f;
                     b = 0.4f;
                     break;
-                case 2: 
+                case 2:
                     r = 0.8f;
                     g = 0.6f;
                     b = 1.0f;

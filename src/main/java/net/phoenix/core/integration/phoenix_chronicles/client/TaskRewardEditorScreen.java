@@ -35,18 +35,18 @@ public class TaskRewardEditorScreen extends Screen {
     private static final int HEADER_H = 28;
     private static final int FOOTER_H = 28;
     private static final int MARGIN = 10;
-    private static final int COL_GAP = 6;    
-    private static final int ROW_H = 26;   
-    private static final int FIELD_H = 15;   
-    private static final int FIELD_GAP = 3;    
-    private static final int FORM_ROWS = 4;    
+    private static final int COL_GAP = 6;
+    private static final int ROW_H = 26;
+    private static final int FIELD_H = 15;
+    private static final int FIELD_GAP = 3;
+    private static final int FORM_ROWS = 4;
 
-    private int splitX;        
-    private int colW;          
-    private int listTop;       
-    private int listBottom;    
-    private int formTop;       
-    private int formBottom;    
+    private int splitX;
+    private int colW;
+    private int listTop;
+    private int listBottom;
+    private int formTop;
+    private int formBottom;
 
     private final Screen parent;
     private final QuestNode questNode;
@@ -102,8 +102,8 @@ public class TaskRewardEditorScreen extends Screen {
         splitX = MARGIN + colW + COL_GAP;
         formBottom = height - FOOTER_H;
         formTop = formBottom - MARGIN - FORM_ROWS * (FIELD_H + FIELD_GAP) - 8;
-        listTop = HEADER_H + 22; 
-        listBottom = formTop - 22; 
+        listTop = HEADER_H + 22;
+        listBottom = formTop - 22;
 
         rebuildWidgets();
     }
@@ -327,7 +327,7 @@ public class TaskRewardEditorScreen extends Screen {
             rewardEventDataBox.setMaxLength(256);
             addRenderableWidget(rewardEventDataBox);
         } else {
-            
+
             String hint = rewardType.equals("loot_table") ? "§8Loot table id  (e.g. minecraft:chests/simple_dungeon)" :
                     "§8/give %player% …";
             rewardCommandBox = new EditBox(font, rx, rfy, colW, FIELD_H, Component.empty());
@@ -539,7 +539,7 @@ public class TaskRewardEditorScreen extends Screen {
         int formPanelTop = formTop - 20;
         g.fill(0, formPanelTop, width, formBottom, C_PANEL);
         g.fill(0, formPanelTop, width, formPanelTop + 1, C_BORDER);
-        
+
         g.fill(MARGIN, formPanelTop + 2, MARGIN + colW, formBottom - 2, C_FORM_BG);
         drawBorder(g, MARGIN, formPanelTop + 2, colW, formBottom - 2 - (formPanelTop + 2), C_BORDER);
         g.fill(splitX, formPanelTop + 2, splitX + colW, formBottom - 2, C_FORM_BG);
@@ -561,7 +561,7 @@ public class TaskRewardEditorScreen extends Screen {
                 g.fill(MARGIN, ty, splitX - COL_GAP, ty + ROW_H, C_ROW_HOVER);
                 hoveredTaskRow = i;
             }
-            
+
             g.fill(MARGIN, ty + 2, MARGIN + 2, ty + ROW_H - 2,
                     task.isOptional() ? 0xFF22AA55 : C_ACCENT);
             PhoenixTaskRegistry.TaskEntry meta = getTaskMetaByClass(task);
@@ -582,7 +582,7 @@ public class TaskRewardEditorScreen extends Screen {
             String line1Color = task.isOptional() ? "§8" : "§7";
             g.drawString(font, line1Color + wrapped[0], textX, ty + 4, C_TEXT_DIM, false);
             if (wrapped[1] != null) {
-                
+
                 g.drawString(font, "§8" + wrapped[1], textX, ty + 15, C_TEXT_FAINT, false);
             } else if (detail != null) {
                 String dl = detail;
@@ -712,7 +712,7 @@ public class TaskRewardEditorScreen extends Screen {
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         boolean ctrl = (mods & 2) != 0;
-        if (ctrl && key == 90) { 
+        if (ctrl && key == 90) {
             undoLastChange();
             return true;
         }
@@ -761,19 +761,19 @@ public class TaskRewardEditorScreen extends Screen {
                 rewardTypeDropOpen = false;
                 return true;
             }
-            
+
             if (hoveredTaskRow >= 0 && mx >= splitX - COL_GAP - 28 && mx < splitX - COL_GAP - 14) {
                 copiedTaskNBT = tasks.get(hoveredTaskRow).serializeNBT();
                 return true;
             }
-            
+
             if (hoveredTaskRow >= 0 && mx >= splitX - COL_GAP - 14 && mx < splitX - COL_GAP) {
                 pushUndo();
                 tasks.remove(hoveredTaskRow);
                 hoveredTaskRow = -1;
                 return true;
             }
-            
+
             if (hoveredRewardRow >= 0 && mx >= width - MARGIN - 14 && mx < width - MARGIN) {
                 pushUndo();
                 rewards.remove(hoveredRewardRow);

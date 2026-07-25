@@ -10,7 +10,7 @@ public class MapShieldIngredient extends AbstractMapIngredient {
 
     public final ShieldTypes shield;
 
-    public MapShieldIngredient(ShieldTypes shield) { 
+    public MapShieldIngredient(ShieldTypes shield) {
         this.shield = shield;
     }
 

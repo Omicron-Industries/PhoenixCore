@@ -128,22 +128,22 @@ public class S2CSyncQuestsPacket {
         final String iconItemId;
         final int customX;
         final int customY;
-        
+
         final String subtitle;
-        final String visibility;   
-        final String enableIf;     
+        final String visibility;
+        final String enableIf;
         final int taskMinCount;
         final boolean requireAllPrerequisites;
         final List<ResourceLocation> childIds;
         final List<ResourceLocation> prereqIds;
-        
+
         final List<Boolean> prereqRequired;
-        
+
         final List<Boolean> prereqForbidden;
-        
+
         final List<Boolean> prereqLink;
         final int optionalPrereqMinCount;
-        final List<CompoundTag> tasksNbt;  
+        final List<CompoundTag> tasksNbt;
 
         QuestSnapshot(QuestNode node) {
             this.id = node.getId();

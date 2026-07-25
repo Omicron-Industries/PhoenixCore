@@ -13,11 +13,11 @@ public enum AxiomDataType {
     ARCANE("Arcane", "arc", ChatFormatting.DARK_PURPLE, true);
 
     public final String displayName;
-    
+
     public final String tag;
-    
+
     public final ChatFormatting color;
-    
+
     public final boolean softDep;
 
     AxiomDataType(String displayName, String tag, ChatFormatting color, boolean softDep) {

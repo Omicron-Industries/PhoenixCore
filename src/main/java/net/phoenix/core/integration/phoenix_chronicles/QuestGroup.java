@@ -4,9 +4,9 @@ public class QuestGroup {
 
     private String id;
     private String label;
-    private int color;        
-    private int borderColor;  
-    private int x, y, width, height; 
+    private int color;
+    private int borderColor;
+    private int x, y, width, height;
     private String category;
 
     private static final int DEFAULT_COLOR = 0x22FFFFFF;

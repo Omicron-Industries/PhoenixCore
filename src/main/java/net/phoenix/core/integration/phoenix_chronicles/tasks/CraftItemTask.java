@@ -71,13 +71,12 @@ public class CraftItemTask extends QuestTask {
         tag.putString("type", "craft_item");
         tag.putString("item_id", itemId != null ? itemId.toString() : "minecraft:air");
         tag.putInt("required", requiredCount);
-        
+
         return tag;
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        
         if (nbt.contains("item_id")) {
             this.itemId = new ResourceLocation(nbt.getString("item_id"));
         }

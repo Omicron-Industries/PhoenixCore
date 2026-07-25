@@ -53,7 +53,7 @@ public class ItemPickerScreen extends Screen {
     private final Consumer<ItemStack> onPick;
 
     private final List<ItemStack> displayItems = new ArrayList<>();
-    private int scrollOffset = 0; 
+    private int scrollOffset = 0;
     private ItemStack hoveredStack = null;
     private ItemStack selectedStack = null;
 
@@ -143,7 +143,7 @@ public class ItemPickerScreen extends Screen {
                 if (!matchesId && !matchesName) continue;
             }
             displayItems.add(stack);
-            if (displayItems.size() >= 2000) break; 
+            if (displayItems.size() >= 2000) break;
         }
     }
 
@@ -160,7 +160,7 @@ public class ItemPickerScreen extends Screen {
         } else if (hasJei) {
             populateFromJeiApi();
         } else {
-            
+
             populateFromRegistry();
         }
     }
@@ -187,7 +187,7 @@ public class ItemPickerScreen extends Screen {
                 }
             }
         } catch (Exception e) {
-            
+
             populateFromRegistry();
         }
     }
@@ -195,7 +195,7 @@ public class ItemPickerScreen extends Screen {
     private void populateFromJeiApi() {
         try {
             Class<?> internalClass = Class.forName("mezz.jei.api.runtime.IJeiRuntime");
-            
+
             Class<?> helpersClass = Class.forName("mezz.jei.common.Internal");
             Object runtime = helpersClass.getMethod("getJeiRuntime").invoke(null);
             if (runtime == null) {
@@ -318,7 +318,7 @@ public class ItemPickerScreen extends Screen {
             return true;
         }
         if (btn == 0 && hoveredStack == null) {
-            
+
         }
         return super.mouseClicked(mx, my, btn);
     }

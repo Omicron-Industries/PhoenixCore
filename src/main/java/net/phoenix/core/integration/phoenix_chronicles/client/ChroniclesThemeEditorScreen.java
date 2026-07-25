@@ -24,7 +24,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
     private EditBox nameInput;
 
     private int scrollOffset = 0;
-    
+
     private int listRowsStartY = 0;
 
     private final List<String> pendingDeletions = new ArrayList<>();
@@ -39,7 +39,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
     private boolean isUndoing = false;
 
     private boolean confirmActive = false;
-    private String pendingAction = null;   
+    private String pendingAction = null;
 
     private int C_BG, C_PANEL, C_HEADER, C_BORDER, C_ACCENT, C_TEXT, C_DIM, C_FAINT;
 
@@ -188,9 +188,9 @@ public class ChroniclesThemeEditorScreen extends Screen {
             g.drawString(font, "§8" + s.title, s.x, s.y, C_ACCENT, false);
         }
         for (FieldEntry f : fields) {
-            
+
             g.drawString(font, f.label, f.box.getX() - 65, f.box.getY() + 4, C_TEXT, false);
-            
+
             int sx = f.box.getX() + f.box.getWidth() + 3;
             int sy = f.box.getY();
             int sw = 14;
@@ -201,7 +201,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
                 previewColor = 0xFF888888;
             }
             g.fill(sx, sy, sx + sw, sy + 14, previewColor);
-            
+
             g.fill(sx, sy, sx + sw, sy + 1, C_BORDER);
             g.fill(sx, sy + 13, sx + sw, sy + 14, C_BORDER);
             g.fill(sx, sy, sx + 1, sy + 14, C_BORDER);
@@ -333,7 +333,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
         for (int i = scrollOffset; i < vis.size() && listY + itemH <= height - 4; i++) {
             String name = vis.get(i);
             if (my >= listY && my < listY + itemH) {
-                
+
                 if (!ChroniclesTheme.isBuiltin(name)) {
                     int dX = mockX + mockW - 14;
                     if (mx >= dX && mx <= dX + 12) {
@@ -342,12 +342,12 @@ public class ChroniclesThemeEditorScreen extends Screen {
                             ChroniclesTheme.setCurrent("DARK");
                         confirmActive = false;
                         pendingAction = null;
-                        lastTrackedName = null; 
+                        lastTrackedName = null;
                         init();
                         return true;
                     }
                 }
-                
+
                 if (mx >= mockX && mx <= mockX + mockW - 16) {
                     if (hasChanges()) {
                         if (!confirmActive || !name.equals(pendingAction)) {
@@ -391,11 +391,11 @@ public class ChroniclesThemeEditorScreen extends Screen {
             if (key == 90) {
                 tryUndo();
                 return true;
-            }  
+            }
             if (key == 83) {
                 save();
                 return true;
-            }  
+            }
         }
         return super.keyPressed(key, scan, mods);
     }
@@ -428,7 +428,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
         isUndoing = true;
         Snap prev = undoStack.pop();
         restore(prev);
-        
+
         for (FieldEntry f : fields) {
             String v = fieldValue(prev, f.label);
             if (v != null) f.box.setValue(v.toUpperCase(Locale.ROOT));
@@ -496,7 +496,7 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(@NotNull GuiGraphics g) {  }
+    public void renderBackground(@NotNull GuiGraphics g) {}
 
     private int sidebarW() {
         return Math.max(SIDEBAR_MIN, width / 4);
@@ -518,7 +518,6 @@ public class ChroniclesThemeEditorScreen extends Screen {
     }
 
     private void drawMockLine(GuiGraphics g, int x1, int y, int x2, int y2, int color) {
-        
         for (int x = x1; x < x2; x++) g.fill(x, y - 1, x + 1, y + 2, color);
     }
 

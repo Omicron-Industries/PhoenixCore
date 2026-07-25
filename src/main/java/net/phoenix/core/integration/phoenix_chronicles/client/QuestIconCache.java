@@ -17,7 +17,7 @@ public final class QuestIconCache {
 
     private static final Map<String, ResourceLocation> CACHE = new HashMap<>();
     private static final Map<String, int[]> DIMS_CACHE = new HashMap<>();
-    private static final Map<String, Boolean> MISS_CACHE = new HashMap<>(); 
+    private static final Map<String, Boolean> MISS_CACHE = new HashMap<>();
 
     private QuestIconCache() {}
 

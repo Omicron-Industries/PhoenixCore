@@ -23,7 +23,7 @@ public class QuestToastManager {
     private static final int MARGIN_R = 2;
     private static final int GAP = 3;
     private static final int SLIDE_TICKS = 8;
-    private static final int STAY_TICKS = 80; 
+    private static final int STAY_TICKS = 80;
     private static final int FADE_TICKS = 12;
     private static final int MAX_VISIBLE = 3;
 
@@ -58,7 +58,7 @@ public class QuestToastManager {
 
     public void render(GuiGraphics g, int screenW, int screenH) {
         Font font = Minecraft.getInstance().font;
-        int slotY = screenH / 4; 
+        int slotY = screenH / 4;
 
         for (ActiveToast t : active) {
             float progress = computeX(t);
@@ -74,7 +74,7 @@ public class QuestToastManager {
             int titleCol = (t.entry.type == ToastType.COMPLETED) ? C_TITLE_DONE : C_TITLE_UNLOCK;
 
             g.fill(x, y, x + TOAST_W, y + TOAST_H, (bg & 0x00FFFFFF) | a);
-            
+
             g.fill(x, y, x + 3, y + TOAST_H, (bar & 0x00FFFFFF) | a);
 
             QuestNode node = t.entry.node;

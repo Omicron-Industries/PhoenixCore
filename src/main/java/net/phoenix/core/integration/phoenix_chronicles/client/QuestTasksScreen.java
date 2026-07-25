@@ -54,7 +54,7 @@ public class QuestTasksScreen extends Screen {
     private int descScrollY = 0;
     private long openTimeMs = -1;
     private static final long OPEN_FADE_MS = 100;
-    private int inspectorTab = 2; 
+    private int inspectorTab = 2;
     private int inspectorScrollY = 0;
     private boolean isFullscreen = false;
 
@@ -102,8 +102,8 @@ public class QuestTasksScreen extends Screen {
         }
     }
 
-    private static final int TASK_LIST_ROW_H = 24; 
-    
+    private static final int TASK_LIST_ROW_H = 24;
+
     private static final int REWARD_MINI_SZ = 14;
 
     private int compactCardH(List<QuestTask> tasks, List<QuestReward> rewards,
@@ -131,7 +131,7 @@ public class QuestTasksScreen extends Screen {
             }
         }
         if (!all.isEmpty() && !questDescLines.isEmpty()) {
-            
+
             all.add(net.minecraft.util.FormattedCharSequence.EMPTY);
         }
         all.addAll(questDescLines);
@@ -140,7 +140,7 @@ public class QuestTasksScreen extends Screen {
 
     private QuestTask hoveredTask = null;
     private QuestReward hoveredReward = null;
-    private int hoveredSlotX, hoveredSlotY; 
+    private int hoveredSlotX, hoveredSlotY;
 
     private void renderCompact(GuiGraphics g, int mx, int my, float partial) {
         hoveredTask = null;
@@ -290,7 +290,7 @@ public class QuestTasksScreen extends Screen {
 
         String desc = task.getDescription().getString();
         String detail = getTaskDetail(task);
-        
+
         boolean descIsId = desc.isEmpty() || desc.matches("[a-z0-9_]+");
         String primary = (descIsId && detail != null) ? detail : desc;
 
@@ -353,7 +353,7 @@ public class QuestTasksScreen extends Screen {
 
         if (mx >= 4 && mx < 20 && my >= 6 && my < 22) g.fill(4, 6, 20, 22, 0x22FFFFFF);
         g.drawCenteredString(font, "§7←", 12, 10, C_TEXT_DIM);
-        
+
         int titleMaxW = width - 28 - 60;
         String titleStr = node.getTitle().getString();
         if (font.width(titleStr) > titleMaxW) titleStr = font.plainSubstrByWidth(titleStr, titleMaxW - 6) + "…";
@@ -542,7 +542,7 @@ public class QuestTasksScreen extends Screen {
         }
         for (QuestTask task : tasks) {
             if (cy > y + h) break;
-            if (task instanceof InfoTask) continue; 
+            if (task instanceof InfoTask) continue;
             cy = renderRichTaskRow(g, x + m, cy, w - m * 2, task);
         }
     }
@@ -587,7 +587,7 @@ public class QuestTasksScreen extends Screen {
             g.drawString(font, "§8" + progress, x + w - font.width(progress), barY - 1, C_TEXT_FAINT, false);
         }
 
-        return barY + 3 + 5; 
+        return barY + 3 + 5;
     }
 
     private void renderRewardsTab(GuiGraphics g, int x, int y, int w, int h, int mx, int my) {
@@ -731,7 +731,7 @@ public class QuestTasksScreen extends Screen {
             return "Unlock: " + adv;
         }
         if (task instanceof InfoTask) {
-            return null; 
+            return null;
         }
         if (task instanceof TagItemTask t) {
             String tag = t.getTag() != null ? "#" + t.getTag().location().getPath() : "#unknown";
@@ -772,7 +772,7 @@ public class QuestTasksScreen extends Screen {
 
     private void tryOpenInRecipeViewer(ItemStack stack) {
         if (stack.isEmpty() || minecraft == null) return;
-        
+
         try {
             Class<?> api = Class.forName("dev.emi.emi.api.EmiApi");
             Class<?> esClass = Class.forName("dev.emi.emi.api.stack.EmiStack");
@@ -780,12 +780,12 @@ public class QuestTasksScreen extends Screen {
             api.getMethod("displayRecipes", esClass).invoke(null, es);
             return;
         } catch (Exception ignored) {}
-        
+
         try {
             Class<?> jeiApi = Class.forName("mezz.jei.api.runtime.IJeiRuntime");
-            
+
         } catch (Exception ignored) {}
-        
+
         isFullscreen = true;
     }
 
@@ -832,7 +832,7 @@ public class QuestTasksScreen extends Screen {
         if (hoveredTask != null) {
             ItemStack icon = getTaskIcon(hoveredTask);
             if (!icon.isEmpty()) tryOpenInRecipeViewer(icon);
-            else isFullscreen = true; 
+            else isFullscreen = true;
             return true;
         }
         if (hoveredReward != null) {
@@ -854,17 +854,16 @@ public class QuestTasksScreen extends Screen {
     }
 
     private boolean handleFullscreenClick(double mx, double my, int btn) {
-        
         if (mx >= 4 && mx < 20 && my >= 6 && my < 22) {
             if (minecraft != null) minecraft.setScreen(parent);
             return true;
         }
-        
+
         if (mx >= width - 36 && mx < width - 20 && my >= 6 && my < 22 && btn == 0) {
             isFullscreen = false;
             return true;
         }
-        
+
         if (mx >= width - 20 && mx < width - 4 && my >= 6 && my < 22 && btn == 0) {
             if (playerData != null) {
                 if (playerData.isPinned(node.getId())) playerData.clearPin();
@@ -872,7 +871,7 @@ public class QuestTasksScreen extends Screen {
             }
             return true;
         }
-        
+
         int contentTop = HEADER_H + REQBAR_H + MARGIN;
         int contentRight = width - REWARD_W - MARGIN - MARGIN;
         int rightX = contentRight + MARGIN;
@@ -888,7 +887,7 @@ public class QuestTasksScreen extends Screen {
                 tabX += tabW + 2;
             }
         }
-        
+
         int footerY = height - FOOTER_H;
         if (my >= footerY + 2 && my < footerY + 20) {
             QuestState state = playerData != null ? playerData.getQuestState(node.getId(), QuestState.LOCKED) :
@@ -917,7 +916,7 @@ public class QuestTasksScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        if (key == 256) { 
+        if (key == 256) {
             if (isFullscreen) {
                 isFullscreen = false;
                 return true;

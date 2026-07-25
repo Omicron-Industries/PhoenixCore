@@ -128,21 +128,21 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
             String icon = "";
 
             switch (mode) {
-                case 0 -> { 
+                case 0 -> {
                     label = Component.literal("Providing: ");
                     color = ChatFormatting.GREEN;
                 }
-                case 2 -> { 
+                case 2 -> {
                     label = Component.literal("Broadcasting: ");
                     color = ChatFormatting.AQUA;
                     icon = "§3波 ";
                 }
-                case 3 -> { 
+                case 3 -> {
                     label = Component.literal("Generating: ");
                     color = ChatFormatting.GOLD;
                     icon = "§6⚡ ";
                 }
-                default -> { 
+                default -> {
                     label = Component.literal("Taking: ");
                     color = ChatFormatting.RED;
                 }

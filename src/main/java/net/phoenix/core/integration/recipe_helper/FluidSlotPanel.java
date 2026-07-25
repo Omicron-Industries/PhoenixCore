@@ -31,7 +31,6 @@ public class FluidSlotPanel extends AbstractWidget {
     private final RecipeBuilderScreen parent;
 
     public FluidSlotPanel(int x, int y, int slotCount, String label, RecipeBuilderScreen parent) {
-        
         super(x, y, slotCount * SLOT_W + (slotCount - 1) * GAP, LABEL_H + SLOT_H, Component.literal(label));
         this.slotCount = slotCount;
         this.parent = parent;
@@ -131,9 +130,9 @@ public class FluidSlotPanel extends AbstractWidget {
 
     private int hashColor(String s) {
         int h = s.hashCode();
-        int r = 80 + (h & 0x5F); 
-        int g = 20 + ((h >> 7) & 0x3F); 
-        int b = 150 + ((h >> 14) & 0x6F); 
+        int r = 80 + (h & 0x5F);
+        int g = 20 + ((h >> 7) & 0x3F);
+        int b = 150 + ((h >> 14) & 0x6F);
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 

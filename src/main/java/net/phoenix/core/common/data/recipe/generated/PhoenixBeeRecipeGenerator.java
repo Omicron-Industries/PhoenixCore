@@ -256,7 +256,6 @@ public class PhoenixBeeRecipeGenerator {
     }
 
     public static void generateSpecialtyBeeRecipes(Consumer<FinishedRecipe> provider, ItemStack base) {
-        
         Material source = PhoenixProgressionMaterials.SOURCE_GEM;
         ItemStack catalystBee = ChemicalHelper.get(PhoenixMaterialFlags.tier_one_bee, source);
         ItemStack jelly = safeStack("phoenixcore:royal_jelly", 8);

@@ -92,13 +92,13 @@ public final class KubeJsTaskTypeLoader {
                     }
                     if (desc == null) desc = Component.literal(label);
                     ExternalTriggerTask t = new ExternalTriggerTask(taskId, desc, trigger, required);
-                    
+
                     t.setKjsTypeId(typeId);
                     return t;
                 }).icon(icon).label(label).tooltip(tooltip);
 
                 for (FieldDef f : fields) builder.field(f);
-                
+
                 if (fields.isEmpty()) {
                     builder.field(FieldDef.text("trigger_id", "Trigger ID", "e.g. " + defaultTriggerId));
                     builder.field(FieldDef.integer("required", "Count"));

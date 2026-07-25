@@ -34,16 +34,14 @@ public class AdvancementTask extends QuestTask {
         return false;
     }
 
-    public void onAdvancementEarned(Player player, ResourceLocation earnedId) {
-        
-    }
+    public void onAdvancementEarned(Player player, ResourceLocation earnedId) {}
 
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString("type", "advancement");
         tag.putString("advancement_id", advancementId != null ? advancementId.toString() : "minecraft:story/root");
-        
+
         return tag;
     }
 

@@ -37,7 +37,7 @@ public class SelectColorPacket {
 
             ItemStack stack = player.getItemInHand(msg.hand);
             if (stack.getItem() instanceof ChameleonSprayCanItem) {
-                
+
                 if (stack.hasTag()) {
                     stack.getTag().remove("chromatic_code");
                 }

@@ -22,15 +22,15 @@ import java.util.UUID;
 public class EnergyStorageTask extends QuestTask {
 
     public enum EnergyType {
-        FE,   
-        EU,   
-        ANY   
+        FE,
+        EU,
+        ANY
     }
 
     public enum Source {
-        INVENTORY,   
-        HELD,        
-        BLOCK        
+        INVENTORY,
+        HELD,
+        BLOCK
     }
 
     private static final Map<UUID, long[]> blockCache = new HashMap<>();
@@ -153,8 +153,7 @@ public class EnergyStorageTask extends QuestTask {
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         this.requiredEnergy = nbt.contains("required_energy") ? nbt.getLong("required_energy") :
-                nbt.contains("required_fe") ? nbt.getLong("required_fe")   
-                        : nbt.getLong("amount");
+                nbt.contains("required_fe") ? nbt.getLong("required_fe") : nbt.getLong("amount");
 
         if (nbt.contains("energy_type")) {
             try {
@@ -163,7 +162,7 @@ public class EnergyStorageTask extends QuestTask {
                 this.energyType = EnergyType.FE;
             }
         } else if (nbt.contains("mode")) {
-            
+
             this.energyType = EnergyType.FE;
         }
 
@@ -174,7 +173,7 @@ public class EnergyStorageTask extends QuestTask {
                 this.source = Source.INVENTORY;
             }
         } else if (nbt.contains("mode")) {
-            
+
             String mode = nbt.getString("mode").toUpperCase();
             this.source = mode.equals("HELD") ? Source.HELD : Source.INVENTORY;
         }

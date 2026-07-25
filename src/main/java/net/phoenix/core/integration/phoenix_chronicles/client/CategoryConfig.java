@@ -17,18 +17,18 @@ import java.util.Map;
 public class CategoryConfig {
 
     public enum BgStyle {
-        DOT_GRID,       
-        GRID_LINES,     
-        HEX_GRID,       
-        DIAGONAL_LINES, 
-        SOLID,          
-        CUSTOM          
+        DOT_GRID,
+        GRID_LINES,
+        HEX_GRID,
+        DIAGONAL_LINES,
+        SOLID,
+        CUSTOM
     }
 
     private BgStyle style = BgStyle.DOT_GRID;
-    
+
     private int color = 0;
-    
+
     private String texture = "";
 
     public BgStyle getStyle() {

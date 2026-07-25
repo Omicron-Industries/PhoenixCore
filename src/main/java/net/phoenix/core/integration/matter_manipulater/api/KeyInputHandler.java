@@ -33,7 +33,7 @@ public class KeyInputHandler {
             if (stack.getItem() instanceof PhoenixManipulatorItem) {
 
                 if (mc.player.getOffhandItem().isEmpty()) {
-                    PhoenixInventoryService.findMatchingPipe(mc.player, ItemStack.EMPTY) 
+                    PhoenixInventoryService.findMatchingPipe(mc.player, ItemStack.EMPTY)
                             .ifPresent(foundStack -> {
 
                             });

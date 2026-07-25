@@ -45,7 +45,7 @@ public class PhoenixFissionBlocks {
                     .initialProperties(() -> net.minecraft.world.level.block.Blocks.IRON_BLOCK)
                     .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
                     .blockstate((ctx, prov) -> {
-                        
+
                         String name = ctx.getName();
                         var inactive = prov.models().cubeAll(name, type.getTexture());
                         var active = prov.models().cubeAll(name + "_active",

@@ -3,6 +3,7 @@ package net.phoenix.core.common.data.materials;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags;
 import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIconSet;
+import com.gregtechceu.gtceu.common.data.GTElements;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.phoenix.core.PhoenixCore;
@@ -15,7 +16,7 @@ public class PhoenixOres {
     public static Material POLARITY_FLIPPED_BISMUTHITE;
     public static Material VOIDGLASS_SHARD;
     public static Material CRYSTALLIZED_FLUXSTONE;
-    public static Material PERMAFROST;
+    public static Material PERMAFROST, NAQUADATITE;
 
     public static Material QUANTARIUMITE;
     public static Material PHOENIXITE;
@@ -53,6 +54,14 @@ public class PhoenixOres {
                 .color(0x6A00AA)
                 .iconSet(MaterialIconSet.DIAMOND)
                 .flags(MaterialFlags.DISABLE_DECOMPOSITION)
+                .buildAndRegister();
+
+        NAQUADATITE = new Material.Builder(PhoenixCore.id("naquadatite"))
+                .ore()
+                .dust()
+                .color(0x0C0A00).secondaryColor(0xBF00FF)
+                .iconSet(MaterialIconSet.DIAMOND)
+                .element(GTElements.Nq)
                 .buildAndRegister();
 
         POLARITY_FLIPPED_BISMUTHITE = new Material.Builder(PhoenixCore.id("polarity_flipped_bismuthite"))

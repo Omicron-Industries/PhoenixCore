@@ -82,7 +82,6 @@ public class FuelRodEmiRecipe implements EmiRecipe {
 
     @Override
     public void addWidgets(WidgetHolder widgets) {
-        
         widgets.addSlot(inputs.get(0), 8, 16);
         widgets.addSlot(outputs.get(0), 114, 16).recipeContext(this);
         widgets.addFillingArrow(48, 16, type.getDurationTicks() * 50);

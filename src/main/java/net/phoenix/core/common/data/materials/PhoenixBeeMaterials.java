@@ -91,7 +91,6 @@ public class PhoenixBeeMaterials {
     }
 
     private static void registerAllBeeMineralMaterials() {
-        
         Map<String, int[]> colors = new HashMap<>();
         colors.put("pitchblende", new int[] { 0xffd647, 0x0d1e2f });
         colors.put("steel", new int[] { 0x3b3b3b, 0x727272 });

@@ -27,9 +27,9 @@ public class DevWikiScreen extends Screen {
     private final Screen parent;
     private int activePage = 0;
     private int scrollY = 0;
-    private int cachedContentH = 0; 
+    private int cachedContentH = 0;
 
-    private final List<int[]> copyBtnBounds = new ArrayList<>(); 
+    private final List<int[]> copyBtnBounds = new ArrayList<>();
     private final List<String> copyBtnTexts = new ArrayList<>();
 
     private enum LT {
@@ -197,7 +197,7 @@ public class DevWikiScreen extends Screen {
                 if (y + LINE_H >= top) {
                     int kw = font.width(line.a() + "  ");
                     g.drawString(font, line.a(), x, y, C_ACCENT, false);
-                    
+
                     String val = line.b();
                     int maxVW = w - kw;
                     if (font.width(val) <= maxVW) {
@@ -230,10 +230,10 @@ public class DevWikiScreen extends Screen {
             case CODE -> {
                 int lh = LINE_H + 4;
                 if (y + lh >= top) {
-                    
+
                     g.fill(x, y, x + w, y + lh, 0xFF0A0A12);
                     g.fill(x, y, x + 1, y + lh, C_BORDER);
-                    
+
                     int btnW = font.width("⎘") + 8;
                     int btnX = x + w - btnW - 2;
                     int btnY2 = y + 1;
@@ -241,12 +241,12 @@ public class DevWikiScreen extends Screen {
                     boolean hov = mx >= btnX && mx < btnX + btnW && my >= btnY2 && my < btnY2 + btnH2;
                     g.fill(btnX, btnY2, btnX + btnW, btnY2 + btnH2, hov ? 0x44FFFFFF : 0x22FFFFFF);
                     g.drawCenteredString(font, hov ? "§f⎘" : "§7⎘", btnX + btnW / 2, btnY2 + 2, C_TEXT_DIM);
-                    
+
                     String code = line.a();
                     int maxCW = btnX - x - 6;
                     String display = font.width(code) <= maxCW ? code : font.plainSubstrByWidth(code, maxCW - 4) + "…";
                     g.drawString(font, display, x + 4, y + 3, C_TEXT, false);
-                    
+
                     copyBtnBounds.add(new int[] { btnX, btnY2, btnX + btnW, btnY2 + btnH2 });
                     copyBtnTexts.add(line.a());
                 }
@@ -285,7 +285,7 @@ public class DevWikiScreen extends Screen {
         int total = QuestTreeRegistry.getAllQuests().size();
         int cats = QuestTreeRegistry.getRootChapters().values().stream()
                 .map(QuestNode::getCategory).distinct().mapToInt(c -> 1).sum();
-        
+
         Set<String> catSet = new HashSet<>();
         QuestTreeRegistry.getAllQuests().values().forEach(n -> catSet.add(n.getCategory()));
 

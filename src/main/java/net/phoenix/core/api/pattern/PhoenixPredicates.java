@@ -216,7 +216,7 @@ public class PhoenixPredicates {
             }
             return false;
         },
-                
+
                 () -> Arrays.stream(MSRCoreLinerBlock.MSRLinerTypes.values())
                         .map(type -> {
 
@@ -245,10 +245,10 @@ public class PhoenixPredicates {
                     }
                     return false;
                 },
-                
+
                 () -> {
                     List<BlockInfo> candidates = new ArrayList<>();
-                    
+
                     for (var machine : PhoenixMachines.DISC_HATCH) {
                         if (machine != null) {
                             candidates.add(BlockInfo.fromBlockState(machine.getBlock().defaultBlockState()));
@@ -283,7 +283,7 @@ public class PhoenixPredicates {
             }
             return false;
         },
-                
+
                 () -> net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get() != null ?
                         new BlockInfo[] {
                                 BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get()

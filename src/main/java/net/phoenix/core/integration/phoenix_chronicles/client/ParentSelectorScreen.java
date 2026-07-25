@@ -79,7 +79,7 @@ public class ParentSelectorScreen extends Screen {
                 this.filteredNodes.add(node);
             }
         }
-        
+
         this.rebuildWidgets();
     }
 

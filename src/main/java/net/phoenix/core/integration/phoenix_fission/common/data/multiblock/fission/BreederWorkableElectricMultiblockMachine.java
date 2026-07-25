@@ -144,7 +144,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
 
         int fuelTier = activeFuel != null ? activeFuel.getTier() : 0;
         if (fuelTier < primary.getTier()) {
-            return; 
+            return;
         }
 
         int duration = Math.max(1, primary.getDurationTicks());
@@ -156,7 +156,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             int amount = (int) Math.ceil(basePerCycle * p * burnMul);
 
             if (amount > 0 && !canConsumeResource(primary.getInputKey(), amount)) {
-                return; 
+                return;
             }
         }
 
@@ -187,7 +187,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
         }
 
         for (var blanket : activeBlankets) {
-            
+
             if (fuelTier < blanket.getTier()) continue;
 
             int basePerCycle = Math.max(0, blanket.getAmountPerCycle());
@@ -377,7 +377,6 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
     }
 
     private List<WeightedKey> buildAdjustedDistribution(IFissionBlanketType blanket, int spectrumBias) {
-        
         double normalizedBias = spectrumBias / 100.0;
 
         List<WeightedKey> out = new ArrayList<>();
@@ -387,7 +386,7 @@ public class BreederWorkableElectricMultiblockMachine extends DynamicFissionReac
             if (baseWeight <= 0) continue;
 
             double factor = 1.0 + (normalizedBias * bo.instability() * 0.5);
-            double adjustedWeight = baseWeight * Math.max(0.1, factor); 
+            double adjustedWeight = baseWeight * Math.max(0.1, factor);
 
             out.add(new WeightedKey(bo.key(), adjustedWeight, bo.instability()));
         }

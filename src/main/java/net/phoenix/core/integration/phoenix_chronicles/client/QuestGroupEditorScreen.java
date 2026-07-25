@@ -81,7 +81,7 @@ public class QuestGroupEditorScreen extends Screen {
         addRenderableWidget(borderColorBox);
         row += ROW_H;
 
-        row += 6; 
+        row += 6;
 
         int btnY = dy + DIALOG_H - 24;
         int btnW = existing != null ? (DIALOG_W - 30) / 3 : (DIALOG_W - 20) / 2;
@@ -171,12 +171,12 @@ public class QuestGroupEditorScreen extends Screen {
         int dy = (height - DIALOG_H) / 2;
 
         g.fill(dx, dy, dx + DIALOG_W, dy + DIALOG_H, C_BG);
-        
+
         g.fill(dx, dy, dx + DIALOG_W, dy + 1, C_BORDER);
         g.fill(dx, dy + DIALOG_H - 1, dx + DIALOG_W, dy + DIALOG_H, C_BORDER);
         g.fill(dx, dy, dx + 1, dy + DIALOG_H, C_BORDER);
         g.fill(dx + DIALOG_W - 1, dy, dx + DIALOG_W, dy + DIALOG_H, C_BORDER);
-        
+
         g.fill(dx + 1, dy + 1, dx + DIALOG_W - 1, dy + 16, C_HEADER);
         g.drawCenteredString(font, "§d" + this.title.getString(), dx + DIALOG_W / 2, dy + 4, C_TEXT);
 

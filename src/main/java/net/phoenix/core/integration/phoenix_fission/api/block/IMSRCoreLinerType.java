@@ -7,7 +7,7 @@ public interface IMSRCoreLinerType extends StringRepresentable {
 
     String getName();
 
-    int getTier(); 
+    int getTier();
 
     ResourceLocation getTexture();
 

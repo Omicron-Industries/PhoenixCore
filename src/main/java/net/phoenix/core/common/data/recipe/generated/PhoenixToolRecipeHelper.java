@@ -122,7 +122,7 @@ public class PhoenixToolRecipeHelper {
                         "sXh", "X X", "fXx",
                         'X', plate);
             }
-            
+
             if (property.hasType(GTToolType.WRENCH_LV)) {
                 toolPrefix = TagPrefix.toolHeadWrench;
                 addElectricToolRecipe(provider, toolPrefix,

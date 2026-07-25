@@ -9,9 +9,9 @@ import java.util.function.Supplier;
 
 public class C2SSoundMetadataPacket {
 
-    private final BlockPos soundPos;    
-    private final float soundRange;     
-    private final int durationTicks;    
+    private final BlockPos soundPos;
+    private final float soundRange;
+    private final int durationTicks;
     private final float bass;
     private final float mid;
     private final float treble;

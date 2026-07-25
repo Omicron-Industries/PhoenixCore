@@ -46,7 +46,7 @@ public class FissionBlanketBlock extends ActiveBlock {
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
 
         Component inputName = FissionFuelRodBlock.getRegistryDisplayName(blanketType.getInputKey());
-        
+
         tooltip.add(Component.literal(" • ")
                 .append(Component.translatable("phoenixcore.tooltip.required_fuel_tier"))
                 .append(Component.literal(": Tier " + blanketType.getRequiredFuelTier() + "+")

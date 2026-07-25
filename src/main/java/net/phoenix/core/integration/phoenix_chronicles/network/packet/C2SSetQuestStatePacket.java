@@ -44,7 +44,7 @@ public class C2SSetQuestStatePacket {
             } else if (!activate && current == QuestState.ACTIVE) {
                 QuestProgressTracker.changeQuestState(player, node, QuestState.UNLOCKED);
             }
-            
+
         });
         ctx.get().setPacketHandled(true);
     }

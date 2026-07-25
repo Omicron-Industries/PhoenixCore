@@ -37,7 +37,7 @@ public class QuestTreeRegistry {
         if (parentId != null) {
             QuestNode parent = ALL_QUESTS.get(parentId);
             if (parent != null) {
-                
+
                 parent.addChild(node);
                 ROOT_NODES.remove(node.getId());
             }
@@ -63,9 +63,9 @@ public class QuestTreeRegistry {
         QuestNode removed = ALL_QUESTS.remove(id);
         ROOT_NODES.remove(id);
         if (removed == null) return;
-        
+
         for (QuestNode n : ALL_QUESTS.values()) {
-            
+
             n.removeChild(removed);
         }
     }

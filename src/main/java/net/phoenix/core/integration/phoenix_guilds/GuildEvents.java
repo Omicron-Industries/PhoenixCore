@@ -34,13 +34,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GuildEvents {
 
     private static final Map<UUID, Long> HOME_COOLDOWNS = new ConcurrentHashMap<>();
-    private static final long HOME_COOLDOWN_MS = 5 * 60 * 1000L; 
+    private static final long HOME_COOLDOWN_MS = 5 * 60 * 1000L;
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         GuildManager mgr = GuildManager.get(player.getServer().overworld());
-        
+
         mgr.getGuildFor(player.getUUID()).ifPresent(g -> {
             if (!g.getMotd().isBlank())
                 player.sendSystemMessage(Component.literal("§6[Guild MOTD] §f" + g.getMotd()));
@@ -619,7 +619,7 @@ public class GuildEvents {
             send(player, "§cGuild home has not been set yet.");
             return;
         }
-        
+
         long now = System.currentTimeMillis();
         Long expires = HOME_COOLDOWNS.get(player.getUUID());
         if (expires != null && now < expires) {
@@ -628,7 +628,7 @@ public class GuildEvents {
             return;
         }
         HOME_COOLDOWNS.put(player.getUUID(), now + HOME_COOLDOWN_MS);
-        
+
         ServerLevel targetLevel = player.getServer().getLevel(
                 ResourceKey.create(Registries.DIMENSION, g.getHomeDimension()));
         if (targetLevel == null) {
@@ -667,12 +667,12 @@ public class GuildEvents {
         Guild g = opt.get();
         String formatted = "§3[Ally] §b" + player.getName().getString() + " §7[" + g.getName() + "]§7: §f" + message;
         Component msg = Component.literal(formatted);
-        
+
         for (UUID uuid : g.getMembers()) {
             ServerPlayer m = player.getServer().getPlayerList().getPlayer(uuid);
             if (m != null) m.sendSystemMessage(msg);
         }
-        
+
         for (UUID allyId : g.getAllies()) {
             mgr.getGuildById(allyId).ifPresent(ally -> {
                 for (UUID uuid : ally.getMembers()) {

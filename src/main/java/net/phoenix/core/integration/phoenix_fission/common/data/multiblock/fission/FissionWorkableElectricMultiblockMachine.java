@@ -55,7 +55,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
 
     private void logEvery20(String msg) {
         if ((debugTick++ % 20) == 0) {
-            
+
         }
     }
 
@@ -335,7 +335,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
         if (cfg().coolingRequiresCoolant && !activeCoolers.isEmpty()) {
             boolean ok = canConsumeCoolantForThisTickMachineDriven();
             if (!ok) {
-                
+
                 return false;
             }
         }
@@ -949,7 +949,7 @@ public class FissionWorkableElectricMultiblockMachine extends WorkableElectricMu
                 meltdownTimerTicks = minTicks;
             }
         } else if (meltdownTimerTicks > 0) {
-            
+
             if (!isScramActive()) {
                 meltdownTimerTicks -= 1;
             }

@@ -10,7 +10,7 @@ public class PhoenixQuestScriptRewardEvent extends PlayerEvent {
 
     private final ServerPlayer player;
     private final String eventId;
-    
+
     @Getter
     private final CompoundTag data;
 

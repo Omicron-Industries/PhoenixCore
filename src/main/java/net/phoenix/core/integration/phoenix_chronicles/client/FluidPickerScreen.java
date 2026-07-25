@@ -40,7 +40,7 @@ public class FluidPickerScreen extends Screen {
     private static final int ROW_H = 20;
 
     private final Screen parent;
-    private final Consumer<String> onPick; 
+    private final Consumer<String> onPick;
 
     private final List<Fluid> displayFluids = new ArrayList<>();
     private int scrollOffset = 0;
@@ -92,7 +92,7 @@ public class FluidPickerScreen extends Screen {
             if (fluid == Fluids.EMPTY) continue;
             ResourceLocation id = ForgeRegistries.FLUIDS.getKey(fluid);
             if (id == null) continue;
-            
+
             if (id.getPath().contains("flowing")) continue;
             if (!q.isEmpty() && !id.toString().contains(q) &&
                     !fluid.getFluidType().getDescription().getString().toLowerCase().contains(q))
@@ -207,7 +207,7 @@ public class FluidPickerScreen extends Screen {
             IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluid);
             return ext.getTintColor();
         } catch (Exception e) {
-            return 0x3355FF; 
+            return 0x3355FF;
         }
     }
 

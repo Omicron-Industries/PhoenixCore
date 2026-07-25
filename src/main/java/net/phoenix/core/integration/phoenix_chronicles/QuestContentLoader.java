@@ -40,7 +40,7 @@ public class QuestContentLoader {
         try (Stream<Path> walk = Files.walk(questsFolder)) {
             walk.filter(Files::isRegularFile)
                     .filter(p -> p.toString().endsWith(".md"))
-                    
+
                     .filter(p -> !p.toString().contains("/lang/") && !p.toString().contains("\\lang\\"))
                     .sorted()
                     .forEach(QuestContentLoader::loadQuestFile);
@@ -98,7 +98,7 @@ public class QuestContentLoader {
 
         try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             String line;
-            int frontMatterCount = 0; 
+            int frontMatterCount = 0;
             boolean pastFrontMatter = false;
 
             while ((line = reader.readLine()) != null) {
@@ -111,10 +111,10 @@ public class QuestContentLoader {
                 }
 
                 if (!pastFrontMatter) {
-                    
+
                     if (trimmed.startsWith("title:")) {
                         String raw = trimmed.substring("title:".length()).trim();
-                        
+
                         if (raw.startsWith("\"") && raw.endsWith("\"") && raw.length() > 1) {
                             raw = raw.substring(1, raw.length() - 1);
                         }
@@ -132,7 +132,7 @@ public class QuestContentLoader {
         }
 
         if (title == null) {
-            
+
             String name = file.getFileName().toString();
             title = Component.literal(name.contains(".") ? name.substring(0, name.lastIndexOf('.')) : name);
         }

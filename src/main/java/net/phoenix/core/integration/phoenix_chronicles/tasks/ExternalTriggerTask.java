@@ -11,7 +11,7 @@ public class ExternalTriggerTask extends QuestTask {
 
     private String triggerId = "";
     private int required = 1;
-    
+
     private String kjsTypeId = null;
 
     public ExternalTriggerTask(ResourceLocation taskId, Component description, String triggerId, int required) {
@@ -50,7 +50,7 @@ public class ExternalTriggerTask extends QuestTask {
     public void onExternalEvent(Player player, net.minecraft.nbt.CompoundTag eventData) {
         player.getCapability(QuestCapabilityProvider.PLAYER_QUESTS).ifPresent(data -> {
             CompoundTag nbt = data.getOrCreateTaskProgress(getTaskId());
-            if (nbt.getInt("current") >= required) return; 
+            if (nbt.getInt("current") >= required) return;
             int next = Math.min(nbt.getInt("current") + 1, required);
             nbt.putInt("current", next);
         });
