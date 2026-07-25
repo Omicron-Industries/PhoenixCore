@@ -1,27 +1,20 @@
 package net.phoenix.core.common.machine.multiblock.electric;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
-import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.TextWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -31,6 +24,10 @@ import net.phoenix.core.common.machine.multiblock.ShieldedMachine;
 import net.phoenix.core.common.machine.multiblock.part.fluid.PlasmaHatchPartMachine;
 import net.phoenix.core.common.machine.trait.NotifiableShieldContainer;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,7 +70,6 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
     private int consumptionTimer = 0;
 
     public HighPressurePlasmaArcFurnaceMachine(BlockEntityCreationInfo holder) {
-        
         super(holder, new RecipeLogic());
 
         this.shieldHandler = new ConditionalSubscriptionHandler(this, this::shieldTick, this::isFormed);
@@ -91,7 +87,9 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
         if (setCooldown) {
             this.shieldCooldownTimer = this.shieldType.shieldCooldownTicks;
         }
-        if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
+        if (this.getSyncDataHolder() != null) {
+            this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam");
+        }
     }
 
     @Override
@@ -119,9 +117,13 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
                     this.shieldType = Shield.ShieldTypes.DECAYED;
                     this.shieldHealth = 0;
                     this.shieldCooldownTimer = this.shieldType.shieldCooldownTicks;
-                    if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
+                    if (this.getSyncDataHolder() != null) {
+                        this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam");
+                    }
                 }
-                if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
+                if (this.getSyncDataHolder() != null) {
+                    this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam");
+                }
             }
         } else {
             this.shieldDecayTimer = DECAY_TICK_RATE;
@@ -129,7 +131,9 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
 
         if (this.shieldCooldownTimer > 0) {
             this.shieldCooldownTimer--;
-            if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
+            if (this.getSyncDataHolder() != null) {
+                this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam");
+            }
         }
     }
 
@@ -260,9 +264,8 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
     public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.translatable("shield.phoenixcore.current_shield",
-                        Component.translatable(this.shieldType.langKey)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> Component.translatable("shield.phoenixcore.current_shield",
+                Component.translatable(this.shieldType.langKey)))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             if (this.shieldType == Shield.ShieldTypes.NORMAL)
                 return Component.translatable("shield.phoenixcore.health", this.shieldHealth);
@@ -270,10 +273,9 @@ public class HighPressurePlasmaArcFurnaceMachine extends WorkableElectricMultibl
                 return Component.translatable("shield.phoenixcore.cooldown", this.shieldCooldownTimer / 20);
             return Component.literal("");
         })));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                (this.shieldType == Shield.ShieldTypes.NORMAL && !isPlasmaBoosted)
-                        ? Component.literal("§7No Plasma Catalyst§r")
-                        : Component.literal(""))));
+        widgets.add(
+                new TextWidget<>(Text.dynamic(() -> (this.shieldType == Shield.ShieldTypes.NORMAL && !isPlasmaBoosted) ?
+                        Component.literal("§7No Plasma Catalyst§r") : Component.literal(""))));
         return widgets;
     }
 

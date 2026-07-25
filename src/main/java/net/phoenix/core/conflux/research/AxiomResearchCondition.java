@@ -6,15 +6,16 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.condition.RecipeConditionType;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -24,8 +25,8 @@ public class AxiomResearchCondition extends RecipeCondition<AxiomResearchConditi
 
     public static final String CONDITION_ID = "phoenixcore:axiom_research";
 
-    public static final Codec<AxiomResearchCondition> CODEC = RecordCodecBuilder.create(instance ->
-            RecipeCondition.isReverse(instance)
+    public static final Codec<AxiomResearchCondition> CODEC = RecordCodecBuilder
+            .create(instance -> RecipeCondition.isReverse(instance)
                     .and(Codec.STRING.fieldOf("flag").forGetter(AxiomResearchCondition::getFlag))
                     .apply(instance, AxiomResearchCondition::new));
 
@@ -55,10 +56,9 @@ public class AxiomResearchCondition extends RecipeCondition<AxiomResearchConditi
                 machine.getBlockPos().getY() + 0.5,
                 machine.getBlockPos().getZ() + 0.5,
                 CHECK_RADIUS,
-                p -> !p.isSpectator() && p instanceof ServerPlayer)
-                instanceof ServerPlayer sp ? sp : null;
+                p -> !p.isSpectator() && p instanceof ServerPlayer) instanceof ServerPlayer sp ? sp : null;
 
-        if (nearestPlayer == null) return false; 
+        if (nearestPlayer == null) return false;
 
         UUID teamId = ResearchTeamHelper.getTeamId(nearestPlayer);
         return WorldResearchData.get(level).hasFlag(teamId, flag);

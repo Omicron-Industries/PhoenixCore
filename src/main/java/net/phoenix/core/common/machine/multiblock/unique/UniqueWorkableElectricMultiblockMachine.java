@@ -1,16 +1,10 @@
-package net.phoenix.core.common.machine.multiblock.unique; 
+package net.phoenix.core.common.machine.multiblock.unique;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.TextWidget;
-
-import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -18,6 +12,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.phoenix.core.saveddata.UniqueMultiblockSavedData;
+
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 
 import java.util.List;
 import java.util.UUID;
@@ -101,8 +100,7 @@ public class UniqueWorkableElectricMultiblockMachine extends WorkableElectricMul
                     new TextWidget<>(Text.of(Component.translatable("phoenixcore.multiblock.duplicate.1")
                             .setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_RED)))),
                     new TextWidget<>(Text.of(Component.translatable("phoenixcore.multiblock.duplicate.2")
-                            .setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_RED))))
-            );
+                            .setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_RED)))));
         }
         return super.getWidgetsForDisplay(syncManager);
     }

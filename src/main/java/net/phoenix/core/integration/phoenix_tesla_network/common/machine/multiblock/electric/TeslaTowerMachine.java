@@ -1,27 +1,20 @@
 package net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric;
 
-import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
-import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
-import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.IEnergyInfoProvider;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.TextWidget;
 import com.gregtechceu.gtceu.api.machine.*;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTrait;
-
+import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.common.machine.electric.BatteryBufferMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.MaintenanceHatchPartMachine;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -30,19 +23,16 @@ import com.gregtechceu.gtceu.utils.GradientUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.common.data.item.PhoenixItems;
@@ -53,6 +43,10 @@ import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multibl
 import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -148,8 +142,7 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                                     recheckPlayer.sendSystemMessage(Component.literal("The Signal Has Begun.")
                                             .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
                                 }
-                            }
-                    ));
+                            }));
                 }
             }
         }
@@ -193,12 +186,12 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         var patternState = this.getPatternState(substructureName);
 
         if (patternState != null && patternState.getCache() != null) {
-            
+
             for (var entry : patternState.getCache().long2ObjectEntrySet()) {
                 BlockState state = entry.getValue().getBlockState();
 
                 if (state.getBlock() instanceof TeslaBatteryBlock batteryBlock) {
-                    
+
                     batteries.add(batteryBlock.getBatteryData());
                 }
             }
@@ -523,7 +516,7 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
     @Override
     public void onLoad() {
         super.onLoad();
-        
+
         updateBatteryTier();
     }
 
@@ -594,8 +587,8 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
 
     public class TeslaEnergyBank extends MachineTrait {
 
-        private static final MachineTraitType<TeslaEnergyBank> TRAIT_TYPE =
-                new MachineTraitType<>(TeslaEnergyBank.class, true);
+        private static final MachineTraitType<TeslaEnergyBank> TRAIT_TYPE = new MachineTraitType<>(
+                TeslaEnergyBank.class, true);
 
         @Override
         public MachineTraitType<?> getTraitType() {
@@ -853,7 +846,8 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
 
         if (!isFormed()) {
-            widgets.add(new TextWidget<>(Text.of(Component.literal("Tesla Network: Inactive").withStyle(ChatFormatting.RED))));
+            widgets.add(new TextWidget<>(
+                    Text.of(Component.literal("Tesla Network: Inactive").withStyle(ChatFormatting.RED))));
             return widgets;
         }
 
@@ -865,22 +859,28 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
                         .withStyle(Style.EMPTY.withColor(ChatFormatting.AQUA))))));
         if (energyBank != null) {
             widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal("Stored: ")
-                    .append(Component.literal(formatTeslaValue(FormattingUtil.formatNumbers(energyBank.getStored()), false) + " EU")
+                    .append(Component
+                            .literal(formatTeslaValue(FormattingUtil.formatNumbers(energyBank.getStored()), false) +
+                                    " EU")
                             .withStyle(Style.EMPTY.withColor(ChatFormatting.GOLD))))));
             widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal("Capacity: ")
-                    .append(Component.literal(formatTeslaValue(FormattingUtil.formatNumbers(energyBank.getCapacity()), false) + " EU")
+                    .append(Component
+                            .literal(formatTeslaValue(FormattingUtil.formatNumbers(energyBank.getCapacity()), false) +
+                                    " EU")
                             .withStyle(ChatFormatting.YELLOW)))));
         }
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             long inputVal = inputPerSec;
             return Component.literal("Total Input: ")
-                    .append(Component.literal("+" + formatTeslaValue(FormattingUtil.formatNumbers(inputVal), false) + " EU/t")
+                    .append(Component
+                            .literal("+" + formatTeslaValue(FormattingUtil.formatNumbers(inputVal), false) + " EU/t")
                             .withStyle(ChatFormatting.GREEN));
         })));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             long outputVal = outputPerSec;
             return Component.literal("Total Output: ")
-                    .append(Component.literal("-" + formatTeslaValue(FormattingUtil.formatNumbers(outputVal), false) + " EU/t")
+                    .append(Component
+                            .literal("-" + formatTeslaValue(FormattingUtil.formatNumbers(outputVal), false) + " EU/t")
                             .withStyle(ChatFormatting.RED));
         })));
         if (energyBank != null) {
@@ -920,5 +920,4 @@ public class TeslaTowerMachine extends UniqueWorkableElectricMultiblockMachine
             return valueStr.replaceAll("[§][0-9a-fk-or]", "");
         }
     }
-
 }

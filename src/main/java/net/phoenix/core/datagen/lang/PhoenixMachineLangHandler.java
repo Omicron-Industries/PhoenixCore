@@ -5,7 +5,6 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 public class PhoenixMachineLangHandler {
 
     public static void init(RegistrateLangProvider provider) {
-        
         provider.add("phoenixcore.soul_lens.tooltip.flavor", "The Veil is thinner than you realize.");
         provider.add("phoenixcore.soul_lens.tooltip.1", "Your way of checking on the Soul of the World.");
         provider.add("gtceu.bio_engine", "Bio Aetheric Engine");

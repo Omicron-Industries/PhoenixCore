@@ -32,7 +32,6 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-
         MetaMachine machine = MetaMachine.getMachine(accessor.getLevel(), accessor.getPosition());
         if (machine == null) return;
 
@@ -59,7 +58,7 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
             team = tower.getOwnerUUID();
             mode = -1;
         } else {
-            
+
             team = data.getOwnerTeam(pos);
             if (team != null) {
                 TeslaTeamEnergyData.TeamEnergy teamData = data.getOrCreate(team);
@@ -121,21 +120,21 @@ public class TeslaNetworkProvider implements IBlockComponentProvider, IServerDat
             String icon = "";
 
             switch (mode) {
-                case 0 -> { 
+                case 0 -> {
                     label = Component.literal("Providing: ");
                     color = ChatFormatting.GREEN;
                 }
-                case 2 -> { 
+                case 2 -> {
                     label = Component.literal("Broadcasting: ");
                     color = ChatFormatting.AQUA;
                     icon = "§3波 ";
                 }
-                case 3 -> { 
+                case 3 -> {
                     label = Component.literal("Generating: ");
                     color = ChatFormatting.GOLD;
                     icon = "§6⚡ ";
                 }
-                default -> { 
+                default -> {
                     label = Component.literal("Taking: ");
                     color = ChatFormatting.RED;
                 }

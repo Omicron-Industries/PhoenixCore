@@ -2,12 +2,10 @@ package net.phoenix.core.integration.ars_nouveau.api.machine.trait;
 
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableRecipeHandlerTrait;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
@@ -21,8 +19,8 @@ import java.util.List;
 
 public class NotifiableSourceContainer extends NotifiableRecipeHandlerTrait<SourceIngredient> implements ISourceTile {
 
-    public static final MachineTraitType<NotifiableSourceContainer> TRAIT_TYPE =
-            new MachineTraitType<>(NotifiableSourceContainer.class);
+    public static final MachineTraitType<NotifiableSourceContainer> TRAIT_TYPE = new MachineTraitType<>(
+            NotifiableSourceContainer.class);
 
     @SaveField
     @SyncToClient
@@ -55,7 +53,7 @@ public class NotifiableSourceContainer extends NotifiableRecipeHandlerTrait<Sour
 
     public int getCurrentFlow() {
         if (getLevel() != null && !(getMachine() instanceof WorkableElectricMultiblockMachine)) {
-            
+
             long time = getLevel().getGameTime();
             if (time - lastFlowUpdate > 20) {
                 this.currentFlow = 0;

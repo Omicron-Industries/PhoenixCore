@@ -1,6 +1,5 @@
 package net.phoenix.core.client.gui.screen;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -17,6 +16,8 @@ import net.phoenix.core.common.worldgen.PhoenixTerrainPresets;
 import net.phoenix.core.common.worldgen.TerrainProfile;
 import net.phoenix.core.common.worldgen.TerrainSampler;
 
+import com.mojang.blaze3d.platform.NativeImage;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -32,8 +33,7 @@ public class TerrainPreviewScreen extends Screen {
     private static final int CTRL_H = 20;
     private static final int CTRL_GAP = 4;
 
-    private static final ResourceLocation TEXTURE_RL =
-            new ResourceLocation("phoenixcore", "terrain_preview");
+    private static final ResourceLocation TEXTURE_RL = new ResourceLocation("phoenixcore", "terrain_preview");
     private DynamicTexture dynamicTexture;
     private NativeImage nativeImage;
     private final AtomicBoolean generating = new AtomicBoolean(false);
@@ -46,8 +46,7 @@ public class TerrainPreviewScreen extends Screen {
     private TerrainProfile currentProfile;
     private boolean showVeins = true;
 
-    private final List<Map.Entry<String, LongFunction<TerrainProfile>>> presets =
-            PhoenixTerrainPresets.all();
+    private final List<Map.Entry<String, LongFunction<TerrainProfile>>> presets = PhoenixTerrainPresets.all();
     private int presetIndex = 0;
 
     private PreviewSlider sliderBaseY;
@@ -65,13 +64,13 @@ public class TerrainPreviewScreen extends Screen {
     private record OreLayer(String name, int minY, int maxY, int argb, double scale, double threshold, long seedOff) {}
 
     private static final OreLayer[] ORE_LAYERS = {
-        new OreLayer("Coal",           -1, 256, 0xFF555555, 0.08, 0.130, 10L),
-        new OreLayer("Iron",          -24,  56, 0xFFD4916A, 0.10, 0.115, 20L),
-        new OreLayer("Copper",        -16, 112, 0xFFE07830, 0.09, 0.120, 30L),
-        new OreLayer("Gold",          -64,  32, 0xFFFFD700, 0.12, 0.080, 40L),
-        new OreLayer("Lapis",         -32,  64, 0xFF3355CC, 0.13, 0.070, 50L),
-        new OreLayer("Diamond",       -64,  16, 0xFF40EEEE, 0.14, 0.065, 60L),
-        new OreLayer("Ancient Debris",  8,  22, 0xFFAA44AA, 0.18, 0.055, 70L),
+            new OreLayer("Coal", -1, 256, 0xFF555555, 0.08, 0.130, 10L),
+            new OreLayer("Iron", -24, 56, 0xFFD4916A, 0.10, 0.115, 20L),
+            new OreLayer("Copper", -16, 112, 0xFFE07830, 0.09, 0.120, 30L),
+            new OreLayer("Gold", -64, 32, 0xFFFFD700, 0.12, 0.080, 40L),
+            new OreLayer("Lapis", -32, 64, 0xFF3355CC, 0.13, 0.070, 50L),
+            new OreLayer("Diamond", -64, 16, 0xFF40EEEE, 0.14, 0.065, 60L),
+            new OreLayer("Ancient Debris", 8, 22, 0xFFAA44AA, 0.18, 0.055, 70L),
     };
 
     public TerrainPreviewScreen() {
@@ -143,6 +142,7 @@ public class TerrainPreviewScreen extends Screen {
 
         cbVeins = new ToggleCheckbox(panelX, cy, panelW, CTRL_H,
                 Component.literal("Show Veins"), showVeins) {
+
             @Override
             public void onPress() {
                 super.onPress();
@@ -198,8 +198,11 @@ public class TerrainPreviewScreen extends Screen {
     }
 
     private long parseSeed() {
-        try { return Long.parseLong(seedField.getValue().trim()); }
-        catch (NumberFormatException e) { return seedField.getValue().hashCode(); }
+        try {
+            return Long.parseLong(seedField.getValue().trim());
+        } catch (NumberFormatException e) {
+            return seedField.getValue().hashCode();
+        }
     }
 
     private void scheduleRender(TerrainProfile profile) {
@@ -275,7 +278,7 @@ public class TerrainPreviewScreen extends Screen {
     }
 
     private int colorPixel(int worldX, int worldY, boolean solid, int surfY,
-                            int seaLevel, int minY, int maxY, TerrainSampler[] veinSamplers) {
+                           int seaLevel, int minY, int maxY, TerrainSampler[] veinSamplers) {
         if (!solid) {
             if (worldY >= seaLevel) {
                 float t = (float) (worldY - seaLevel) / (maxY - seaLevel);
@@ -295,8 +298,7 @@ public class TerrainPreviewScreen extends Screen {
         if (veinSamplers != null) {
             for (int i = 0; i < ORE_LAYERS.length; i++) {
                 OreLayer ore = ORE_LAYERS[i];
-                if (worldY >= ore.minY() && worldY <= ore.maxY()
-                        && veinSamplers[i].sample(worldX, worldY, 0) < 0) {
+                if (worldY >= ore.minY() && worldY <= ore.maxY() && veinSamplers[i].sample(worldX, worldY, 0) < 0) {
                     return argbToABGR(ore.argb());
                 }
             }
@@ -413,14 +415,19 @@ public class TerrainPreviewScreen extends Screen {
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         if (showExport) {
-            if (key == 256) { showExport = false; return true; }
+            if (key == 256) {
+                showExport = false;
+                return true;
+            }
             return false;
         }
         return super.keyPressed(key, scan, mods);
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 
     @Override
     public void onClose() {
@@ -437,6 +444,7 @@ public class TerrainPreviewScreen extends Screen {
     }
 
     private static class PreviewSlider extends AbstractSliderButton {
+
         private final String label;
         private final double min;
         private final double max;
@@ -459,7 +467,9 @@ public class TerrainPreviewScreen extends Screen {
         @Override
         protected void applyValue() {}
 
-        public double getRawValue() { return min + this.value * (max - min); }
+        public double getRawValue() {
+            return min + this.value * (max - min);
+        }
 
         public void setRawValue(double v) {
             this.value = Math.max(0, Math.min(1, (v - min) / (max - min)));
@@ -468,6 +478,7 @@ public class TerrainPreviewScreen extends Screen {
     }
 
     private static class ToggleCheckbox extends Button {
+
         private boolean checked;
 
         ToggleCheckbox(int x, int y, int w, int h, Component label, boolean initial) {
@@ -487,8 +498,12 @@ public class TerrainPreviewScreen extends Screen {
             return Component.literal((checked ? "[x] " : "[ ] ") + label);
         }
 
-        public boolean isChecked() { return checked; }
+        public boolean isChecked() {
+            return checked;
+        }
 
-        public void setValue(boolean v) { if (checked != v) onPress(); }
+        public void setValue(boolean v) {
+            if (checked != v) onPress();
+        }
     }
 }

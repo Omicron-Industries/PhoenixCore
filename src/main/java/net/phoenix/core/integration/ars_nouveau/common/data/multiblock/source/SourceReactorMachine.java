@@ -6,9 +6,9 @@ import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMa
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
-
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -127,14 +127,14 @@ public class SourceReactorMachine extends WorkableElectricMultiblockMachine {
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
         widgets.add(new TextWidget<>(Text.of(Component.literal("§5Reactor Core Metrics:"))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §7Local Soul Density: §d" + String.format("%.2f", cachedSoulDensity)))));
+        widgets.add(new TextWidget<>(Text.dynamic(
+                () -> Component.literal("  §7Local Soul Density: §d" + String.format("%.2f", cachedSoulDensity)))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             String color = reactorStability > 2.0f ? "§b" : (reactorStability > 1.5f ? "§a" : "§e");
             return Component.literal("  §7Stability Index: " + color + String.format("%.2fx", reactorStability));
         })));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §eReaction Pressure: §l" + String.format("%.2fx", cachedSoulDensity * reactorStability)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> Component
+                .literal("  §eReaction Pressure: §l" + String.format("%.2fx", cachedSoulDensity * reactorStability)))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             if (reactorStability < 1.1f) return Component.literal("§c§l⚠ LOW STABILITY — Source Waste Imminent ⚠");
             if (reactorStability > 2.2f) return Component.literal("§b§l⚡ CRITICAL EFFICIENCY ⚡");

@@ -1,9 +1,5 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
-import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
@@ -11,11 +7,13 @@ import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.ITieredMachine;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -196,18 +194,18 @@ public class BioAethericEngineMachine extends WorkableElectricMultiblockMachine 
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
         widgets.add(new TextWidget<>(Text.of(Component.literal("§5Aetheric Analysis:"))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §7Chunk Base Soul: §d" + String.format("%.2f", cachedSoulDensity)))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §7Flora Bonus: §b+" + String.format("%.2f", lastBotanicalBoost)))));
+        widgets.add(new TextWidget<>(Text.dynamic(
+                () -> Component.literal("  §7Chunk Base Soul: §d" + String.format("%.2f", cachedSoulDensity)))));
+        widgets.add(new TextWidget<>(Text
+                .dynamic(() -> Component.literal("  §7Flora Bonus: §b+" + String.format("%.2f", lastBotanicalBoost)))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             boolean isNight = getLevel() != null && getLevel().isNight();
             return Component.literal("  §7Veil Status: " + (isNight ? "§aActive (1.25x)" : "§6Dormant"));
         })));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §eTotal EU Multiplier: §l" + String.format("%.2fx", cachedSoulDensity + lastBotanicalBoost)))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                lastBotanicalBoost > 1.0f ? Component.literal("§b§l» SOUL SATURATED «") : Component.literal(""))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal(
+                "  §eTotal EU Multiplier: §l" + String.format("%.2fx", cachedSoulDensity + lastBotanicalBoost)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> lastBotanicalBoost > 1.0f ?
+                Component.literal("§b§l» SOUL SATURATED «") : Component.literal(""))));
         return widgets;
     }
 }

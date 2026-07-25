@@ -1,46 +1,40 @@
 package net.phoenix.core.client;
 
+import com.gregtechceu.gtceu.api.registry.registrate.provider.GTBlockstateProvider;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderManager;
+import com.gregtechceu.gtceu.data.pack.event.RegisterDynamicResourcesEvent;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.phoenix.core.client.worldfx.WorldFXShaders;
-import com.gregtechceu.gtceu.api.registry.registrate.provider.GTBlockstateProvider;
-import com.gregtechceu.gtceu.data.pack.event.RegisterDynamicResourcesEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.phoenix.core.conflux.ConfluxDataType;
-import net.phoenix.core.conflux.ConfluxRegistry;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.phoenix.core.PhoenixCore;
+import net.phoenix.core.client.command.TerrainPreviewCommand;
 import net.phoenix.core.client.particle.PhoenixParticles;
 import net.phoenix.core.client.renderer.machine.*;
-import net.phoenix.core.common.block.PhoenixBlocks;
+import net.phoenix.core.client.worldfx.WorldFXShaders;
+import net.phoenix.core.conflux.ConfluxDataType;
+import net.phoenix.core.conflux.ConfluxRegistry;
 import net.phoenix.core.conflux.client.ConfluxEditorCommand;
-import net.phoenix.core.conflux.tools.capture.SpriteCaptureRegistry;
 import net.phoenix.core.conflux.tools.capture.ExportSpritesCommand;
-import net.phoenix.core.client.command.TerrainPreviewCommand;
-import net.phoenix.core.conflux.tools.capture.bakers.AxiomVoidBaker;
+import net.phoenix.core.conflux.tools.capture.SpriteCaptureRegistry;
 import net.phoenix.core.conflux.tools.capture.bakers.AxiomPhoenixBaker;
 import net.phoenix.core.conflux.tools.capture.bakers.AxiomSculkBaker;
 import net.phoenix.core.conflux.tools.capture.bakers.AxiomSealedBaker;
-
+import net.phoenix.core.conflux.tools.capture.bakers.AxiomVoidBaker;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
 import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
@@ -72,6 +66,7 @@ public class PhoenixClient {
     }
 
     public static class VocalVibrancyClientTick {
+
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
@@ -85,6 +80,7 @@ public class PhoenixClient {
     }
 
     public static class TeslaSparkProvider implements ParticleProvider<SimpleParticleType> {
+
         private final SpriteSet sprites;
 
         public TeslaSparkProvider(SpriteSet sprites) {
@@ -141,6 +137,7 @@ public class PhoenixClient {
 
     @Mod.EventBusSubscriber(modid = PhoenixCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
     public static class ForgeClientEvents {
+
         @SubscribeEvent
         public static void registerClientCommands(RegisterClientCommandsEvent event) {
             ConfluxEditorCommand.register(event);

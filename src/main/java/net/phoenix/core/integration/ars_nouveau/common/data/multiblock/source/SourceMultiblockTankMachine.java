@@ -1,22 +1,13 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.drawable.Rectangle;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widget.ParentWidget;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
@@ -24,6 +15,12 @@ import net.phoenix.core.integration.ars_nouveau.api.machine.trait.NotifiableSour
 import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchBackground;
 import net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source.SourceHatchPartMachine;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.drawable.Rectangle;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widget.ParentWidget;
 import lombok.Getter;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -96,7 +93,6 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
     @Override
     public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData data, PanelSyncManager syncManager,
                             UISettings settings) {
-        
         if (isRemote()) {
             mainWidget.background(new SourceHatchBackground(0xAA8F00FF));
         }
@@ -125,7 +121,7 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
             int cur = (int) sourceTank.getSource();
             int max = Math.max(1, sourceTank.getMaxSource());
             int pct = (int) ((cur * 100L) / max);
-            
+
             int barColor = pct < 30 ? 0xFF00E5FF : pct < 75 ? 0xFFD466FF : 0xFFBD00FF;
 
             int filled = (int) ((pct / 100.0) * 20);
@@ -143,10 +139,10 @@ public class SourceMultiblockTankMachine extends MultiblockControllerMachine imp
     }
 
     private static String fmtSrc(long v) {
-        if (v < 1_000)       return String.valueOf(v);
-        if (v < 10_000)      return String.format("%.1fk", v / 1_000.0);
-        if (v < 1_000_000)   return (v / 1_000) + "k";
-        if (v < 10_000_000)  return String.format("%.1fM", v / 1_000_000.0);
+        if (v < 1_000) return String.valueOf(v);
+        if (v < 10_000) return String.format("%.1fk", v / 1_000.0);
+        if (v < 1_000_000) return (v / 1_000) + "k";
+        if (v < 10_000_000) return String.format("%.1fM", v / 1_000_000.0);
         if (v < 1_000_000_000) return (v / 1_000_000) + "M";
         return String.format("%.1fB", v / 1_000_000_000.0);
     }

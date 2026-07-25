@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.phoenix.core.conflux.client.ResearchTerminalScreen;
+
 import org.jetbrains.annotations.Nullable;
 
 public class ResearchTerminalBlock extends BaseEntityBlock {
@@ -30,7 +31,7 @@ public class ResearchTerminalBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos,
                                  Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) {
-            
+
             if (level.getBlockEntity(pos) instanceof ResearchTerminalBlockEntity terminal) {
                 Minecraft.getInstance()
                         .setScreen(new ResearchTerminalScreen(terminal));
@@ -41,5 +42,7 @@ public class ResearchTerminalBlock extends BaseEntityBlock {
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
 }

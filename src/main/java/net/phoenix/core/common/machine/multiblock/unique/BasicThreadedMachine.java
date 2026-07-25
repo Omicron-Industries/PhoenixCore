@@ -1,9 +1,6 @@
 package net.phoenix.core.common.machine.multiblock.unique;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
@@ -12,15 +9,15 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 
 import brachy.modularui.api.drawable.Text;
 import brachy.modularui.api.widget.IWidget;
 import brachy.modularui.value.sync.PanelSyncManager;
 import brachy.modularui.widgets.TextWidget;
-
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -120,7 +117,9 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
 
         if (getOffsetTimer() % 5 == 0) {
             saveThreadsToPersisted();
-            if (this.getSyncDataHolder() != null) { this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam"); }
+            if (this.getSyncDataHolder() != null) {
+                this.getSyncDataHolder().markClientSyncFieldDirty("boundTeam");
+            }
         }
     }
 
@@ -228,8 +227,8 @@ public class BasicThreadedMachine extends WorkableElectricMultiblockMachine {
 
             if (activeThreads > 0) {
                 final int active = activeThreads;
-                widgets.add(new TextWidget<>(Text.dynamic(() ->
-                        Component.literal("§dActive Threads: §f" + active + " / " + THREAD_COUNT))));
+                widgets.add(new TextWidget<>(
+                        Text.dynamic(() -> Component.literal("§dActive Threads: §f" + active + " / " + THREAD_COUNT))));
                 for (int i = 0; i < THREAD_COUNT; i++) {
                     final int idx = i;
                     widgets.add(new TextWidget<>(Text.dynamic(() -> {

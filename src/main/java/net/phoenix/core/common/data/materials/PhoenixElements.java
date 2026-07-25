@@ -2,6 +2,7 @@ package net.phoenix.core.common.data.materials;
 
 import com.gregtechceu.gtceu.api.data.chemical.Element;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+
 import net.minecraft.resources.ResourceLocation;
 
 public class PhoenixElements {

@@ -4,7 +4,7 @@ public interface ISpeakerType {
 
     String getName();
 
-    int getRangeBonus(); 
+    int getRangeBonus();
 
-    float getResonanceAmplifier(); 
+    float getResonanceAmplifier();
 }

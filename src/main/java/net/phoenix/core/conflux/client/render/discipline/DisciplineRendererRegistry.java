@@ -1,6 +1,7 @@
 package net.phoenix.core.conflux.client.render.discipline;
 
 import net.phoenix.core.conflux.client.render.DisciplineRenderer;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;

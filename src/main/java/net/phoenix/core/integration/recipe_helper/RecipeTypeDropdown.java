@@ -99,9 +99,9 @@ public class RecipeTypeDropdown extends AbstractWidget {
 
         private static final int PANEL_W = 260;
         private static final int PANEL_H = 220;
-        private static final int ROW_H = 14;  
-        private static final int HEADER_H = 28;  
-        private static final int LIST_PAD = 2;   
+        private static final int ROW_H = 14;
+        private static final int HEADER_H = 28;
+        private static final int LIST_PAD = 2;
         private static final int SCROLL_W = 6;
 
         private final Screen parent;
@@ -117,21 +117,20 @@ public class RecipeTypeDropdown extends AbstractWidget {
             super(Component.empty());
             this.parent = parent;
             this.owner = owner;
-            this.filtered = TYPES; 
+            this.filtered = TYPES;
         }
 
         @Override
         protected void init() {
             super.init();
             applyFilter();
-            
+
             int selInFiltered = filtered.indexOf(TYPES.get(owner.getSelectedIdx()));
             if (selInFiltered >= 0) scrollOffset = Math.max(0, selInFiltered - visibleRows() / 2);
         }
 
         @Override
         public void render(GuiGraphics g, int mx, int my, float pt) {
-            
             g.fill(0, 0, this.width, this.height, 0xAA000000);
 
             int px = (this.width - PANEL_W) / 2;
@@ -230,8 +229,8 @@ public class RecipeTypeDropdown extends AbstractWidget {
             if (key == 256) {
                 close();
                 return true;
-            } 
-            if (key == 259 && !searchQuery.isEmpty()) { 
+            }
+            if (key == 259 && !searchQuery.isEmpty()) {
                 searchQuery = searchQuery.substring(0, searchQuery.length() - 1);
                 applyFilter();
                 return true;

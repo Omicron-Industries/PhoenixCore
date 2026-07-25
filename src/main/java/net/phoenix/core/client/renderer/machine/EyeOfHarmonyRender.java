@@ -3,7 +3,7 @@ package net.phoenix.core.client.renderer.machine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
-import com.gregtechceu.gtceu.client.util.ModelEventHelper; 
+import com.gregtechceu.gtceu.client.util.ModelEventHelper;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
@@ -41,7 +41,6 @@ public class EyeOfHarmonyRender extends DynamicRender<WorkableElectricMultiblock
     static final RandomSource random = RandomSource.create();
 
     private EyeOfHarmonyRender() {
-        
         ModelEventHelper.registerBakeEventListener(true, (rl, bakedModel, rootModel, modelBakery) -> {
             if (rl.equals(SPACE_SHELL_MODEL_RL)) {
                 spaceShellModel = bakedModel;
@@ -119,13 +118,13 @@ public class EyeOfHarmonyRender extends DynamicRender<WorkableElectricMultiblock
 
             float orbitRadius;
             switch (a) {
-                case 0: 
+                case 0:
                     orbitRadius = 3.99f;
                     break;
-                case 1: 
+                case 1:
                     orbitRadius = 3.99f + (1 * 2.99f);
                     break;
-                case 2: 
+                case 2:
                     orbitRadius = 3.99f + (2 * 2.99f);
                     break;
                 default:
@@ -151,7 +150,7 @@ public class EyeOfHarmonyRender extends DynamicRender<WorkableElectricMultiblock
                     g = 0.6f;
                     b = 0.4f;
                     break;
-                case 2: 
+                case 2:
                     r = 0.8f;
                     g = 0.6f;
                     b = 1.0f;

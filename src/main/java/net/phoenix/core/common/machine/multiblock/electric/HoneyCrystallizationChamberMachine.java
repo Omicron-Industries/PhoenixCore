@@ -1,27 +1,20 @@
 package net.phoenix.core.common.machine.multiblock.electric;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
-import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-import com.gregtechceu.gtceu.api.sync_system.annotations.RerenderOnChanged; 
-
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection; 
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.sync_system.annotations.RerenderOnChanged;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
 
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.TextWidget;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,6 +25,10 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +46,8 @@ public class HoneyCrystallizationChamberMachine extends WorkableElectricMultiblo
     @Getter
     @Setter
     @SyncToClient
-    @RerenderOnChanged 
-    private @NotNull Set<BlockPos> fluidOffsets = new HashSet<>(); 
+    @RerenderOnChanged
+    private @NotNull Set<BlockPos> fluidOffsets = new HashSet<>();
 
     private static final FluidStack HONEY_STACK;
     static {
@@ -71,19 +68,16 @@ public class HoneyCrystallizationChamberMachine extends WorkableElectricMultiblo
     public void formStructure(@org.jetbrains.annotations.NotNull String substructureName) {
         super.formStructure(substructureName);
         this.fluidOffsets = saveOffsets();
-        
     }
 
     @Override
     public void invalidateStructure(@org.jetbrains.annotations.NotNull String substructureName) {
         super.invalidateStructure(substructureName);
         this.fluidOffsets.clear();
-        
     }
 
     @NotNull
     public Set<BlockPos> saveOffsets() {
-        
         Direction up = RelativeDirection.UP.getRelativeFacing(getFrontFacing(), getUpwardsFacing(), isFlipped());
         Direction back = getFrontFacing().getOpposite();
         Direction right = RelativeDirection.RIGHT.getRelativeFacing(getFrontFacing(), getUpwardsFacing(), isFlipped());
@@ -148,10 +142,11 @@ public class HoneyCrystallizationChamberMachine extends WorkableElectricMultiblo
             isPlasmaBoosted = false;
             activeBoost = null;
 
-            var fluidInputs = this.getCapabilitiesFlat(com.gregtechceu.gtceu.api.capability.recipe.IO.IN, com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP);
+            var fluidInputs = this.getCapabilitiesFlat(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,
+                    com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP);
 
             if (fluidInputs != null && !fluidInputs.isEmpty()) {
-                
+
                 if (fluidInputs.get(0) instanceof NotifiableFluidTank inputFluidHandler) {
 
                     for (var entry : PLASMA_BOOSTS.entrySet()) {
@@ -159,9 +154,13 @@ public class HoneyCrystallizationChamberMachine extends WorkableElectricMultiblo
                         var boost = entry.getValue();
                         FluidStack requiredStack = new FluidStack(fluid, boost.consumeAmount());
 
-                        if (inputFluidHandler.drain(requiredStack, net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount() == boost.consumeAmount()) {
+                        if (inputFluidHandler
+                                .drain(requiredStack,
+                                        net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE)
+                                .getAmount() == boost.consumeAmount()) {
 
-                            inputFluidHandler.drain(requiredStack, net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                            inputFluidHandler.drain(requiredStack,
+                                    net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
                             isPlasmaBoosted = true;
                             activeBoost = boost;
                             break;
@@ -199,9 +198,8 @@ public class HoneyCrystallizationChamberMachine extends WorkableElectricMultiblo
     public List<IWidget> getWidgetsForDisplay(PanelSyncManager syncManager) {
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
-        widgets.add(new TextWidget<>(Text.dynamic(() -> isPlasmaBoosted
-                ? Component.literal("§bPlasma Boost Active§r")
-                : Component.literal("§7No Plasma Catalyst§r"))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> isPlasmaBoosted ? Component.literal("§bPlasma Boost Active§r") :
+                Component.literal("§7No Plasma Catalyst§r"))));
         return widgets;
     }
 

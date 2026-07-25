@@ -15,7 +15,7 @@ public class SprayCanHudOverlay {
         if (mc.player == null) return;
 
         ItemStack stack = mc.player.getMainHandItem();
-        
+
         if (!(stack.getItem() instanceof ChameleonSprayCanItem)) {
             stack = mc.player.getOffhandItem();
         }
@@ -28,7 +28,7 @@ public class SprayCanHudOverlay {
 
                 text = Component.literal("Mode: §" + chromCode + "Chromatic (" + chromCode + ")");
             } else {
-                
+
                 DyeColor color = ChameleonSprayCanBehaviour.getColor(stack);
                 if (color != null) {
                     Component colorName = Component.translatable("color.minecraft." + color.getSerializedName());
@@ -39,7 +39,7 @@ public class SprayCanHudOverlay {
             }
 
             int x = width / 2;
-            int y = height - 53; 
+            int y = height - 53;
 
             int textWidth = mc.font.width(text);
             guiGraphics.drawString(mc.font, text, x - (textWidth / 2), y, 0xFFFFFF);

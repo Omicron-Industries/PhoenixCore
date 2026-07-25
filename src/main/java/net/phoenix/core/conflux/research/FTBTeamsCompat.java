@@ -1,7 +1,8 @@
 package net.phoenix.core.conflux.research;
 
-import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import net.minecraft.server.level.ServerPlayer;
+
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 
 import java.util.UUID;
 

@@ -1,8 +1,9 @@
 package net.phoenix.core.conflux.research;
 
-import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.conflux.ConfluxDataType;
+
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -17,10 +18,10 @@ public class ResearchTree {
     public final ResourceLocation id;
     public final String title;
     public final String description;
-    
+
     @Nullable
     public final String discipline;
-    
+
     public final Map<ConfluxDataType, Long> switchCost;
 
     private final Map<ResourceLocation, ResearchNode> nodes = new LinkedHashMap<>();
@@ -28,11 +29,11 @@ public class ResearchTree {
     public ResearchTree(ResourceLocation id, String title, String description,
                         @Nullable String discipline, Map<ConfluxDataType, Long> switchCost,
                         List<ResearchNode> nodeList) {
-        this.id          = id;
-        this.title       = title;
+        this.id = id;
+        this.title = title;
         this.description = description;
-        this.discipline  = discipline;
-        this.switchCost  = Map.copyOf(switchCost);
+        this.discipline = discipline;
+        this.switchCost = Map.copyOf(switchCost);
         nodeList.forEach(n -> nodes.put(n.id, n));
     }
 
@@ -40,16 +41,18 @@ public class ResearchTree {
         return Optional.ofNullable(nodes.get(nodeId));
     }
 
-    public Collection<ResearchNode> getNodes() { return nodes.values(); }
+    public Collection<ResearchNode> getNodes() {
+        return nodes.values();
+    }
 
     public List<ResearchNode> getRoots() {
         return nodes.values().stream().filter(ResearchNode::isRoot).toList();
     }
 
     public static ResearchTree fromJson(ResourceLocation id, JsonObject obj) {
-        String title       = obj.has("title")       ? obj.get("title").getAsString()       : id.getPath();
+        String title = obj.has("title") ? obj.get("title").getAsString() : id.getPath();
         String description = obj.has("description") ? obj.get("description").getAsString() : "";
-        String discipline  = obj.has("discipline")  ? obj.get("discipline").getAsString()  : null;
+        String discipline = obj.has("discipline") ? obj.get("discipline").getAsString() : null;
 
         Map<ConfluxDataType, Long> switchCost = new EnumMap<>(ConfluxDataType.class);
         if (obj.has("switch_cost")) {
@@ -59,11 +62,9 @@ public class ResearchTree {
             }
         }
 
-        List<ResearchNode> nodes = obj.has("nodes")
-                ? obj.getAsJsonArray("nodes").asList().stream()
-                        .map(e -> ResearchNode.fromJson(e.getAsJsonObject()))
-                        .toList()
-                : List.of();
+        List<ResearchNode> nodes = obj.has("nodes") ? obj.getAsJsonArray("nodes").asList().stream()
+                .map(e -> ResearchNode.fromJson(e.getAsJsonObject()))
+                .toList() : List.of();
 
         return new ResearchTree(id, title, description, discipline, switchCost, nodes);
     }
@@ -72,5 +73,7 @@ public class ResearchTree {
         return nodes.values().stream().filter(n -> n.isCommitmentNode).findFirst();
     }
 
-    public boolean isDisciplineTree() { return discipline != null; }
+    public boolean isDisciplineTree() {
+        return discipline != null;
+    }
 }

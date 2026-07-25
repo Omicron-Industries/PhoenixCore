@@ -156,7 +156,7 @@ public final class PhoenixToolType {
             .harvestTag(BlockTags.MINEABLE_WITH_PICKAXE)
             .harvestTag(BlockTags.MINEABLE_WITH_SHOVEL)
             .harvestTag(BlockTags.MINEABLE_WITH_HOE)
-            .toolStats(b -> b.blockBreaking().aoe(5, 5, 10) 
+            .toolStats(b -> b.blockBreaking().aoe(5, 5, 10)
                     .attackDamage(1.0F).attackSpeed(-3.2F).durabilityMultiplier(8.0F)
                     .brokenStack(PhoenixToolHelper.SUPPLY_POWER_UNIT_LUV)
                     .behaviors(AOEConfigUIBehavior.INSTANCE, TorchPlaceBehavior.INSTANCE))

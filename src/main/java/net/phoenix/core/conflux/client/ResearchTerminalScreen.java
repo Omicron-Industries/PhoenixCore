@@ -1,6 +1,5 @@
 package net.phoenix.core.conflux.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -16,6 +15,8 @@ import net.phoenix.core.conflux.research.ResearchNode;
 import net.phoenix.core.conflux.research.ResearchTree;
 import net.phoenix.core.conflux.research.ResearchTreeRegistry;
 import net.phoenix.core.conflux.terminal.ResearchTerminalBlockEntity;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,25 +27,26 @@ import java.util.Set;
 @OnlyIn(Dist.CLIENT)
 public class ResearchTerminalScreen extends Screen {
 
-    private static final int TAB_H    = 20;
+    private static final int TAB_H = 20;
     private static final int BOTTOM_H = 48;
     private static final int DETAIL_W = 224;
-    private static final int NODE_R   = 22; 
+    private static final int NODE_R = 22;
 
-    private static final int C_BG     = 0xFF07070F;
+    private static final int C_BG = 0xFF07070F;
     private static final int C_CANVAS = 0xFF09090E;
-    private static final int C_PANEL  = 0xFF0F0F1C;
+    private static final int C_PANEL = 0xFF0F0F1C;
     private static final int C_HEADER = 0xFF0B0B18;
     private static final int C_BORDER = 0xFF252540;
     private static final int C_ACCENT = 0xFF5577FF;
-    private static final int C_TEXT   = 0xFFCCCCEE;
-    private static final int C_DIM    = 0xFF555577;
+    private static final int C_TEXT = 0xFFCCCCEE;
+    private static final int C_DIM = 0xFF555577;
 
-    @Nullable private final ResearchTerminalBlockEntity terminal;
+    @Nullable
+    private final ResearchTerminalBlockEntity terminal;
 
     private float panX = 0, panY = 0;
-    private float zoom  = 1.0f;
-    private boolean dragging  = false;
+    private float zoom = 1.0f;
+    private boolean dragging = false;
     private double lastDragX, lastDragY;
 
     private ResearchNode selected = null;
@@ -62,14 +64,16 @@ public class ResearchTerminalScreen extends Screen {
         this.terminal = terminal;
     }
 
-    public ResearchTerminalScreen() { this(null); }
+    public ResearchTerminalScreen() {
+        this(null);
+    }
 
     @Override
     protected void init() {
         trees = new ArrayList<>(ResearchTreeRegistry.INSTANCE.getAllTrees());
         resetPan();
         lastFrameNanos = -1;
-        
+
         syncRenderer();
     }
 
@@ -84,18 +88,28 @@ public class ResearchTerminalScreen extends Screen {
         panY = canvasH() / 2f;
     }
 
-    private int canvasW()   { return width - DETAIL_W; }
-    private int canvasH()   { return height - TAB_H - BOTTOM_H; }
-    private int canvasTop() { return TAB_H; }
-    private int bottomTop() { return height - BOTTOM_H; }
+    private int canvasW() {
+        return width - DETAIL_W;
+    }
+
+    private int canvasH() {
+        return height - TAB_H - BOTTOM_H;
+    }
+
+    private int canvasTop() {
+        return TAB_H;
+    }
+
+    private int bottomTop() {
+        return height - BOTTOM_H;
+    }
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
-        
         long now = System.nanoTime();
-        float dt = lastFrameNanos < 0 ? 0.016f : (float)((now - lastFrameNanos) / 1_000_000_000.0);
+        float dt = lastFrameNanos < 0 ? 0.016f : (float) ((now - lastFrameNanos) / 1_000_000_000.0);
         lastFrameNanos = now;
-        dt = Math.min(dt, 0.1f); 
+        dt = Math.min(dt, 0.1f);
 
         syncRenderer();
 
@@ -106,7 +120,8 @@ public class ResearchTerminalScreen extends Screen {
 
         int cw = canvasW(), ct = canvasTop();
         boolean hoveringCanvas = mx >= 0 && mx < cw && my >= ct && my < ct + canvasH();
-        if (hoveringCanvas) intensity.onHover(); else intensity.onHoverEnd();
+        if (hoveringCanvas) intensity.onHover();
+        else intensity.onHoverEnd();
 
         RenderContext ctx = buildContext(mx, my);
         if (ctx == null) {
@@ -144,11 +159,11 @@ public class ResearchTerminalScreen extends Screen {
     private RenderContext buildContext(int mx, int my) {
         if (trees.isEmpty()) return null;
         ResearchTree tree = trees.get(activeTreeIdx);
-        Set<ResourceLocation> unlocked  = ClientResearchCache.unlocked;
+        Set<ResourceLocation> unlocked = ClientResearchCache.unlocked;
         Set<ResourceLocation> lockedOut = ClientResearchCache.lockedOut;
         int ct = canvasTop();
-        float cmx = (float)((mx - panX) / zoom);
-        float cmy = (float)((my - ct - panY) / zoom);
+        float cmx = (float) ((mx - panX) / zoom);
+        float cmy = (float) ((my - ct - panY) / zoom);
         return new RenderContext(tree, unlocked, lockedOut, selected,
                 cmx, cmy, canvasW(), canvasH(), clock, intensity);
     }
@@ -162,7 +177,7 @@ public class ResearchTerminalScreen extends Screen {
             ResearchTree tree = trees.get(i);
             int tw = font.width(tree.title) + 20;
             boolean active = (i == activeTreeIdx);
-            boolean hover  = mx >= tabX && mx < tabX + tw && my >= 0 && my < TAB_H;
+            boolean hover = mx >= tabX && mx < tabX + tw && my >= 0 && my < TAB_H;
 
             g.fill(tabX, 1, tabX + tw, TAB_H, active ? C_PANEL : hover ? 0xFF111120 : C_HEADER);
             if (active) g.fill(tabX, TAB_H - 2, tabX + tw, TAB_H, C_ACCENT);
@@ -187,9 +202,9 @@ public class ResearchTerminalScreen extends Screen {
         double scale = minecraft.getWindow().getGuiScale();
         RenderSystem.enableScissor(
                 0,
-                (int)((height - ct - ch) * scale),
-                (int)(cw * scale),
-                (int)(ch * scale));
+                (int) ((height - ct - ch) * scale),
+                (int) (cw * scale),
+                (int) (ch * scale));
 
         g.pose().pushPose();
         g.pose().translate(0, ct, 0);
@@ -206,7 +221,7 @@ public class ResearchTerminalScreen extends Screen {
         for (ResearchNode node : ctx.tree().getNodes()) {
             if (!node.isVisible(ctx.unlocked())) continue;
             float[] pos = activeRenderer.nodePos(node, ctx);
-            drawNodeLabel(g, node, (int)pos[0], (int)pos[1], ctx);
+            drawNodeLabel(g, node, (int) pos[0], (int) pos[1], ctx);
         }
 
         g.pose().popPose();
@@ -221,29 +236,28 @@ public class ResearchTerminalScreen extends Screen {
     }
 
     private void drawNodeLabel(GuiGraphics g, ResearchNode node, int cx, int cy, RenderContext ctx) {
-        boolean unlocked  = ctx.isUnlocked(node.id);
+        boolean unlocked = ctx.isUnlocked(node.id);
         boolean lockedOut = ctx.isLockedOut(node.id);
         boolean available = ctx.isAvailable(node);
         boolean isMystery = node.hidden && !unlocked;
 
         int r = NODE_R;
         String rawLabel = isMystery ? "§8???" : lockedOut ? "§c" + node.title : node.title;
-        String stripped  = rawLabel.replaceAll("§.", "");
-        String label     = stripped.length() > 16
-                ? rawLabel.substring(0, rawLabel.startsWith("§") ? 17 : 15) + "…"
-                : rawLabel;
+        String stripped = rawLabel.replaceAll("§.", "");
+        String label = stripped.length() > 16 ? rawLabel.substring(0, rawLabel.startsWith("§") ? 17 : 15) + "…" :
+                rawLabel;
         int lw = font.width(label);
-        
+
         g.drawString(font, label, cx - lw / 2 + 1, cy + r + 4, 0xFF000000, false);
         g.drawString(font, label, cx - lw / 2, cy + r + 3,
                 unlocked ? C_TEXT : available ? 0xFF88CC88 : C_DIM, false);
     }
 
     private void renderDetailPanel(GuiGraphics g, int mx, int my) {
-        int px   = canvasW();
+        int px = canvasW();
         int pTop = 0;
         int pBot = bottomTop();
-        int ph   = pBot - pTop;
+        int ph = pBot - pTop;
 
         g.fill(px, pTop, width, pBot, C_PANEL);
         g.fill(px, pTop, px + 1, pBot, C_BORDER);
@@ -255,20 +269,18 @@ public class ResearchTerminalScreen extends Screen {
         }
 
         Set<ResourceLocation> unlockedSet = ClientResearchCache.unlocked;
-        boolean unlocked  = ClientResearchCache.isUnlocked(selected.id);
+        boolean unlocked = ClientResearchCache.isUnlocked(selected.id);
         boolean lockedOut = ClientResearchCache.isLockedOut(selected.id);
-        boolean isMystery = selected.hidden && !unlocked;  
-        boolean available = !unlocked && !lockedOut
-                && selected.canUnlock(unlockedSet, ClientResearchCache.lockedOut);
+        boolean isMystery = selected.hidden && !unlocked;
+        boolean available = !unlocked && !lockedOut && selected.canUnlock(unlockedSet, ClientResearchCache.lockedOut);
         boolean canResearch = available && costsAffordable(selected);
 
-        int x    = px + 12;
-        int y    = pTop + 14;
+        int x = px + 12;
+        int y = pTop + 14;
         int maxW = DETAIL_W - 24;
 
         String titleStr = isMystery ? "???" : selected.title;
-        int titleColor  = unlocked ? 0xFF88BBFF : available ? 0xFF88EE88
-                        : lockedOut ? 0xFF884444 : C_TEXT;
+        int titleColor = unlocked ? 0xFF88BBFF : available ? 0xFF88EE88 : lockedOut ? 0xFF884444 : C_TEXT;
         g.drawString(font, titleStr, x, y, titleColor, false);
 
         if (selected.isCommitmentNode) {
@@ -287,7 +299,7 @@ public class ResearchTerminalScreen extends Screen {
             }
             y += 4;
         } else if (isMystery && !selected.hint.isEmpty()) {
-            
+
             for (String line : wrapText("§o§7" + selected.hint, maxW)) {
                 g.drawString(font, line, x, y, C_TEXT, false);
                 y += 11;
@@ -343,7 +355,7 @@ public class ResearchTerminalScreen extends Screen {
                 y += 11;
                 int barW = maxW;
                 g.fill(x, y, x + barW, y + 3, 0xFF111122);
-                int filled = (int)(barW * Math.min(have / (float) cost, 1f));
+                int filled = (int) (barW * Math.min(have / (float) cost, 1f));
                 g.fill(x, y, x + filled, y + 3, met ? 0xFF33AA33 : 0xFF993333);
                 y += 7;
             }
@@ -357,10 +369,10 @@ public class ResearchTerminalScreen extends Screen {
             y += 12;
             for (var unlock : selected.unlocks) {
                 String prefix = switch (unlock.type()) {
-                    case "flag"        -> "§b⚑ ";
-                    case "multiblock"  -> "§6⬡ ";
-                    case "recipe_tag"  -> "§d⚗ ";
-                    default            -> "§7• ";
+                    case "flag" -> "§b⚑ ";
+                    case "multiblock" -> "§6⬡ ";
+                    case "recipe_tag" -> "§d⚗ ";
+                    default -> "§7• ";
                 };
                 for (String line : wrapText(prefix + unlock.value(), maxW - 8)) {
                     g.drawString(font, line, x + 4, y, C_TEXT, false);
@@ -384,15 +396,12 @@ public class ResearchTerminalScreen extends Screen {
             g.drawCenteredString(font, "§c✘ Path Locked", px + DETAIL_W / 2, btnY + 5, C_TEXT);
         } else {
             boolean hov = mx >= btnX && mx < btnX + btnW && my >= btnY && my < btnY + btnH;
-            int btnBg  = canResearch ? (hov ? 0xFF1A3A1A : 0xFF112211) : 0xFF1A1020;
+            int btnBg = canResearch ? (hov ? 0xFF1A3A1A : 0xFF112211) : 0xFF1A1020;
             int btnBrd = canResearch ? (hov ? 0xFF55CC55 : 0xFF338833) : 0xFF443344;
             g.fill(btnX, btnY, btnX + btnW, btnY + btnH, btnBg);
             g.renderOutline(btnX, btnY, btnW, btnH, btnBrd);
-            String lbl = terminal == null      ? "§7No Terminal Connected"
-                    : isMystery               ? "§7Unknown Research"
-                    : canResearch             ? "§aResearch"
-                    : !available              ? "§7Prerequisites Missing"
-                    :                           "§7Insufficient Data";
+            String lbl = terminal == null ? "§7No Terminal Connected" : isMystery ? "§7Unknown Research" :
+                    canResearch ? "§aResearch" : !available ? "§7Prerequisites Missing" : "§7Insufficient Data";
             g.drawCenteredString(font, lbl, px + DETAIL_W / 2, btnY + 5, C_TEXT);
         }
     }
@@ -408,25 +417,25 @@ public class ResearchTerminalScreen extends Screen {
         if (available.isEmpty()) return;
 
         int padding = 10;
-        int totalW  = canvasW() - padding * 2;
-        int slotW   = totalW / available.size();
-        int barH    = 6;
-        int x       = padding;
-        int textY   = y0 + 6;
-        int barY    = textY + 11;
+        int totalW = canvasW() - padding * 2;
+        int slotW = totalW / available.size();
+        int barH = 6;
+        int x = padding;
+        int textY = y0 + 6;
+        int barY = textY + 11;
 
         for (ConfluxDataType type : available) {
-            long stored   = terminal != null ? terminal.getStored(type)   : 0L;
+            long stored = terminal != null ? terminal.getStored(type) : 0L;
             long capacity = terminal != null ? terminal.getCapacity(type) : 1_000_000L;
-            int  col      = typeBarColor(type);
+            int col = typeBarColor(type);
 
             g.drawString(font, type.displayComponent(), x, textY, C_TEXT, false);
             String amtStr = formatAmount(stored);
             int amtW = font.width(amtStr);
             g.drawString(font, "§7" + amtStr, x + slotW - amtW - 2, textY, C_TEXT, false);
 
-            int barW   = slotW - 4;
-            int filled = capacity > 0 ? (int)(barW * stored / (float) capacity) : 0;
+            int barW = slotW - 4;
+            int filled = capacity > 0 ? (int) (barW * stored / (float) capacity) : 0;
             g.fill(x, barY, x + barW, barY + barH, 0xFF111122);
             if (filled > 0) g.fill(x, barY, x + filled, barY + barH, col);
             g.renderOutline(x, barY, barW, barH, C_BORDER);
@@ -446,7 +455,10 @@ public class ResearchTerminalScreen extends Screen {
             for (int i = 0; i < trees.size(); i++) {
                 int tw = font.width(trees.get(i).title) + 20;
                 if (mx >= tabX && mx < tabX + tw) {
-                    activeTreeIdx = i; selected = null; resetPan(); return true;
+                    activeTreeIdx = i;
+                    selected = null;
+                    resetPan();
+                    return true;
                 }
                 tabX += tw + 1;
             }
@@ -460,28 +472,36 @@ public class ResearchTerminalScreen extends Screen {
             int btnX = cw + 10;
             int btnW = DETAIL_W - 20;
             if (my >= btnY && my < btnY + btnH && mx >= btnX && mx < btnX + btnW) {
-                tryResearch(); return true;
+                tryResearch();
+                return true;
             }
         }
 
         if (mx < cw && my >= ct && my < ct + ch && !trees.isEmpty()) {
             ResearchTree tree = trees.get(activeTreeIdx);
             Set<ResourceLocation> unlockedSet = ClientResearchCache.unlocked;
-            float cx = (float)((mx - panX) / zoom);
-            float cy = (float)((my - ct - panY) / zoom);
-            RenderContext ctx = buildContext((int)mx, (int)my);
+            float cx = (float) ((mx - panX) / zoom);
+            float cy = (float) ((my - ct - panY) / zoom);
+            RenderContext ctx = buildContext((int) mx, (int) my);
             ResearchNode hit = null;
             if (ctx != null) {
                 for (ResearchNode node : tree.getNodes()) {
                     if (!node.isVisible(unlockedSet)) continue;
-                    if (activeRenderer.hitsNode(node, cx, cy, ctx)) { hit = node; break; }
+                    if (activeRenderer.hitsNode(node, cx, cy, ctx)) {
+                        hit = node;
+                        break;
+                    }
                 }
             }
             if (hit != null) {
                 selected = (selected != null && selected.id.equals(hit.id)) ? null : hit;
             } else {
                 selected = null;
-                if (btn == 0) { dragging = true; lastDragX = mx; lastDragY = my; }
+                if (btn == 0) {
+                    dragging = true;
+                    lastDragX = mx;
+                    lastDragY = my;
+                }
             }
             return true;
         }
@@ -498,9 +518,10 @@ public class ResearchTerminalScreen extends Screen {
     @Override
     public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
         if (dragging && btn == 0) {
-            panX += (float)(mx - lastDragX);
-            panY += (float)(my - lastDragY);
-            lastDragX = mx; lastDragY = my;
+            panX += (float) (mx - lastDragX);
+            panY += (float) (my - lastDragY);
+            lastDragX = mx;
+            lastDragY = my;
             return true;
         }
         return super.mouseDragged(mx, my, btn, dx, dy);
@@ -510,10 +531,10 @@ public class ResearchTerminalScreen extends Screen {
     public boolean mouseScrolled(double mx, double my, double delta) {
         if (mx < canvasW() && my >= canvasTop()) {
             float oldZoom = zoom;
-            zoom = Math.max(0.4f, Math.min(2.5f, zoom + (float)(delta * 0.1f)));
+            zoom = Math.max(0.4f, Math.min(2.5f, zoom + (float) (delta * 0.1f)));
             float factor = zoom / oldZoom;
-            panX = (float)(mx - factor * (mx - panX));
-            panY = (float)(my - canvasTop() - factor * (my - canvasTop() - panY));
+            panX = (float) (mx - factor * (mx - panX));
+            panY = (float) (my - canvasTop() - factor * (my - canvasTop() - panY));
             return true;
         }
         return super.mouseScrolled(mx, my, delta);
@@ -521,12 +542,27 @@ public class ResearchTerminalScreen extends Screen {
 
     @Override
     public boolean keyPressed(int kc, int sc, int mod) {
-        if (kc == GLFW.GLFW_KEY_ESCAPE) { onClose(); return true; }
+        if (kc == GLFW.GLFW_KEY_ESCAPE) {
+            onClose();
+            return true;
+        }
         float step = 30f / zoom;
-        if (kc == GLFW.GLFW_KEY_W || kc == GLFW.GLFW_KEY_UP)    { panY += step; return true; }
-        if (kc == GLFW.GLFW_KEY_S || kc == GLFW.GLFW_KEY_DOWN)  { panY -= step; return true; }
-        if (kc == GLFW.GLFW_KEY_A || kc == GLFW.GLFW_KEY_LEFT)  { panX += step; return true; }
-        if (kc == GLFW.GLFW_KEY_D || kc == GLFW.GLFW_KEY_RIGHT) { panX -= step; return true; }
+        if (kc == GLFW.GLFW_KEY_W || kc == GLFW.GLFW_KEY_UP) {
+            panY += step;
+            return true;
+        }
+        if (kc == GLFW.GLFW_KEY_S || kc == GLFW.GLFW_KEY_DOWN) {
+            panY -= step;
+            return true;
+        }
+        if (kc == GLFW.GLFW_KEY_A || kc == GLFW.GLFW_KEY_LEFT) {
+            panX += step;
+            return true;
+        }
+        if (kc == GLFW.GLFW_KEY_D || kc == GLFW.GLFW_KEY_RIGHT) {
+            panX -= step;
+            return true;
+        }
         return super.keyPressed(kc, sc, mod);
     }
 
@@ -545,7 +581,9 @@ public class ResearchTerminalScreen extends Screen {
                 .allMatch(e -> terminal.getStored(e.getKey()) >= e.getValue());
     }
 
-    public boolean hasTerminal() { return terminal != null; }
+    public boolean hasTerminal() {
+        return terminal != null;
+    }
 
     private void pushShaderData(int mx, int my) {
         if (!AxiomShaderManager.isActive() || trees.isEmpty()) return;
@@ -553,22 +591,22 @@ public class ResearchTerminalScreen extends Screen {
 
         float sw = (float) width;
         float sh = (float) height;
-        int ct   = canvasTop();
+        int ct = canvasTop();
 
         RenderContext sCtx = buildContext(mx, my);
         if (sCtx == null) return;
         java.util.List<float[]> nodePosScreen = new java.util.ArrayList<>();
-        java.util.List<Float> heatStrList     = new java.util.ArrayList<>();
+        java.util.List<Float> heatStrList = new java.util.ArrayList<>();
         float[] heatStrAll = activeRenderer.nodeHeatStrength(sCtx);
         int nodeIdx = 0;
         for (ResearchNode node : tree.getNodes()) {
             if (!node.isVisible(ClientResearchCache.unlocked)) continue;
             if (nodePosScreen.size() >= 8) break;
             float[] cp = activeRenderer.nodePos(node, sCtx);
-            
+
             float sx = panX + cp[0] * zoom;
             float sy = ct + panY + cp[1] * zoom;
-            nodePosScreen.add(new float[]{ sx, sy });
+            nodePosScreen.add(new float[] { sx, sy });
             float str = (heatStrAll != null && nodeIdx < heatStrAll.length) ? heatStrAll[nodeIdx] : 1f;
             heatStrList.add(str);
             nodeIdx++;
@@ -576,22 +614,22 @@ public class ResearchTerminalScreen extends Screen {
 
         int nc = nodePosScreen.size();
         float[] flatNodes = new float[16];
-        float[] flatStr   = new float[8];
+        float[] flatStr = new float[8];
         for (int i = 0; i < nc; i++) {
-            flatNodes[i*2]   = nodePosScreen.get(i)[0];
-            flatNodes[i*2+1] = nodePosScreen.get(i)[1];
-            flatStr[i]       = heatStrList.get(i);
+            flatNodes[i * 2] = nodePosScreen.get(i)[0];
+            flatNodes[i * 2 + 1] = nodePosScreen.get(i)[1];
+            flatStr[i] = heatStrList.get(i);
         }
 
         float[] ripOrig = new float[8];
-        float[] ripAge  = new float[0];
-        int ripCount    = activeRenderer.rippleCount();
+        float[] ripAge = new float[0];
+        int ripCount = activeRenderer.rippleCount();
         if (ripCount > 0) {
             float[] origCanvas = activeRenderer.rippleOriginsCanvas();
             ripAge = activeRenderer.rippleAges();
             for (int i = 0; i < Math.min(ripCount, 4); i++) {
-                ripOrig[i*2]   = panX + origCanvas[i*2]   * zoom;
-                ripOrig[i*2+1] = ct + panY + origCanvas[i*2+1] * zoom;
+                ripOrig[i * 2] = panX + origCanvas[i * 2] * zoom;
+                ripOrig[i * 2 + 1] = ct + panY + origCanvas[i * 2 + 1] * zoom;
             }
         }
 
@@ -603,24 +641,24 @@ public class ResearchTerminalScreen extends Screen {
 
     private int typeBarColor(ConfluxDataType type) {
         return switch (type) {
-            case MATERIAL      -> 0xFFCC8800;
-            case BIOLOGICAL    -> 0xFF22AA44;
-            case ENERGETIC     -> 0xFF2299CC;
+            case MATERIAL -> 0xFFCC8800;
+            case BIOLOGICAL -> 0xFF22AA44;
+            case ENERGETIC -> 0xFF2299CC;
             case COMPUTATIONAL -> 0xFF9933CC;
-            case ARCANE        -> 0xFF660099;
+            case ARCANE -> 0xFF660099;
         };
     }
 
     private String formatAmount(long v) {
         if (v >= 1_000_000) return String.format("%.1fM", v / 1_000_000.0);
-        if (v >= 1_000)     return String.format("%.1fk", v / 1_000.0);
+        if (v >= 1_000) return String.format("%.1fk", v / 1_000.0);
         return String.valueOf(v);
     }
 
     private List<String> wrapText(String text, int maxWidth) {
         List<String> lines = new ArrayList<>();
         String stripped = text.replaceAll("§.", "");
-        String[] words  = stripped.split(" ");
+        String[] words = stripped.split(" ");
         String[] colored = text.split(" ");
         StringBuilder cur = new StringBuilder();
         int wi = 0;
@@ -637,5 +675,8 @@ public class ResearchTerminalScreen extends Screen {
         return lines;
     }
 
-    @Override public boolean isPauseScreen() { return false; }
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
 }

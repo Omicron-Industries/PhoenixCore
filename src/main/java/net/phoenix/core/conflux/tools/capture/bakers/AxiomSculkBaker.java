@@ -10,10 +10,25 @@ public final class AxiomSculkBaker implements CaptureBakeable {
 
     private static final int SIZE = 512;
 
-    @Override public String id()       { return "sculk_bg"; }
-    @Override public int frameCount()  { return 1; }
-    @Override public int frameWidth()  { return SIZE; }
-    @Override public int frameHeight() { return SIZE; }
+    @Override
+    public String id() {
+        return "sculk_bg";
+    }
+
+    @Override
+    public int frameCount() {
+        return 1;
+    }
+
+    @Override
+    public int frameWidth() {
+        return SIZE;
+    }
+
+    @Override
+    public int frameHeight() {
+        return SIZE;
+    }
 
     @Override
     public void renderFrame(GuiGraphics g, int frame, float t, int w, int h) {

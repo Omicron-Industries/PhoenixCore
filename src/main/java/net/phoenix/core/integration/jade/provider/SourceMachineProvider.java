@@ -2,7 +2,6 @@ package net.phoenix.core.integration.jade.provider;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -37,7 +36,6 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        
         if (!(accessor.getBlockEntity() instanceof MetaMachine machine)) return;
 
         if (machine instanceof SourceMultiblockTankMachine) return;
@@ -99,7 +97,7 @@ public class SourceMachineProvider implements IBlockComponentProvider, IServerDa
     private long sumSource(List<com.gregtechceu.gtceu.api.recipe.content.Content> contents) {
         long sum = 0;
         for (var c : contents) {
-            
+
             Object inner = c.content();
             if (inner != null) {
                 sum += SourceRecipeCapability.CAP.of(inner).getSource();

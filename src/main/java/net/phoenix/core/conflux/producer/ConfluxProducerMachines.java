@@ -43,7 +43,7 @@ public final class ConfluxProducerMachines {
         }
     }
 
-    public static void init() {  }
+    public static void init() {}
 
     private ConfluxProducerMachines() {}
 }

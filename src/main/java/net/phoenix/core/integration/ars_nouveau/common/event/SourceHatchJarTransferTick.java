@@ -42,7 +42,7 @@ public final class SourceHatchJarTransferTick {
 
             ISourceTile tank = hatch.getSource();
             if (tank == null) {
-                
+
                 continue;
             }
 
@@ -57,7 +57,8 @@ public final class SourceHatchJarTransferTick {
         }
     }
 
-    private static void handleInbound(ServerLevel level, BlockPos hatchPos, SourceHatchPartMachine hatch, ISourceTile tank, int radius, int rate) {
+    private static void handleInbound(ServerLevel level, BlockPos hatchPos, SourceHatchPartMachine hatch,
+                                      ISourceTile tank, int radius, int rate) {
         if (!tank.canAcceptSource()) return;
 
         int remaining = Math.min(tank.getMaxSource() - tank.getSource(), rate);
@@ -85,7 +86,8 @@ public final class SourceHatchJarTransferTick {
         }
     }
 
-    private static void handleOutbound(ServerLevel level, BlockPos hatchPos, SourceHatchPartMachine hatch, ISourceTile tank, int radius, int rate) {
+    private static void handleOutbound(ServerLevel level, BlockPos hatchPos, SourceHatchPartMachine hatch,
+                                       ISourceTile tank, int radius, int rate) {
         int remaining = Math.min(tank.getSource(), rate);
         if (remaining <= 0) return;
 

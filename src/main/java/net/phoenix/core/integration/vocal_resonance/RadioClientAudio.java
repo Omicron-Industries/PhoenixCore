@@ -45,7 +45,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
     private int debugLogTick = 0;
 
     public RadioClientAudio(String url, BlockPos pos, float range, float baseVolume) {
-
         super(new ResourceLocation("minecraft", "intentionally_empty"),
                 SoundSource.RECORDS, RandomSource.create());
         this.rawUrl = url;
@@ -54,7 +53,7 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         this.x = pos.getX() + 0.5;
         this.y = pos.getY() + 0.5;
         this.z = pos.getZ() + 0.5;
-        this.volume = 1.0f;     
+        this.volume = 1.0f;
         this.attenuation = Attenuation.NONE;
         this.looping = false;
 
@@ -69,7 +68,6 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
 
     @Override
     public void tick() {
-
         if (stopped || !playing) return;
         var player = Minecraft.getInstance().player;
         if (player == null) stopStreaming();
@@ -222,8 +220,8 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
     private static final class HttpStreamingM4aChannel implements SeekableByteChannel {
 
         private final InputStream http;
-        private byte[] buf = new byte[131072]; 
-        private int filled = 0;                
+        private byte[] buf = new byte[131072];
+        private int filled = 0;
         private long pos = 0;
         private boolean done = false;
 
@@ -407,7 +405,7 @@ public class RadioClientAudio extends AbstractSoundInstance implements TickableS
         stopped = true;
         if (outputLine != null) outputLine.stop();
         if (streamThread != null) streamThread.interrupt();
-        
+
         Minecraft.getInstance().submit(() -> Minecraft.getInstance().getSoundManager().stop(this));
     }
 }

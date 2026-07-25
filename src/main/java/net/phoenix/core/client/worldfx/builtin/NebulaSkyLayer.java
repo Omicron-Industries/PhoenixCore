@@ -2,15 +2,15 @@ package net.phoenix.core.client.worldfx.builtin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.phoenix.core.client.worldfx.PhoenixSkyLayer;
+import net.phoenix.core.client.worldfx.SkyRenderContext;
+import net.phoenix.core.client.worldfx.WorldFXShaders;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.phoenix.core.client.worldfx.PhoenixSkyLayer;
-import net.phoenix.core.client.worldfx.SkyRenderContext;
-import net.phoenix.core.client.worldfx.WorldFXShaders;
 import org.joml.Matrix4f;
 
 public class NebulaSkyLayer extends PhoenixSkyLayer {
@@ -32,7 +32,7 @@ public class NebulaSkyLayer extends PhoenixSkyLayer {
 
     @Override
     public int priority() {
-        return 0; 
+        return 0;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class NebulaSkyLayer extends PhoenixSkyLayer {
         shader.safeGetUniform("Density").set(density * intensity);
         shader.safeGetUniform("Scale").set(scale);
         shader.safeGetUniform("Seed").set(seed);
-        shader.safeGetUniform("Time").set((float)(System.currentTimeMillis() % 10000000L) / 10000.0f);
+        shader.safeGetUniform("Time").set((float) (System.currentTimeMillis() % 10000000L) / 10000.0f);
 
         shader.apply();
         drawNdcQuad();
@@ -76,9 +76,9 @@ public class NebulaSkyLayer extends PhoenixSkyLayer {
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         bb.vertex(-1, -1, 0).endVertex();
-        bb.vertex( 1, -1, 0).endVertex();
-        bb.vertex( 1,  1, 0).endVertex();
-        bb.vertex(-1,  1, 0).endVertex();
+        bb.vertex(1, -1, 0).endVertex();
+        bb.vertex(1, 1, 0).endVertex();
+        bb.vertex(-1, 1, 0).endVertex();
         Tesselator.getInstance().end();
     }
 }

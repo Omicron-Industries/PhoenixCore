@@ -1,6 +1,7 @@
 package net.phoenix.core.conflux.pipe;
 
 import com.gregtechceu.gtceu.api.pipenet.IPipeType;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.phoenix.core.PhoenixCore;

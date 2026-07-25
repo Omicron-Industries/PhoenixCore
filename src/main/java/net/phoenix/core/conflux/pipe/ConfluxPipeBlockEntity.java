@@ -4,6 +4,7 @@ import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapability;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -13,13 +14,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.phoenix.core.conflux.ConfluxDataType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, ConfluxPipeData> {
 
     public static final long THROUGHPUT = 64L;
-    public static final long BUFFER     = 256L;
+    public static final long BUFFER = 256L;
 
     @SaveField(nbtKey = "stored")
     private long stored = 0L;
@@ -52,9 +54,14 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
 
     private IConfluxDataHandler buildHandler() {
         return new IConfluxDataHandler() {
-            @Override public ConfluxDataType getDataType() { return getPipeType().dataType(); }
 
-            @Override public long insert(long amount) {
+            @Override
+            public ConfluxDataType getDataType() {
+                return getPipeType().dataType();
+            }
+
+            @Override
+            public long insert(long amount) {
                 long accepted = Math.min(amount, BUFFER - stored);
                 if (accepted <= 0) return 0;
                 stored += accepted;
@@ -63,15 +70,23 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
                 return accepted;
             }
 
-            @Override public long extract(long amount) {
+            @Override
+            public long extract(long amount) {
                 long given = Math.min(amount, stored);
                 stored -= given;
                 if (given > 0) setChanged();
                 return given;
             }
 
-            @Override public long getStored()   { return stored; }
-            @Override public long getCapacity() { return BUFFER; }
+            @Override
+            public long getStored() {
+                return stored;
+            }
+
+            @Override
+            public long getCapacity() {
+                return BUFFER;
+            }
         };
     }
 
@@ -115,21 +130,28 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
 
             if (be instanceof ConfluxPipeBlockEntity peer && peer.stored >= stored) continue;
 
-            LazyOptional<IConfluxDataHandler> single =
-                    be.getCapability(ConfluxDataCapability.DATA, dir.getOpposite());
+            LazyOptional<IConfluxDataHandler> single = be.getCapability(ConfluxDataCapability.DATA, dir.getOpposite());
             if (single.isPresent()) {
                 IConfluxDataHandler h = single.orElseThrow(IllegalStateException::new);
                 if (h.getDataType() != dt) continue;
                 long accepted = h.insert(budget);
-                if (accepted > 0) { stored -= accepted; budget -= accepted; setChanged(); }
+                if (accepted > 0) {
+                    stored -= accepted;
+                    budget -= accepted;
+                    setChanged();
+                }
                 continue;
             }
 
-            LazyOptional<IConfluxMultiHandler> multi =
-                    be.getCapability(ConfluxMultiHandlerCapability.MULTI_DATA, dir.getOpposite());
+            LazyOptional<IConfluxMultiHandler> multi = be.getCapability(ConfluxMultiHandlerCapability.MULTI_DATA,
+                    dir.getOpposite());
             if (multi.isPresent()) {
                 long accepted = multi.orElseThrow(IllegalStateException::new).insert(dt, budget);
-                if (accepted > 0) { stored -= accepted; budget -= accepted; setChanged(); }
+                if (accepted > 0) {
+                    stored -= accepted;
+                    budget -= accepted;
+                    setChanged();
+                }
             }
         }
 
@@ -147,6 +169,11 @@ public class ConfluxPipeBlockEntity extends PipeBlockEntity<ConfluxPipeType, Con
         if (stored > 0) scheduleTickIfNeeded();
     }
 
-    public ConfluxDataType getDataType() { return getPipeType().dataType(); }
-    public long getStored()             { return stored; }
+    public ConfluxDataType getDataType() {
+        return getPipeType().dataType();
+    }
+
+    public long getStored() {
+        return stored;
+    }
 }

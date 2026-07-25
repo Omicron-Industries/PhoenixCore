@@ -9,9 +9,7 @@ import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
@@ -21,20 +19,33 @@ import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.api.sync_system.managed.ISyncManaged;
 import com.gregtechceu.gtceu.api.transfer.fluid.FluidHandlerList;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.MaintenanceHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCAComponentPartMachine;
 import com.gregtechceu.gtceu.common.machine.trait.hpca.HPCAComponentTrait;
 import com.gregtechceu.gtceu.common.machine.trait.hpca.HPCAComputationProviderTrait;
 import com.gregtechceu.gtceu.common.machine.trait.hpca.HPCACoolantProviderTrait;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.mui.GTByteBufAdapters;
 import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
 import com.gregtechceu.gtceu.common.mui.GTMultiblockTextUtil;
 import com.gregtechceu.gtceu.config.ConfigHolder;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.GTTransferUtils;
-import com.gregtechceu.gtceu.utils.GTUtil;
 import com.gregtechceu.gtceu.utils.GTStringUtils;
+import com.gregtechceu.gtceu.utils.GTTransferUtils;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.phoenix.core.configs.PhoenixConfigs;
 
 import brachy.modularui.api.drawable.IDrawable;
 import brachy.modularui.api.drawable.Text;
@@ -44,24 +55,6 @@ import brachy.modularui.value.sync.GenericSyncValue;
 import brachy.modularui.value.sync.PanelSyncManager;
 import brachy.modularui.widgets.TextWidget;
 import brachy.modularui.widgets.layout.Grid;
-
-import net.phoenix.core.configs.PhoenixConfigs;
-
-import net.minecraft.ChatFormatting;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +63,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -81,7 +73,7 @@ import static net.phoenix.core.configs.PhoenixConfigs.INSTANCE;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
-        implements IOpticalComputationProvider, IControllable {
+                                implements IOpticalComputationProvider, IControllable {
 
     private static final double IDLE_TEMPERATURE = 200;
     private static final double DAMAGE_TEMPERATURE = 1000;
@@ -190,7 +182,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
     public void tick() {
         if (isWorkingEnabled()) consumeEnergy();
         if (isActive()) {
-            
+
             double midpoint = (DAMAGE_TEMPERATURE - IDLE_TEMPERATURE) / 2;
             double temperatureChange = hpcaHandler.calculateTemperatureChange(coolantHandler, temperature >= midpoint) /
                     2.0;
@@ -205,7 +197,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
             hpcaHandler.tick();
         } else {
             hpcaHandler.clearComputationCache();
-            
+
             temperature = Math.max(IDLE_TEMPERATURE, temperature - 0.25);
         }
     }
@@ -214,7 +206,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         long energyToConsume = hpcaHandler.getCurrentEUt();
         boolean hasMaintenance = ConfigHolder.INSTANCE.machines.enableMaintenance && this.maintenance != null;
         if (hasMaintenance) {
-            
+
             energyToConsume += maintenance.getNumMaintenanceProblems() * energyToConsume / 10;
         }
 
@@ -242,7 +234,8 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         if (isRemote()) {
             hpcaHandler.clearClientComponents();
             if (isFormed()) {
-                hpcaHandler.tryGatherClientComponents(getLevel(), getBlockPos(), getFrontFacing(), getUpwardsFacing(), isFlipped());
+                hpcaHandler.tryGatherClientComponents(getLevel(), getBlockPos(), getFrontFacing(), getUpwardsFacing(),
+                        isFlipped());
             }
         }
 
@@ -283,7 +276,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
 
         private final SyncDataHolder syncDataHolder = new SyncDataHolder(this);
 
-        @Nullable 
+        @Nullable
         private final PhoenixHPCAMachine controller;
 
         private final List<HPCAComponentTrait> components = new ObjectArrayList<>();
@@ -352,7 +345,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public double calculateTemperatureChange(IFluidHandler coolantTank, boolean forceCoolWithActive) {
-            int maxCWUt = Math.max(1, getMaxCWUt()); 
+            int maxCWUt = Math.max(1, getMaxCWUt());
             int maxCoolingDemand = getMaxCoolingDemand();
 
             int temperatureIncrease = (int) Math.round(1.0 * maxCoolingDemand * allocatedCWUt / maxCWUt);
@@ -438,9 +431,8 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public void attemptDamageHPCA() {
-            
             if (GTValues.RNG.nextInt(200) == 0) {
-                
+
                 List<HPCAComponentTrait> candidates = new ArrayList<>();
                 for (var component : components) {
                     if (component.canBeDamaged()) {
@@ -492,7 +484,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public long getCurrentEUt() {
-            long maximumCWUt = Math.max(1, getMaxCWUt()); 
+            long maximumCWUt = Math.max(1, getMaxCWUt());
             long maximumEUt = getMaxEUt();
             long upkeepEUt = getUpkeepEUt();
 
@@ -555,7 +547,6 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
         }
 
         public void addInfo(List<Component> textList) {
-            
             MutableComponent data = Component.literal(Integer.toString(getMaxCWUt())).withStyle(ChatFormatting.AQUA);
             textList.add(Component.translatable("gtceu.multiblock.hpca.info_max_computation", data)
                     .withStyle(ChatFormatting.GRAY));
@@ -667,7 +658,7 @@ public class PhoenixHPCAMachine extends WorkableElectricMultiblockMachine
                                 components.add(trait);
                             }
                         }
-                        
+
                     }
                 }
             }

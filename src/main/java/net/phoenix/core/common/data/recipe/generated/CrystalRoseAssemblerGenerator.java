@@ -1,6 +1,5 @@
 package net.phoenix.core.common.data.recipe.generated;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -48,7 +47,7 @@ public class CrystalRoseAssemblerGenerator {
             if (roseStack.isEmpty()) return;
 
             GTRecipeBuilder builder = GTRecipeTypes.ASSEMBLER_RECIPES.recipeBuilder(
-                            "phoenixcore:crystal_rose_" + material.getName())
+                    "phoenixcore:crystal_rose_" + material.getName())
                     .EUt(GTValues.V[GTValues.IV])
                     .duration(200)
                     .inputItems(inputStack)

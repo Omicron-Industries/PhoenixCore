@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-@Mixin(value = RecipeManager.class, priority = 100) 
+@Mixin(value = RecipeManager.class, priority = 100)
 public abstract class RecipeManagerMixin {
 
     @Inject(
@@ -22,7 +22,6 @@ public abstract class RecipeManagerMixin {
             at = @At("HEAD"))
     private void phoenix$onApplyHead(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager,
                                      ProfilerFiller profiler, CallbackInfo ci) {
-        
         RecipeBlacklist.load();
 
         map.entrySet().removeIf(entry -> RecipeBlacklist.shouldRemoveRaw(entry.getKey(), entry.getValue()));

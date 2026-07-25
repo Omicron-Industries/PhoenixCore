@@ -1,27 +1,18 @@
 package net.phoenix.core.integration.phoenix_tesla_network.common.machine.singleblock.electric;
 
-import brachy.modularui.screen.ModularPanel;
-import brachy.modularui.utils.Alignment;
-import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableEnergyContainer;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.capability.IElectricItem;
-
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
 import com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties;
+import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableEnergyContainer;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.common.machine.electric.BatteryBufferMachine.State;
-
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.layout.Flow;
-import brachy.modularui.widgets.TextWidget;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -33,6 +24,14 @@ import net.minecraftforge.items.IItemHandler;
 import net.phoenix.core.common.data.item.PhoenixItems;
 import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
+
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.ModularPanel;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.utils.Alignment;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.math.BigInteger;
@@ -41,7 +40,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class TeslaWirelessBatteryBufferMachine extends TieredEnergyMachine
-        implements IDataStickInteractable, IMuiMachine {
+                                               implements IDataStickInteractable, IMuiMachine {
 
     @SaveField
     @SyncToClient
@@ -59,7 +58,8 @@ public class TeslaWirelessBatteryBufferMachine extends TieredEnergyMachine
     private TickableSubscription tickSubs;
 
     public TeslaWirelessBatteryBufferMachine(BlockEntityCreationInfo holder, int tier) {
-        super(holder, tier, NotifiableEnergyContainer.receiverContainer(com.gregtechceu.gtceu.api.GTValues.V[tier] * 64L, com.gregtechceu.gtceu.api.GTValues.V[tier], 1L));
+        super(holder, tier, NotifiableEnergyContainer.receiverContainer(
+                com.gregtechceu.gtceu.api.GTValues.V[tier] * 64L, com.gregtechceu.gtceu.api.GTValues.V[tier], 1L));
     }
 
     @Override
@@ -242,19 +242,22 @@ public class TeslaWirelessBatteryBufferMachine extends TieredEnergyMachine
             if (boundTeam == null) {
                 return Component.literal("STATUS: ").append(Component.literal("UNBOUND").withStyle(ChatFormatting.RED));
             } else {
-                return Component.literal("NETWORK: ").append(Component.literal(boundTeam.toString().substring(0, 8)).withStyle(ChatFormatting.AQUA));
+                return Component.literal("NETWORK: ")
+                        .append(Component.literal(boundTeam.toString().substring(0, 8)).withStyle(ChatFormatting.AQUA));
             }
         }).marginBottom(4));
 
         layout.child(new TextWidget<>(() -> {
             if (boundTeam == null) return Component.empty();
-            return Component.literal("RANGE: ").append(Component.literal("Omnipresent (Global)").withStyle(ChatFormatting.LIGHT_PURPLE));
+            return Component.literal("RANGE: ")
+                    .append(Component.literal("Omnipresent (Global)").withStyle(ChatFormatting.LIGHT_PURPLE));
         }).marginBottom(4));
 
         layout.child(new TextWidget<>(() -> {
             if (boundTeam == null) return Component.empty();
             String rate = com.gregtechceu.gtceu.utils.FormattingUtil.formatNumbers(lastTransferred);
-            return Component.literal("OUTPUT: ").append(Component.literal(rate + " EU/t").withStyle(ChatFormatting.GREEN));
+            return Component.literal("OUTPUT: ")
+                    .append(Component.literal(rate + " EU/t").withStyle(ChatFormatting.GREEN));
         }));
 
         panel.child(layout);

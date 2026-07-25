@@ -4,34 +4,41 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.conflux.client.render.*;
 import net.phoenix.core.conflux.research.ResearchNode;
+
 import org.jetbrains.annotations.Nullable;
 
 public class DefaultDisciplineRenderer implements DisciplineRenderer {
 
-    private static final int C_NODE_DONE    = 0xFF0D1A0D;
-    private static final int C_NODE_AVAIL   = 0xFF1A0E00;
-    private static final int C_NODE_LOCKED  = 0xFF0D0D0D;
-    private static final int C_NODE_EXCL    = 0xFF1A0606;
-    private static final int C_NODE_HIDDEN  = 0xFF0A0A0A;
-    private static final int C_BORD_DONE    = 0xFF00AA44;
-    private static final int C_BORD_AVAIL   = 0xFFAA6600;
-    private static final int C_BORD_LOCKED  = 0xFF333333;
-    private static final int C_BORD_EXCL    = 0xFF661111;
-    private static final int C_BORD_HIDDEN  = 0xFF222222;
-    private static final int C_BORD_SEL     = 0xFFFFDD44;
-    private static final int C_LINE_AND     = 0xFF225522;
-    private static final int C_LINE_OR      = 0xFF553388;
-    private static final int NODE_R         = 20;
-
-    @Override public @Nullable String disciplineId()   { return null; }
-    @Override public MotionClock.Signature signature() { return MotionClock.Signature.DEFAULT; }
-
-    @Override public void tick(float dt, RenderContext ctx) {}
+    private static final int C_NODE_DONE = 0xFF0D1A0D;
+    private static final int C_NODE_AVAIL = 0xFF1A0E00;
+    private static final int C_NODE_LOCKED = 0xFF0D0D0D;
+    private static final int C_NODE_EXCL = 0xFF1A0606;
+    private static final int C_NODE_HIDDEN = 0xFF0A0A0A;
+    private static final int C_BORD_DONE = 0xFF00AA44;
+    private static final int C_BORD_AVAIL = 0xFFAA6600;
+    private static final int C_BORD_LOCKED = 0xFF333333;
+    private static final int C_BORD_EXCL = 0xFF661111;
+    private static final int C_BORD_HIDDEN = 0xFF222222;
+    private static final int C_BORD_SEL = 0xFFFFDD44;
+    private static final int C_LINE_AND = 0xFF225522;
+    private static final int C_LINE_OR = 0xFF553388;
+    private static final int NODE_R = 20;
 
     @Override
-    public void renderBackground(GuiGraphics g, RenderContext ctx) {
-        
+    public @Nullable String disciplineId() {
+        return null;
     }
+
+    @Override
+    public MotionClock.Signature signature() {
+        return MotionClock.Signature.DEFAULT;
+    }
+
+    @Override
+    public void tick(float dt, RenderContext ctx) {}
+
+    @Override
+    public void renderBackground(GuiGraphics g, RenderContext ctx) {}
 
     @Override
     public void renderEdges(GuiGraphics g, RenderContext ctx) {
@@ -57,18 +64,18 @@ public class DefaultDisciplineRenderer implements DisciplineRenderer {
     }
 
     private void drawElbow(GuiGraphics g, float x1, float y1, float x2, float y2,
-                            int color, boolean dashed) {
+                           int color, boolean dashed) {
         float midY = (y1 + y2) / 2f;
-        drawSegment(g, (int)x1, (int)y1, (int)x1, (int)midY, color, dashed, 0);
-        drawSegment(g, (int)x1, (int)midY, (int)x2, (int)midY, color, dashed, 100);
-        drawSegment(g, (int)x2, (int)midY, (int)x2, (int)y2, color, dashed, 200);
+        drawSegment(g, (int) x1, (int) y1, (int) x1, (int) midY, color, dashed, 0);
+        drawSegment(g, (int) x1, (int) midY, (int) x2, (int) midY, color, dashed, 100);
+        drawSegment(g, (int) x2, (int) midY, (int) x2, (int) y2, color, dashed, 200);
     }
 
     private void drawSegment(GuiGraphics g, int x1, int y1, int x2, int y2,
-                              int color, boolean dashed, int dashOffset) {
+                             int color, boolean dashed, int dashOffset) {
         if (!dashed) {
-            if (x1 == x2) g.fill(x1 - 1, Math.min(y1,y2), x1 + 1, Math.max(y1,y2), color);
-            else           g.fill(Math.min(x1,x2), y1 - 1, Math.max(x1,x2), y1 + 1, color);
+            if (x1 == x2) g.fill(x1 - 1, Math.min(y1, y2), x1 + 1, Math.max(y1, y2), color);
+            else g.fill(Math.min(x1, x2), y1 - 1, Math.max(x1, x2), y1 + 1, color);
             return;
         }
         int dx = x2 - x1, dy = y2 - y1;
@@ -88,27 +95,29 @@ public class DefaultDisciplineRenderer implements DisciplineRenderer {
         for (ResearchNode node : ctx.tree().getNodes()) {
             if (!node.isVisible(ctx.unlocked())) continue;
             float[] pos = nodePos(node, ctx);
-            drawNode(g, node, (int)pos[0], (int)pos[1], ctx);
+            drawNode(g, node, (int) pos[0], (int) pos[1], ctx);
         }
     }
 
     private void drawNode(GuiGraphics g, ResearchNode node, int cx, int cy, RenderContext ctx) {
-        boolean unlocked  = ctx.isUnlocked(node.id);
+        boolean unlocked = ctx.isUnlocked(node.id);
         boolean lockedOut = ctx.isLockedOut(node.id);
         boolean available = ctx.isAvailable(node);
-        boolean sel       = ctx.isSelected(node);
-        boolean mystery   = node.hidden && !unlocked;
+        boolean sel = ctx.isSelected(node);
+        boolean mystery = node.hidden && !unlocked;
 
-        int bg  = lockedOut ? C_NODE_EXCL : mystery ? C_NODE_HIDDEN : unlocked ? C_NODE_DONE : available ? C_NODE_AVAIL : C_NODE_LOCKED;
-        int brd = lockedOut ? C_BORD_EXCL : mystery ? C_BORD_HIDDEN : unlocked ? C_BORD_DONE : available ? C_BORD_AVAIL : C_BORD_LOCKED;
+        int bg = lockedOut ? C_NODE_EXCL :
+                mystery ? C_NODE_HIDDEN : unlocked ? C_NODE_DONE : available ? C_NODE_AVAIL : C_NODE_LOCKED;
+        int brd = lockedOut ? C_BORD_EXCL :
+                mystery ? C_BORD_HIDDEN : unlocked ? C_BORD_DONE : available ? C_BORD_AVAIL : C_BORD_LOCKED;
         if (sel) brd = C_BORD_SEL;
 
         int r = NODE_R;
         g.fill(cx - r, cy - r, cx + r, cy + r, bg);
-        g.fill(cx - r - 1, cy - r - 1, cx + r + 1, cy - r,     brd);
-        g.fill(cx - r - 1, cy + r,     cx + r + 1, cy + r + 1, brd);
-        g.fill(cx - r - 1, cy - r,     cx - r,     cy + r,     brd);
-        g.fill(cx + r,     cy - r,     cx + r + 1, cy + r,     brd);
+        g.fill(cx - r - 1, cy - r - 1, cx + r + 1, cy - r, brd);
+        g.fill(cx - r - 1, cy + r, cx + r + 1, cy + r + 1, brd);
+        g.fill(cx - r - 1, cy - r, cx - r, cy + r, brd);
+        g.fill(cx + r, cy - r, cx + r + 1, cy + r, brd);
 
         if (!mystery && !lockedOut) {
             renderIcon(g, node.icon, cx - 8, cy - 8);
@@ -125,7 +134,7 @@ public class DefaultDisciplineRenderer implements DisciplineRenderer {
 
     @Override
     public float[] nodePos(ResearchNode node, RenderContext ctx) {
-        return new float[]{ node.posX * 110f, node.posY * 110f };
+        return new float[] { node.posX * 110f, node.posY * 110f };
     }
 
     private static void renderIcon(GuiGraphics g, String iconId, int x, int y) {

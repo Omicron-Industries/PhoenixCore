@@ -1,7 +1,5 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +14,7 @@ import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
 
 public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProvider,
-        IServerDataProvider<BlockAccessor> {
+                                                  IServerDataProvider<BlockAccessor> {
 
     public static final ResourceLocation UID = PhoenixCore.id("plasma_furnace_info");
 
@@ -82,7 +80,6 @@ public class HighPressurePlasmaArcFurnaceProvider implements IBlockComponentProv
 
     @Override
     public void appendServerData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
-        
         if (blockAccessor.getBlockEntity() instanceof HighPressurePlasmaArcFurnaceMachine machine &&
                 machine.isFormed()) {
 

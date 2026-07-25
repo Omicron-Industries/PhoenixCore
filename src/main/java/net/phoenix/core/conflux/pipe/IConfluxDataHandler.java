@@ -14,7 +14,15 @@ public interface IConfluxDataHandler {
 
     long getCapacity();
 
-    default boolean canInsert() { return getStored() < getCapacity(); }
-    default boolean isEmpty()   { return getStored() == 0; }
-    default boolean isFull()    { return getStored() >= getCapacity(); }
+    default boolean canInsert() {
+        return getStored() < getCapacity();
+    }
+
+    default boolean isEmpty() {
+        return getStored() == 0;
+    }
+
+    default boolean isFull() {
+        return getStored() >= getCapacity();
+    }
 }

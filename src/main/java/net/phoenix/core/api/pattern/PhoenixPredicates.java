@@ -2,9 +2,7 @@ package net.phoenix.core.api.pattern;
 
 import com.gregtechceu.gtceu.api.multiblock.PatternPredicate;
 import com.gregtechceu.gtceu.api.multiblock.Predicates;
-import com.gregtechceu.gtceu.api.multiblock.error.PatternError;
 import com.gregtechceu.gtceu.api.multiblock.error.PlaceholderError;
-import com.gregtechceu.gtceu.api.multiblock.pattern.CurrentBlockInfo;
 import com.gregtechceu.gtceu.api.multiblock.util.BlockInfo;
 import com.gregtechceu.gtceu.common.block.LampBlock;
 
@@ -13,16 +11,13 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.phoenix.core.PhoenixAPI;
 import net.phoenix.core.common.machine.PhoenixMachines;
-
 import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
-import net.phoenix.core.integration.vocal_resonance.ISpeakerType;
 import net.phoenix.core.integration.vocal_resonance.SoundHatchPartMachine;
 import net.phoenix.core.integration.vocal_resonance.SpeakerBlock;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
 
-import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -98,7 +93,8 @@ public class PhoenixPredicates {
         return Predicates.custom(info -> {
             var level = info.getLevel();
             var pos = info.getBlockPos();
-            if (level == null || pos == null) return new PlaceholderError(pos != null ? pos : net.minecraft.core.BlockPos.ZERO, List.of(candidates));
+            if (level == null || pos == null)
+                return new PlaceholderError(pos != null ? pos : net.minecraft.core.BlockPos.ZERO, List.of(candidates));
 
             var blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof SoundHatchPartMachine) {
@@ -112,9 +108,11 @@ public class PhoenixPredicates {
         var lvBlock = net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_LV.get();
         List<BlockInfo> candidates = lvBlock != null ? List.of(
                 BlockInfo.fromBlockState(lvBlock.defaultBlockState()),
-                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_MV.get().defaultBlockState()),
-                BlockInfo.fromBlockState(net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_HV.get().defaultBlockState())
-        ) : List.of();
+                BlockInfo.fromBlockState(
+                        net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_MV.get().defaultBlockState()),
+                BlockInfo.fromBlockState(
+                        net.phoenix.core.common.block.PhoenixBlocks.SPEAKER_HV.get().defaultBlockState())) :
+                List.of();
 
         return Predicates.custom(info -> {
             if (info.getBlockState().getBlock() instanceof SpeakerBlock) return null;

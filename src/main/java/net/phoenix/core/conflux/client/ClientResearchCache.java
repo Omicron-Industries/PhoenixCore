@@ -5,6 +5,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.phoenix.core.conflux.ConfluxDataType;
 import net.phoenix.core.conflux.research.DisciplineInfo;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -14,13 +15,13 @@ import java.util.Set;
 @OnlyIn(Dist.CLIENT)
 public final class ClientResearchCache {
 
-    public static Set<ResourceLocation> unlocked  = Collections.emptySet();
+    public static Set<ResourceLocation> unlocked = Collections.emptySet();
     public static Set<ResourceLocation> lockedOut = Collections.emptySet();
-    public static Set<String>           flags     = Collections.emptySet();
+    public static Set<String> flags = Collections.emptySet();
 
-    private static @Nullable String disciplineId    = null;
+    private static @Nullable String disciplineId = null;
     private static @Nullable String disciplineTitle = null;
-    private static boolean          disciplineCommitted = false;
+    private static boolean disciplineCommitted = false;
     private static Map<ConfluxDataType, Long> switchCost = Map.of();
 
     private ClientResearchCache() {}
@@ -28,27 +29,32 @@ public final class ClientResearchCache {
     public static void update(Set<ResourceLocation> u, Set<ResourceLocation> lo, Set<String> f,
                               @Nullable String discId, @Nullable String discTitle,
                               boolean committed, Map<ConfluxDataType, Long> cost) {
-        unlocked              = Set.copyOf(u);
-        lockedOut             = Set.copyOf(lo);
-        flags                 = Set.copyOf(f);
-        disciplineId          = discId;
-        disciplineTitle       = discTitle;
-        disciplineCommitted   = committed;
-        switchCost            = Map.copyOf(cost);
+        unlocked = Set.copyOf(u);
+        lockedOut = Set.copyOf(lo);
+        flags = Set.copyOf(f);
+        disciplineId = discId;
+        disciplineTitle = discTitle;
+        disciplineCommitted = committed;
+        switchCost = Map.copyOf(cost);
     }
 
     public static void clear() {
-        unlocked            = Collections.emptySet();
-        lockedOut           = Collections.emptySet();
-        flags               = Collections.emptySet();
-        disciplineId        = null;
-        disciplineTitle     = null;
+        unlocked = Collections.emptySet();
+        lockedOut = Collections.emptySet();
+        flags = Collections.emptySet();
+        disciplineId = null;
+        disciplineTitle = null;
         disciplineCommitted = false;
-        switchCost          = Map.of();
+        switchCost = Map.of();
     }
 
-    public static boolean isUnlocked(ResourceLocation id)  { return unlocked.contains(id); }
-    public static boolean isLockedOut(ResourceLocation id) { return lockedOut.contains(id); }
+    public static boolean isUnlocked(ResourceLocation id) {
+        return unlocked.contains(id);
+    }
+
+    public static boolean isLockedOut(ResourceLocation id) {
+        return lockedOut.contains(id);
+    }
 
     public static DisciplineInfo getDisciplineInfo() {
         if (disciplineId == null) return DisciplineInfo.NONE;

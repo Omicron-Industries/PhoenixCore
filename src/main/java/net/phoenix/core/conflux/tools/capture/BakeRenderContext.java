@@ -16,15 +16,14 @@ public final class BakeRenderContext {
 
     private static final ResearchTree EMPTY_TREE = new ResearchTree(
             new ResourceLocation("phoenixcore", "bake_stub"),
-            "Bake Stub", "", null, Map.of(), List.of()
-    );
+            "Bake Stub", "", null, Map.of(), List.of());
 
     public static RenderContext of(int w, int h, float elapsed) {
         MotionClock clock = new MotionClock();
         clock.tick(elapsed);
 
         IntensityController intensity = new IntensityController();
-        intensity.onEvent(); 
+        intensity.onEvent();
 
         return new RenderContext(
                 EMPTY_TREE,
@@ -34,7 +33,6 @@ public final class BakeRenderContext {
                 0f, 0f,
                 w, h,
                 clock,
-                intensity
-        );
+                intensity);
     }
 }

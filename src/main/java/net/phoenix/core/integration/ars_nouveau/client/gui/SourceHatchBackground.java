@@ -1,21 +1,20 @@
 package net.phoenix.core.integration.ars_nouveau.client.gui;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 import brachy.modularui.api.drawable.IDrawable;
 import brachy.modularui.screen.viewport.GuiContext;
 import brachy.modularui.theme.WidgetTheme;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class SourceHatchBackground implements IDrawable {
 
-    private static final int BG_COLOR_A  = 0xFF0a050f;
-    private static final int BG_COLOR_B  = 0xFF050208;
+    private static final int BG_COLOR_A = 0xFF0a050f;
+    private static final int BG_COLOR_B = 0xFF050208;
     private static final int PURPLE_MIST = 0x8F00FF;
-    private static final int GRID_COLOR  = 0x0AFFFFFF;
+    private static final int GRID_COLOR = 0x0AFFFFFF;
 
     private final int borderColor;
 
@@ -41,25 +40,25 @@ public class SourceHatchBackground implements IDrawable {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        long t  = System.currentTimeMillis();
-        int  ox = (int) ((t / 50) & 255);
-        int  oy = (int) ((t / 70) & 255);
-        int  step = 4;
+        long t = System.currentTimeMillis();
+        int ox = (int) ((t / 50) & 255);
+        int oy = (int) ((t / 70) & 255);
+        int step = 4;
         for (int py = 0; py < height; py += step) {
             for (int px = 0; px < width; px += step) {
-                int nx    = (px + ox) & 255;
-                int ny    = (py + oy) & 255;
-                int v     = ((nx * 734287 + ny * 912271) ^ (nx * 31 + ny * 17)) & 255;
+                int nx = (px + ox) & 255;
+                int ny = (py + oy) & 255;
+                int v = ((nx * 734287 + ny * 912271) ^ (nx * 31 + ny * 17)) & 255;
                 int alpha = (v * 35) / 255;
-                int col   = (alpha << 24) | (PURPLE_MIST & 0xFFFFFF);
+                int col = (alpha << 24) | (PURPLE_MIST & 0xFFFFFF);
                 graphics.fill(x + px, y + py, x + px + step, y + py + step, col);
             }
         }
         RenderSystem.disableBlend();
 
-        graphics.fill(x,             y,              x + width,     y + 1,          borderColor);
-        graphics.fill(x,             y + height - 1, x + width,     y + height,     borderColor);
-        graphics.fill(x,             y,              x + 1,         y + height,     borderColor);
-        graphics.fill(x + width - 1, y,              x + width,     y + height,     borderColor);
+        graphics.fill(x, y, x + width, y + 1, borderColor);
+        graphics.fill(x, y + height - 1, x + width, y + height, borderColor);
+        graphics.fill(x, y, x + 1, y + height, borderColor);
+        graphics.fill(x + width - 1, y, x + width, y + height, borderColor);
     }
 }

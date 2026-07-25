@@ -1,21 +1,13 @@
 package net.phoenix.core.common.machine.multiblock.part.fluid;
 
-import brachy.modularui.screen.ModularPanel;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.layout.Flow;
-import brachy.modularui.widgets.TextWidget;
-import brachy.modularui.utils.Alignment;
-
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import org.jetbrains.annotations.NotNull;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault

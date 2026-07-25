@@ -2,7 +2,7 @@ package net.phoenix.core.common.machine.multiblock.part.special;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; 
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 
 import net.minecraft.core.Direction;
 import net.phoenix.core.common.machine.multiblock.Shield.ShieldTypes;

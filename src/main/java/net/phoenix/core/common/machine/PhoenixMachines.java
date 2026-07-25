@@ -16,17 +16,14 @@ import com.gregtechceu.gtceu.api.machine.multiblock.CoilWorkableElectricMultiblo
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties;
-
 import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.multiblock.Predicates;
 import com.gregtechceu.gtceu.api.multiblock.pattern.MultiblockPatternBuilder;
 import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
-import com.gregtechceu.gtceu.api.recipe.OverclockingLogic;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.registry.registrate.MachineBuilder;
 import com.gregtechceu.gtceu.api.registry.registrate.MultiblockMachineBuilder;
 import com.gregtechceu.gtceu.common.data.*;
-
 import com.gregtechceu.gtceu.common.data.models.GTMachineModels;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.CleaningMaintenanceHatchPartMachine;
@@ -38,7 +35,6 @@ import com.gregtechceu.gtceu.integration.kjs.helpers.MachineModifiers;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
@@ -53,7 +49,6 @@ import net.phoenix.core.api.pattern.PhoenixPredicates;
 import net.phoenix.core.client.renderer.machine.multiblock.PhoenixDynamicRenderHelpers;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.data.PhoenixRecipeTypes;
-import net.phoenix.core.common.machine.multiblock.electric.research.PhoenixHPCAMachine;
 import net.phoenix.core.common.machine.multiblock.part.ShieldRenderProperty;
 import net.phoenix.core.common.machine.multiblock.part.fluid.PlasmaHatchPartMachine;
 import net.phoenix.core.common.machine.multiblock.part.special.ShieldSensorHatchPartMachine;
@@ -92,7 +87,6 @@ import static net.phoenix.core.api.machine.PhoenixPartAbility.SOURCE_INPUT;
 import static net.phoenix.core.api.machine.PhoenixPartAbility.SOURCE_OUTPUT;
 import static net.phoenix.core.client.tooltips.PhoenixMachineTooltips.*;
 import static net.phoenix.core.common.block.PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING;
-import static net.phoenix.core.common.block.PhoenixBlocks.SUPER_STABLE_FUSION_CASING;
 import static net.phoenix.core.common.data.materials.PhoenixProgressionMaterials.*;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 import static net.phoenix.core.configs.PhoenixConfigs.INSTANCE;
@@ -147,7 +141,8 @@ public class PhoenixMachines {
                         Component.translatable("phoenixcore.universal.tooltip.source_storage_capacity", capacity))
                 .rotationState(RotationState.ALL)
                 .recipeType(DUMMY_RECIPES)
-                .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+                .pattern(definition -> MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
                         .slice("CCC", "CCC", "CCC")
                         .slice("CCC", "C#C", "CCC")
                         .slice("CCC", "CSC", "CCC")
@@ -166,19 +161,18 @@ public class PhoenixMachines {
     }
 
     public static final MultiblockMachineDefinition REFINED_MULTIBLOCK_SOURCE_TANK = registerMultiblockSourceTank(
-            REGISTRATE, 
-            "refined_multiblock_source_tank", 
-            "Refined Multiblock Source Tank", 
-            50000 * 1000,                     
-            100,                              
-            SOURCE_FIBER_MACHINE_CASING,      
-            (builder, overlay) -> builder     
+            REGISTRATE,
+            "refined_multiblock_source_tank",
+            "Refined Multiblock Source Tank",
+            50000 * 1000,
+            100,
+            SOURCE_FIBER_MACHINE_CASING,
+            (builder, overlay) -> builder
                     .workableCasingModel(
-                            
-                            new ResourceLocation(PhoenixCore.MOD_ID, "block/casings/multiblock/machine_casing_source_fiber_mesh"),
-                            overlay
-                    )
-    );
+
+                            new ResourceLocation(PhoenixCore.MOD_ID,
+                                    "block/casings/multiblock/machine_casing_source_fiber_mesh"),
+                            overlay));
 
     public static final PartAbility SOUND_DISC = new PartAbility("sound_disc");
     public static final PartAbility SOUND_LIBRARY = new PartAbility("sound_library");
@@ -197,7 +191,7 @@ public class PhoenixMachines {
                                                           SoundHatchPartMachine.SoundHatchType type,
                                                           PartAbility ability) {
         return registerTieredMachines(name,
-                (holder, tier) -> new SoundHatchPartMachine(holder, tier, type), 
+                (holder, tier) -> new SoundHatchPartMachine(holder, tier, type),
                 (tier, builder) -> builder
                         .langValue(GTValues.VNF[tier] + ' ' + displayName)
                         .abilities(ability)
@@ -217,7 +211,7 @@ public class PhoenixMachines {
     private static MachineDefinition[] registerSourceHatch(String name, String displayName, IO io,
                                                            int[] tiers, PartAbility... abilities) {
         return registerTieredMachines(name,
-                
+
                 (holder, tier) -> new SourceHatchPartMachine(holder, tier, io),
                 (tier, builder) -> builder
                         .langValue(GTValues.VNF[tier] + ' ' + displayName)
@@ -228,14 +222,14 @@ public class PhoenixMachines {
                         .tooltipBuilder((item, tooltip) -> {
                             if (io == IO.IN) {
                                 tooltip.add(Component.translatable("tooltip.phoenixcore.source_hatch.capacity",
-                                                SourceHatchPartMachine.getMaxCapacity(tier))
+                                        SourceHatchPartMachine.getMaxCapacity(tier))
                                         .withStyle(style -> style.withColor(TextColor.fromRgb(0x8F00FF))));
                                 tooltip.add(Component.translatable("tooltip.phoenixcore.source_hatch.consumption",
-                                                SourceHatchPartMachine.getMaxConsumption(tier))
+                                        SourceHatchPartMachine.getMaxConsumption(tier))
                                         .withStyle(style -> style.withColor(TextColor.fromRgb(0x008080))));
                             } else
                                 tooltip.add(Component.translatable("tooltip.phoenixcore.source_hatch.capacity",
-                                                SourceHatchPartMachine.getMaxCapacity(tier))
+                                        SourceHatchPartMachine.getMaxCapacity(tier))
                                         .withStyle(style -> style.withColor(TextColor.fromRgb(0x8F00FF))));
                         }).register(),
                 tiers);
@@ -317,8 +311,7 @@ public class PhoenixMachines {
         boolean wooden = material.hasProperty(PropertyKey.WOOD);
         var definition = registrate
                 .machine(material.getName() + "_drum",
-                        holder -> new DrumMachine(holder, material, capacity)
-                )
+                        holder -> new DrumMachine(holder, material, capacity))
                 .langValue(lang)
                 .rotationState(RotationState.NONE)
                 .simpleModel(GTCEu.id("block/machine/template/drum/" + (wooden ? "wooden" : "metal") + "_drum"))
@@ -349,16 +342,16 @@ public class PhoenixMachines {
         final int rowLength = 9;
 
         return registrate.machine(material.getName() + "_crate",
-                        holder -> new CrateMachine(holder, material, capacity, rowLength))
+                holder -> new CrateMachine(holder, material, capacity, rowLength))
                 .langValue(lang)
                 .rotationState(RotationState.NONE)
                 .tooltips(Component.translatable("gtceu.universal.tooltip.item_storage_capacity", capacity))
                 .modelProperty(GTMachineModelProperties.IS_TAPED, false)
                 .model((definition, frontCasing, renderer) -> GTMachineModels.createCrateModel(wooden))
-                
+
                 .itemColor((itemStack, tintIndex) -> {
                     if (wooden) return 0xFFFFFF;
-                    
+
                     return tintIndex == 1 ? material.getMaterialRGB() : 0xFFFFFF;
                 })
                 .register();
@@ -419,8 +412,9 @@ public class PhoenixMachines {
             .recipeModifiers(GTRecipeModifiers.PARALLEL_HATCH, GTRecipeModifiers.OC_NON_PERFECT,
                     MachineModifiers.FUSION_REACTOR, GTRecipeModifiers.BATCH_MODE)
             .appearanceBlock(PhoenixBlocks.INSANELY_SUPERCHARGED_TESLA_CASING)
-            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
-                    
+            .pattern(definition -> MultiblockPatternBuilder
+                    .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+
                     .slice("########BBCCCBB########", "########DDEEEDD########", "########DDEEEDD########",
                             "########DDEEEDD########", "########BBCCCBB########")
                     .slice("######BBBBBBBBBBB######", "######FFAAAAAAAFF######", "######FFAAAAAAAFF######",
@@ -468,9 +462,9 @@ public class PhoenixMachines {
                     .slice("########BBCCCBB########", "########DDEEEDD########", "########DDENEDD########",
                             "########DDEEEDD########", "########BBCCCBB########")
 
-                    .where('N', Predicates.controller(definition)) 
-                    .where('A', Predicates.air()) 
-                    .where('#', Predicates.any()) 
+                    .where('N', Predicates.controller(definition))
+                    .where('A', Predicates.air())
+                    .where('#', Predicates.any())
                     .where('B', Predicates.blocks(PhoenixBlocks.INSANELY_SUPERCHARGED_TESLA_CASING.get()))
                     .where('C', Predicates.blocks(ADVANCED_COMPUTER_CASING.get()))
                     .where('D', Predicates.blocks(COMPUTER_CASING.get()))
@@ -480,8 +474,9 @@ public class PhoenixMachines {
                             .or(Predicates.abilities(PartAbility.PARALLEL_HATCH).setMaxGlobalLimited(1))
                             .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS))
                             .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS))
-                            .or(Predicates.blocks(GTMachines.ENERGY_INPUT_HATCH[GTValues.UHV].get()).setMaxGlobalLimited(4))
-                            .or(Predicates.controller(definition))) 
+                            .or(Predicates.blocks(GTMachines.ENERGY_INPUT_HATCH[GTValues.UHV].get())
+                                    .setMaxGlobalLimited(4))
+                            .or(Predicates.controller(definition)))
 
                     .where('F', Predicates.blocks(SUPERCONDUCTING_COIL.get()))
                     .where('G', Predicates.blocks(FUSION_GLASS.get()))
@@ -505,8 +500,9 @@ public class PhoenixMachines {
             .recipeModifiers(AlchemicalImbuerMachine::recipeModifier, OC_NON_PERFECT_SUBTICK)
             .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
             .rotationState(RotationState.NON_Y_AXIS)
-            .pattern(definition -> MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                    
+            .pattern(definition -> MultiblockPatternBuilder
+                    .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+
                     .slice("BBCCCBB", "BBBBBBB", "BBBBBBB", "BBBBBBB", "BBBBBBB", "BBBBBBB", "BBCCCBB")
                     .slice("BCDDDCB", "BBCCCBB", "BBBBBBB", "BBBBBBB", "BBBBBBB", "BBCCCBB", "BCDDDCB")
                     .slice("CDDDDDC", "BCEEECB", "BBFFFBB", "BBFFFBB", "BBFFFBB", "BCDDDCB", "CDGGGDC")
@@ -524,13 +520,25 @@ public class PhoenixMachines {
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                             .or(Predicates.controller(definition)))
 
-                    .where('D', Predicates.blocks(ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:sourcestone"))))
-                    .where('E', Predicates.blocks(ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:magebloom_block"))))
+                    .where('D',
+                            Predicates.blocks(
+                                    ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:sourcestone"))))
+                    .where('E',
+                            Predicates.blocks(ForgeRegistries.BLOCKS
+                                    .getValue(ResourceLocation.parse("ars_nouveau:magebloom_block"))))
                     .where('F', Predicates.blocks(GTBlocks.CASING_TEMPERED_GLASS.get()))
-                    .where('G', Predicates.blocks(ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:void_prism"))))
-                    .where('H', Predicates.blocks(ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:source_gem_block"))))
-                    .where('I', Predicates.blocks(ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:arcane_core"))))
-                    .where('J', Predicates.blocks(ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:vitalic_sourcelink"))))
+                    .where('G',
+                            Predicates.blocks(
+                                    ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:void_prism"))))
+                    .where('H',
+                            Predicates.blocks(ForgeRegistries.BLOCKS
+                                    .getValue(ResourceLocation.parse("ars_nouveau:source_gem_block"))))
+                    .where('I',
+                            Predicates.blocks(
+                                    ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse("ars_nouveau:arcane_core"))))
+                    .where('J',
+                            Predicates.blocks(ForgeRegistries.BLOCKS
+                                    .getValue(ResourceLocation.parse("ars_nouveau:vitalic_sourcelink"))))
 
                     .where('K', Predicates.controller(definition))
                     .build())
@@ -551,14 +559,17 @@ public class PhoenixMachines {
                 var abilities = Predicates.autoAbilities(definition.getRecipeTypes())
                         .or(Predicates.autoAbilities(true, false, false));
 
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
                         .slice("XXX", "XXX", "XXX")
                         .slice("XXX", "XPX", "XXX")
                         .slice("XXX", "XSX", "XXX")
 
-                        .where('S', Predicates.controller(definition)) 
+                        .where('S', Predicates.controller(definition))
 
-                        .where('X', casing.or(abilities).or(Predicates.abilities(SOURCE_INPUT).setPreviewCount(1)).or(Predicates.controller(definition)))
+                        .where('X',
+                                casing.or(abilities).or(Predicates.abilities(SOURCE_INPUT).setPreviewCount(1))
+                                        .or(Predicates.controller(definition)))
                         .where('P', Predicates.blocks(CASING_POLYTETRAFLUOROETHYLENE_PIPE.get()))
                         .build();
             })
@@ -575,8 +586,9 @@ public class PhoenixMachines {
             .recipeModifiers(BioAethericEngineMachine::recipeModifier, BATCH_MODE)
             .appearanceBlock(SOURCE_FIBER_MACHINE_CASING)
             .pattern(definition -> {
-                
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
+
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
                         .slice("BBCBB", "BBHBB", "CHBHC", "BBHBB", "BBCBB")
                         .slice("BBCBB", "BHCHB", "CCICC", "BHCHB", "BBCBB")
                         .slice("BBBBB", "BCCCB", "CCFCC", "BCCCB", "BBCBB")
@@ -587,19 +599,19 @@ public class PhoenixMachines {
                         .slice("BEBEB", "BCCCB", "BCFCB", "BCCCB", "BBBBB")
                         .slice("BBBBB", "BBCBB", "BCDCB", "BBCBB", "BBBBB")
 
-                        .where('B', Predicates.any()) 
+                        .where('B', Predicates.any())
 
                         .where('C', Predicates.blocks(SOURCE_FIBER_MACHINE_CASING.get())
                                 .or(Predicates.abilities(SOURCE_INPUT).setPreviewCount(1))
                                 .or(Predicates.autoAbilities(definition.getRecipeTypes()))
                                 .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
-                                .or(Predicates.controller(definition))) 
+                                .or(Predicates.controller(definition)))
 
                         .where('E', Predicates.blocks(ChemicalHelper.getBlock(frameGt, SOURCE_IMBUED_TITANIUM)))
                         .where('H', Predicates.blocks(VOID_PRISM.get()))
                         .where('G', Predicates.blocks(GTBlocks.CLEANROOM_GLASS.get()))
 
-                        .where('D', Predicates.controller(definition)) 
+                        .where('D', Predicates.controller(definition))
                         .where('F', Predicates.blocks(CASING_TITANIUM_GEARBOX.get()))
                         .where('I', Predicates.abilities(PartAbility.MUFFLER))
                         .build();
@@ -622,8 +634,9 @@ public class PhoenixMachines {
             .recipeModifiers(PARALLEL_HATCH, BATCH_MODE, GTRecipeModifiers::ebfOverclock)
             .appearanceBlock(CASING_STEEL_SOLID)
             .pattern(definition -> {
-                
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
                         .slice("BCCCB", "BCDCB", "BCDCB", "BEEEB", "BFFFB", "BCCCB", "BBBBB", "BBBBB", "BBBBB")
                         .slice("CCCCC", "CDGDC", "CADAC", "EADAE", "FAFAF", "CCCCC", "BCFCB", "BBFBB", "BBFBB")
                         .slice("CCCCC", "DGHGD", "DDHDD", "EDHDE", "FFAFF", "CCCCC", "BFCFB", "BFAFB", "BFIFB")
@@ -633,10 +646,12 @@ public class PhoenixMachines {
                         .where('A', Predicates.air())
                         .where('B', Predicates.any())
 
-                        .where('C', Predicates.blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get()).setMinGlobalLimited(10)
-                                .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
-                                .or(Predicates.autoAbilities(definition.getRecipeTypes()))
-                                .or(Predicates.controller(definition)))
+                        .where('C',
+                                Predicates.blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get())
+                                        .setMinGlobalLimited(10)
+                                        .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
+                                        .or(Predicates.autoAbilities(definition.getRecipeTypes()))
+                                        .or(Predicates.controller(definition)))
 
                         .where('D', Predicates.blocks(ChemicalHelper.getBlock(frameGt, Neutronium)))
                         .where('E', Predicates.blocks(GCYMBlocks.HEAT_VENT.get()))
@@ -659,23 +674,32 @@ public class PhoenixMachines {
             .recipeModifiers(PARALLEL_HATCH, BATCH_MODE, GTRecipeModifiers::crackerOverclock)
             .appearanceBlock(GTBlocks.CASING_TUNGSTENSTEEL_TURBINE)
             .pattern(definition -> {
-                
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                        .slice("BBCCCCCBB", "DBDDDDDBD", "DBDDDDDBD", "DBDDDDDBD", "DBDDDDDBD", "DDDDDDDDD", "DDDDDDDDD", "DDDDDDDDD")
-                        .slice("BEEEEEEEB", "BEFFFFFEB", "BEEEEEEEB", "BEEEEEEEB", "BEEEEEEEB", "DBCBBBCBD", "DDCBBBCDD", "DDCBBBCDD")
-                        .slice("CEEEEEEEC", "DFAGAAAFD", "DHAAAAAHD", "DHAGAGAHD", "DHHEEEHHD", "DIHAAAHID", "DDHAAAHDD", "DDBJJJBDD")
-                        .slice("CEEEEEEEC", "DFGKGKGFD", "DHAGAGAHD", "DHGKGKGHD", "DHHEAEHHD", "DIHAAAHID", "DDHAAAHDD", "DDBJLJBDD")
-                        .slice("CEEEEEEEC", "DFAGAGAFD", "DHAAAAAHD", "DHAGAGAHD", "DHHEEEHHD", "DIHAAAHID", "DDHAAAHDD", "DDBJJJBDD")
-                        .slice("BEEEEEEEB", "BEMMMMMEB", "BEMMNMMEB", "BEMMMMMEB", "BEEEEEEEB", "DBCBBBCBD", "DDCBBBCDD", "DDCBBBCDD")
-                        .slice("BBCDDDCBB", "DBCDDDCBD", "DBCDDDCBD", "DBCDDDCBD", "DBCCCCCBD", "DDDDDDDDD", "DDDDDDDDD", "DDDDDDDDD")
+
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+                        .slice("BBCCCCCBB", "DBDDDDDBD", "DBDDDDDBD", "DBDDDDDBD", "DBDDDDDBD", "DDDDDDDDD",
+                                "DDDDDDDDD", "DDDDDDDDD")
+                        .slice("BEEEEEEEB", "BEFFFFFEB", "BEEEEEEEB", "BEEEEEEEB", "BEEEEEEEB", "DBCBBBCBD",
+                                "DDCBBBCDD", "DDCBBBCDD")
+                        .slice("CEEEEEEEC", "DFAGAAAFD", "DHAAAAAHD", "DHAGAGAHD", "DHHEEEHHD", "DIHAAAHID",
+                                "DDHAAAHDD", "DDBJJJBDD")
+                        .slice("CEEEEEEEC", "DFGKGKGFD", "DHAGAGAHD", "DHGKGKGHD", "DHHEAEHHD", "DIHAAAHID",
+                                "DDHAAAHDD", "DDBJLJBDD")
+                        .slice("CEEEEEEEC", "DFAGAGAFD", "DHAAAAAHD", "DHAGAGAHD", "DHHEEEHHD", "DIHAAAHID",
+                                "DDHAAAHDD", "DDBJJJBDD")
+                        .slice("BEEEEEEEB", "BEMMMMMEB", "BEMMNMMEB", "BEMMMMMEB", "BEEEEEEEB", "DBCBBBCBD",
+                                "DDCBBBCDD", "DDCBBBCDD")
+                        .slice("BBCDDDCBB", "DBCDDDCBD", "DBCDDDCBD", "DBCDDDCBD", "DBCCCCCBD", "DDDDDDDDD",
+                                "DDDDDDDDD", "DDDDDDDDD")
 
                         .where('A', Predicates.air())
 
-                        .where('B', Predicates.blocks(GTBlocks.CASING_TUNGSTENSTEEL_TURBINE.get()).setMinGlobalLimited(10)
-                                .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
-                                .or(Predicates.abilities(PartAbility.PARALLEL_HATCH).setMaxGlobalLimited(1))
-                                .or(Predicates.autoAbilities(definition.getRecipeTypes()))
-                                .or(Predicates.controller(definition)))
+                        .where('B',
+                                Predicates.blocks(GTBlocks.CASING_TUNGSTENSTEEL_TURBINE.get()).setMinGlobalLimited(10)
+                                        .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
+                                        .or(Predicates.abilities(PartAbility.PARALLEL_HATCH).setMaxGlobalLimited(1))
+                                        .or(Predicates.autoAbilities(definition.getRecipeTypes()))
+                                        .or(Predicates.controller(definition)))
 
                         .where('C', Predicates.blocks(ChemicalHelper.getBlock(frameGt, VOID_TOUCHED_TUNGSTEN_STEEL)))
                         .where('D', Predicates.any())
@@ -703,17 +727,27 @@ public class PhoenixMachines {
             .recipeModifiers(PARALLEL_HATCH, BATCH_MODE, GTRecipeModifiers::ebfOverclock)
             .appearanceBlock(GTBlocks.CASING_STEEL_SOLID)
             .pattern(definition -> {
-                
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                        .slice("BCBBBBBCB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BCBBBBBCB")
-                        .slice("CCEEEEECC", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "CCCCCCCCC")
-                        .slice("BEGGGGGEB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BCHCCCHCB")
-                        .slice("BEGGGGGEB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BCCGGGCCB")
-                        .slice("BEGGGGGEB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB", "BCCGKGCCB")
-                        .slice("BEGGGGGEB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BCCGGGCCB")
-                        .slice("BEGGGGGEB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BCHCCCHCB")
-                        .slice("CCEEEEECC", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "CCCCLCCCC")
-                        .slice("BCBBBBBCB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BCBBBBBCB")
+
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+                        .slice("BCBBBBBCB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB",
+                                "BDBBBBBDB", "BCBBBBBCB")
+                        .slice("CCEEEEECC", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD",
+                                "DCFFFFFCD", "CCCCCCCCC")
+                        .slice("BEGGGGGEB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB",
+                                "BFHIJIHFB", "BCHCCCHCB")
+                        .slice("BEGGGGGEB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB",
+                                "BFIAAAIFB", "BCCGGGCCB")
+                        .slice("BEGGGGGEB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB", "BFJAAAJFB",
+                                "BFJAAAJFB", "BCCGKGCCB")
+                        .slice("BEGGGGGEB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB", "BFIAAAIFB",
+                                "BFIAAAIFB", "BCCGGGCCB")
+                        .slice("BEGGGGGEB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB", "BFHIJIHFB",
+                                "BFHIJIHFB", "BCHCCCHCB")
+                        .slice("CCEEEEECC", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD", "DCFFFFFCD",
+                                "DCFFFFFCD", "CCCCLCCCC")
+                        .slice("BCBBBBBCB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB", "BDBBBBBDB",
+                                "BDBBBBBDB", "BCBBBBBCB")
 
                         .where('A', Predicates.air())
                         .where('B', Predicates.any())
@@ -748,8 +782,9 @@ public class PhoenixMachines {
                     GTRecipeModifiers.BATCH_MODE)
             .appearanceBlock(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING)
             .pattern(definition -> {
-                
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
                         .slice("BBBCCCBBB", "BBBCCCBBB", "BBBDDDBBB", "BBBDDDBBB", "BBBEEEBBB", "BBBBBBBBB")
                         .slice("BCCCCCCCB", "BCFGGGFCB", "BDDGGGDDB", "BDDGGGDDB", "BEEGGGEEB", "BBEEEEEBB")
                         .slice("CCCCCCCCC", "CHGIIIGHC", "DHGJJJGHD", "DIGAAAGID", "BEGAAAGEB", "BBEAGAEBB")
@@ -792,15 +827,21 @@ public class PhoenixMachines {
             .appearanceBlock(CASING_TITANIUM_STABLE)
             .tooltipBuilder(DIMENSIONAL_ANCHOR_TOOLTIPS)
             .pattern(definition -> {
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                        .slice("BCDCB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB")
-                        .slice("CCCCC", "BEFEB", "BEGEB", "BBEBB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB")
-                        .slice("DCCCD", "EFFFE", "EGHGE", "EEGEE", "BEGEB", "BEGEB", "BEGEB", "BBEBB", "BBEBB", "BBEBB", "BBEBB", "BBEBB")
-                        .slice("CCCCC", "BEFEB", "BEGEB", "BBEBB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB")
-                        .slice("BCICB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB")
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+                        .slice("BCDCB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB",
+                                "BBBBB", "BBBBB")
+                        .slice("CCCCC", "BEFEB", "BEGEB", "BBEBB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB",
+                                "BBBBB", "BBBBB")
+                        .slice("DCCCD", "EFFFE", "EGHGE", "EEGEE", "BEGEB", "BEGEB", "BEGEB", "BBEBB", "BBEBB", "BBEBB",
+                                "BBEBB", "BBEBB")
+                        .slice("CCCCC", "BEFEB", "BEGEB", "BBEBB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB",
+                                "BBBBB", "BBBBB")
+                        .slice("BCICB", "BBEBB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB",
+                                "BBBBB", "BBBBB")
 
                         .where('B', Predicates.any())
-                        
+
                         .where('C', Predicates.blocks(CASING_TITANIUM_STABLE.get()).setMinGlobalLimited(5)
                                 .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                                 .or(Predicates.autoAbilities(definition.getRecipeTypes()))
@@ -810,7 +851,7 @@ public class PhoenixMachines {
                         .where('F', Predicates.blocks(COIL_NICHROME.get()))
                         .where('G', Predicates.blocks(FIREBOX_TITANIUM.get()))
                         .where('H', Predicates.blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get()))
-                        
+
                         .where('I', Predicates.controller(definition))
                         .build();
             })
@@ -825,23 +866,29 @@ public class PhoenixMachines {
             .recipeModifiers(GTRecipeModifiers.OC_NON_PERFECT_SUBTICK, GTRecipeModifiers.BATCH_MODE)
             .appearanceBlock(GTBlocks.CASING_STAINLESS_CLEAN)
             .pattern(definition -> {
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                        .slice("BCCCB", "BDDDB", "BCCCB", "BBCBB", "BBCBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB")
-                        .slice("CEEEC", "DAAAD", "CAAAC", "BEAEB", "BEAEB", "BEEEB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB")
-                        .slice("CEEEC", "DAAAD", "CAAAC", "CAAAC", "CAAAC", "BEAEB", "BEAEB", "BEAEB", "BBCBB", "BBDBB", "BBCBB")
-                        .slice("CEEEC", "DAAAD", "CAAAC", "BEAEB", "BEAEB", "BEEEB", "BBEBB", "BBEBB", "BBBBB", "BBBBB", "BBBBB")
-                        .slice("BCCCB", "BCFCB", "BCCCB", "BBCBB", "BBCBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB")
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
+                        .slice("BCCCB", "BDDDB", "BCCCB", "BBCBB", "BBCBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB",
+                                "BBBBB")
+                        .slice("CEEEC", "DAAAD", "CAAAC", "BEAEB", "BEAEB", "BEEEB", "BBEBB", "BBEBB", "BBBBB", "BBBBB",
+                                "BBBBB")
+                        .slice("CEEEC", "DAAAD", "CAAAC", "CAAAC", "CAAAC", "BEAEB", "BEAEB", "BEAEB", "BBCBB", "BBDBB",
+                                "BBCBB")
+                        .slice("CEEEC", "DAAAD", "CAAAC", "BEAEB", "BEAEB", "BEEEB", "BBEBB", "BBEBB", "BBBBB", "BBBBB",
+                                "BBBBB")
+                        .slice("BCCCB", "BCFCB", "BCCCB", "BBCBB", "BBCBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB", "BBBBB",
+                                "BBBBB")
 
                         .where('A', Predicates.air())
                         .where('B', Predicates.any())
-                        
+
                         .where('C', Predicates.blocks(CASING_STAINLESS_CLEAN.get()).setMinGlobalLimited(5)
                                 .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                                 .or(Predicates.autoAbilities(definition.getRecipeTypes()))
                                 .or(Predicates.controller(definition)))
                         .where('D', Predicates.blocks(COIL_KANTHAL.get()))
                         .where('E', Predicates.blocks(ChemicalHelper.getBlock(frameGt, FROST_REINFORCED_STAINED_STEEL)))
-                        
+
                         .where('F', Predicates.controller(definition))
                         .build();
             })
@@ -858,8 +905,9 @@ public class PhoenixMachines {
             .noRecipeModifier()
             .appearanceBlock(GTBlocks.CASING_STAINLESS_CLEAN)
             .pattern(definition -> {
-                
-                return MultiblockPatternBuilder.start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT) 
+
+                return MultiblockPatternBuilder
+                        .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
                         .slice("aafaa", "bbcbb", "bdcdb", "bdcdb", "dbbbd")
                         .slice("aaaaa", "beeeb", "ddddd", "ddddd", "bbdbb")
                         .slice("aaaaa", "ceeec", "cdddc", "cdddc", "bdddb")
@@ -869,20 +917,19 @@ public class PhoenixMachines {
                         .where('a', Predicates.blocks(CASING_STEEL_SOLID.get())
                                 .or(PhoenixPredicates.soundHatches())
                                 .or(Predicates.abilities(PartAbility.INPUT_ENERGY))
-                                .or(Predicates.controller(definition))) 
+                                .or(Predicates.controller(definition)))
 
                         .where('b', Predicates.blocks(ChemicalHelper.getBlock(frameGt, AURUM_STEEL)))
                         .where('c', Predicates.blocks(CASING_TEMPERED_GLASS.get()))
-                        .where('d', Predicates.air()) 
+                        .where('d', Predicates.air())
                         .where('e', PhoenixPredicates.tieredSpeakers())
 
-                        .where('f', Predicates.controller(definition)) 
+                        .where('f', Predicates.controller(definition))
                         .build();
             })
             .workableCasingModel(
                     GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
-                    new ResourceLocation("minecraft", "block/note_block")
-            )
+                    new ResourceLocation("minecraft", "block/note_block"))
             .register();
 
     public static void init() {}

@@ -128,7 +128,7 @@ public class ClientTickHandler {
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ItemStack stack = event.getItemStack();
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
-            
+
         }
     }
 }

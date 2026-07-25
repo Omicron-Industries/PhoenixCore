@@ -15,7 +15,6 @@ public abstract class MixinOggAudioStream {
 
     @Inject(method = "read", at = @At("RETURN"))
     private void phoenix$captureLivePCM(int size, CallbackInfoReturnable<ByteBuffer> cir) {
-        
         if (!VocalVibrancyClient.isAnyTracking()) return;
 
         ByteBuffer data = cir.getReturnValue();

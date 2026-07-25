@@ -13,18 +13,34 @@ import java.util.Set;
 
 public class PlayerResearchData {
 
-    private final Set<ResourceLocation> unlocked  = new HashSet<>();
+    private final Set<ResourceLocation> unlocked = new HashSet<>();
     private final Set<ResourceLocation> lockedOut = new HashSet<>();
-    
-    private final Set<String>           flags     = new HashSet<>();
 
-    public boolean isUnlocked(ResourceLocation nodeId)  { return unlocked.contains(nodeId); }
-    public boolean isLockedOut(ResourceLocation nodeId) { return lockedOut.contains(nodeId); }
-    public boolean hasFlag(String flag)                  { return flags.contains(flag); }
+    private final Set<String> flags = new HashSet<>();
 
-    public Set<ResourceLocation> getUnlocked()  { return Collections.unmodifiableSet(unlocked); }
-    public Set<ResourceLocation> getLockedOut() { return Collections.unmodifiableSet(lockedOut); }
-    public int getUnlockedCount()               { return unlocked.size(); }
+    public boolean isUnlocked(ResourceLocation nodeId) {
+        return unlocked.contains(nodeId);
+    }
+
+    public boolean isLockedOut(ResourceLocation nodeId) {
+        return lockedOut.contains(nodeId);
+    }
+
+    public boolean hasFlag(String flag) {
+        return flags.contains(flag);
+    }
+
+    public Set<ResourceLocation> getUnlocked() {
+        return Collections.unmodifiableSet(unlocked);
+    }
+
+    public Set<ResourceLocation> getLockedOut() {
+        return Collections.unmodifiableSet(lockedOut);
+    }
+
+    public int getUnlockedCount() {
+        return unlocked.size();
+    }
 
     public boolean canUnlock(ResearchNode node) {
         return node.canUnlock(unlocked, lockedOut);
@@ -39,7 +55,7 @@ public class PlayerResearchData {
 
         for (ResearchUnlock unlock : node.unlocks) {
             if (unlock.type().equals("flag")) flags.add(unlock.value());
-            
+
         }
 
         if (node.exclusionGroup != null) {
@@ -100,8 +116,11 @@ public class PlayerResearchData {
     }
 
     public void copyFrom(PlayerResearchData other) {
-        unlocked.clear();  unlocked.addAll(other.unlocked);
-        lockedOut.clear(); lockedOut.addAll(other.lockedOut);
-        flags.clear();     flags.addAll(other.flags);
+        unlocked.clear();
+        unlocked.addAll(other.unlocked);
+        lockedOut.clear();
+        lockedOut.addAll(other.lockedOut);
+        flags.clear();
+        flags.addAll(other.flags);
     }
 }

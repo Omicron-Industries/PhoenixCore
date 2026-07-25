@@ -1,23 +1,15 @@
-package net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.part; 
+package net.phoenix.core.integration.phoenix_tesla_network.common.machine.multiblock.electric.part;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
-import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine; 
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.EnergyHatchPartMachine;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widget.ParentWidget;
-import brachy.modularui.widgets.layout.Flow;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -34,6 +26,12 @@ import net.phoenix.core.integration.phoenix_tesla_network.common.machine.multibl
 import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widget.ParentWidget;
+import brachy.modularui.widgets.layout.Flow;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,7 +64,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     public void setCustomName(String name) {
         this.customName = name;
-        this.markAsChanged(); 
+        this.markAsChanged();
     }
 
     public TeslaEnergyHatchPartMachine(BlockEntityCreationInfo holder, int tier, IO io, int amperage) {
@@ -94,7 +92,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
     public void onUnload() {
         super.onUnload();
         if (!getLevel().isClientSide && getLevel() instanceof ServerLevel server) {
-            if (this.isRemoved()) { 
+            if (this.isRemoved()) {
                 TeslaTeamEnergyData.get(server).removeMachineFromAllTeams(getBlockPos());
             } else if (ownerTeamUUID != null) {
                 TeslaTeamEnergyData.get(server).setEnergyBuffered(
@@ -110,8 +108,9 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
     }
 
     @Override
-    public void addedToController(@NotNull com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller, String substructureName) {
-        super.addedToController(controller, substructureName); 
+    public void addedToController(@NotNull com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller,
+                                  String substructureName) {
+        super.addedToController(controller, substructureName);
 
         if (TESLA_DEBUG) PhoenixCore.LOGGER.info("[TESLA DEBUG] addedToController: {} at {}, isTeslaTower={}",
                 controller.getClass().getSimpleName(), getBlockPos(), controller instanceof TeslaTowerMachine);
@@ -127,7 +126,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     @Override
     public void removedFromController(@NotNull com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller) {
-        super.removedFromController(controller); 
+        super.removedFromController(controller);
         updateTickSubscription();
     }
 
@@ -184,7 +183,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
     public void bindToTower(TeslaTowerMachine tower) {
         this.boundTower = tower;
-        this.markAsChanged(); 
+        this.markAsChanged();
     }
 
     public boolean isWireless() {
@@ -260,7 +259,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
         if (this.ownerTeamUUID == null || !team.equals(this.ownerTeamUUID)) {
             this.ownerTeamUUID = team;
-            this.markAsChanged(); 
+            this.markAsChanged();
 
             TeslaWirelessRegistry.unregisterHatch(this);
             TeslaWirelessRegistry.registerHatch(this);
@@ -292,7 +291,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
 
                     this.ownerTeamUUID = newTeamUUID;
                     this.boundTower = null;
-                    this.markAsChanged(); 
+                    this.markAsChanged();
 
                     TeslaWirelessRegistry.unregisterHatch(this);
                     TeslaWirelessRegistry.registerHatch(this);
@@ -332,7 +331,7 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                 .marginBottom(8);
 
         var titleWidget = Text.dynamic(() -> Component.literal("TESLA HATCH")
-                        .withStyle(ChatFormatting.AQUA))
+                .withStyle(ChatFormatting.AQUA))
                 .asWidget();
         titleWidget.marginRight(6);
         titleRow.child(titleWidget);
@@ -345,9 +344,9 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                 .margin(8, 6)
                 .child(titleRow)
                 .child(Text.dynamic(() -> Component.literal("Direction: ")
-                                .withStyle(ChatFormatting.GRAY)
-                                .append(Component.literal(isUplink() ? "Uplink" : "Downlink")
-                                        .withStyle(isUplink() ? ChatFormatting.GREEN : ChatFormatting.DARK_AQUA)))
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(isUplink() ? "Uplink" : "Downlink")
+                                .withStyle(isUplink() ? ChatFormatting.GREEN : ChatFormatting.DARK_AQUA)))
                         .asWidget())
                 .child(Text.dynamic(() -> {
                     long stored = energyContainer != null ? energyContainer.getEnergyStored() : 0L;
@@ -358,8 +357,8 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
                 }).asWidget())
                 .child(Text.dynamic(this::getLinkStatusComponent).asWidget())
                 .child(Text.dynamic(() -> Component.literal("Network: ").withStyle(ChatFormatting.GRAY)
-                                .append(Component.literal(isWireless() ? "Active" : "Inactive")
-                                        .withStyle(isWireless() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY)))
+                        .append(Component.literal(isWireless() ? "Active" : "Inactive")
+                                .withStyle(isWireless() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY)))
                         .asWidget()));
     }
 

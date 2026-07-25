@@ -25,7 +25,7 @@ public class VocalVibrancyClient {
         float rangeSq = soundRange * soundRange;
         for (BlockPos sensor : ANALYZERS.keySet()) {
             float effectiveSq = Math.max(rangeSq, 0);
-            if (sensor.distSqr(soundPos) <= effectiveSq + 256) { 
+            if (sensor.distSqr(soundPos) <= effectiveSq + 256) {
                 return true;
             }
         }
@@ -47,8 +47,8 @@ public class VocalVibrancyClient {
         float rangeSq = currentSoundRange * currentSoundRange;
         for (var entry : ANALYZERS.entrySet()) {
             BlockPos sensorPos = entry.getKey();
-            
-            float effectiveSq = Math.max(rangeSq, 256f); 
+
+            float effectiveSq = Math.max(rangeSq, 256f);
             if (sensorPos.distSqr(currentSoundPos) <= effectiveSq) {
                 entry.getValue().processBuffer(data.duplicate(), sampleRate);
             }

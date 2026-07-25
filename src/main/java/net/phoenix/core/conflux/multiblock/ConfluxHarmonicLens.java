@@ -6,16 +6,8 @@ import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.value.sync.BooleanSyncValue;
-import brachy.modularui.value.sync.LongSyncValue;
-import brachy.modularui.value.sync.DoubleSyncValue;
-import brachy.modularui.widgets.TextWidget;
-
 import com.gregtechceu.gtceu.utils.ExtendedUseOnContext;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -28,13 +20,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-
 import net.phoenix.core.conflux.ConfluxDataType;
 import net.phoenix.core.conflux.pipe.ConfluxDataCapability;
 import net.phoenix.core.conflux.pipe.ConfluxMultiHandlerCapability;
 import net.phoenix.core.conflux.pipe.IConfluxDataHandler;
 import net.phoenix.core.conflux.research.PlayerResearchCapability;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.BooleanSyncValue;
+import brachy.modularui.value.sync.DoubleSyncValue;
+import brachy.modularui.value.sync.LongSyncValue;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,17 +42,17 @@ import java.util.List;
 public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
 
     private static final double BASE_EFFICIENCY = 0.70;
-    private static final double MAX_BONUS       = 0.30;
-    private static final double BONUS_PER_NODE  = 0.005 / 50.0;
-    private static final long   INPUT_BUFFER    = 200_000L;
-    private static final long   OUTPUT_BUFFER   = 200_000L;
-    private static final long   EU_PER_TICK     = 524_288L;
-    private static final long   THROUGHPUT      = 2_048L;
-    private static final int    RESEARCH_SCAN_INTERVAL = 100;
+    private static final double MAX_BONUS = 0.30;
+    private static final double BONUS_PER_NODE = 0.005 / 50.0;
+    private static final long INPUT_BUFFER = 200_000L;
+    private static final long OUTPUT_BUFFER = 200_000L;
+    private static final long EU_PER_TICK = 524_288L;
+    private static final long THROUGHPUT = 2_048L;
+    private static final int RESEARCH_SCAN_INTERVAL = 100;
 
-    private ConfluxDataType inputType  = ConfluxDataType.MATERIAL;
+    private ConfluxDataType inputType = ConfluxDataType.MATERIAL;
     private ConfluxDataType outputType = ConfluxDataType.COMPUTATIONAL;
-    private long inputBuffer  = 0L;
+    private long inputBuffer = 0L;
     private long outputBuffer = 0L;
     private boolean lensActive = false;
     private double currentEfficiency = BASE_EFFICIENCY;
@@ -99,7 +97,7 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
 
         long canConvert = Math.min(inputBuffer, THROUGHPUT);
         if (canConvert > 0) {
-            long converted = (long)(canConvert * currentEfficiency);
+            long converted = (long) (canConvert * currentEfficiency);
             inputBuffer -= canConvert;
             long space = OUTPUT_BUFFER - outputBuffer;
             outputBuffer += Math.min(converted, space);
@@ -134,7 +132,8 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
                 IConfluxDataHandler h = single.orElseThrow(IllegalStateException::new);
                 if (h.getDataType() == outputType) {
                     long sent = h.insert(budget);
-                    outputBuffer -= sent; budget -= sent;
+                    outputBuffer -= sent;
+                    budget -= sent;
                 }
                 continue;
             }
@@ -142,7 +141,8 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
             var multi = be.getCapability(ConfluxMultiHandlerCapability.MULTI_DATA, dir.getOpposite());
             if (multi.isPresent()) {
                 long sent = multi.orElseThrow(IllegalStateException::new).insert(outputType, budget);
-                outputBuffer -= sent; budget -= sent;
+                outputBuffer -= sent;
+                budget -= sent;
             }
         }
         if (budget < THROUGHPUT) setChanged();
@@ -161,14 +161,18 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
             ConfluxDataType[] types = ConfluxDataType.values();
             if (player.isCrouching()) {
                 int next = inputType.ordinal();
-                do { next = (next + 1) % types.length; } while (types[next] == outputType);
+                do {
+                    next = (next + 1) % types.length;
+                } while (types[next] == outputType);
                 inputType = types[next];
                 inputCap.invalidate();
                 rebuildInputCap();
                 player.sendSystemMessage(Component.literal("Input type: ").append(inputType.displayComponent()));
             } else {
                 int next = outputType.ordinal();
-                do { next = (next + 1) % types.length; } while (types[next] == inputType);
+                do {
+                    next = (next + 1) % types.length;
+                } while (types[next] == inputType);
                 outputType = types[next];
                 player.sendSystemMessage(Component.literal("Output type: ").append(outputType.displayComponent()));
             }
@@ -180,17 +184,35 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
 
     private void rebuildInputCap() {
         inputCap = LazyOptional.of(() -> new IConfluxDataHandler() {
-            @Override public ConfluxDataType getDataType() { return inputType; }
-            @Override public long insert(long amount) {
+
+            @Override
+            public ConfluxDataType getDataType() {
+                return inputType;
+            }
+
+            @Override
+            public long insert(long amount) {
                 long space = INPUT_BUFFER - inputBuffer;
                 long taken = Math.min(amount, space);
                 inputBuffer += taken;
                 if (taken > 0) setChanged();
                 return taken;
             }
-            @Override public long extract(long amount) { return 0; }
-            @Override public long getStored()   { return inputBuffer; }
-            @Override public long getCapacity() { return INPUT_BUFFER; }
+
+            @Override
+            public long extract(long amount) {
+                return 0;
+            }
+
+            @Override
+            public long getStored() {
+                return inputBuffer;
+            }
+
+            @Override
+            public long getCapacity() {
+                return INPUT_BUFFER;
+            }
         });
     }
 
@@ -207,12 +229,13 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
 
         syncManager.syncValue("lens_active", new BooleanSyncValue(() -> this.lensActive, (v) -> this.lensActive = v));
         syncManager.syncValue("input_buffer", new LongSyncValue(() -> this.inputBuffer, (v) -> this.inputBuffer = v));
-        syncManager.syncValue("output_buffer", new LongSyncValue(() -> this.outputBuffer, (v) -> this.outputBuffer = v));
-        syncManager.syncValue("efficiency", new DoubleSyncValue(() -> this.currentEfficiency, (v) -> this.currentEfficiency = v));
+        syncManager.syncValue("output_buffer",
+                new LongSyncValue(() -> this.outputBuffer, (v) -> this.outputBuffer = v));
+        syncManager.syncValue("efficiency",
+                new DoubleSyncValue(() -> this.currentEfficiency, (v) -> this.currentEfficiency = v));
 
-        widgets.add(new TextWidget<>(Text.dynamic(() -> this.lensActive
-                ? Component.literal("§a[TRANSMUTING]§r")
-                : Component.literal("§c[OFFLINE — insufficient EU]§r"))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> this.lensActive ? Component.literal("§a[TRANSMUTING]§r") :
+                Component.literal("§c[OFFLINE — insufficient EU]§r"))));
 
         widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal("Input:  ")
                 .append(inputType.displayComponent())
@@ -229,7 +252,8 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
                     this.currentEfficiency * 100, bonusPct));
         })));
 
-        widgets.add(new TextWidget<>(Text.of(Component.literal("§7Screwdriver to cycle types. Research nearby to improve efficiency.§r"))));
+        widgets.add(new TextWidget<>(
+                Text.of(Component.literal("§7Screwdriver to cycle types. Research nearby to improve efficiency.§r"))));
         return widgets;
     }
 
@@ -252,8 +276,19 @@ public class ConfluxHarmonicLens extends WorkableElectricMultiblockMachine {
         inputCap.invalidate();
     }
 
-    public ConfluxDataType getInputType()      { return inputType; }
-    public ConfluxDataType getOutputType()     { return outputType; }
-    public double getCurrentEfficiency()     { return currentEfficiency; }
-    public boolean isLensActive()            { return lensActive; }
+    public ConfluxDataType getInputType() {
+        return inputType;
+    }
+
+    public ConfluxDataType getOutputType() {
+        return outputType;
+    }
+
+    public double getCurrentEfficiency() {
+        return currentEfficiency;
+    }
+
+    public boolean isLensActive() {
+        return lensActive;
+    }
 }

@@ -26,10 +26,9 @@ public final class WorldFXManager {
     private WorldFXManager() {}
 
     private record ActiveEffect(
-            IWorldFXEmitter emitter,
-            PhoenixSkyLayer skyLayer,      
-            PhoenixScreenEffect screenEffect 
-    ) {}
+                                IWorldFXEmitter emitter,
+                                PhoenixSkyLayer skyLayer,
+                                PhoenixScreenEffect screenEffect) {}
 
     private static final Map<BlockPos, ActiveEffect> effects = new LinkedHashMap<>();
 
@@ -181,9 +180,9 @@ public final class WorldFXManager {
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         bb.vertex(-1, -1, 0).endVertex();
-        bb.vertex( 1, -1, 0).endVertex();
-        bb.vertex( 1,  1, 0).endVertex();
-        bb.vertex(-1,  1, 0).endVertex();
+        bb.vertex(1, -1, 0).endVertex();
+        bb.vertex(1, 1, 0).endVertex();
+        bb.vertex(-1, 1, 0).endVertex();
         Tesselator.getInstance().end();
         RenderSystem.enableDepthTest();
     }

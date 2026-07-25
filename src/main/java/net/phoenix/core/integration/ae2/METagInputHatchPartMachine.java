@@ -1,15 +1,7 @@
 package net.phoenix.core.integration.ae2;
 
-import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.value.sync.StringSyncValue;
-import brachy.modularui.widget.ParentWidget;
-import brachy.modularui.widgets.TextWidget;
-import brachy.modularui.widgets.layout.Flow;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableFluidTank;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
@@ -41,6 +33,14 @@ import appeng.api.config.Actionable;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.value.sync.StringSyncValue;
+import brachy.modularui.widget.ParentWidget;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -50,7 +50,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class METagInputHatchPartMachine extends MEHatchPartMachine
-        implements IDataStickInteractable {
+                                        implements IDataStickInteractable {
 
     protected static final int CONFIG_SIZE = 32;
 
@@ -88,14 +88,12 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
 
     @Override
     public void removedFromController(com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine controller) {
-        
         flushInventory();
         super.removedFromController(controller);
     }
 
     @Override
     public void onUnload() {
-        
         flushInventory();
         super.onUnload();
     }
@@ -290,7 +288,8 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
     }
 
     @Override
-    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager, UISettings settings) {
+    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager,
+                            UISettings settings) {
         StringSyncValue whitelistSync = new StringSyncValue(() -> whitelistExpr, val -> {
             whitelistExpr = val;
             updateConfigurationFromTags();
@@ -305,17 +304,16 @@ public class METagInputHatchPartMachine extends MEHatchPartMachine
 
         mainWidget.child(Flow.column()
                 .coverChildren()
-                .child(new TextWidget<>(Text.dynamic(() -> isOnline
-                        ? Component.translatable("gtceu.gui.me_network.online")
-                        : Component.translatable("gtceu.gui.me_network.offline"))))
+                .child(new TextWidget<>(
+                        Text.dynamic(() -> isOnline ? Component.translatable("gtceu.gui.me_network.online") :
+                                Component.translatable("gtceu.gui.me_network.offline"))))
                 .child(new TextWidget<>(Text.of(Component.literal("Whitelist Tags:"))))
                 .child(new TextEditorWidget<>().value(whitelistSync).size(166, 20))
                 .child(new TextWidget<>(Text.of(Component.literal("Blacklist Tags:"))))
                 .child(new TextEditorWidget<>().value(blacklistSync).size(166, 20))
-                .child(new TextWidget<>(Text.dynamic(() ->
-                        Component.literal("Matched Fluids: " + java.util.Arrays.stream(previewFluids)
-                                .filter(f -> f != null && !f.isEmpty()).count()))))
-        );
+                .child(new TextWidget<>(
+                        Text.dynamic(() -> Component.literal("Matched Fluids: " + java.util.Arrays.stream(previewFluids)
+                                .filter(f -> f != null && !f.isEmpty()).count())))));
     }
 
     @Override

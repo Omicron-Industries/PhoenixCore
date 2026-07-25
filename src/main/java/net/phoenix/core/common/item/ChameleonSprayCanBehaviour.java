@@ -155,7 +155,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         boolean changesMade = false;
 
         if (first != null && handleSpecialBlockEntities(first, selectedColor, maxBlocksToRecolor, context)) {
-            changesMade = true; 
+            changesMade = true;
         } else if (first == null || !(first instanceof SignBlockEntity || first instanceof IColorableBlockEntity ||
                 first instanceof IPipeNode || first instanceof IPaintable || first instanceof ShulkerBoxBlockEntity)) {
                     changesMade = handleBlocks(context.getClickedPos(), selectedColor, maxBlocksToRecolor, context);
@@ -166,7 +166,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             return InteractionResult.SUCCESS;
         }
 
-        return InteractionResult.PASS; 
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -220,7 +220,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         }
 
         if (successfullyPainted > 0) {
-            
+
             boolean isBulk = limit > 1;
             consumePaint(context.getItemInHand(), successfullyPainted, isBulk);
             return true;
@@ -255,7 +255,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
         } else {
             if (color == null) {
-                
+
                 sign.updateText(text -> {
                     boolean runClear = false;
                     for (int i = 0; i < 4; i++) {
@@ -267,7 +267,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
                     }
                     return text.setColor(DyeColor.BLACK).setHasGlowingText(false);
                 }, isFront);
-                
+
                 changed = true;
             } else {
                 DyeColor targetColor = color;
@@ -440,7 +440,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
 
             if (sheetEntry != null && sheetEntry.get() == block) {
                 isDecorationBlock = true;
-                
+
                 if (entryColor != targetColor) {
                     targetDecoBlock = GTBlocks.METAL_SHEETS.get(targetColor).get();
                 }
@@ -448,7 +448,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
             if (largeSheetEntry != null && largeSheetEntry.get() == block) {
                 isDecorationBlock = true;
-                
+
                 if (entryColor != targetColor) {
                     targetDecoBlock = GTBlocks.LARGE_METAL_SHEETS.get(targetColor).get();
                 }
@@ -456,7 +456,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
             }
             if (studsEntry != null && studsEntry.get() == block) {
                 isDecorationBlock = true;
-                
+
                 if (entryColor != targetColor) {
                     targetDecoBlock = GTBlocks.STUDS.get(targetColor).get();
                 }
@@ -465,7 +465,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         }
 
         if (isDecorationBlock) {
-            if (targetDecoBlock != null) { 
+            if (targetDecoBlock != null) {
                 BlockState newDecorationState = targetDecoBlock.defaultBlockState();
 
                 for (Property property : blockState.getProperties()) {
@@ -477,7 +477,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
                 level.setBlockAndUpdate(pos, newDecorationState);
                 return true;
             }
-            return false; 
+            return false;
         }
 
         int targetIntColor = (color == null) ? (int) com.gregtechceu.gtceu.api.blockentity.IPaintable.UNPAINTED_COLOR :
@@ -517,7 +517,6 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
     }
 
     private boolean tryPaintSpecialBlock(Level world, BlockPos pos, Block block, DyeColor color) {
-        
         DyeColor activeColor = (color == null) ? DyeColor.WHITE : color;
 
         if (block.defaultBlockState().is(Tags.Blocks.GLASS))
@@ -706,7 +705,7 @@ public class ChameleonSprayCanBehaviour implements IInteractionItem, IAddInforma
         BlockState state = level.getBlockState(pos);
         for (Property property : state.getProperties()) {
             if (property.getValueClass() == DyeColor.class) {
-                if (state.getValue(property) == color) return false; 
+                if (state.getValue(property) == color) return false;
                 level.setBlockAndUpdate(pos, state.setValue(property, color));
                 return true;
             }

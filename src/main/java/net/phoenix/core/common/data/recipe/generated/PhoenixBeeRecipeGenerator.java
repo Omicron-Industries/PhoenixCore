@@ -1,6 +1,5 @@
 package net.phoenix.core.common.data.recipe.generated;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -257,7 +256,6 @@ public class PhoenixBeeRecipeGenerator {
     }
 
     public static void generateSpecialtyBeeRecipes(Consumer<FinishedRecipe> provider, ItemStack base) {
-        
         Material source = PhoenixProgressionMaterials.SOURCE_GEM;
         ItemStack catalystBee = ChemicalHelper.get(PhoenixMaterialFlags.tier_one_bee, source);
         ItemStack jelly = safeStack("phoenixcore:royal_jelly", 8);

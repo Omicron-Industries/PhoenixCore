@@ -16,7 +16,7 @@ public class PhoenixDataGenerators {
         PackOutput packOutput = event.getGenerator().getPackOutput();
 
         if (event.includeClient()) {
-            
+
             event.getGenerator().addProvider(
                     true,
                     new SoundEntryBuilder.SoundEntryProvider(packOutput, PhoenixCore.MOD_ID));

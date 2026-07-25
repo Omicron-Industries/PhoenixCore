@@ -42,7 +42,7 @@ public final class TeamUtils {
 
     public static boolean isPlayerOnTeam(Player player, UUID teamUUID) {
         if (player instanceof ServerPlayer) {
-            
+
             if (!FTBTeamsAPI.api().isManagerLoaded()) {
                 return player.getUUID().equals(teamUUID);
             }

@@ -14,16 +14,31 @@ public final class ScreenCaptureBaker implements CaptureBakeable {
     private final Supplier<Screen> factory;
 
     public ScreenCaptureBaker(String id, int width, int height, Supplier<Screen> factory) {
-        this.id      = id;
-        this.width   = width;
-        this.height  = height;
+        this.id = id;
+        this.width = width;
+        this.height = height;
         this.factory = factory;
     }
 
-    @Override public String id()         { return id; }
-    @Override public int frameCount()    { return 1; }
-    @Override public int frameWidth()    { return width; }
-    @Override public int frameHeight()   { return height; }
+    @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public int frameCount() {
+        return 1;
+    }
+
+    @Override
+    public int frameWidth() {
+        return width;
+    }
+
+    @Override
+    public int frameHeight() {
+        return height;
+    }
 
     @Override
     public void renderFrame(GuiGraphics g, int frame, float t, int w, int h) {

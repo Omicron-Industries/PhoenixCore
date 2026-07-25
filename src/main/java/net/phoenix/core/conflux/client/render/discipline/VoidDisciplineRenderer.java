@@ -5,36 +5,44 @@ import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.conflux.client.render.*;
 import net.phoenix.core.conflux.research.ResearchNode;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
-import static net.phoenix.core.conflux.client.render.AxiomSprites.*;
-
 import java.util.*;
+
+import static net.phoenix.core.conflux.client.render.AxiomSprites.*;
 
 public class VoidDisciplineRenderer implements DisciplineRenderer {
 
-    private static final float VOID_R    = 70f;
-    private static final float DISK_IN   = 70f;
-    private static final float DISK_OUT  = 118f;
-    private static final float DISK_SQSH = 0.38f;   
-    private static final float BRAID_R1  = 155f;
-    private static final float BRAID_R2  = 212f;
-    private static final float ORBIT_R   = 148f;    
-    
-    private float ringAngle  = 0f;   
-    private float dustAngle  = 0f;   
-    private float pulseTimer = 0f;   
-    private float glitchTick = 0f;   
+    private static final float VOID_R = 70f;
+    private static final float DISK_IN = 70f;
+    private static final float DISK_OUT = 118f;
+    private static final float DISK_SQSH = 0.38f;
+    private static final float BRAID_R1 = 155f;
+    private static final float BRAID_R2 = 212f;
+    private static final float ORBIT_R = 148f;
 
-    private int starW = 0, starH = 0; 
+    private float ringAngle = 0f;
+    private float dustAngle = 0f;
+    private float pulseTimer = 0f;
+    private float glitchTick = 0f;
+
+    private int starW = 0, starH = 0;
 
     private final Map<ResourceLocation, float[]> nodeGlitch = new HashMap<>();
 
     private final List<ResourceLocation> cachedOrder = new ArrayList<>();
 
-    @Override public @Nullable String disciplineId() { return "void"; }
-    @Override public MotionClock.Signature signature() { return MotionClock.Signature.VOID; }
+    @Override
+    public @Nullable String disciplineId() {
+        return "void";
+    }
+
+    @Override
+    public MotionClock.Signature signature() {
+        return MotionClock.Signature.VOID;
+    }
 
     @Override
     public void onActivate(MotionClock clock) {
@@ -46,20 +54,20 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
 
     @Override
     public void tick(float dt, RenderContext ctx) {
-        ringAngle  += dt * 0.19f;
-        dustAngle  += dt * 0.034f;
+        ringAngle += dt * 0.19f;
+        dustAngle += dt * 0.034f;
         pulseTimer += dt;
         glitchTick -= dt;
 
         if (glitchTick <= 0f) {
-            glitchTick = 0.7f + (float)(Math.random() * 2.8f);
+            glitchTick = 0.7f + (float) (Math.random() * 2.8f);
             List<ResearchNode> ns = new ArrayList<>(ctx.tree().getNodes());
             if (!ns.isEmpty()) {
-                ResearchNode t = ns.get((int)(Math.random() * ns.size()));
-                nodeGlitch.put(t.id, new float[]{
-                    (float)(Math.random() - 0.5f) * 8f,
-                    (float)(Math.random() - 0.5f) * 4f,
-                    0.18f
+                ResearchNode t = ns.get((int) (Math.random() * ns.size()));
+                nodeGlitch.put(t.id, new float[] {
+                        (float) (Math.random() - 0.5f) * 8f,
+                        (float) (Math.random() - 0.5f) * 4f,
+                        0.18f
                 });
             }
         }
@@ -82,10 +90,10 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
             g.pose().translate(cx, cy, 0f);
             g.pose().mulPose(new Quaternionf().rotationZ(la));
             for (int band = -2; band <= 2; band++) {
-                float bOff  = band * 54f;
-                float fall  = 1f - Math.abs(band) / 2.6f;
-                int   alpha = (int)(17 * fall);
-                g.fill(-700, (int)(bOff - 15), 700, (int)(bOff + 15), (alpha << 24) | 0x552211);
+                float bOff = band * 54f;
+                float fall = 1f - Math.abs(band) / 2.6f;
+                int alpha = (int) (17 * fall);
+                g.fill(-700, (int) (bOff - 15), 700, (int) (bOff + 15), (alpha << 24) | 0x552211);
             }
             g.pose().popPose();
         }
@@ -93,55 +101,61 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
         int diskFrame = timeToFrame(ringAngle / (2f * 3.14159f), 1f, VOID_DISK.frames());
         blitFrame(g, VOID_DISK, diskFrame, 0, 0, cw, ch, 0.9f);
 
-        drawBraidRing(g, cx, cy, BRAID_R1,  ringAngle,               DISK_SQSH + 0.14f, 0xBBCCCCDD, 0x66AABBD0);
-        drawBraidRing(g, cx, cy, BRAID_R2, -ringAngle * 0.62f + 0.9f, DISK_SQSH,         0x99BBBCCC, 0x44999ABB);
+        drawBraidRing(g, cx, cy, BRAID_R1, ringAngle, DISK_SQSH + 0.14f, 0xBBCCCCDD, 0x66AABBD0);
+        drawBraidRing(g, cx, cy, BRAID_R2, -ringAngle * 0.62f + 0.9f, DISK_SQSH, 0x99BBBCCC, 0x44999ABB);
     }
 
     private void drawBraidRing(GuiGraphics g, float cx, float cy, float R, float phase,
-                                float squish, int col1, int col2) {
-        final int   STEPS = 320;
-        final int   FREQ  = 20;
-        final float AMP   = 9f;
+                               float squish, int col1, int col2) {
+        final int STEPS = 320;
+        final int FREQ = 20;
+        final float AMP = 9f;
 
         for (int i = 0; i < STEPS; i++) {
-            float t    = (float)i / STEPS * 6.28318f;
-            float a    = t + phase;
-            float cosA = (float)Math.cos(a);
-            float sinA = (float)Math.sin(a);
-            float rx   = cx + R * cosA;
-            float ry   = cy + R * sinA * squish;
+            float t = (float) i / STEPS * 6.28318f;
+            float a = t + phase;
+            float cosA = (float) Math.cos(a);
+            float sinA = (float) Math.sin(a);
+            float rx = cx + R * cosA;
+            float ry = cy + R * sinA * squish;
 
             float px = -sinA, py = cosA * squish;
-            float pLen = (float)Math.sqrt(px * px + py * py);
-            if (pLen > 0.001f) { px /= pLen; py /= pLen; }
+            float pLen = (float) Math.sqrt(px * px + py * py);
+            if (pLen > 0.001f) {
+                px /= pLen;
+                py /= pLen;
+            }
 
-            float wave = AMP * (float)Math.sin(t * FREQ);
+            float wave = AMP * (float) Math.sin(t * FREQ);
 
             float s2x = rx - px * wave, s2y = ry - py * wave;
-            g.fill((int)s2x - 1, (int)s2y, (int)s2x + 2, (int)s2y + 2, col2);
+            g.fill((int) s2x - 1, (int) s2y, (int) s2x + 2, (int) s2y + 2, col2);
 
             if (wave <= 0f) {
                 float s1x = rx + px * wave, s1y = ry + py * wave;
-                g.fill((int)s1x - 1, (int)s1y, (int)s1x + 2, (int)s1y + 2, col1);
+                g.fill((int) s1x - 1, (int) s1y, (int) s1x + 2, (int) s1y + 2, col1);
             }
         }
-        
+
         for (int i = 0; i < STEPS; i++) {
-            float t    = (float)i / STEPS * 6.28318f;
-            float a    = t + phase;
-            float cosA = (float)Math.cos(a);
-            float sinA = (float)Math.sin(a);
-            float rx   = cx + R * cosA;
-            float ry   = cy + R * sinA * squish;
+            float t = (float) i / STEPS * 6.28318f;
+            float a = t + phase;
+            float cosA = (float) Math.cos(a);
+            float sinA = (float) Math.sin(a);
+            float rx = cx + R * cosA;
+            float ry = cy + R * sinA * squish;
 
             float px = -sinA, py = cosA * squish;
-            float pLen = (float)Math.sqrt(px * px + py * py);
-            if (pLen > 0.001f) { px /= pLen; py /= pLen; }
+            float pLen = (float) Math.sqrt(px * px + py * py);
+            if (pLen > 0.001f) {
+                px /= pLen;
+                py /= pLen;
+            }
 
-            float wave = AMP * (float)Math.sin(t * FREQ);
+            float wave = AMP * (float) Math.sin(t * FREQ);
             if (wave > 0f) {
                 float s1x = rx + px * wave, s1y = ry + py * wave;
-                g.fill((int)s1x - 1, (int)s1y, (int)s1x + 2, (int)s1y + 2, col1);
+                g.fill((int) s1x - 1, (int) s1y, (int) s1x + 2, (int) s1y + 2, col1);
             }
         }
     }
@@ -162,19 +176,19 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
 
     private void drawEdge(GuiGraphics g, float x0, float y0, float x1, float y1, boolean active) {
         float dx = x1 - x0, dy = y1 - y0;
-        float len = (float)Math.sqrt(dx * dx + dy * dy);
+        float len = (float) Math.sqrt(dx * dx + dy * dy);
         if (len < 0.5f) return;
-        int DOTS = Math.max(4, (int)(len / 7));
+        int DOTS = Math.max(4, (int) (len / 7));
         for (int i = 0; i <= DOTS; i++) {
-            float t  = (float)i / DOTS;
+            float t = (float) i / DOTS;
             float px = x0 + dx * t;
             float py = y0 + dy * t;
-            float perp = (float)Math.sin(t * 3.14159f + pulseTimer * 0.45f) * 3.5f;
+            float perp = (float) Math.sin(t * 3.14159f + pulseTimer * 0.45f) * 3.5f;
             px += -dy / len * perp;
-            py +=  dx / len * perp;
-            int a   = active ? 110 : 45;
+            py += dx / len * perp;
+            int a = active ? 110 : 45;
             int col = active ? ((a << 24) | 0x4444BB) : ((a << 24) | 0x222244);
-            g.fill((int)px - 1, (int)py - 1, (int)px + 2, (int)py + 2, col);
+            g.fill((int) px - 1, (int) py - 1, (int) px + 2, (int) py + 2, col);
         }
     }
 
@@ -188,54 +202,55 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
     }
 
     private void drawNode(GuiGraphics g, ResearchNode node, float fx, float fy, RenderContext ctx) {
-        int cx = (int)fx, cy = (int)fy;
-        boolean unlocked  = ctx.isUnlocked(node.id);
+        int cx = (int) fx, cy = (int) fy;
+        boolean unlocked = ctx.isUnlocked(node.id);
         boolean lockedOut = ctx.isLockedOut(node.id);
         boolean available = ctx.isAvailable(node);
-        boolean sel       = ctx.isSelected(node);
+        boolean sel = ctx.isSelected(node);
 
-        float pulse  = MotionClock.Signature.VOID.pulse(ctx.clock().getElapsed());
+        float pulse = MotionClock.Signature.VOID.pulse(ctx.clock().getElapsed());
         float intense = ctx.intensity().get();
 
         if (unlocked || available) {
             for (int ring = 3; ring >= 1; ring--) {
-                int r   = ring * 10;
-                int ga  = (int)(22 * pulse * intense * (1f / ring));
-                int gc  = unlocked ? ((ga << 24) | 0x2222CC) : ((ga << 24) | 0x113366);
+                int r = ring * 10;
+                int ga = (int) (22 * pulse * intense * (1f / ring));
+                int gc = unlocked ? ((ga << 24) | 0x2222CC) : ((ga << 24) | 0x113366);
                 g.fill(cx - r, cy - r, cx + r, cy + r, gc);
             }
         }
 
-        int bg  = lockedOut ? 0xFF080012 : unlocked ? 0xFF06061E : available ? 0xFF060818 : 0xFF030308;
-        int brd = lockedOut ? 0xFF330055 : unlocked ? (sel ? 0xFFCCCCFF : 0xFF6666DD) : available ? 0xFF3344AA : 0xFF111133;
+        int bg = lockedOut ? 0xFF080012 : unlocked ? 0xFF06061E : available ? 0xFF060818 : 0xFF030308;
+        int brd = lockedOut ? 0xFF330055 :
+                unlocked ? (sel ? 0xFFCCCCFF : 0xFF6666DD) : available ? 0xFF3344AA : 0xFF111133;
         int HW = 17, HH = 7;
 
         g.pose().pushPose();
         g.pose().translate(cx, cy, 0f);
         for (int r = 0; r < 3; r++) {
             g.fill(-HW, -HH, HW, HH, bg);
-            g.pose().mulPose(new Quaternionf().rotationZ((float)Math.PI / 3f));
+            g.pose().mulPose(new Quaternionf().rotationZ((float) Math.PI / 3f));
         }
         g.pose().popPose();
 
         int HR = 18;
         for (int vi = 0; vi < 6; vi++) {
             float va = vi * 6.28318f / 6f;
-            int vx = cx + (int)(HR * Math.cos(va));
-            int vy = cy + (int)(HR * Math.sin(va));
+            int vx = cx + (int) (HR * Math.cos(va));
+            int vy = cy + (int) (HR * Math.sin(va));
             g.fill(vx - 1, vy - 1, vx + 2, vy + 2, brd);
         }
-        
+
         g.pose().pushPose();
         g.pose().translate(cx, cy, 0f);
         for (int r = 0; r < 3; r++) {
             g.fill(-HR, -1, HR, 1, brd);
-            g.pose().mulPose(new Quaternionf().rotationZ((float)Math.PI / 3f));
+            g.pose().mulPose(new Quaternionf().rotationZ((float) Math.PI / 3f));
         }
         g.pose().popPose();
 
         if (sel) {
-            int sa = (int)(60 * pulse);
+            int sa = (int) (60 * pulse);
             g.fill(cx - HR - 4, cy - HR - 4, cx + HR + 4, cy + HR + 4, (sa << 24) | 0x8888FF);
             g.fill(cx - HR - 3, cy - HR - 3, cx + HR + 3, cy + HR + 3, 0xFF000010);
         }
@@ -249,24 +264,23 @@ public class VoidDisciplineRenderer implements DisciplineRenderer {
 
     @Override
     public float[] nodePos(ResearchNode node, RenderContext ctx) {
-        
         if (cachedOrder.isEmpty()) {
             ctx.tree().getNodes().stream()
-                .sorted(Comparator.comparing(n -> n.id.toString()))
-                .forEach(n -> cachedOrder.add(n.id));
+                    .sorted(Comparator.comparing(n -> n.id.toString()))
+                    .forEach(n -> cachedOrder.add(n.id));
         }
-        int idx   = cachedOrder.indexOf(node.id);
+        int idx = cachedOrder.indexOf(node.id);
         if (idx < 0) idx = 0;
         int total = Math.max(1, cachedOrder.size());
 
-        float angle = (float)idx / total * 6.28318f + ringAngle * 0.12f;
+        float angle = (float) idx / total * 6.28318f + ringAngle * 0.12f;
         float[] glitch = nodeGlitch.get(node.id);
         float gx = glitch != null ? glitch[0] : 0f;
         float gy = glitch != null ? glitch[1] : 0f;
 
-        return new float[]{
-            ORBIT_R * (float)Math.cos(angle) + gx,
-            ORBIT_R * (float)Math.sin(angle) * (DISK_SQSH + 0.28f) + gy
+        return new float[] {
+                ORBIT_R * (float) Math.cos(angle) + gx,
+                ORBIT_R * (float) Math.sin(angle) * (DISK_SQSH + 0.28f) + gy
         };
     }
 

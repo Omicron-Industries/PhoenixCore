@@ -30,7 +30,7 @@ public class RecipeBlacklist {
 
     public static void load() {
         try {
-            
+
             if (!Files.exists(REMOVALS_DIR)) {
                 Files.createDirectories(REMOVALS_DIR);
             }
@@ -53,7 +53,6 @@ public class RecipeBlacklist {
     }
 
     public static boolean shouldRemoveParsed(ResourceLocation id, Recipe<?> recipe) {
-        
         if (BY_ID.contains(id) || BY_MOD.contains(id.getNamespace())) return true;
 
         String outputId = BuiltInRegistries.ITEM.getKey(recipe.getResultItem(RegistryAccess.EMPTY).getItem())
@@ -73,7 +72,7 @@ public class RecipeBlacklist {
         try (Reader reader = Files.newBufferedReader(path)) {
             RecipeConfig fileConfig = GSON.fromJson(reader, RecipeConfig.class);
             if (fileConfig != null) {
-                
+
                 fileConfig.remove_by_id.forEach(s -> BY_ID.add(new ResourceLocation(s)));
                 BY_MOD.addAll(fileConfig.remove_by_mod);
                 BY_OUTPUT.addAll(fileConfig.remove_by_output);
@@ -85,7 +84,6 @@ public class RecipeBlacklist {
     }
 
     public static boolean shouldRemoveRaw(ResourceLocation id, JsonElement json) {
-        
         if (BY_ID.contains(id) || BY_MOD.contains(id.getNamespace())) return true;
 
         if (!json.isJsonObject()) return false;
@@ -114,7 +112,7 @@ public class RecipeBlacklist {
     private static void generateExamplesIfEmpty() throws Exception {
         try (Stream<Path> stream = Files.list(REMOVALS_DIR)) {
             if (stream.findAny().isEmpty()) {
-                
+
                 RecipeConfig vanillaExample = new RecipeConfig();
                 vanillaExample.remove_by_id.add("minecraft:example_recipe_id");
                 Files.writeString(REMOVALS_DIR.resolve("vanilla_tweaks.json"), GSON.toJson(vanillaExample));

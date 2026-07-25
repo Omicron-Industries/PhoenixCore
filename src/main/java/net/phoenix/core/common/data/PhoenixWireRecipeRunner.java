@@ -1,9 +1,8 @@
 package net.phoenix.core.common.data;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.phoenix.core.common.data.recipe.generated.PhoenixWireRecipeHandler;
 

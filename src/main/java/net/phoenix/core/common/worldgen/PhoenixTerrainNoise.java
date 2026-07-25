@@ -16,7 +16,8 @@ public final class PhoenixTerrainNoise {
         };
     }
 
-    public static TerrainSampler volumetric(long seed, double baseY, double amplitude, double xzFreq, double yFreq, int octaves) {
+    public static TerrainSampler volumetric(long seed, double baseY, double amplitude, double xzFreq, double yFreq,
+                                            int octaves) {
         SimplexNoise noise = makeNoise(seed);
         return (x, y, z) -> {
             double d = baseY + amplitude * fbm3D(noise, x, y, z, octaves, xzFreq, yFreq);
@@ -30,9 +31,9 @@ public final class PhoenixTerrainNoise {
         return (x, y, z) -> {
             double n1 = noise1.getValue(x * frequency, y * frequency, z * frequency);
             double n2 = noise2.getValue(x * frequency + 100, y * frequency * 0.5, z * frequency + 100);
-            
+
             double tube = Math.abs(n1) + Math.abs(n2);
-            return tube - threshold;  
+            return tube - threshold;
         };
     }
 
@@ -40,9 +41,9 @@ public final class PhoenixTerrainNoise {
         return (x, y, z) -> {
             double t = terrain.sample(x, y, z);
             double c = caves.sample(x, y, z);
-            
+
             if (t > 0 && c < 0) {
-                return c; 
+                return c;
             }
             return t;
         };
@@ -73,10 +74,11 @@ public final class PhoenixTerrainNoise {
             amplitude *= 0.5;
             freq *= 2.0;
         }
-        return value / maxAmp; 
+        return value / maxAmp;
     }
 
-    private static double fbm3D(SimplexNoise noise, double x, double y, double z, int octaves, double xzFreq, double yFreq) {
+    private static double fbm3D(SimplexNoise noise, double x, double y, double z, int octaves, double xzFreq,
+                                double yFreq) {
         double value = 0;
         double amplitude = 1.0;
         double maxAmp = 0;

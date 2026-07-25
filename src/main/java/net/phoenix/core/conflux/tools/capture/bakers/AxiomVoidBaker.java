@@ -8,15 +8,30 @@ import net.phoenix.core.conflux.tools.capture.CaptureBakeable;
 
 public final class AxiomVoidBaker implements CaptureBakeable {
 
-    private static final int   FRAMES       = 32;
-    private static final int   SIZE         = 512;
-    private static final float PERIOD       = (float)(2 * Math.PI / 0.19f); 
+    private static final int FRAMES = 32;
+    private static final int SIZE = 512;
+    private static final float PERIOD = (float) (2 * Math.PI / 0.19f);
     private static final float DT_PER_FRAME = PERIOD / FRAMES;
 
-    @Override public String id()       { return "void_bg"; }
-    @Override public int frameCount()  { return FRAMES; }
-    @Override public int frameWidth()  { return SIZE; }
-    @Override public int frameHeight() { return SIZE; }
+    @Override
+    public String id() {
+        return "void_bg";
+    }
+
+    @Override
+    public int frameCount() {
+        return FRAMES;
+    }
+
+    @Override
+    public int frameWidth() {
+        return SIZE;
+    }
+
+    @Override
+    public int frameHeight() {
+        return SIZE;
+    }
 
     @Override
     public void renderFrame(GuiGraphics g, int frame, float t, int w, int h) {

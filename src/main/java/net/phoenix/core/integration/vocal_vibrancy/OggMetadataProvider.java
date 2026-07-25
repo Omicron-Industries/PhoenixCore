@@ -13,11 +13,10 @@ import java.util.Optional;
 public class OggMetadataProvider {
 
     public static int getExactDurationTicks(ResourceManager manager, ResourceLocation soundLoc) {
-
         ResourceLocation fileLoc = convertToPath(soundLoc);
         Optional<Resource> resource = manager.getResource(fileLoc);
 
-        if (resource.isEmpty()) return 20; 
+        if (resource.isEmpty()) return 20;
 
         try (InputStream is = resource.get().open()) {
             byte[] allBytes = is.readAllBytes();
@@ -25,7 +24,7 @@ public class OggMetadataProvider {
 
             for (int i = allBytes.length - 28; i >= 0; i--) {
                 if (allBytes[i] == 'O' && allBytes[i + 1] == 'g' && allBytes[i + 2] == 'g' && allBytes[i + 3] == 'S') {
-                    
+
                     long granulePos = ByteBuffer.wrap(allBytes, i + 6, 8)
                             .order(ByteOrder.LITTLE_ENDIAN)
                             .getLong();
@@ -40,7 +39,6 @@ public class OggMetadataProvider {
     }
 
     private static ResourceLocation convertToPath(ResourceLocation loc) {
-
         String path = loc.getPath().replace(".", "/");
         return new ResourceLocation(loc.getNamespace(), "sounds/" + path + ".ogg");
     }

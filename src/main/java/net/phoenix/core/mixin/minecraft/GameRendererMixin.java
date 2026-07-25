@@ -3,8 +3,8 @@ package net.phoenix.core.mixin.minecraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.PostPass;
-import net.phoenix.core.mixin.accessor.PostChainAccessor;
 import net.phoenix.core.client.worldfx.WorldFXManager;
+import net.phoenix.core.mixin.accessor.PostChainAccessor;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,8 +34,8 @@ public class GameRendererMixin {
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/PostChain;process(F)V",
-                    shift = At.Shift.AFTER))
+                     target = "Lnet/minecraft/client/renderer/PostChain;process(F)V",
+                     shift = At.Shift.AFTER))
     private void phoenixcore$runScreenEffects(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
         if (renderLevel) {
             WorldFXManager.applyScreenEffects(partialTicks);

@@ -15,9 +15,12 @@ import net.phoenix.core.PhoenixCore;
 
 public final class ConfluxTerminalRegistry {
 
-    private static final DeferredRegister<Block>              BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,            PhoenixCore.MOD_ID);
-    private static final DeferredRegister<Item>               ITEMS  = DeferredRegister.create(ForgeRegistries.ITEMS,             PhoenixCore.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> BES    = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
+    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
+            PhoenixCore.MOD_ID);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS,
+            PhoenixCore.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BES = DeferredRegister
+            .create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
 
     public static final RegistryObject<ResearchTerminalBlock> TERMINAL;
     public static final RegistryObject<BlockEntityType<ResearchTerminalBlockEntity>> TERMINAL_BE;
@@ -36,8 +39,7 @@ public final class ConfluxTerminalRegistry {
         TERMINAL_BE = BES.register("research_terminal",
                 () -> BlockEntityType.Builder.of(
                         (pos, state) -> new ResearchTerminalBlockEntity(beHolder[0].get(), pos, state),
-                        TERMINAL.get()
-                ).build(null));
+                        TERMINAL.get()).build(null));
 
         beHolder[0] = TERMINAL_BE;
 

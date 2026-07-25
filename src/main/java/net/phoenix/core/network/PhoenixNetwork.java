@@ -4,7 +4,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
-
 import net.phoenix.core.network.packet.*;
 
 import java.util.Optional;
@@ -22,7 +21,6 @@ public class PhoenixNetwork {
     private static int id = 0;
 
     public static void init() {
-        
         CHANNEL.registerMessage(id++,
                 SelectColorPacket.class,
                 SelectColorPacket::encode,
@@ -110,9 +108,8 @@ public class PhoenixNetwork {
         CHANNEL.registerMessage(id++,
                 C2SToggleTeslaModePacket.class,
                 C2SToggleTeslaModePacket::encode,
-                C2SToggleTeslaModePacket::new, 
+                C2SToggleTeslaModePacket::new,
                 C2SToggleTeslaModePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
-
     }
 }

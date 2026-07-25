@@ -3,7 +3,6 @@ package net.phoenix.core.common.machine.trait;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
-
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableRecipeHandlerTrait;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 
@@ -40,7 +39,7 @@ public class NotifiableShieldContainer extends NotifiableRecipeHandlerTrait<Shie
         ShieldTypes recipeShieldType = left.get(0);
 
         if (getHeldShield() == recipeShieldType) {
-            
+
             return List.of();
         }
         return left;
@@ -63,7 +62,6 @@ public class NotifiableShieldContainer extends NotifiableRecipeHandlerTrait<Shie
 
     @Override
     public MachineTraitType<?> getTraitType() {
-        
         return new MachineTraitType<>(NotifiableShieldContainer.class, false);
     }
 }

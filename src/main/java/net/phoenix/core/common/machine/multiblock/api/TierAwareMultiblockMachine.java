@@ -5,7 +5,6 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
-import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.sync_system.annotations.RerenderOnChanged;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
@@ -31,7 +30,7 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
     private final List<TierEntry> tierConditions = new ArrayList<>();
 
     public TierAwareMultiblockMachine(BlockEntityCreationInfo info, int maxTier) {
-        super(info); 
+        super(info);
         this.maxTier = maxTier;
     }
 
@@ -119,7 +118,7 @@ public abstract class TierAwareMultiblockMachine extends WorkableElectricMultibl
             return parts -> {
                 var abilityBlocks = ability.getAllBlocks();
                 return parts.stream().anyMatch(p -> {
-                    
+
                     if (p == null || p.getLevel() == null || p.getBlockPos() == null) return false;
                     var block = p.getLevel().getBlockState(p.getBlockPos()).getBlock();
                     return abilityBlocks.contains(block);

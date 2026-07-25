@@ -1,22 +1,15 @@
 package net.phoenix.core.integration.vocal_resonance;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.capability.recipe.IO;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableItemStackHandler;
+import com.gregtechceu.gtceu.api.multiblock.pattern.PatternState;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
-import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
-import com.gregtechceu.gtceu.api.multiblock.pattern.PatternState;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.TextWidget;
-
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,6 +21,10 @@ import net.phoenix.core.network.packet.C2SSelectSoundPacket;
 import net.phoenix.core.network.packet.S2CPlaySoundPacket;
 import net.phoenix.core.network.packet.S2CPlayStreamPacket;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +39,8 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
     @SaveField
     @NotNull
 
-    private final NotifiableItemStackHandler discInventory = attachTrait(new NotifiableItemStackHandler(1, IO.IN, IO.NONE));
+    private final NotifiableItemStackHandler discInventory = attachTrait(
+            new NotifiableItemStackHandler(1, IO.IN, IO.NONE));
 
     @NotNull
 
@@ -164,7 +162,8 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
     public void acousticStateMachineTick() {
         if (getLevel() == null || getLevel().isClientSide || !isFormed()) return;
 
-        boolean hasActiveSelection = (!selectedLibrarySound.isEmpty() && currentStreamUrl.isEmpty()) || !currentStreamUrl.isEmpty();
+        boolean hasActiveSelection = (!selectedLibrarySound.isEmpty() && currentStreamUrl.isEmpty()) ||
+                !currentStreamUrl.isEmpty();
         boolean canPlay = hasActiveSelection && isWorkingEnabled();
 
         if (!canPlay) {
@@ -189,7 +188,8 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
                 this.remainingSoundTicks = -1;
 
                 boolean isYt = currentStreamUrl.contains("youtube.com") || currentStreamUrl.contains("youtu.be");
-                String label = isYt ? "YT Audio" : (currentStreamUrl.length() > 30 ? currentStreamUrl.substring(0, 27) + "..." : currentStreamUrl);
+                String label = isYt ? "YT Audio" :
+                        (currentStreamUrl.length() > 30 ? currentStreamUrl.substring(0, 27) + "..." : currentStreamUrl);
                 this.streamTitle = "§7Status: §aStreaming §f" + label;
                 playStreamSound();
                 lastPlayingStreamUrl = currentStreamUrl;
@@ -216,7 +216,8 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
 
         PhoenixNetwork.CHANNEL.send(
                 PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(getBlockPos())),
-                new S2CPlaySoundPacket(getBlockPos(), new ResourceLocation("minecraft", "empty"), 0.0f, 1.0f, (float) getFinalRange()));
+                new S2CPlaySoundPacket(getBlockPos(), new ResourceLocation("minecraft", "empty"), 0.0f, 1.0f,
+                        (float) getFinalRange()));
 
         this.lastPlayingLibrarySound = "";
         this.resetAcousticData();
@@ -225,7 +226,8 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
 
     public void syncAndGeneralUpdate() {
         if (this.getLevel() != null && this.getLevel().isClientSide) {
-            PhoenixNetwork.CHANNEL.sendToServer(new C2SSelectSoundPacket(this.getBlockPos(), this.selectedLibrarySound, this.currentStreamUrl));
+            PhoenixNetwork.CHANNEL.sendToServer(
+                    new C2SSelectSoundPacket(this.getBlockPos(), this.selectedLibrarySound, this.currentStreamUrl));
         }
     }
 
@@ -283,19 +285,21 @@ public class ResonantJukeboxMachine extends WorkableElectricMultiblockMachine im
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
         widgets.add(new TextWidget<>(Text.of(Component.literal("§bAcoustic Capabilities:"))));
-        widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal(getGateStatus("Physical Discs", hasDiscHatch)))));
-        widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal(getGateStatus("Sound Library", hasLibraryHatch)))));
-        widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal(getGateStatus("YT Streaming", hasStreamHatch)))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("§7Radius: §a" + getFinalRange() + "m §8(base " + BASE_RANGE + " + §7" + totalSpeakerRange + "§8 speaker bonus)"))));
+        widgets.add(
+                new TextWidget<>(Text.dynamic(() -> Component.literal(getGateStatus("Physical Discs", hasDiscHatch)))));
+        widgets.add(new TextWidget<>(
+                Text.dynamic(() -> Component.literal(getGateStatus("Sound Library", hasLibraryHatch)))));
+        widgets.add(
+                new TextWidget<>(Text.dynamic(() -> Component.literal(getGateStatus("YT Streaming", hasStreamHatch)))));
+        widgets.add(new TextWidget<>(Text.dynamic(() -> Component.literal("§7Radius: §a" + getFinalRange() +
+                "m §8(base " + BASE_RANGE + " + §7" + totalSpeakerRange + "§8 speaker bonus)"))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             boolean active = (!selectedLibrarySound.isEmpty() || !currentStreamUrl.isEmpty()) && isWorkingEnabled();
             return Component.literal("§7Usage: §e" + (active ? MUSIC_ENERGY_DRAIN : 0L) + " EU/t");
         })));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                currentLiveBPM > 0
-                        ? Component.literal("§7BPM detected: §f" + currentLiveBPM)
-                        : Component.literal("§7BPM detected: §8Awaiting Analysis..."))));
+        widgets.add(new TextWidget<>(
+                Text.dynamic(() -> currentLiveBPM > 0 ? Component.literal("§7BPM detected: §f" + currentLiveBPM) :
+                        Component.literal("§7BPM detected: §8Awaiting Analysis..."))));
         return widgets;
     }
 

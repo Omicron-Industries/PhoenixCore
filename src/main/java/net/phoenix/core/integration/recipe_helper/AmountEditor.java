@@ -39,7 +39,7 @@ public class AmountEditor extends AbstractWidget {
     public void open(int mx, int my, Object target, int currentAmt, Runnable onComplete) {
         this.setX(mx);
         this.setY(my);
-        
+
         this.input.setPosition(mx + 5, my + 5);
         this.saveBtn.setPosition(mx + 5, my + 22);
         this.deleteBtn.setPosition(mx + 41, my + 22);
@@ -49,13 +49,13 @@ public class AmountEditor extends AbstractWidget {
         this.input.setValue(String.valueOf(currentAmt));
         this.visible = true;
         this.input.setFocused(true);
-        this.input.setHighlightPos(0); 
+        this.input.setHighlightPos(0);
     }
 
     private void close(boolean delete) {
         if (delete) {
             if (target instanceof FluidSlotPanel.FluidEntry e) e.fluidExpr = null;
-            
+
             if (target instanceof SlotPanel.SlotEntry e) e.stack = net.minecraft.world.item.ItemStack.EMPTY;
         } else {
             int amt = 1;
@@ -63,7 +63,7 @@ public class AmountEditor extends AbstractWidget {
                 amt = Integer.parseInt(input.getValue());
             } catch (Exception ignored) {}
             if (target instanceof FluidSlotPanel.FluidEntry e) e.amount = amt;
-            
+
             if (target instanceof SlotPanel.SlotEntry e) e.count = Math.max(1, amt);
         }
         this.visible = false;

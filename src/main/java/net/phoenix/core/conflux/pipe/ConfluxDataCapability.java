@@ -7,8 +7,7 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 
 public final class ConfluxDataCapability {
 
-    public static final Capability<IConfluxDataHandler> DATA =
-            CapabilityManager.get(new CapabilityToken<>() {});
+    public static final Capability<IConfluxDataHandler> DATA = CapabilityManager.get(new CapabilityToken<>() {});
 
     private ConfluxDataCapability() {}
 

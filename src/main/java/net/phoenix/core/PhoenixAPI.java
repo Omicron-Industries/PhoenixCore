@@ -17,5 +17,4 @@ public class PhoenixAPI {
     public static final Logger LOGGER = LogManager.getLogger();
 
     public static final Map<ITeslaBattery, Supplier<TeslaBatteryBlock>> TESLA_BATTERIES = new HashMap<>();
-
 }

@@ -1,7 +1,5 @@
 package net.phoenix.core.network.packet;
 
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;

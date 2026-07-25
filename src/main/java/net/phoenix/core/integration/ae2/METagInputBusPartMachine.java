@@ -1,24 +1,14 @@
 package net.phoenix.core.integration.ae2;
 
-import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
+import com.gregtechceu.gtceu.api.capability.recipe.IO;
+import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.common.machine.trait.ProgrammableCircuitSlotTrait;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.value.sync.StringSyncValue;
-import brachy.modularui.widget.ParentWidget;
-import brachy.modularui.widgets.TextWidget;
-import brachy.modularui.widgets.layout.Flow;
 import com.gregtechceu.gtceu.common.mui.widgets.textfield.TextEditorWidget;
-import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.integration.ae2.machine.MEBusPartMachine;
 import com.gregtechceu.gtceu.integration.ae2.slot.ExportOnlyAEItemList;
 import com.gregtechceu.gtceu.integration.ae2.slot.ExportOnlyAEItemSlot;
@@ -36,7 +26,14 @@ import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
-import org.jetbrains.annotations.NotNull;
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.value.sync.StringSyncValue;
+import brachy.modularui.widget.ParentWidget;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -68,7 +65,6 @@ public class METagInputBusPartMachine extends MEBusPartMachine implements IDataS
     public long[] previewAmounts = new long[CONFIG_SIZE];
 
     public METagInputBusPartMachine(BlockEntityCreationInfo info, IO io) {
-        
         super(info, io, new ExportOnlyAEItemList(CONFIG_SIZE));
 
         this.aeItemHandler = (ExportOnlyAEItemList) this.getInventory();
@@ -83,7 +79,8 @@ public class METagInputBusPartMachine extends MEBusPartMachine implements IDataS
 
     @Override
     public NotifiableItemStackHandler getInventory() {
-        return this.aeItemHandler != null ? (NotifiableItemStackHandler) (Object) this.aeItemHandler : super.getInventory();
+        return this.aeItemHandler != null ? (NotifiableItemStackHandler) (Object) this.aeItemHandler :
+                super.getInventory();
     }
 
     @Override
@@ -190,7 +187,8 @@ public class METagInputBusPartMachine extends MEBusPartMachine implements IDataS
     }
 
     @Override
-    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager, UISettings settings) {
+    public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager,
+                            UISettings settings) {
         StringSyncValue whitelistSync = new StringSyncValue(() -> whitelistExpr, val -> {
             whitelistExpr = val;
             updateConfigurationFromTags();
@@ -205,17 +203,16 @@ public class METagInputBusPartMachine extends MEBusPartMachine implements IDataS
 
         mainWidget.child(Flow.column()
                 .coverChildren()
-                .child(new TextWidget<>(Text.dynamic(() -> isOnline
-                        ? Component.translatable("gtceu.gui.me_network.online")
-                        : Component.translatable("gtceu.gui.me_network.offline"))))
+                .child(new TextWidget<>(
+                        Text.dynamic(() -> isOnline ? Component.translatable("gtceu.gui.me_network.online") :
+                                Component.translatable("gtceu.gui.me_network.offline"))))
                 .child(new TextWidget<>(Text.of(Component.literal("Whitelist Tags:"))))
                 .child(new TextEditorWidget<>().value(whitelistSync).size(166, 20))
                 .child(new TextWidget<>(Text.of(Component.literal("Blacklist Tags:"))))
                 .child(new TextEditorWidget<>().value(blacklistSync).size(166, 20))
-                .child(new TextWidget<>(Text.dynamic(() ->
-                        Component.literal("Matched Items: " + java.util.Arrays.stream(previewStacks)
-                                .filter(s -> s != null && !s.isEmpty()).count()))))
-        );
+                .child(new TextWidget<>(
+                        Text.dynamic(() -> Component.literal("Matched Items: " + java.util.Arrays.stream(previewStacks)
+                                .filter(s -> s != null && !s.isEmpty()).count())))));
     }
 
     protected void updateConfigurationFromTags() {

@@ -1,6 +1,7 @@
 package net.phoenix.core.conflux.pipe;
 
 import com.gregtechceu.gtceu.api.pipenet.LevelPipeNet;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 
@@ -12,8 +13,7 @@ public class LevelConfluxPipeNet extends LevelPipeNet<ConfluxPipeData, ConfluxPi
         return level.getDataStorage().computeIfAbsent(
                 tag -> new LevelConfluxPipeNet(level, tag),
                 () -> new LevelConfluxPipeNet(level),
-                DATA_ID
-        );
+                DATA_ID);
     }
 
     public LevelConfluxPipeNet(ServerLevel level) {

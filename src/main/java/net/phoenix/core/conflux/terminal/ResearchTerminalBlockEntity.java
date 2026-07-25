@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.phoenix.core.conflux.ConfluxDataType;
 import net.phoenix.core.conflux.pipe.ConfluxMultiHandlerCapability;
 import net.phoenix.core.conflux.pipe.IConfluxMultiHandler;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,30 +33,45 @@ public class ResearchTerminalBlockEntity extends BlockEntity {
 
     private IConfluxMultiHandler buildHandler() {
         return new IConfluxMultiHandler() {
+
             @Override
             public long insert(ConfluxDataType type, long amount) {
-                long have     = stored.getOrDefault(type, 0L);
+                long have = stored.getOrDefault(type, 0L);
                 long accepted = Math.min(amount, CAPACITY_PER_TYPE - have);
                 if (accepted <= 0) return 0;
                 stored.put(type, have + accepted);
                 setChanged();
                 return accepted;
             }
+
             @Override
             public long extract(ConfluxDataType type, long amount) {
-                long have  = stored.getOrDefault(type, 0L);
+                long have = stored.getOrDefault(type, 0L);
                 long given = Math.min(amount, have);
                 stored.put(type, have - given);
                 setChanged();
                 return given;
             }
-            @Override public long getStored(ConfluxDataType type)   { return stored.getOrDefault(type, 0L); }
-            @Override public long getCapacity(ConfluxDataType type) { return CAPACITY_PER_TYPE; }
+
+            @Override
+            public long getStored(ConfluxDataType type) {
+                return stored.getOrDefault(type, 0L);
+            }
+
+            @Override
+            public long getCapacity(ConfluxDataType type) {
+                return CAPACITY_PER_TYPE;
+            }
         };
     }
 
-    public long getStored(ConfluxDataType type)   { return stored.getOrDefault(type, 0L); }
-    public long getCapacity(ConfluxDataType type) { return CAPACITY_PER_TYPE; }
+    public long getStored(ConfluxDataType type) {
+        return stored.getOrDefault(type, 0L);
+    }
+
+    public long getCapacity(ConfluxDataType type) {
+        return CAPACITY_PER_TYPE;
+    }
 
     public boolean trySpend(Map<ConfluxDataType, Long> costs) {
         for (Map.Entry<ConfluxDataType, Long> e : costs.entrySet()) {

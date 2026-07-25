@@ -175,7 +175,6 @@ public class ChameleonSprayCanItem extends Item {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level,
                                 @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced) {
-        
         String chromCode = ChameleonSprayCanBehaviour.getChromaticCode(stack);
         if (chromCode != null) {
             tooltipComponents.add(Component.literal("§7Color Mode: §" + chromCode + "Chromatic (" + chromCode + ")"));

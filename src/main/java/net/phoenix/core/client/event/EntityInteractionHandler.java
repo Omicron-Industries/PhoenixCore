@@ -21,27 +21,27 @@ public class EntityInteractionHandler {
         if (stack.getItem() instanceof ChameleonSprayCanItem) {
 
             if (event.getTarget() instanceof Wolf wolf) {
-                
+
                 if (wolf.isTame()) {
                     DyeColor currentColor = ChameleonSprayCanBehaviour.getColor(stack);
                     if (currentColor != null) {
                         if (!event.getLevel().isClientSide()) {
                             wolf.setCollarColor(currentColor);
                         }
-                        
+
                         event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
                         event.setCanceled(true);
                     }
                 }
             } else if (event.getTarget() instanceof Cat cat) {
-                
+
                 if (cat.isTame()) {
                     DyeColor currentColor = ChameleonSprayCanBehaviour.getColor(stack);
                     if (currentColor != null) {
                         if (!event.getLevel().isClientSide()) {
                             cat.setCollarColor(currentColor);
                         }
-                        
+
                         event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
                         event.setCanceled(true);
                     }

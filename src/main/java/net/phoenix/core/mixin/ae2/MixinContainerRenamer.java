@@ -1,6 +1,7 @@
 package net.phoenix.core.mixin.ae2;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.phoenix.core.api.CustomNameAccess;
@@ -29,10 +30,10 @@ public abstract class MixinContainerRenamer {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void phoenixcore$init(
-            int id,
-            net.minecraft.world.entity.player.Inventory inv,
-            Object host,
-            CallbackInfo ci) {
+                                  int id,
+                                  net.minecraft.world.entity.player.Inventory inv,
+                                  Object host,
+                                  CallbackInfo ci) {
         Object target = phoenixCore$resolveTarget(host, inv.player);
 
         if (!(target instanceof MetaMachine machine)) {
@@ -62,7 +63,7 @@ public abstract class MixinContainerRenamer {
         }
 
         try {
-            
+
             var locate = host.getClass()
                     .getMethod("locate", net.minecraft.world.entity.player.Player.class, Class.class);
             Object result = locate.invoke(host, player, BlockEntity.class);

@@ -1,6 +1,5 @@
 package net.phoenix.core.mixin.ae2;
 
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.MEPatternBufferPartMachine;
 
 import net.minecraft.world.InteractionHand;

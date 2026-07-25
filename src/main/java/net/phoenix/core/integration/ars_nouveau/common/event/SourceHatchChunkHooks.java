@@ -30,7 +30,7 @@ public final class SourceHatchChunkHooks {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
 
         chunk.getBlockEntities().forEach((pos, be) -> {
-            
+
             if (be instanceof SourceHatchPartMachine) {
                 SourceHatchTracker.remove(level.dimension(), pos);
             }

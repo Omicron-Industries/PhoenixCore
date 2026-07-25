@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.phoenix.core.conflux.ConfluxDataType;
 import net.phoenix.core.conflux.terminal.ResearchTerminalBlockEntity;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -17,17 +18,17 @@ public class WorldResearchData extends SavedData {
 
     private static final String ID = "conflux_team_research";
 
-    private final Map<UUID, Set<ResourceLocation>> unlocked    = new HashMap<>();
-    
-    private final Map<UUID, Set<ResourceLocation>> lockedOut   = new HashMap<>();
-    
-    private final Map<UUID, Set<String>>           flags       = new HashMap<>();
-    
+    private final Map<UUID, Set<ResourceLocation>> unlocked = new HashMap<>();
+
+    private final Map<UUID, Set<ResourceLocation>> lockedOut = new HashMap<>();
+
+    private final Map<UUID, Set<String>> flags = new HashMap<>();
+
     private final Map<UUID, Set<ResourceLocation>> multiblocks = new HashMap<>();
-    
-    private final Map<UUID, String>                discipline  = new HashMap<>();
-    
-    private final Map<UUID, Boolean>               committed   = new HashMap<>();
+
+    private final Map<UUID, String> discipline = new HashMap<>();
+
+    private final Map<UUID, Boolean> committed = new HashMap<>();
 
     public static WorldResearchData get(ServerLevel level) {
         return level.getServer().overworld().getDataStorage()
@@ -52,13 +53,25 @@ public class WorldResearchData extends SavedData {
         return teamSet(multiblocks, team).contains(machineId);
     }
 
-    public @Nullable String getDiscipline(UUID team) { return discipline.get(team); }
+    public @Nullable String getDiscipline(UUID team) {
+        return discipline.get(team);
+    }
 
-    public boolean isCommitted(UUID team) { return Boolean.TRUE.equals(committed.get(team)); }
+    public boolean isCommitted(UUID team) {
+        return Boolean.TRUE.equals(committed.get(team));
+    }
 
-    public Set<ResourceLocation> getUnlocked(UUID team)  { return Collections.unmodifiableSet(teamSet(unlocked, team)); }
-    public Set<ResourceLocation> getLockedOut(UUID team) { return Collections.unmodifiableSet(teamSet(lockedOut, team)); }
-    public Set<String>           getFlags(UUID team)     { return Collections.unmodifiableSet(teamSet(flags, team)); }
+    public Set<ResourceLocation> getUnlocked(UUID team) {
+        return Collections.unmodifiableSet(teamSet(unlocked, team));
+    }
+
+    public Set<ResourceLocation> getLockedOut(UUID team) {
+        return Collections.unmodifiableSet(teamSet(lockedOut, team));
+    }
+
+    public Set<String> getFlags(UUID team) {
+        return Collections.unmodifiableSet(teamSet(flags, team));
+    }
 
     public DisciplineInfo getDisciplineInfo(UUID team, ResearchTreeRegistry registry) {
         String discId = discipline.get(team);
@@ -70,8 +83,7 @@ public class WorldResearchData extends SavedData {
                 .orElse(null);
 
         boolean isCommitted = isCommitted(team);
-        Map<ConfluxDataType, Long> switchCost = (tree != null && !isCommitted)
-                ? tree.switchCost : Map.of();
+        Map<ConfluxDataType, Long> switchCost = (tree != null && !isCommitted) ? tree.switchCost : Map.of();
         String title = tree != null ? tree.title : discId;
 
         return new DisciplineInfo(discId, title, isCommitted, switchCost);
@@ -96,7 +108,7 @@ public class WorldResearchData extends SavedData {
 
         for (ResearchUnlock unlock : node.unlocks) {
             switch (unlock.type()) {
-                case "flag"       -> teamSet(flags, team).add(unlock.value());
+                case "flag" -> teamSet(flags, team).add(unlock.value());
                 case "multiblock" -> {
                     ResourceLocation machineId = ResourceLocation.tryParse(unlock.value());
                     if (machineId != null) teamSet(multiblocks, team).add(machineId);
@@ -141,7 +153,7 @@ public class WorldResearchData extends SavedData {
             for (ResearchNode node : tree.getNodes()) {
                 for (ResearchUnlock unlock : node.unlocks) {
                     switch (unlock.type()) {
-                        case "flag"       -> teamSet(flags, team).remove(unlock.value());
+                        case "flag" -> teamSet(flags, team).remove(unlock.value());
                         case "multiblock" -> {
                             ResourceLocation ml = ResourceLocation.tryParse(unlock.value());
                             if (ml != null) teamSet(multiblocks, team).remove(ml);
@@ -174,12 +186,12 @@ public class WorldResearchData extends SavedData {
             tag.getList("teams", Tag.TAG_COMPOUND).forEach(e -> {
                 CompoundTag t = (CompoundTag) e;
                 UUID id = t.getUUID("id");
-                readRLSet(t, "unlocked").forEach(rl    -> d.teamSet(d.unlocked,    id).add(rl));
-                readRLSet(t, "lockedOut").forEach(rl   -> d.teamSet(d.lockedOut,   id).add(rl));
+                readRLSet(t, "unlocked").forEach(rl -> d.teamSet(d.unlocked, id).add(rl));
+                readRLSet(t, "lockedOut").forEach(rl -> d.teamSet(d.lockedOut, id).add(rl));
                 readRLSet(t, "multiblocks").forEach(rl -> d.teamSet(d.multiblocks, id).add(rl));
-                readStringList(t, "flags").forEach(f   -> d.teamSet(d.flags,       id).add(f));
+                readStringList(t, "flags").forEach(f -> d.teamSet(d.flags, id).add(f));
                 if (t.contains("discipline", Tag.TAG_STRING)) d.discipline.put(id, t.getString("discipline"));
-                if (t.contains("committed",  Tag.TAG_BYTE))   d.committed.put(id, t.getBoolean("committed"));
+                if (t.contains("committed", Tag.TAG_BYTE)) d.committed.put(id, t.getBoolean("committed"));
             });
         }
         return d;
@@ -197,10 +209,10 @@ public class WorldResearchData extends SavedData {
         for (UUID id : allTeams) {
             CompoundTag t = new CompoundTag();
             t.putUUID("id", id);
-            writeRLSet(t, "unlocked",    teamSet(unlocked,    id));
-            writeRLSet(t, "lockedOut",   teamSet(lockedOut,   id));
+            writeRLSet(t, "unlocked", teamSet(unlocked, id));
+            writeRLSet(t, "lockedOut", teamSet(lockedOut, id));
             writeRLSet(t, "multiblocks", teamSet(multiblocks, id));
-            writeStringList(t, "flags",  teamSet(flags,       id));
+            writeStringList(t, "flags", teamSet(flags, id));
             String disc = discipline.get(id);
             if (disc != null) t.putString("discipline", disc);
             if (Boolean.TRUE.equals(committed.get(id))) t.putBoolean("committed", true);

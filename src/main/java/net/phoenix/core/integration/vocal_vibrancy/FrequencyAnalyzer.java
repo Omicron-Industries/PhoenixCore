@@ -6,15 +6,15 @@ import java.nio.ByteOrder;
 public class FrequencyAnalyzer {
 
     public float bass, mid, treble;
-    public int bpm = 120; 
+    public int bpm = 120;
 
-    private static final int HISTORY_SIZE = 43; 
+    private static final int HISTORY_SIZE = 43;
     private final float[] bassHistory = new float[HISTORY_SIZE];
     private int historyIndex = 0;
 
     private long lastBeatTimeMs = 0;
-    private float bpmBuffer = 120.0f; 
-    private static final long DEBOUNCE_MS = 250; 
+    private float bpmBuffer = 120.0f;
+    private static final long DEBOUNCE_MS = 250;
 
     public void reset() {
         this.bass = 0f;
@@ -28,19 +28,18 @@ public class FrequencyAnalyzer {
     }
 
     public void processBuffer(ByteBuffer data, int sampleRate) {
-        
         data.order(ByteOrder.LITTLE_ENDIAN);
-        int samples = data.remaining() / 2; 
+        int samples = data.remaining() / 2;
         if (samples <= 0) return;
 
-        int n = Integer.highestOneBit(samples); 
+        int n = Integer.highestOneBit(samples);
         if (n <= 0) return;
 
         float[] real = new float[n];
         float[] imag = new float[n];
 
         for (int i = 0; i < n; i++) {
-            real[i] = data.getShort() / 32768.0f; 
+            real[i] = data.getShort() / 32768.0f;
         }
 
         fft(real, imag, n);
@@ -64,7 +63,6 @@ public class FrequencyAnalyzer {
     }
 
     private void detectBeatAndCalculateBPM(float currentBassEnergy) {
-        
         float historyAverage = 0.0f;
         for (float val : bassHistory) {
             historyAverage += val;

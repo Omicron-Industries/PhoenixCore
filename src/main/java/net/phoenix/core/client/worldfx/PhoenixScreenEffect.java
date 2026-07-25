@@ -1,7 +1,8 @@
 package net.phoenix.core.client.worldfx;
 
-import lombok.Setter;
 import net.minecraft.client.renderer.ShaderInstance;
+
+import lombok.Setter;
 
 @Setter
 public abstract class PhoenixScreenEffect {

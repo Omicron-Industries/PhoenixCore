@@ -1,6 +1,7 @@
 package net.phoenix.core.integration.vocal_resonance.recipe.lookup;
 
 import com.gregtechceu.gtceu.api.recipe.lookup.ingredient.AbstractMapIngredient;
+
 import net.phoenix.core.integration.vocal_resonance.ingredient.SoundIngredient;
 
 import java.util.Collections;

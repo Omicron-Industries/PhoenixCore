@@ -1,6 +1,5 @@
 package net.phoenix.core.conflux.tools.capture;
 
-import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -8,6 +7,8 @@ import java.net.URLClassLoader;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Stream;
+
+import javax.tools.*;
 
 public final class HotBakerLoader {
 
@@ -18,7 +19,9 @@ public final class HotBakerLoader {
 
     public static int reload() {
         if (!Files.isDirectory(BAKERS_DIR)) {
-            try { Files.createDirectories(BAKERS_DIR); } catch (IOException ignored) {}
+            try {
+                Files.createDirectories(BAKERS_DIR);
+            } catch (IOException ignored) {}
             return 0;
         }
 
@@ -57,8 +60,8 @@ public final class HotBakerLoader {
                 String id = parts[0], className = parts[1];
                 int w, h, frames;
                 try {
-                    w      = Integer.parseInt(parts[2]);
-                    h      = Integer.parseInt(parts[3]);
+                    w = Integer.parseInt(parts[2]);
+                    h = Integer.parseInt(parts[3]);
                     frames = parts.length >= 5 ? Integer.parseInt(parts[4]) : 1;
                 } catch (NumberFormatException e) {
                     System.err.println("[HotBakerLoader] auto.list bad dimensions: " + line);
@@ -66,14 +69,14 @@ public final class HotBakerLoader {
                 }
 
                 try {
-                    
+
                     Class<?> cls = Class.forName(className, true, modLoader);
                     SpriteCaptureRegistry.register(new ReflectiveBaker(id, cls, w, h, frames));
                     System.out.println("[HotBakerLoader] Auto-registered: " + id + " → " + className);
                     count++;
                 } catch (ClassNotFoundException e) {
-                    System.err.println("[HotBakerLoader] Class not found: " + className
-                            + " — is the mod loaded and on the classpath?");
+                    System.err.println("[HotBakerLoader] Class not found: " + className +
+                            " — is the mod loaded and on the classpath?");
                 }
             }
         } catch (IOException e) {
@@ -91,13 +94,16 @@ public final class HotBakerLoader {
     }
 
     private static boolean compile(JavaCompiler compiler, List<Path> sources) {
-        try { Files.createDirectories(OUTPUT_DIR); } catch (IOException e) { return false; }
+        try {
+            Files.createDirectories(OUTPUT_DIR);
+        } catch (IOException e) {
+            return false;
+        }
 
         List<String> args = new ArrayList<>(List.of(
                 "-classpath", buildFullClasspath(),
                 "-d", OUTPUT_DIR.toAbsolutePath().toString(),
-                "-source", "17", "-target", "17"
-        ));
+                "-source", "17", "-target", "17"));
         sources.forEach(p -> args.add(p.toAbsolutePath().toString()));
 
         java.io.ByteArrayOutputStream errBuf = new java.io.ByteArrayOutputStream();
@@ -120,8 +126,9 @@ public final class HotBakerLoader {
         while (cl != null) {
             if (cl instanceof URLClassLoader urlCl) {
                 for (URL url : urlCl.getURLs()) {
-                    try { paths.add(new File(url.toURI()).getAbsolutePath()); }
-                    catch (Exception ignored) {}
+                    try {
+                        paths.add(new File(url.toURI()).getAbsolutePath());
+                    } catch (Exception ignored) {}
                 }
             }
 
@@ -129,8 +136,9 @@ public final class HotBakerLoader {
                 java.lang.reflect.Method getURLs = cl.getClass().getMethod("getURLs");
                 URL[] urls = (URL[]) getURLs.invoke(cl);
                 for (URL url : urls) {
-                    try { paths.add(new File(url.toURI()).getAbsolutePath()); }
-                    catch (Exception ignored) {}
+                    try {
+                        paths.add(new File(url.toURI()).getAbsolutePath());
+                    } catch (Exception ignored) {}
                 }
             } catch (Exception ignored) {}
 
@@ -144,11 +152,10 @@ public final class HotBakerLoader {
         int count = 0;
         try {
             URL outUrl = OUTPUT_DIR.toUri().toURL();
-            
+
             URLClassLoader loader = new URLClassLoader(
-                    new URL[]{ outUrl },
-                    Thread.currentThread().getContextClassLoader()
-            );
+                    new URL[] { outUrl },
+                    Thread.currentThread().getContextClassLoader());
 
             List<Path> classFiles = new ArrayList<>();
             try (Stream<Path> walk = Files.walk(OUTPUT_DIR)) {

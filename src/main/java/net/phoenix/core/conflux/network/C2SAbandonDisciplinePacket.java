@@ -36,10 +36,13 @@ public class C2SAbandonDisciplinePacket {
             if (!(player.level() instanceof ServerLevel level)) return;
 
             if (!(level.getBlockEntity(pkt.terminalPos) instanceof ResearchTerminalBlockEntity terminal)) return;
-            if (player.distanceToSqr(pkt.terminalPos.getX() + 0.5, pkt.terminalPos.getY() + 0.5, pkt.terminalPos.getZ() + 0.5) > 64) return;
+            if (player.distanceToSqr(pkt.terminalPos.getX() + 0.5, pkt.terminalPos.getY() + 0.5,
+                    pkt.terminalPos.getZ() + 0.5) > 64)
+                return;
 
             UUID teamId = ResearchTeamHelper.getTeamId(player);
-            boolean success = WorldResearchData.get(level).abandonDiscipline(teamId, terminal, ResearchTreeRegistry.INSTANCE);
+            boolean success = WorldResearchData.get(level).abandonDiscipline(teamId, terminal,
+                    ResearchTreeRegistry.INSTANCE);
             if (success) {
                 ConfluxNetwork.syncResearchToPlayer(player);
             }

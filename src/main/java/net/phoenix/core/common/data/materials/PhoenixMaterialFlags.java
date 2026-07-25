@@ -68,7 +68,7 @@ public class PhoenixMaterialFlags {
             .unificationEnabled(true)
             .generateBlock(true)
             .blockConstructor(CrystalRoseBlock::new)
-            
+
             .blockProperties(new TagPrefix.BlockProperties(
                     () -> net.minecraft.client.renderer.RenderType::cutoutMipped,
                     p -> p.noCollission().noOcclusion().instabreak()))

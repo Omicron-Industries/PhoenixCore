@@ -17,17 +17,32 @@ public final class ReflectiveBaker implements CaptureBakeable {
     private final int height;
 
     public ReflectiveBaker(String id, Class<?> targetClass, int width, int height, int frameCount) {
-        this.id          = id;
+        this.id = id;
         this.targetClass = targetClass;
-        this.width       = width;
-        this.height      = height;
-        this.frameCount  = frameCount;
+        this.width = width;
+        this.height = height;
+        this.frameCount = frameCount;
     }
 
-    @Override public String id()       { return id; }
-    @Override public int frameCount()  { return frameCount; }
-    @Override public int frameWidth()  { return width; }
-    @Override public int frameHeight() { return height; }
+    @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public int frameCount() {
+        return frameCount;
+    }
+
+    @Override
+    public int frameWidth() {
+        return width;
+    }
+
+    @Override
+    public int frameHeight() {
+        return height;
+    }
 
     @Override
     public void renderFrame(GuiGraphics g, int frame, float t, int w, int h) {
@@ -35,7 +50,7 @@ public final class ReflectiveBaker implements CaptureBakeable {
             Object instance = instantiate(w, h);
             render(instance, g, frame, t, w, h);
         } catch (Exception e) {
-            
+
             g.fill(0, 0, w, h, 0xFF3A0000);
             g.drawString(Minecraft.getInstance().font,
                     "Reflect error: " + e.getClass().getSimpleName(), 8, 8, 0xFFFF4444, false);
@@ -46,12 +61,13 @@ public final class ReflectiveBaker implements CaptureBakeable {
     }
 
     private Object instantiate(int w, int h) throws ReflectiveOperationException {
-        
-        try { return targetClass.getDeclaredConstructor().newInstance(); }
-        catch (NoSuchMethodException ignored) {}
+        try {
+            return targetClass.getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException ignored) {}
 
-        try { return targetClass.getDeclaredConstructor(Screen.class).newInstance((Object) null); }
-        catch (NoSuchMethodException ignored) {}
+        try {
+            return targetClass.getDeclaredConstructor(Screen.class).newInstance((Object) null);
+        } catch (NoSuchMethodException ignored) {}
 
         try {
             return targetClass.getDeclaredConstructor(Screen.class, Component.class)
@@ -81,28 +97,37 @@ public final class ReflectiveBaker implements CaptureBakeable {
         int intsSeen = 0;
         for (int i = 0; i < types.length; i++) {
             Class<?> t = types[i];
-            if (t == Minecraft.class)        { args[i] = Minecraft.getInstance(); }
-            else if (t == Screen.class)      { args[i] = null; }
-            else if (t == Component.class)   { args[i] = Component.literal("Bake"); }
-            else if (t == String.class)      { args[i] = "bake"; }
-            else if (t == boolean.class)     { args[i] = false; }
-            else if (t == float.class)       { args[i] = 0f; }
-            else if (t == double.class)      { args[i] = 0.0; }
-            else if (t == long.class)        { args[i] = 0L; }
-            else if (t == int.class) {
-                
+            if (t == Minecraft.class) {
+                args[i] = Minecraft.getInstance();
+            } else if (t == Screen.class) {
+                args[i] = null;
+            } else if (t == Component.class) {
+                args[i] = Component.literal("Bake");
+            } else if (t == String.class) {
+                args[i] = "bake";
+            } else if (t == boolean.class) {
+                args[i] = false;
+            } else if (t == float.class) {
+                args[i] = 0f;
+            } else if (t == double.class) {
+                args[i] = 0.0;
+            } else if (t == long.class) {
+                args[i] = 0L;
+            } else if (t == int.class) {
+
                 args[i] = (intsSeen == 0) ? w : (intsSeen == 1) ? h : 0;
                 intsSeen++;
+            } else if (!t.isPrimitive()) {
+                args[i] = null;
+            } else {
+                return null;
             }
-            else if (!t.isPrimitive())       { args[i] = null; } 
-            else                             { return null; }     
         }
         return args;
     }
 
     private void render(Object instance, GuiGraphics g, int frame, float t, int w, int h)
-            throws ReflectiveOperationException {
-
+                                                                                          throws ReflectiveOperationException {
         if (instance instanceof Screen screen) {
             screen.init(Minecraft.getInstance(), w, h);
             screen.render(g, -1, -1, 0f);
@@ -116,18 +141,23 @@ public final class ReflectiveBaker implements CaptureBakeable {
         }
 
         m = findMethod("render", GuiGraphics.class, int.class, int.class, float.class);
-        if (m != null) { m.invoke(instance, g, -1, -1, t); return; }
+        if (m != null) {
+            m.invoke(instance, g, -1, -1, t);
+            return;
+        }
 
         m = findMethod("render", GuiGraphics.class);
-        if (m != null) { m.invoke(instance, g); return; }
+        if (m != null) {
+            m.invoke(instance, g);
+            return;
+        }
 
         throw new IllegalStateException(
                 "No recognised render method on " + targetClass.getName() +
-                " — add a .java baker file to sprite_bakers/ for full control.");
+                        " — add a .java baker file to sprite_bakers/ for full control.");
     }
 
     private Method findMethod(String name, Class<?>... params) {
-        
         Class<?> cls = targetClass;
         while (cls != null && cls != Object.class) {
             try {

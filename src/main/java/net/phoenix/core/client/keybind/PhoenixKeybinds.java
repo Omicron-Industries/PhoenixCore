@@ -53,6 +53,5 @@ public class PhoenixKeybinds {
         event.register(MANIPULATOR_MENU);
         event.register(OPEN_RECIPE_BUILDER);
         event.register(SPRAY_CAN_MENU);
-
     }
 }

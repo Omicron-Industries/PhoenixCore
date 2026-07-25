@@ -3,11 +3,13 @@ package net.phoenix.core.conflux.client.render;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.conflux.research.ResearchNode;
+
 import org.jetbrains.annotations.Nullable;
 
 public interface DisciplineRenderer {
 
-    @Nullable String disciplineId();
+    @Nullable
+    String disciplineId();
 
     MotionClock.Signature signature();
 
@@ -34,13 +36,23 @@ public interface DisciplineRenderer {
         return Math.abs(mx - p[0]) <= 22 && Math.abs(my - p[1]) <= 22;
     }
 
-    default @Nullable ResourceLocation shaderLocation() { return null; }
+    default @Nullable ResourceLocation shaderLocation() {
+        return null;
+    }
 
-    default float[] rippleOriginsCanvas() { return new float[0]; }
+    default float[] rippleOriginsCanvas() {
+        return new float[0];
+    }
 
-    default float[] rippleAges() { return new float[0]; }
+    default float[] rippleAges() {
+        return new float[0];
+    }
 
-    default int rippleCount() { return 0; }
+    default int rippleCount() {
+        return 0;
+    }
 
-    default @Nullable float[] nodeHeatStrength(RenderContext ctx) { return null; }
+    default @Nullable float[] nodeHeatStrength(RenderContext ctx) {
+        return null;
+    }
 }

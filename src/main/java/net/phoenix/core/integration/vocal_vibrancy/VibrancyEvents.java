@@ -14,7 +14,6 @@ import net.phoenix.core.network.packet.C2SSoundMetadataPacket;
 public class VibrancyEvents {
 
     public static void onSoundStarted(SoundInstance sound) {
-
         if (!(sound instanceof JukeblockSoundInstance) && !(sound instanceof RadioClientAudio)) {
             return;
         }
@@ -51,7 +50,7 @@ public class VibrancyEvents {
         if (sound instanceof RadioClientAudio rca) {
             return rca.getMaxRange();
         }
-        
+
         return sound.getAttenuation() == SoundInstance.Attenuation.NONE ? 64f : 16f;
     }
 }

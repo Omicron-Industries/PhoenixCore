@@ -18,10 +18,10 @@ import java.util.function.Supplier;
 public class C2SResearchUnlockPacket {
 
     private final ResourceLocation nodeId;
-    private final BlockPos         terminalPos;
+    private final BlockPos terminalPos;
 
     public C2SResearchUnlockPacket(ResourceLocation nodeId, BlockPos terminalPos) {
-        this.nodeId      = nodeId;
+        this.nodeId = nodeId;
         this.terminalPos = terminalPos;
     }
 
@@ -41,13 +41,16 @@ public class C2SResearchUnlockPacket {
             if (!(player.level() instanceof ServerLevel level)) return;
 
             if (!(level.getBlockEntity(pkt.terminalPos) instanceof ResearchTerminalBlockEntity terminal)) return;
-            if (player.distanceToSqr(pkt.terminalPos.getX() + 0.5, pkt.terminalPos.getY() + 0.5, pkt.terminalPos.getZ() + 0.5) > 64) return;
+            if (player.distanceToSqr(pkt.terminalPos.getX() + 0.5, pkt.terminalPos.getY() + 0.5,
+                    pkt.terminalPos.getZ() + 0.5) > 64)
+                return;
 
             ResearchNode node = ResearchTreeRegistry.INSTANCE.getNode(pkt.nodeId).orElse(null);
             if (node == null) return;
 
             UUID teamId = ResearchTeamHelper.getTeamId(player);
-            boolean success = WorldResearchData.get(level).tryUnlock(teamId, node, terminal, ResearchTreeRegistry.INSTANCE);
+            boolean success = WorldResearchData.get(level).tryUnlock(teamId, node, terminal,
+                    ResearchTreeRegistry.INSTANCE);
             if (success) {
                 ConfluxNetwork.syncResearchToPlayer(player);
             }

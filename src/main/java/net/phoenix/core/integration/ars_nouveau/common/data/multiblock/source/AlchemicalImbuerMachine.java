@@ -1,14 +1,13 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.source;
 
-import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
-import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
-
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
+import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -123,13 +122,13 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
 
         switch (registryName) {
             case "ars_nouveau:whirlisprig_flower":
-                return 0.20f; 
+                return 0.20f;
             case "ars_nouveau:magebloom_crop":
-                return 0.05f; 
+                return 0.05f;
             case "ars_nouveau:sourceberry_bush":
-                return 0.01f; 
+                return 0.01f;
             default:
-                
+
                 if (state.is(BlockTags.FLOWERS)) {
                     return 0.002f;
                 }
@@ -169,10 +168,10 @@ public class AlchemicalImbuerMachine extends WorkableElectricMultiblockMachine {
         List<IWidget> widgets = super.getWidgetsForDisplay(syncManager);
         if (!isFormed()) return widgets;
         widgets.add(new TextWidget<>(Text.of(Component.literal("§5Alchemical Analysis:"))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §7Soul Resonance: §d" + String.format("%.2f", cachedSoulDensity)))));
-        widgets.add(new TextWidget<>(Text.dynamic(() ->
-                Component.literal("  §7Garden Boost:   §b+" + String.format("%.2f", cachedFloraBoost)))));
+        widgets.add(new TextWidget<>(Text.dynamic(
+                () -> Component.literal("  §7Soul Resonance: §d" + String.format("%.2f", cachedSoulDensity)))));
+        widgets.add(new TextWidget<>(Text.dynamic(
+                () -> Component.literal("  §7Garden Boost:   §b+" + String.format("%.2f", cachedFloraBoost)))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             float harmonicBonus = (totalWorkTicks >= HARMONIZATION_THRESHOLD) ? 0.5f : 0.0f;
             float totalPotency = cachedSoulDensity + cachedFloraBoost + harmonicBonus;

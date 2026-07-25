@@ -1,8 +1,8 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.api.recipe.content.ContentModifier;
@@ -11,7 +11,6 @@ import com.gregtechceu.gtceu.api.recipe.ingredient.IntProviderFluidIngredient;
 import com.gregtechceu.gtceu.api.recipe.ingredient.IntProviderIngredient;
 import com.gregtechceu.gtceu.api.recipe.ingredient.SizedIngredient;
 import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
-import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -51,7 +50,6 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        
         MetaMachine machine = MetaMachine.getMachine(accessor.getLevel(), accessor.getPosition());
         if (!(machine instanceof BasicThreadedMachine imbuer)) return;
 
@@ -177,7 +175,7 @@ public class ThreadedRecipeOutputProvider implements IBlockComponentProvider, IS
                         items.add(IntProviderIngredient.SERIALIZER.parse(
                                 (JsonObject) NbtOps.INSTANCE.convertTo(JsonOps.INSTANCE, ct)));
                     } else {
-                        
+
                         ItemStack stack = ItemStack.of(ct);
                         if (!stack.isEmpty()) items.add(SizedIngredient.create(stack));
                     }

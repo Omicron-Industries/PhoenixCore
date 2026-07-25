@@ -225,8 +225,8 @@ public class ConditionsScreen extends Screen {
         private static final int FORM_W = 284;
         private static final int FORM_PAD = 8;
         private static final int LABEL_H = 9;
-        private static final int BOX_H = 14;   
-        private static final int ROW_GAP = 4;    
+        private static final int BOX_H = 14;
+        private static final int ROW_GAP = 4;
         private static final int HDR_H = 16;
         private static final int TYPE_BTN_H = 14;
 
@@ -261,11 +261,11 @@ public class ConditionsScreen extends Screen {
 
             for (int i = 0; i < 3; i++) {
                 EditBox box = new EditBox(font,
-                        formX + FORM_PAD + 1, 0, 
+                        formX + FORM_PAD + 1, 0,
                         FORM_W - FORM_PAD * 2 - 2, BOX_H - 2,
                         Component.empty());
                 box.setMaxLength(256);
-                box.setBordered(false); 
+                box.setBordered(false);
                 formFields[i] = addRenderableWidget(box);
             }
 
@@ -288,7 +288,6 @@ public class ConditionsScreen extends Screen {
         }
 
         private int calcFormH() {
-            
             return HDR_H + 4 + TYPE_BTN_H + FORM_PAD + formType.fieldLabels.length * (LABEL_H + BOX_H + ROW_GAP) +
                     FORM_PAD + 13 + FORM_PAD;
         }
@@ -341,9 +340,8 @@ public class ConditionsScreen extends Screen {
 
         @Override
         public void render(@NotNull GuiGraphics g, int mx, int my, float pt) {
-            
             parent.render(g, -1, -1, pt);
-            
+
             g.fill(0, 0, this.width, this.height, 0x88000000);
 
             g.fill(formX, formY, formX + FORM_W, formY + formH, 0xFF0D000F);
@@ -362,7 +360,7 @@ public class ConditionsScreen extends Screen {
                 g.drawString(font, formType.fieldLabels[i], bx, labelY, 0x886688, false);
 
                 if (formType.isItemSlot(i)) {
-                    
+
                     boolean hov = mx >= bx && mx < bx + 18 && my >= boxY && my < boxY + 18;
                     g.fill(bx, boxY, bx + 18, boxY + 18, 0xFF1A0A2A);
                     drawBorder(g, bx, boxY, bx + 18, boxY + 18, 0xFF7A3A9A);
@@ -375,7 +373,7 @@ public class ConditionsScreen extends Screen {
                     if (hov && slotKeys[i] != null)
                         g.renderTooltip(font, Component.literal(slotKeys[i]), mx, my);
                 } else {
-                    
+
                     g.fill(bx, boxY, bx + bw, boxY + BOX_H, 0xFF090012);
                     drawBorder(g, bx, boxY, bx + bw, boxY + BOX_H, 0xFF4A2060);
                 }
@@ -396,7 +394,7 @@ public class ConditionsScreen extends Screen {
                     return true;
                 }
             }
-            
+
             if (mx < formX || mx > formX + FORM_W || my < formY || my > formY + formH) {
                 close();
                 return true;
@@ -454,7 +452,7 @@ public class ConditionsScreen extends Screen {
         private static final int PANEL_W = 240;
         private static final int PANEL_H = 200;
         private static final int ROW_H = 14;
-        private static final int HEADER_H = 28; 
+        private static final int HEADER_H = 28;
         private static final int SCROLL_W = 6;
 
         private final ConditionFormOverlay formScreen;
@@ -476,7 +474,6 @@ public class ConditionsScreen extends Screen {
 
         @Override
         public void render(@NotNull GuiGraphics g, int mx, int my, float pt) {
-            
             formScreen.render(g, -1, -1, pt);
             g.fill(0, 0, this.width, this.height, 0x66000000);
 

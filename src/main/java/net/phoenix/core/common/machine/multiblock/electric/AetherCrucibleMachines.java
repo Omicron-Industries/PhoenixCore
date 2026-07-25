@@ -8,17 +8,12 @@ import com.gregtechceu.gtceu.api.multiblock.Predicates;
 import com.gregtechceu.gtceu.api.multiblock.pattern.MultiblockPatternBuilder;
 import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 import com.gregtechceu.gtceu.common.data.GTRecipeModifiers;
-
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
+
 import net.minecraft.network.chat.Component;
 import net.phoenix.core.common.block.PhoenixBlocks;
 import net.phoenix.core.common.machine.multiblock.api.PhoenixMultiblockProperties;
 import net.phoenix.core.common.machine.multiblock.api.PhoenixPartAppearance;
-import net.phoenix.core.common.machine.multiblock.api.PhoenixPartAppearance.AppearanceResult;
-
-import net.minecraft.world.level.block.Block;
-
-import java.util.function.Supplier;
 
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
@@ -54,7 +49,7 @@ public final class AetherCrucibleMachines {
                     GTRecipeModifiers.OC_NON_PERFECT,
                     AetherCrucibleMachine::recipeModifier)
             .appearanceBlock(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING)
-            
+
             .modelProperty(PhoenixMultiblockProperties.FORMATION_TIER, 0)
 
             .partAppearance(PhoenixPartAppearance.rules()
@@ -69,31 +64,31 @@ public final class AetherCrucibleMachines {
                     Component.literal("§8Bonuses unlock when the structure is re-formed.§r"))
             .pattern(definition -> MultiblockPatternBuilder
                     .start(RelativeDirection.FRONT, RelativeDirection.UP, RelativeDirection.RIGHT)
-                    
+
                     .slice("CCCCC", "CCCCC", "CCCCC")
-                    
+
                     .slice("CCCCC", "C   C", "CSCCC", "C   C", "CCCCC")
-                    
+
                     .slice("CCCCC", "CCCCC", "CCCCC")
                     .where('S', Predicates.controller(definition))
                     .where('C', Predicates.blocks(PhoenixBlocks.SOURCE_FIBER_MACHINE_CASING.get())
-                            
+
                             .or(Predicates.abilities(PartAbility.IMPORT_ITEMS))
                             .or(Predicates.abilities(PartAbility.EXPORT_ITEMS))
                             .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS))
                             .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS))
                             .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2))
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
-                            
+
                             .or(Predicates.abilities(AETHER_CATALYST_ABILITY).setMaxGlobalLimited(1)))
                     .where(' ', Predicates.air())
                     .build())
             .workableCasingModel(
                     new net.minecraft.resources.ResourceLocation("phoenixcore:block/casings/multiblock/aether_casing"),
-                    new net.minecraft.resources.ResourceLocation("phoenixcore:block/multiblock/aether_crucible")
-            )
+                    new net.minecraft.resources.ResourceLocation("phoenixcore:block/multiblock/aether_crucible"))
             .register();
-    public static void init() {  }
+
+    public static void init() {}
 
     private AetherCrucibleMachines() {}
 }

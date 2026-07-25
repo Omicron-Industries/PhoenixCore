@@ -46,7 +46,7 @@ public final class PhoenixTerrainPresets {
                 .seed(seed)
                 .baseY(100).amplitude(120).frequency(0.008).octaves(5)
                 .caves(false).volumetric(true)
-                .seaLevel(0) 
+                .seaLevel(0)
                 .build();
     }
 
@@ -69,14 +69,13 @@ public final class PhoenixTerrainPresets {
 
     public static List<Map.Entry<String, LongFunction<TerrainProfile>>> all() {
         return List.of(
-                entry("Plains",          PhoenixTerrainPresets::plains),
-                entry("Rolling Hills",   PhoenixTerrainPresets::rollingHills),
-                entry("Mountains",       PhoenixTerrainPresets::mountains),
-                entry("Alien Mesas",     PhoenixTerrainPresets::alienMesas),
-                entry("Floating Islands",PhoenixTerrainPresets::floatingIslands),
-                entry("Death Valley",    PhoenixTerrainPresets::deathValley),
-                entry("Cavernous",       PhoenixTerrainPresets::cavernous)
-        );
+                entry("Plains", PhoenixTerrainPresets::plains),
+                entry("Rolling Hills", PhoenixTerrainPresets::rollingHills),
+                entry("Mountains", PhoenixTerrainPresets::mountains),
+                entry("Alien Mesas", PhoenixTerrainPresets::alienMesas),
+                entry("Floating Islands", PhoenixTerrainPresets::floatingIslands),
+                entry("Death Valley", PhoenixTerrainPresets::deathValley),
+                entry("Cavernous", PhoenixTerrainPresets::cavernous));
     }
 
     private static Map.Entry<String, LongFunction<TerrainProfile>> entry(String name, LongFunction<TerrainProfile> fn) {

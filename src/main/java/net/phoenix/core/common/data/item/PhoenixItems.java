@@ -263,7 +263,7 @@ public class PhoenixItems {
                     () -> Component.literal(
                             "The titanium core stabilizes the flux, allowing it to dissolve the toughest bonds at a molecular level.")
                             .withStyle(ChatFormatting.DARK_PURPLE)))
-            .lang("§dSource Imbued Titanium Drill Head") 
+            .lang("§dSource Imbued Titanium Drill Head")
             .register();
 
     public static final ItemEntry<TooltipItem> FLAMING_MESH = REGISTRATE

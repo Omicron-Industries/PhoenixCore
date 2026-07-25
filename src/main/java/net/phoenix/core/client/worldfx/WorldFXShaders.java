@@ -22,9 +22,10 @@ public final class WorldFXShaders {
     public static ShaderInstance ATMOSPHERE_GRADE;
 
     public static void onRegisterShaders(RegisterShadersEvent event) {
-        register(event, "phoenixcore:phoenix_black_hole",    DefaultVertexFormat.POSITION, s -> BLACK_HOLE       = s);
-        register(event, "phoenixcore:phoenix_nebula",        DefaultVertexFormat.POSITION, s -> NEBULA           = s);
-        register(event, "phoenixcore:phoenix_atmosphere_grade", DefaultVertexFormat.POSITION, s -> ATMOSPHERE_GRADE = s);
+        register(event, "phoenixcore:phoenix_black_hole", DefaultVertexFormat.POSITION, s -> BLACK_HOLE = s);
+        register(event, "phoenixcore:phoenix_nebula", DefaultVertexFormat.POSITION, s -> NEBULA = s);
+        register(event, "phoenixcore:phoenix_atmosphere_grade", DefaultVertexFormat.POSITION,
+                s -> ATMOSPHERE_GRADE = s);
     }
 
     private static void register(RegisterShadersEvent event,

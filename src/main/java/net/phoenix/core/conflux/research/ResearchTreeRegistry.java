@@ -1,14 +1,15 @@
 package net.phoenix.core.conflux.research;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.event.AddReloadListenerEvent;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -25,9 +26,9 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
     public static final ResearchTreeRegistry INSTANCE = new ResearchTreeRegistry();
 
     private final Map<ResourceLocation, ResearchTree> trees = new LinkedHashMap<>();
-    
+
     private final Set<ResourceLocation> gatedMultiblocks = new LinkedHashSet<>();
-    
+
     private final Set<String> gatedRecipeTags = new LinkedHashSet<>();
 
     private ResearchTreeRegistry() {
@@ -86,9 +87,13 @@ public class ResearchTreeRegistry extends SimpleJsonResourceReloadListener {
                 .toList();
     }
 
-    public Set<ResourceLocation> getGatedMultiblocks() { return Collections.unmodifiableSet(gatedMultiblocks); }
+    public Set<ResourceLocation> getGatedMultiblocks() {
+        return Collections.unmodifiableSet(gatedMultiblocks);
+    }
 
-    public Set<String> getGatedRecipeTags() { return Collections.unmodifiableSet(gatedRecipeTags); }
+    public Set<String> getGatedRecipeTags() {
+        return Collections.unmodifiableSet(gatedRecipeTags);
+    }
 
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(INSTANCE);

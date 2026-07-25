@@ -25,12 +25,17 @@ import java.util.Map;
 
 public final class ConfluxRegistry {
 
-    private static final DeferredRegister<Block>              BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,            PhoenixCore.MOD_ID);
-    private static final DeferredRegister<Item>               ITEMS  = DeferredRegister.create(ForgeRegistries.ITEMS,             PhoenixCore.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> BES    = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
+    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
+            PhoenixCore.MOD_ID);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS,
+            PhoenixCore.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BES = DeferredRegister
+            .create(ForgeRegistries.BLOCK_ENTITY_TYPES, PhoenixCore.MOD_ID);
 
-    public static final Map<ConfluxDataType, RegistryObject<ConfluxPipeBlock>>                       PIPES    = new EnumMap<>(ConfluxDataType.class);
-    public static final Map<ConfluxDataType, RegistryObject<BlockEntityType<ConfluxPipeBlockEntity>>> PIPE_BES = new EnumMap<>(ConfluxDataType.class);
+    public static final Map<ConfluxDataType, RegistryObject<ConfluxPipeBlock>> PIPES = new EnumMap<>(
+            ConfluxDataType.class);
+    public static final Map<ConfluxDataType, RegistryObject<BlockEntityType<ConfluxPipeBlockEntity>>> PIPE_BES = new EnumMap<>(
+            ConfluxDataType.class);
 
     static {
         for (ConfluxDataType dt : ConfluxDataType.values()) {
@@ -40,14 +45,13 @@ public final class ConfluxRegistry {
             @SuppressWarnings("unchecked")
             RegistryObject<BlockEntityType<ConfluxPipeBlockEntity>>[] beHolder = new RegistryObject[1];
 
-            RegistryObject<ConfluxPipeBlock> block = BLOCKS.register(id, () ->
-                    new ConfluxPipeBlock(pipeProps(dt), pipeType, () -> beHolder[0].get()));
+            RegistryObject<ConfluxPipeBlock> block = BLOCKS.register(id,
+                    () -> new ConfluxPipeBlock(pipeProps(dt), pipeType, () -> beHolder[0].get()));
 
-            RegistryObject<BlockEntityType<ConfluxPipeBlockEntity>> be = BES.register(id, () ->
-                    BlockEntityType.Builder.of(
+            RegistryObject<BlockEntityType<ConfluxPipeBlockEntity>> be = BES.register(id,
+                    () -> BlockEntityType.Builder.of(
                             (pos, state) -> new ConfluxPipeBlockEntity(beHolder[0].get(), pos, state),
-                            block.get()
-                    ).build(null));
+                            block.get()).build(null));
 
             beHolder[0] = be;
 
@@ -81,11 +85,11 @@ public final class ConfluxRegistry {
 
     private static MapColor typeColor(ConfluxDataType type) {
         return switch (type) {
-            case MATERIAL      -> MapColor.GOLD;
-            case BIOLOGICAL    -> MapColor.GRASS;
-            case ENERGETIC     -> MapColor.DIAMOND;
+            case MATERIAL -> MapColor.GOLD;
+            case BIOLOGICAL -> MapColor.GRASS;
+            case ENERGETIC -> MapColor.DIAMOND;
             case COMPUTATIONAL -> MapColor.COLOR_PURPLE;
-            case ARCANE        -> MapColor.COLOR_MAGENTA;
+            case ARCANE -> MapColor.COLOR_MAGENTA;
         };
     }
 

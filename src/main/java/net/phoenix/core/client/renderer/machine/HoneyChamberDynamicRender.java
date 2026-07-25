@@ -1,7 +1,7 @@
 package net.phoenix.core.client.renderer.machine;
 
 import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
-import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection; 
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 import com.gregtechceu.gtceu.client.renderer.block.FluidBlockRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
@@ -19,11 +19,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.phoenix.core.client.renderer.PhoenixRenderTypes;
+import net.phoenix.core.common.machine.multiblock.electric.HoneyCrystallizationChamberMachine;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
-import net.phoenix.core.common.machine.multiblock.electric.HoneyCrystallizationChamberMachine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Random;
 
 public class HoneyChamberDynamicRender extends
-        DynamicRender<HoneyCrystallizationChamberMachine, HoneyChamberDynamicRender> {
+                                       DynamicRender<HoneyCrystallizationChamberMachine, HoneyChamberDynamicRender> {
 
     public static final HoneyChamberDynamicRender INSTANCE = new HoneyChamberDynamicRender();
     public static final Codec<HoneyChamberDynamicRender> CODEC = Codec.unit(HoneyChamberDynamicRender.INSTANCE);
@@ -82,7 +82,7 @@ public class HoneyChamberDynamicRender extends
         float progress = (logic != null && logic.isWorking()) ? (float) logic.getProgressPercent() : 0f;
 
         stack.pushPose();
-        
+
         renderFluid(machine, stack, buffer, packedLight, packedOverlay);
 
         stack.translate(0.5, 0.5, 0.5);
@@ -121,7 +121,7 @@ public class HoneyChamberDynamicRender extends
 
         for (RelativeDirection face : fluidFaces) {
             stack.pushPose();
-            
+
             var dir = face.getRelativeFacing(machine.getFrontFacing(), machine.getUpwardsFacing(), machine.isFlipped());
 
             if (dir.getAxis() != Direction.Axis.Y) dir = dir.getOpposite();
@@ -134,8 +134,7 @@ public class HoneyChamberDynamicRender extends
                     cachedFluid,
                     RenderUtil.FluidTextureType.STILL,
                     packedOverlay,
-                    packedLight
-            );
+                    packedLight);
             stack.popPose();
         }
     }

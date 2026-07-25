@@ -3,17 +3,11 @@ package net.phoenix.core.conflux.multiblock;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
-
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.sync_system.annotations.RerenderOnChanged;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 import com.gregtechceu.gtceu.utils.ExtendedUseOnContext;
-
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.TextWidget;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -28,6 +22,10 @@ import net.phoenix.core.conflux.pipe.ConfluxDataCapability;
 import net.phoenix.core.conflux.pipe.ConfluxMultiHandlerCapability;
 import net.phoenix.core.conflux.pipe.IConfluxDataHandler;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widgets.TextWidget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,13 +33,13 @@ import java.util.List;
 
 public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
 
-    private static final int   FUEL_TICKS     = 400;
-    private static final long  BASE_RATE      = 200L;
-    private static final float MAX_MULT       = 10f;
-    private static final long  EU_PER_TICK    = 524_288L;
-    private static final long  BUFFER         = 100_000L;
-    private static final long  PUSH_RATE      = 4_096L;
-    private static final float MOMENTUM_GAIN  = 1f / 500f;
+    private static final int FUEL_TICKS = 400;
+    private static final long BASE_RATE = 200L;
+    private static final float MAX_MULT = 10f;
+    private static final long EU_PER_TICK = 524_288L;
+    private static final long BUFFER = 100_000L;
+    private static final long PUSH_RATE = 4_096L;
+    private static final float MOMENTUM_GAIN = 1f / 500f;
     private static final float MOMENTUM_DECAY = 0.05f;
 
     @SaveField
@@ -69,7 +67,7 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
 
     public ConfluxCascadeEngine(BlockEntityCreationInfo holder) {
         super(holder);
-        this.fuelSlot  = new NotifiableItemStackHandler(1, IO.IN);
+        this.fuelSlot = new NotifiableItemStackHandler(1, IO.IN);
         this.outputCap = LazyOptional.of(this::makeOutputHandler);
         subscribeServerTick(this::engineTick);
     }
@@ -78,7 +76,10 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         if (!isFormed() || getLevel() == null || isRemote()) return;
 
         var energy = getEnergyContainer();
-        if (energy == null || energy.getEnergyStored() < EU_PER_TICK) { stall(); return; }
+        if (energy == null || energy.getEnergyStored() < EU_PER_TICK) {
+            stall();
+            return;
+        }
         energy.removeEnergy(EU_PER_TICK);
 
         if (fuelTicks <= 0) {
@@ -90,7 +91,10 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
             }
         }
 
-        if (fuelTicks <= 0) { stall(); return; }
+        if (fuelTicks <= 0) {
+            stall();
+            return;
+        }
         fuelTicks--;
 
         momentum = Math.min(1f, momentum + MOMENTUM_GAIN);
@@ -98,8 +102,8 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         setChanged();
 
         float multiplier = 1f + (MAX_MULT - 1f) * momentum;
-        long  produced   = (long)(BASE_RATE * multiplier);
-        long  space      = BUFFER - dataBuffer;
+        long produced = (long) (BASE_RATE * multiplier);
+        long space = BUFFER - dataBuffer;
         if (space > 0) dataBuffer += Math.min(produced, space);
 
         if (dataBuffer > 0) pushToNetwork();
@@ -110,7 +114,10 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
             momentum = Math.max(0f, momentum - MOMENTUM_DECAY);
             setChanged();
         }
-        if (engineActive) { engineActive = false; setChanged(); }
+        if (engineActive) {
+            engineActive = false;
+            setChanged();
+        }
         if (dataBuffer > 0) pushToNetwork();
     }
 
@@ -128,7 +135,8 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
                 var h = singleCap.orElseThrow(IllegalStateException::new);
                 if (h.getDataType() == outputType) {
                     long sent = h.insert(budget);
-                    dataBuffer -= sent; budget -= sent;
+                    dataBuffer -= sent;
+                    budget -= sent;
                 }
                 continue;
             }
@@ -136,7 +144,8 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
             var multiCap = be.getCapability(ConfluxMultiHandlerCapability.MULTI_DATA, dir.getOpposite());
             if (multiCap.isPresent()) {
                 long sent = multiCap.orElseThrow(IllegalStateException::new).insert(outputType, budget);
-                dataBuffer -= sent; budget -= sent;
+                dataBuffer -= sent;
+                budget -= sent;
             }
         }
         if (budget < PUSH_RATE) setChanged();
@@ -157,14 +166,33 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
 
     private IConfluxDataHandler makeOutputHandler() {
         return new IConfluxDataHandler() {
-            @Override public ConfluxDataType getDataType() { return outputType; }
-            @Override public long insert(long amount)    { return 0; }
-            @Override public long extract(long amount)   {
-                long given = Math.min(amount, dataBuffer);
-                dataBuffer -= given; return given;
+
+            @Override
+            public ConfluxDataType getDataType() {
+                return outputType;
             }
-            @Override public long getStored()   { return dataBuffer; }
-            @Override public long getCapacity() { return BUFFER; }
+
+            @Override
+            public long insert(long amount) {
+                return 0;
+            }
+
+            @Override
+            public long extract(long amount) {
+                long given = Math.min(amount, dataBuffer);
+                dataBuffer -= given;
+                return given;
+            }
+
+            @Override
+            public long getStored() {
+                return dataBuffer;
+            }
+
+            @Override
+            public long getCapacity() {
+                return BUFFER;
+            }
         };
     }
 
@@ -183,7 +211,7 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
                 engineActive ? "§a[RUNNING]§r" : "§c[STALLED]§r")))));
         widgets.add(new TextWidget<>(Text.dynamic(() -> {
             float mult = 1f + (MAX_MULT - 1f) * momentum;
-            long rate = (long)(BASE_RATE * mult);
+            long rate = (long) (BASE_RATE * mult);
             return Component.literal(String.format("Output: §b%,d§r u/t × §6%.1f§rx  [%s§r]",
                     rate, mult, outputType.color + outputType.displayName));
         })));
@@ -191,7 +219,7 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
                 "Buffer: §e%,d§r / §7%,d§r  Fuel: §e%d§r ticks", dataBuffer, BUFFER, fuelTicks)))));
         if (momentum < 1f) {
             widgets.add(new TextWidget<>(Text.dynamic(() -> {
-                int ticksToMax = (int)((1f - momentum) / MOMENTUM_GAIN);
+                int ticksToMax = (int) ((1f - momentum) / MOMENTUM_GAIN);
                 return Component.literal("§7Full momentum in: " + ticksToMax + " ticks")
                         .withStyle(ChatFormatting.DARK_GRAY);
             })));
@@ -205,7 +233,15 @@ public class ConfluxCascadeEngine extends WorkableElectricMultiblockMachine {
         outputCap.invalidate();
     }
 
-    public ConfluxDataType getOutputType() { return outputType; }
-    public float getMomentum()           { return momentum; }
-    public boolean isEngineActive()      { return engineActive; }
+    public ConfluxDataType getOutputType() {
+        return outputType;
+    }
+
+    public float getMomentum() {
+        return momentum;
+    }
+
+    public boolean isEngineActive() {
+        return engineActive;
+    }
 }

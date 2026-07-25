@@ -42,7 +42,6 @@ public class SlotPanel extends AbstractWidget {
 
     @Override
     protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mx, int my, float dt) {
-        
         if (!this.visible) return;
 
         guiGraphics.drawString(parent.getFont(), getMessage(), getX(), getY(), 0x888888, false);
@@ -62,7 +61,7 @@ public class SlotPanel extends AbstractWidget {
             if (!e.stack.isEmpty()) {
                 guiGraphics.renderFakeItem(e.stack, sx + 1, sy + 1);
                 if (e.count > 1) {
-                    
+
                     guiGraphics.renderItemDecorations(parent.getFont(), e.stack, sx + 1, sy + 1, formatAmount(e.count));
                 }
             }
@@ -83,7 +82,7 @@ public class SlotPanel extends AbstractWidget {
 
         if (btn == 1) {
             if (!e.stack.isEmpty()) {
-                
+
                 parent.openEditor(mx, my, e, e.count);
                 return true;
             }
@@ -99,7 +98,6 @@ public class SlotPanel extends AbstractWidget {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        
         if (!this.visible) return false;
 
         int i = slotAt(mx, my);
@@ -113,7 +111,6 @@ public class SlotPanel extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(double mx, double my, int btn) {
-        
         if (!this.visible) return false;
 
         int i = slotAt(mx, my);

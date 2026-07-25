@@ -1,13 +1,12 @@
 package net.phoenix.core.api.gui;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
 import brachy.modularui.api.drawable.IDrawable;
 import brachy.modularui.screen.viewport.GuiContext;
 import brachy.modularui.theme.WidgetTheme;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Random;
 
@@ -63,10 +62,10 @@ public class TeslaBackground implements IDrawable {
 
     private void drawArcs(GuiContext context, int x, int y, int width, int height) {
         long t = System.currentTimeMillis();
-        long seed = t / 120L; 
+        long seed = t / 120L;
         Random rng = new Random(seed);
 
-        int boltCount = 2 + rng.nextInt(2); 
+        int boltCount = 2 + rng.nextInt(2);
         for (int b = 0; b < boltCount; b++) {
             drawSingleArc(context, rng, x, y, width, height);
         }
@@ -87,7 +86,7 @@ public class TeslaBackground implements IDrawable {
         for (int i = 1; i <= segments; i++) {
             float progress = (float) i / segments;
             int targetY = startY + (int) ((endY - startY) * progress);
-            int jitter = 10 - (int) (6 * progress); 
+            int jitter = 10 - (int) (6 * progress);
             int targetX = prevX + rng.nextInt(jitter * 2 + 1) - jitter;
             targetX = Math.max(x, Math.min(x + width, targetX));
 

@@ -1,24 +1,16 @@
 package net.phoenix.core.common.data;
 
-import brachy.modularui.screen.ModularPanel;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widgets.layout.Flow;
-import brachy.modularui.widgets.TextWidget;
-import brachy.modularui.utils.Alignment;
-import brachy.modularui.drawable.progress.ProgressDrawable;
-import brachy.modularui.widgets.ProgressWidget;
-
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.common.data.GTSoundEntries;
+import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
 
 import net.minecraft.client.resources.language.I18n;
-
 import net.phoenix.core.api.gui.PhoenixGuiTextures;
 import net.phoenix.core.integration.ars_nouveau.api.capability.SourceRecipeCapability;
+
+import brachy.modularui.drawable.progress.ProgressDrawable;
+import brachy.modularui.widgets.ProgressWidget;
 
 import static com.gregtechceu.gtceu.common.data.GTRecipeTypes.*;
 

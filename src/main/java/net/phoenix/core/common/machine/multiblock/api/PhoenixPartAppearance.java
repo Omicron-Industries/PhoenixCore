@@ -1,11 +1,10 @@
 package net.phoenix.core.common.machine.multiblock.api;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
-
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
@@ -27,8 +26,8 @@ public class PhoenixPartAppearance {
         return new Builder();
     }
 
-    public static TriFunction<MultiblockControllerMachine, MultiblockPartMachine, Direction, BlockState>
-            casingExceptAbilities(Supplier<? extends Block> casing, PartAbility... abilities) {
+    public static TriFunction<MultiblockControllerMachine, MultiblockPartMachine, Direction, BlockState> casingExceptAbilities(Supplier<? extends Block> casing,
+                                                                                                                               PartAbility... abilities) {
         return rules().ownTextureForAbilities(abilities).build(casing);
     }
 
@@ -45,11 +44,13 @@ public class PhoenixPartAppearance {
             return (ctrl, part, side) -> state.get();
         }
 
-        @Nullable BlockState apply(MultiblockControllerMachine ctrl, MultiblockPartMachine part, Direction side);
+        @Nullable
+        BlockState apply(MultiblockControllerMachine ctrl, MultiblockPartMachine part, Direction side);
     }
 
     @FunctionalInterface
     public interface AppearanceRule {
+
         RuleMatch apply(MultiblockControllerMachine ctrl, MultiblockPartMachine part, Direction side);
     }
 
@@ -71,8 +72,8 @@ public class PhoenixPartAppearance {
         private final List<AppearanceRule> rules = new ArrayList<>();
 
         public Builder forAbilities(AppearanceResult result, PartAbility... abilities) {
-            return when((ctrl, part, side) ->
-                    hasAbility(part, abilities) ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP);
+            return when((ctrl, part, side) -> hasAbility(part, abilities) ?
+                    RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP);
         }
 
         public Builder ownTextureForAbilities(PartAbility... abilities) {
@@ -88,8 +89,8 @@ public class PhoenixPartAppearance {
         }
 
         public Builder forClass(Class<?> partClass, AppearanceResult result) {
-            return when((ctrl, part, side) ->
-                    partClass.isInstance(part) ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP);
+            return when((ctrl, part, side) -> partClass.isInstance(part) ?
+                    RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP);
         }
 
         public Builder ownTextureForClass(Class<?> partClass) {
@@ -99,8 +100,8 @@ public class PhoenixPartAppearance {
         public Builder forWorldFace(Direction face, AppearanceResult result) {
             return when((ctrl, part, side) -> {
                 if (part == null) return RuleMatch.SKIP;
-                return dominantFace(ctrl, part) == face
-                        ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP;
+                return dominantFace(ctrl, part) == face ? RuleMatch.matched(result.apply(ctrl, part, side)) :
+                        RuleMatch.SKIP;
             });
         }
 
@@ -112,8 +113,8 @@ public class PhoenixPartAppearance {
             return when((ctrl, part, side) -> {
                 if (part == null) return RuleMatch.SKIP;
                 Direction worldFace = face.toWorldDirection(ctrl.getFrontFacing());
-                return dominantFace(ctrl, part) == worldFace
-                        ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP;
+                return dominantFace(ctrl, part) == worldFace ? RuleMatch.matched(result.apply(ctrl, part, side)) :
+                        RuleMatch.SKIP;
             });
         }
 
@@ -125,8 +126,8 @@ public class PhoenixPartAppearance {
             return when((ctrl, part, side) -> {
                 if (part == null) return RuleMatch.SKIP;
                 int target = ctrl.self().getBlockPos().getY() + yOffset;
-                return part.getBlockPos().getY() == target
-                        ? RuleMatch.matched(result.apply(ctrl, part, side)) : RuleMatch.SKIP;
+                return part.getBlockPos().getY() == target ? RuleMatch.matched(result.apply(ctrl, part, side)) :
+                        RuleMatch.SKIP;
             });
         }
 
@@ -143,7 +144,7 @@ public class PhoenixPartAppearance {
         }
 
         public TriFunction<MultiblockControllerMachine, MultiblockPartMachine, Direction, BlockState> build(
-                Supplier<? extends Block> defaultCasing) {
+                                                                                                            Supplier<? extends Block> defaultCasing) {
             List<AppearanceRule> frozen = List.copyOf(rules);
             return (ctrl, part, side) -> {
                 for (AppearanceRule rule : frozen) {
@@ -156,22 +157,27 @@ public class PhoenixPartAppearance {
     }
 
     public enum RelativeMultiblockFace {
-        FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM;
+
+        FRONT,
+        BACK,
+        LEFT,
+        RIGHT,
+        TOP,
+        BOTTOM;
 
         public Direction toWorldDirection(Direction controllerFacing) {
             return switch (this) {
-                case FRONT  -> controllerFacing;
-                case BACK   -> controllerFacing.getOpposite();
-                case RIGHT  -> controllerFacing.getClockWise();
-                case LEFT   -> controllerFacing.getCounterClockWise();
-                case TOP    -> Direction.UP;
+                case FRONT -> controllerFacing;
+                case BACK -> controllerFacing.getOpposite();
+                case RIGHT -> controllerFacing.getClockWise();
+                case LEFT -> controllerFacing.getCounterClockWise();
+                case TOP -> Direction.UP;
                 case BOTTOM -> Direction.DOWN;
             };
         }
     }
 
     private static boolean hasAbility(MultiblockPartMachine part, PartAbility[] abilities) {
-        
         if (part == null) return false;
 
         var block = part.getLevel().getBlockState(part.getBlockPos()).getBlock();
@@ -190,7 +196,7 @@ public class PhoenixPartAppearance {
         int dz = p.getZ() - c.getZ();
         int ax = Math.abs(dx), ay = Math.abs(dy), az = Math.abs(dz);
         if (ay >= ax && ay >= az) return dy >= 0 ? Direction.UP : Direction.DOWN;
-        if (ax >= az)             return dx >= 0 ? Direction.EAST : Direction.WEST;
-        return                           dz >= 0 ? Direction.SOUTH : Direction.NORTH;
+        if (ax >= az) return dx >= 0 ? Direction.EAST : Direction.WEST;
+        return dz >= 0 ? Direction.SOUTH : Direction.NORTH;
     }
 }

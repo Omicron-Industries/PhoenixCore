@@ -5,7 +5,6 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 public class PhoenixLangHandler {
 
     public static void init(RegistrateLangProvider provider) {
-        
         provider.add("metaarmor.message.step_assist.disabled", "PhoenixTech™ Suite: StepAssist Disabled");
         provider.add("metaarmor.message.step_assist.enabled", "PhoenixTech™ Suite: StepAssist Enabled");
         provider.add("item.gtceu.tool.ev_screwdriver", "%s Electric Screwdriver (EV)");
@@ -103,15 +102,15 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.spray_can_menu", "Open Spray Can Menu");
 
         provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
-        provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint"); 
+        provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint");
         provider.add("gui.phoenixcore.color_select.title", "Select Color");
         provider.add("behaviour.paintspray.chameleon.status.color", "§7Mode: §f%s");
         provider.add("behaviour.paintspray.chameleon.status.solvent", "§7Mode: §dSolvent");
         provider.add("behaviour.paintspray.chameleon.tooltip.current_color", "Current Color: %s");
         provider.add("behaviour.paintspray.chameleon.tooltip.solvent", "Current: Solvent");
         provider.add("behaviour.paintspray.chameleon.tooltip.info", "Scroll or use the Keybind to change color.");
-        provider.add("behaviour.paintspray.chameleon.tooltip.fluid", "§7Paint: %s / %s mB"); 
-                                                                                             
+        provider.add("behaviour.paintspray.chameleon.tooltip.fluid", "§7Paint: %s / %s mB");
+
         provider.add("behaviour.paintspray.chameleon.message.out_of_paint", "§cOut of Prismatic Paint!");
         provider.add("behaviour.paintspray.solvent.short", "Solvent");
 
@@ -133,15 +132,18 @@ public class PhoenixLangHandler {
             provider.add(getSubKey(key, i), values[i]);
         }
 
-        provider.add("phoenixcore.research.multiblock_locked", "Research required: unlock this machine before it can form.");
+        provider.add("phoenixcore.research.multiblock_locked",
+                "Research required: unlock this machine before it can form.");
         provider.add("phoenixcore.condition.axiom_research", "Requires research: %s");
         provider.add("phoenixcore.research.discipline.none", "No Discipline");
         provider.add("phoenixcore.research.discipline.committed", "Committed");
         provider.add("phoenixcore.research.discipline.can_switch", "Switch Discipline");
         provider.add("phoenixcore.research.discipline.switch_cost", "Cost to abandon:");
         provider.add("phoenixcore.research.discipline.locked", "You are permanently committed to your Discipline.");
-        provider.add("phoenixcore.research.discipline.abandon_success", "Discipline abandoned. You may now choose a new path.");
-        provider.add("phoenixcore.research.discipline.abandon_failed", "Cannot abandon Discipline: insufficient resources or already committed.");
+        provider.add("phoenixcore.research.discipline.abandon_success",
+                "Discipline abandoned. You may now choose a new path.");
+        provider.add("phoenixcore.research.discipline.abandon_failed",
+                "Cannot abandon Discipline: insufficient resources or already committed.");
     }
 
     protected static void multilineLang(RegistrateLangProvider provider, String key, String multiline) {

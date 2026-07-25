@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
 import net.minecraft.resources.ResourceLocation;
 import net.phoenix.core.mixin.accessor.PostChainAccessor;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -17,7 +18,10 @@ public final class AxiomShaderManager {
     private AxiomShaderManager() {}
 
     public static void activate(@Nullable ResourceLocation location) {
-        if (location == null) { deactivate(); return; }
+        if (location == null) {
+            deactivate();
+            return;
+        }
         if (location.equals(activeLocation)) return;
 
         Minecraft mc = Minecraft.getInstance();
@@ -37,12 +41,11 @@ public final class AxiomShaderManager {
     }
 
     public static void pushFrameData(
-            float screenW, float screenH,
-            float cursorX, float cursorY,
-            float[] nodeScreenXY, int nodeCount,
-            float[] nodeStrength,
-            float[] rippleOriginXY, float[] rippleAge, int rippleCount
-    ) {
+                                     float screenW, float screenH,
+                                     float cursorX, float cursorY,
+                                     float[] nodeScreenXY, int nodeCount,
+                                     float[] nodeStrength,
+                                     float[] rippleOriginXY, float[] rippleAge, int rippleCount) {
         if (activeLocation == null) return;
         Minecraft mc = Minecraft.getInstance();
         PostChain effect = mc.gameRenderer.currentEffect();
@@ -61,14 +64,14 @@ public final class AxiomShaderManager {
         int safeCount = Math.min(nodeCount, 8);
         float[] nodeUV = new float[16];
         for (int i = 0; i < safeCount; i++) {
-            nodeUV[i * 2]     = nodeScreenXY[i * 2]     * invW;
+            nodeUV[i * 2] = nodeScreenXY[i * 2] * invW;
             nodeUV[i * 2 + 1] = nodeScreenXY[i * 2 + 1] * invH;
         }
 
         int safeRipples = Math.min(rippleCount, 4);
         float[] rippleUV = new float[8];
         for (int i = 0; i < safeRipples; i++) {
-            rippleUV[i * 2]     = rippleOriginXY[i * 2]     * invW;
+            rippleUV[i * 2] = rippleOriginXY[i * 2] * invW;
             rippleUV[i * 2 + 1] = rippleOriginXY[i * 2 + 1] * invH;
         }
 
@@ -78,7 +81,7 @@ public final class AxiomShaderManager {
         for (PostPass pass : passes) {
             var eff = pass.getEffect();
             try {
-                
+
                 var ssSampler = eff.getUniform("ScreenSize");
                 if (ssSampler != null) ssSampler.set(screenW, screenH);
 
@@ -94,7 +97,8 @@ public final class AxiomShaderManager {
                 var heatStr = eff.getUniform("HeatStrength");
                 if (heatStr != null) {
                     float[] str = new float[8];
-                    for (int i = 0; i < safeCount; i++) str[i] = (nodeStrength != null && i < nodeStrength.length) ? nodeStrength[i] : 1f;
+                    for (int i = 0; i < safeCount; i++)
+                        str[i] = (nodeStrength != null && i < nodeStrength.length) ? nodeStrength[i] : 1f;
                     heatStr.set(str);
                 }
 
@@ -113,7 +117,8 @@ public final class AxiomShaderManager {
                 var ripA = eff.getUniform("RippleAge");
                 if (ripA != null) {
                     float[] ages = new float[4];
-                    for (int i = 0; i < safeRipples; i++) ages[i] = rippleAge != null && i < rippleAge.length ? rippleAge[i] : 0f;
+                    for (int i = 0; i < safeRipples; i++)
+                        ages[i] = rippleAge != null && i < rippleAge.length ? rippleAge[i] : 0f;
                     ripA.set(ages);
                 }
             } catch (Exception ignored) {}
@@ -130,7 +135,9 @@ public final class AxiomShaderManager {
         activeLocation = null;
     }
 
-    public static boolean isActive() { return activeLocation != null; }
+    public static boolean isActive() {
+        return activeLocation != null;
+    }
 
     private static void pushUniform1f(String name, float value) {
         Minecraft mc = Minecraft.getInstance();

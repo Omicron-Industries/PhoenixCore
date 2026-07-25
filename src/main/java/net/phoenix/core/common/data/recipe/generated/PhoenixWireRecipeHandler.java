@@ -57,7 +57,7 @@ public class PhoenixWireRecipeHandler {
                                               @NotNull WireProperties property,
                                               @NotNull TagPrefix prefix, @NotNull Material material) {
         if (!material.shouldGenerateRecipesFor(prefix) || property.isSuperconductor()) {
-            
+
             return;
         }
 

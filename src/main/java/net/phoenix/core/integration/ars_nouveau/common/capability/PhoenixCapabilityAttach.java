@@ -1,6 +1,5 @@
 package net.phoenix.core.integration.ars_nouveau.common.capability;
 
-import com.gregtechceu.gtceu.api.blockentity.IGregtechBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.core.Direction;
@@ -40,6 +39,7 @@ public final class PhoenixCapabilityAttach {
         LazyOptional<ISourceProviderCapability> opt = LazyOptional.of(() -> hatch);
 
         event.addCapability(KEY, new ICapabilityProvider() {
+
             @Override
             public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
                 return cap == ISourceProviderCapability.CAPABILITY ? opt.cast() : LazyOptional.empty();

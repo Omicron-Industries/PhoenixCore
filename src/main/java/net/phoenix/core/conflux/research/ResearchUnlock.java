@@ -7,8 +7,7 @@ public record ResearchUnlock(String type, String value) {
     public static ResearchUnlock fromJson(JsonObject obj) {
         return new ResearchUnlock(
                 obj.get("type").getAsString(),
-                obj.get("value").getAsString()
-        );
+                obj.get("value").getAsString());
     }
 
     public JsonObject toJson() {

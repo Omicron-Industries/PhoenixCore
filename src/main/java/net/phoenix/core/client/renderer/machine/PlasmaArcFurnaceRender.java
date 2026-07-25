@@ -3,7 +3,7 @@ package net.phoenix.core.client.renderer.machine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
-import com.gregtechceu.gtceu.client.util.ModelEventHelper; 
+import com.gregtechceu.gtceu.client.util.ModelEventHelper;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -45,7 +45,6 @@ public class PlasmaArcFurnaceRender extends DynamicRender<WorkableElectricMultib
     private static final float RINGS_ROTATION_SPEED = 0.5F;
 
     private PlasmaArcFurnaceRender() {
-        
         ModelEventHelper.registerBakeEventListener(true, (rl, bakedModel, rootModel, modelBakery) -> {
             if (rl.equals(SPHERE_MODEL_RL)) {
                 sphereModel = bakedModel;

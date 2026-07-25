@@ -7,13 +7,11 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTrait;
 import com.gregtechceu.gtceu.api.machine.trait.MachineTraitType;
-
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.trait.notifiable.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SaveField;
 import com.gregtechceu.gtceu.api.sync_system.annotations.SyncToClient;
 
-import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,16 +19,15 @@ import net.phoenix.core.conflux.ConfluxDataType;
 import net.phoenix.core.conflux.pipe.IConfluxDataHandler;
 import net.phoenix.core.conflux.pipe.IConfluxMultiHandler;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Function;
 
 public class ConfluxProducerMachine extends TieredEnergyMachine {
 
-    private static final long BASE_RATE  = 16L;
-    private static final int  FUEL_TICKS = 200;
-    private static final long BUFFER     = 1024L;
-    private static final long PUSH_RATE  = 128L;
+    private static final long BASE_RATE = 16L;
+    private static final int FUEL_TICKS = 200;
+    private static final long BUFFER = 1024L;
+    private static final long PUSH_RATE = 128L;
 
     protected final AxiomStorageTrait storageTrait;
 
@@ -46,12 +43,10 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
     private TickableSubscription tickSub;
 
     public ConfluxProducerMachine(BlockEntityCreationInfo holder, int tier, ConfluxDataType dataType) {
-        
         super(holder, tier, NotifiableEnergyContainer.receiverContainer(
-                GTValues.V[tier] * 64L, 
-                GTValues.V[tier],       
-                1L                      
-        ));
+                GTValues.V[tier] * 64L,
+                GTValues.V[tier],
+                1L));
 
         this.dataType = dataType;
 
@@ -87,7 +82,7 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
         }
 
         if (storageTrait.getFuelTicks() > 0) {
-            long rate  = BASE_RATE * tier;
+            long rate = BASE_RATE * tier;
             long space = BUFFER - storageTrait.getStored();
             if (space > 0) {
                 storageTrait.addStored(Math.min(rate, space));
@@ -140,40 +135,83 @@ public class ConfluxProducerMachine extends TieredEnergyMachine {
 
     private IConfluxDataHandler buildDataHandler() {
         return new IConfluxDataHandler() {
-            @Override public ConfluxDataType getDataType() { return dataType; }
-            @Override public long insert(long amount)      { return 0; }
-            @Override public long extract(long amount) {
+
+            @Override
+            public ConfluxDataType getDataType() {
+                return dataType;
+            }
+
+            @Override
+            public long insert(long amount) {
+                return 0;
+            }
+
+            @Override
+            public long extract(long amount) {
                 long given = Math.min(amount, storageTrait.getStored());
                 if (given > 0) storageTrait.addStored(-given);
                 return given;
             }
-            @Override public long getStored()   { return storageTrait.getStored(); }
-            @Override public long getCapacity() { return BUFFER; }
+
+            @Override
+            public long getStored() {
+                return storageTrait.getStored();
+            }
+
+            @Override
+            public long getCapacity() {
+                return BUFFER;
+            }
         };
     }
 
-    public IConfluxDataHandler getAxiomDataHandler() { return this.dataHandler; }
+    public IConfluxDataHandler getAxiomDataHandler() {
+        return this.dataHandler;
+    }
 
-    public long    getStored()  { return storageTrait.getStored(); }
-    public boolean isActive()   { return storageTrait.isActive(); }
+    public long getStored() {
+        return storageTrait.getStored();
+    }
+
+    public boolean isActive() {
+        return storageTrait.isActive();
+    }
 
     protected static class AxiomStorageTrait extends MachineTrait {
 
-        private static final MachineTraitType<AxiomStorageTrait> TRAIT_TYPE =
-                new MachineTraitType<>(AxiomStorageTrait.class, true);
+        private static final MachineTraitType<AxiomStorageTrait> TRAIT_TYPE = new MachineTraitType<>(
+                AxiomStorageTrait.class, true);
 
-        @SaveField @SyncToClient private long    stored    = 0L;
-        @SaveField @SyncToClient private int     fuelTicks = 0;
-        @SaveField @SyncToClient private boolean active    = false;
+        @SaveField
+        @SyncToClient
+        private long stored = 0L;
+        @SaveField
+        @SyncToClient
+        private int fuelTicks = 0;
+        @SaveField
+        @SyncToClient
+        private boolean active = false;
 
-        public AxiomStorageTrait() { super(); }
+        public AxiomStorageTrait() {
+            super();
+        }
 
         @Override
-        public MachineTraitType<?> getTraitType() { return TRAIT_TYPE; }
+        public MachineTraitType<?> getTraitType() {
+            return TRAIT_TYPE;
+        }
 
-        public long    getStored()    { return stored; }
-        public int     getFuelTicks() { return fuelTicks; }
-        public boolean isActive()     { return active; }
+        public long getStored() {
+            return stored;
+        }
+
+        public int getFuelTicks() {
+            return fuelTicks;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
 
         public void addStored(long delta) {
             stored += delta;

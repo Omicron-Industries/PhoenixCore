@@ -1,11 +1,8 @@
 package net.phoenix.core.client.gui;
 
-import brachy.modularui.api.drawable.IDrawable;
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.value.sync.IntSyncValue;
-import brachy.modularui.value.sync.StringSyncValue;
 import com.gregtechceu.gtceu.api.mui.IItemUIHolder;
 import com.gregtechceu.gtceu.common.mui.GTGuiTextures;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -14,11 +11,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.phoenix.core.common.data.item.PhoenixArmorItem;
 
+import brachy.modularui.api.drawable.IDrawable;
 import brachy.modularui.factory.PlayerInventoryGuiData;
 import brachy.modularui.screen.ModularPanel;
 import brachy.modularui.screen.UISettings;
 import brachy.modularui.utils.Alignment;
+import brachy.modularui.value.sync.IntSyncValue;
 import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.value.sync.StringSyncValue;
 import brachy.modularui.widgets.ButtonWidget;
 import brachy.modularui.widgets.TextWidget;
 import brachy.modularui.widgets.layout.Flow;
@@ -35,7 +35,8 @@ public class WingFlightGui implements IItemUIHolder {
     private static final int STEPS = 10;
 
     @Override
-    public ModularPanel<?> buildUI(PlayerInventoryGuiData<?> guiData, PanelSyncManager panelSyncManager, UISettings settings) {
+    public ModularPanel<?> buildUI(PlayerInventoryGuiData<?> guiData, PanelSyncManager panelSyncManager,
+                                   UISettings settings) {
         Player player = guiData.getPlayer();
         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
@@ -50,16 +51,13 @@ public class WingFlightGui implements IItemUIHolder {
 
         StringSyncValue modeValue = new StringSyncValue(
                 () -> stack.getOrCreateTag().getString(NBT_MODE),
-                (val) -> stack.getOrCreateTag().putString(NBT_MODE, val)
-        );
+                (val) -> stack.getOrCreateTag().putString(NBT_MODE, val));
         IntSyncValue speedValue = new IntSyncValue(
                 () -> stack.getOrCreateTag().getInt(NBT_SPEED),
-                (val) -> stack.getOrCreateTag().putInt(NBT_SPEED, val)
-        );
+                (val) -> stack.getOrCreateTag().putInt(NBT_SPEED, val));
         IntSyncValue driftValue = new IntSyncValue(
                 () -> stack.getOrCreateTag().getInt(NBT_DRIFT),
-                (val) -> stack.getOrCreateTag().putInt(NBT_DRIFT, val)
-        );
+                (val) -> stack.getOrCreateTag().putInt(NBT_DRIFT, val));
 
         panelSyncManager.syncValue("flight_mode", 0, modeValue);
         panelSyncManager.syncValue("flight_speed", 1, speedValue);
@@ -68,7 +66,8 @@ public class WingFlightGui implements IItemUIHolder {
         Flow layoutSpacer = Flow.row();
         layoutSpacer.resizer().expanded(true);
 
-        TextWidget headerText = new TextWidget(Component.literal("Wing Flight Control").withStyle(ChatFormatting.DARK_PURPLE));
+        TextWidget headerText = new TextWidget(
+                Component.literal("Wing Flight Control").withStyle(ChatFormatting.DARK_PURPLE));
         headerText.margin(2, 0, 4, 0);
 
         TextWidget infoStatusBox = new TextWidget(() -> {
@@ -79,7 +78,8 @@ public class WingFlightGui implements IItemUIHolder {
 
             return Component.literal("Mode: ").withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(modeText).withStyle(modeColor))
-                    .append(Component.literal("\n" + drainText).withStyle(isPowered ? ChatFormatting.RED : ChatFormatting.GREEN));
+                    .append(Component.literal("\n" + drainText)
+                            .withStyle(isPowered ? ChatFormatting.RED : ChatFormatting.GREEN));
         });
         infoStatusBox.widthRel(1f).height(32).margin(0, 0, 6, 0);
 
@@ -102,19 +102,19 @@ public class WingFlightGui implements IItemUIHolder {
 
                         .child(new ButtonWidget<>()
                                 .onMousePressed((context, button) -> {
-                                    modeValue.setStringValue(MODE_POWERED.equals(modeValue.getStringValue()) ? MODE_CREATIVE : MODE_POWERED);
+                                    modeValue.setStringValue(MODE_POWERED.equals(modeValue.getStringValue()) ?
+                                            MODE_CREATIVE : MODE_POWERED);
                                     return true;
                                 })
-                                .background(new IDrawable[]{ GTGuiTextures.BUTTON })
+                                .background(new IDrawable[] { GTGuiTextures.BUTTON })
                                 .widthRel(1f)
                                 .height(20)
                                 .margin(0, 0, 8, 0)
-                                .child(new TextWidget(() -> MODE_POWERED.equals(modeValue.getStringValue())
-                                        ? Component.literal("Switch to ✦ Creative Flight")
-                                        : Component.literal("Switch to ⚡ Powered Flight"))
+                                .child(new TextWidget(() -> MODE_POWERED.equals(modeValue.getStringValue()) ?
+                                        Component.literal("Switch to ✦ Creative Flight") :
+                                        Component.literal("Switch to ⚡ Powered Flight"))
                                         .alignment(Alignment.CENTER))
-                                .getThis()
-                        )
+                                .getThis())
 
                         .child(speedHeader)
                         .child(buildStepControl(speedValue, "Speed"))
@@ -124,8 +124,8 @@ public class WingFlightGui implements IItemUIHolder {
 
                         .child(layoutSpacer)
 
-                        .child(new TextWidget(Component.literal("Press Numpad9 or Esc to close").withStyle(ChatFormatting.DARK_GRAY)))
-                );
+                        .child(new TextWidget(Component.literal("Press Numpad9 or Esc to close")
+                                .withStyle(ChatFormatting.DARK_GRAY))));
     }
 
     private static Flow buildStepControl(IntSyncValue valueTracker, String label) {
@@ -140,11 +140,10 @@ public class WingFlightGui implements IItemUIHolder {
                     valueTracker.setIntValue(Math.max(0, valueTracker.getIntValue() - 1));
                     return true;
                 })
-                .background(new IDrawable[]{ GTGuiTextures.BUTTON })
+                .background(new IDrawable[] { GTGuiTextures.BUTTON })
                 .size(18)
                 .child(new TextWidget(Component.literal("-")).alignment(Alignment.CENTER))
-                .getThis()
-        );
+                .getThis());
 
         Flow segmentsGroup = Flow.row();
         segmentsGroup.resizer().expanded(true);
@@ -157,10 +156,11 @@ public class WingFlightGui implements IItemUIHolder {
 
             ButtonWidget<?> stepSegmentButton = new ButtonWidget<>();
             stepSegmentButton.onMousePressed((context, button) -> {
-                        valueTracker.setIntValue(targetValue);
-                        return true;
-                    })
-                    .background(new IDrawable[]{ valueTracker.getIntValue() >= targetValue ? GTGuiTextures.BUTTON : GTGuiTextures.SLOT })
+                valueTracker.setIntValue(targetValue);
+                return true;
+            })
+                    .background(new IDrawable[] {
+                            valueTracker.getIntValue() >= targetValue ? GTGuiTextures.BUTTON : GTGuiTextures.SLOT })
                     .margin(0, 1, 0, 0);
 
             stepSegmentButton.resizer().expanded(true);
@@ -174,21 +174,19 @@ public class WingFlightGui implements IItemUIHolder {
                     valueTracker.setIntValue(Math.min(STEPS, valueTracker.getIntValue() + 1));
                     return true;
                 })
-                .background(new IDrawable[]{ GTGuiTextures.BUTTON })
+                .background(new IDrawable[] { GTGuiTextures.BUTTON })
                 .size(18)
                 .child(new TextWidget(Component.literal("+")).alignment(Alignment.CENTER))
-                .getThis()
-        );
+                .getThis());
 
         TextWidget footerText = new TextWidget(() -> Component.literal(
-                        String.format("%s: %d / %d", label, valueTracker.getIntValue(), STEPS))
-                .withStyle(ChatFormatting.DARK_GRAY)
-        );
+                String.format("%s: %d / %d", label, valueTracker.getIntValue(), STEPS))
+                .withStyle(ChatFormatting.DARK_GRAY));
         footerText.height(12).margin(2, 0, 0, 0);
 
         return Flow.col()
                 .widthRel(1f)
                 .child(controlRow)
-                .child(footerText); 
+                .child(footerText);
     }
 }

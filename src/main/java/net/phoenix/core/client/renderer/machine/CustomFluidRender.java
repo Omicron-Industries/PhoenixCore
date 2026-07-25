@@ -1,13 +1,13 @@
 package net.phoenix.core.client.renderer.machine;
 
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
-import com.gregtechceu.gtceu.common.machine.trait.multiblock.MultiblockFluidRendererTrait;
+import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 import com.gregtechceu.gtceu.client.renderer.block.FluidBlockRenderer;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRender;
 import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderType;
 import com.gregtechceu.gtceu.client.util.RenderUtil;
+import com.gregtechceu.gtceu.common.machine.trait.multiblock.MultiblockFluidRendererTrait;
 import com.gregtechceu.gtceu.config.ConfigHolder;
-import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LightTexture;
@@ -31,7 +31,8 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
 
     public static final CustomFluidRender INSTANCE = new CustomFluidRender();
     public static final Codec<CustomFluidRender> CODEC = Codec.unit(CustomFluidRender::new);
-    public static final DynamicRenderType<WorkableMultiblockMachine, CustomFluidRender> TYPE = new DynamicRenderType<>(CODEC);
+    public static final DynamicRenderType<WorkableMultiblockMachine, CustomFluidRender> TYPE = new DynamicRenderType<>(
+            CODEC);
 
     private final FluidBlockRenderer fluidRenderer;
     private final List<RelativeDirection> drawFaces;
@@ -45,9 +46,8 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
                 .getRenderer();
 
         this.drawFaces = List.of(
-                RelativeDirection.DOWN,  
-                RelativeDirection.UP     
-        );
+                RelativeDirection.DOWN,
+                RelativeDirection.UP);
     }
 
     @Override
@@ -92,8 +92,7 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
             Direction dir = face.getRelativeFacing(
                     machine.getFrontFacing(),
                     machine.getUpwardsFacing(),
-                    false
-            );
+                    false);
 
             if (dir.getAxis() != Direction.Axis.Y) {
                 dir = dir.getOpposite();
@@ -106,9 +105,8 @@ public class CustomFluidRender extends DynamicRender<WorkableMultiblockMachine, 
                     consumer,
                     cachedFluid,
                     RenderUtil.FluidTextureType.STILL,
-                    packedOverlay, 
-                    packedLight    
-            );
+                    packedOverlay,
+                    packedLight);
 
             poseStack.popPose();
         }

@@ -3,16 +3,16 @@ package net.phoenix.core.client.worldfx.builtin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.world.phys.Vec3;
+import net.phoenix.core.client.worldfx.PhoenixSkyLayer;
+import net.phoenix.core.client.worldfx.SkyRenderContext;
+import net.phoenix.core.client.worldfx.WorldFXManager;
+import net.phoenix.core.client.worldfx.WorldFXShaders;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.phoenix.core.client.worldfx.PhoenixSkyLayer;
-import net.phoenix.core.client.worldfx.SkyRenderContext;
-import net.phoenix.core.client.worldfx.WorldFXManager;
-import net.phoenix.core.client.worldfx.WorldFXShaders;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -35,7 +35,7 @@ public class BlackHoleSkyLayer extends PhoenixSkyLayer {
 
     @Override
     public int priority() {
-        return 100; 
+        return 100;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class BlackHoleSkyLayer extends PhoenixSkyLayer {
         int skyTexId = WorldFXManager.captureSkyToTexture();
 
         float[] screenPos = projectToScreen(worldPosSupplier.get(), ctx);
-        if (screenPos == null) return; 
+        if (screenPos == null) return;
 
         Minecraft mc = Minecraft.getInstance();
         int w = mc.getWindow().getWidth();
@@ -66,7 +66,7 @@ public class BlackHoleSkyLayer extends PhoenixSkyLayer {
         shader.safeGetUniform("LensingStrength").set(lensingStrength * intensity);
         shader.safeGetUniform("AccretionDiskBrightness").set(diskBrightness * intensity);
         shader.safeGetUniform("AspectRatio").set(aspectRatio);
-        shader.safeGetUniform("Time").set((float)(System.currentTimeMillis() % 1000000L) / 1000.0f);
+        shader.safeGetUniform("Time").set((float) (System.currentTimeMillis() % 1000000L) / 1000.0f);
 
         shader.apply();
         drawNdcQuad();
@@ -86,21 +86,21 @@ public class BlackHoleSkyLayer extends PhoenixSkyLayer {
         Matrix4f view = new Matrix4f(ctx.poseStack().last().pose());
         Vector4f clip = new Vector4f((float) rx, (float) ry, (float) rz, 1.0f).mul(view).mul(ctx.projectionMatrix());
 
-        if (clip.w <= 0.01f) return null; 
+        if (clip.w <= 0.01f) return null;
 
         float ndcX = clip.x / clip.w;
         float ndcY = clip.y / clip.w;
 
-        return new float[]{ ndcX * 0.5f + 0.5f, ndcY * 0.5f + 0.5f };
+        return new float[] { ndcX * 0.5f + 0.5f, ndcY * 0.5f + 0.5f };
     }
 
     private static void drawNdcQuad() {
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         bb.vertex(-1, -1, 0).endVertex();
-        bb.vertex( 1, -1, 0).endVertex();
-        bb.vertex( 1,  1, 0).endVertex();
-        bb.vertex(-1,  1, 0).endVertex();
+        bb.vertex(1, -1, 0).endVertex();
+        bb.vertex(1, 1, 0).endVertex();
+        bb.vertex(-1, 1, 0).endVertex();
         Tesselator.getInstance().end();
     }
 }

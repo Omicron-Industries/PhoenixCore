@@ -7,6 +7,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkEvent;
 import net.phoenix.core.conflux.ConfluxDataType;
 import net.phoenix.core.conflux.client.ClientResearchCache;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -17,25 +18,27 @@ import java.util.function.Supplier;
 
 public class S2CResearchSyncPacket {
 
-    private final Set<ResourceLocation>      unlocked;
-    private final Set<ResourceLocation>      lockedOut;
-    private final Set<String>                flags;
-    @Nullable private final String           disciplineId;
-    @Nullable private final String           disciplineTitle;
-    private final boolean                    committed;
+    private final Set<ResourceLocation> unlocked;
+    private final Set<ResourceLocation> lockedOut;
+    private final Set<String> flags;
+    @Nullable
+    private final String disciplineId;
+    @Nullable
+    private final String disciplineTitle;
+    private final boolean committed;
     private final Map<ConfluxDataType, Long> switchCost;
 
     public S2CResearchSyncPacket(Set<ResourceLocation> unlocked, Set<ResourceLocation> lockedOut,
                                  Set<String> flags, @Nullable String disciplineId,
                                  @Nullable String disciplineTitle, boolean committed,
                                  Map<ConfluxDataType, Long> switchCost) {
-        this.unlocked        = unlocked;
-        this.lockedOut       = lockedOut;
-        this.flags           = flags;
-        this.disciplineId    = disciplineId;
+        this.unlocked = unlocked;
+        this.lockedOut = lockedOut;
+        this.flags = flags;
+        this.disciplineId = disciplineId;
         this.disciplineTitle = disciplineTitle;
-        this.committed       = committed;
-        this.switchCost      = switchCost;
+        this.committed = committed;
+        this.switchCost = switchCost;
     }
 
     public static void encode(S2CResearchSyncPacket pkt, FriendlyByteBuf buf) {
@@ -52,18 +55,21 @@ public class S2CResearchSyncPacket {
         buf.writeBoolean(pkt.committed);
 
         buf.writeVarInt(pkt.switchCost.size());
-        pkt.switchCost.forEach((type, amt) -> { buf.writeUtf(type.id()); buf.writeVarLong(amt); });
+        pkt.switchCost.forEach((type, amt) -> {
+            buf.writeUtf(type.id());
+            buf.writeVarLong(amt);
+        });
     }
 
     public static S2CResearchSyncPacket decode(FriendlyByteBuf buf) {
-        Set<ResourceLocation> unlocked  = readRLSet(buf);
+        Set<ResourceLocation> unlocked = readRLSet(buf);
         Set<ResourceLocation> lockedOut = readRLSet(buf);
         Set<String> flags = readStringSet(buf);
 
-        String discId    = null;
+        String discId = null;
         String discTitle = null;
         if (buf.readBoolean()) {
-            discId    = buf.readUtf();
+            discId = buf.readUtf();
             discTitle = buf.readUtf();
         }
         boolean committed = buf.readBoolean();
@@ -72,9 +78,12 @@ public class S2CResearchSyncPacket {
         Map<ConfluxDataType, Long> switchCost = new EnumMap<>(ConfluxDataType.class);
         for (int i = 0; i < costSize; i++) {
             String typeId = buf.readUtf();
-            long   amt    = buf.readVarLong();
+            long amt = buf.readVarLong();
             for (ConfluxDataType t : ConfluxDataType.values()) {
-                if (t.id().equals(typeId)) { switchCost.put(t, amt); break; }
+                if (t.id().equals(typeId)) {
+                    switchCost.put(t, amt);
+                    break;
+                }
             }
         }
 

@@ -1,10 +1,10 @@
 package net.phoenix.core.client.worldfx.builtin;
 
-import brachy.modularui.utils.FloatSupplier;
 import net.minecraft.client.renderer.ShaderInstance;
-
 import net.phoenix.core.client.worldfx.PhoenixScreenEffect;
 import net.phoenix.core.client.worldfx.WorldFXShaders;
+
+import brachy.modularui.utils.FloatSupplier;
 
 public class AtmosphereGradeEffect extends PhoenixScreenEffect {
 
@@ -28,7 +28,7 @@ public class AtmosphereGradeEffect extends PhoenixScreenEffect {
 
     public static AtmosphereGradeEffect saturationOnly(FloatSupplier saturation) {
         return new AtmosphereGradeEffect(saturation, () -> 0f,
-                new float[]{0f, 0f, 0f}, () -> 0f, () -> 1f);
+                new float[] { 0f, 0f, 0f }, () -> 0f, () -> 1f);
     }
 
     @Override
@@ -49,6 +49,6 @@ public class AtmosphereGradeEffect extends PhoenixScreenEffect {
 
     @Override
     public int priority() {
-        return 0; 
+        return 0;
     }
 }

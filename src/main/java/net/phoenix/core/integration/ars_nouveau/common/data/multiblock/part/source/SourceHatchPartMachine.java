@@ -1,12 +1,5 @@
 package net.phoenix.core.integration.ars_nouveau.common.data.multiblock.part.source;
 
-import brachy.modularui.api.drawable.Text;
-import brachy.modularui.factory.PosGuiData;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.widget.ParentWidget;
-import brachy.modularui.widgets.layout.Flow;
-
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityCreationInfo;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.feature.IMuiMachine;
@@ -20,6 +13,12 @@ import net.phoenix.core.integration.ars_nouveau.api.machine.trait.NotifiableSour
 import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchBackground;
 import net.phoenix.core.integration.ars_nouveau.common.event.SourceHatchTracker;
 
+import brachy.modularui.api.drawable.Text;
+import brachy.modularui.factory.PosGuiData;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.widget.ParentWidget;
+import brachy.modularui.widgets.layout.Flow;
 import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import lombok.Getter;
 
@@ -32,7 +31,8 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
     public SourceHatchPartMachine(BlockEntityCreationInfo info, int tier, IO io) {
         super(info, tier, io);
         this.io = io;
-        this.sourceContainer = attachTrait(new NotifiableSourceContainer(io, getMaxCapacity(tier), getMaxConsumption(tier)));
+        this.sourceContainer = attachTrait(
+                new NotifiableSourceContainer(io, getMaxCapacity(tier), getMaxConsumption(tier)));
     }
 
     @Override
@@ -43,7 +43,6 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
     @Override
     public void buildMainUI(ParentWidget<?> mainWidget, PosGuiData guiData, PanelSyncManager syncManager,
                             UISettings settings) {
-
         if (isRemote()) {
             mainWidget.background(new SourceHatchBackground(getBorderColor()));
         }
@@ -74,7 +73,7 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
     public void onLoad() {
         super.onLoad();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            
+
             SourceHatchTracker.add(serverLevel.dimension(), getBlockPos());
         }
     }
@@ -83,7 +82,7 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
     public void onUnload() {
         super.onUnload();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            
+
             SourceHatchTracker.remove(serverLevel.dimension(), getBlockPos());
         }
     }
@@ -98,16 +97,16 @@ public class SourceHatchPartMachine extends TieredIOPartMachine implements ISour
 
     private int getAccentColor() {
         return switch (io) {
-            case IN   -> 0xFF8F00FF;
-            case OUT  -> 0xFFD466FF;
+            case IN -> 0xFF8F00FF;
+            case OUT -> 0xFFD466FF;
             case BOTH -> 0xFFBC66FF;
-            default   -> 0xFF8080A0;
+            default -> 0xFF8080A0;
         };
     }
 
     private int getBorderColor() {
         int accent = getAccentColor();
-        
+
         return (0xAA << 24) | (accent & 0x00FFFFFF);
     }
 }

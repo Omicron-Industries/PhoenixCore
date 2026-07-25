@@ -1,17 +1,5 @@
 package net.phoenix.core.common.data.item;
 
-import brachy.modularui.api.widget.IWidget;
-import brachy.modularui.factory.PlayerInventoryGuiData;
-import brachy.modularui.screen.ModularPanel;
-import brachy.modularui.screen.UISettings;
-import brachy.modularui.utils.Alignment;
-import brachy.modularui.value.sync.IntSyncValue;
-import brachy.modularui.value.sync.PanelSyncManager;
-import brachy.modularui.value.sync.StringSyncValue;
-import brachy.modularui.widgets.ButtonWidget;
-import brachy.modularui.widgets.TextWidget;
-import brachy.modularui.widgets.layout.Flow;
-
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.item.component.IInteractionItem;
@@ -52,6 +40,17 @@ import net.phoenix.core.integration.phoenix_tesla_network.common.machine.singleb
 import net.phoenix.core.integration.phoenix_tesla_network.saveddata.TeslaTeamEnergyData;
 import net.phoenix.core.utils.TeamUtils;
 
+import brachy.modularui.api.widget.IWidget;
+import brachy.modularui.factory.PlayerInventoryGuiData;
+import brachy.modularui.screen.ModularPanel;
+import brachy.modularui.screen.UISettings;
+import brachy.modularui.utils.Alignment;
+import brachy.modularui.value.sync.IntSyncValue;
+import brachy.modularui.value.sync.PanelSyncManager;
+import brachy.modularui.value.sync.StringSyncValue;
+import brachy.modularui.widgets.ButtonWidget;
+import brachy.modularui.widgets.TextWidget;
+import brachy.modularui.widgets.layout.Flow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,7 +62,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class TeslaBinderItem extends ComponentItem
-        implements IItemUIHolder, IInteractionItem, IAddInformation {
+                             implements IItemUIHolder, IInteractionItem, IAddInformation {
 
     private static final int FILTER_ALL = 0;
     private static final int FILTER_IN = 1;
@@ -215,7 +214,6 @@ public class TeslaBinderItem extends ComponentItem
     }
 
     private void bindToPlayer(Player player, ItemStack stack) {
-        
         UUID resolvedId = TeamUtils.getTeamIdOrPlayerFallback(player.getUUID());
         var tag = stack.getOrCreateTag();
 
@@ -223,11 +221,11 @@ public class TeslaBinderItem extends ComponentItem
 
         tag.putUUID("TargetTeam", resolvedId);
         tag.putString("TeamName", teamName);
-        
+
         tag.putString("OwnerName", player.getName().getString());
 
         if (player.level() instanceof ServerLevel server) {
-            
+
             TeslaTeamEnergyData.get(server).getOrCreate(resolvedId);
 
             server.sendParticles(ParticleTypes.ENCHANT, player.getX(), player.getY() + 1.1, player.getZ(), 20, 0.2, 0.2,
@@ -384,14 +382,12 @@ public class TeslaBinderItem extends ComponentItem
             final int targetMode = i;
             ButtonWidget<?> tabButton = new ButtonWidget<>();
             TextWidget tabLabel = new TextWidget(() -> Component.literal(FILTER_LABELS[targetMode])
-                    .withStyle(filterValue.getIntValue() == targetMode
-                            ? ChatFormatting.YELLOW
-                            : ChatFormatting.WHITE));
+                    .withStyle(filterValue.getIntValue() == targetMode ? ChatFormatting.YELLOW : ChatFormatting.WHITE));
             tabLabel.alignment(Alignment.CENTER);
             tabButton.onMousePressed((context, button) -> {
-                        filterValue.setIntValue(targetMode);
-                        return true;
-                    })
+                filterValue.setIntValue(targetMode);
+                return true;
+            })
                     .background(GTGuiTextures.BUTTON)
                     .child(tabLabel);
             tabButton.resizer().expanded(true);
@@ -485,9 +481,8 @@ public class TeslaBinderItem extends ComponentItem
             }
         }
 
-        String rawName = data.contains("name") ? data.getString("name")
-                : (type.equals("hatch") ? "Tesla Hatch" : (type.equals("charger") ? "Wireless Charger"
-                : "Soul Machine"));
+        String rawName = data.contains("name") ? data.getString("name") :
+                (type.equals("hatch") ? "Tesla Hatch" : (type.equals("charger") ? "Wireless Charger" : "Soul Machine"));
         String displayName = rawName.length() > 20 ? rawName.substring(0, 18) + ".." : rawName;
         final long finalFlowVal = flowVal;
         final ChatFormatting finalColor = color;
@@ -500,15 +495,15 @@ public class TeslaBinderItem extends ComponentItem
         ButtonWidget<?> rowButton = new ButtonWidget<>();
         TextWidget rowLabel = new TextWidget(Component.literal(typeLabel + " ").withStyle(finalColor)
                 .append(Component.literal(displayName).withStyle(ChatFormatting.WHITE))
-                .append(Component.literal("  (" + sign
-                                + compactTeslaValue(String.valueOf(Math.abs(finalFlowVal))) + "EU)")
+                .append(Component
+                        .literal("  (" + sign + compactTeslaValue(String.valueOf(Math.abs(finalFlowVal))) + "EU)")
                         .withStyle(ChatFormatting.DARK_GRAY)));
         rowLabel.margin(4, 0, 0, 0);
         rowButton.onMousePressed((context, button) -> {
-                    boolean alreadySelected = rowKey.equals(selectedKey.getStringValue());
-                    selectedKey.setStringValue(alreadySelected ? "" : rowKey);
-                    return true;
-                })
+            boolean alreadySelected = rowKey.equals(selectedKey.getStringValue());
+            selectedKey.setStringValue(alreadySelected ? "" : rowKey);
+            return true;
+        })
                 .background(GTGuiTextures.BUTTON)
                 .child(rowLabel);
         rowButton.resizer().expanded(true);
@@ -516,11 +511,11 @@ public class TeslaBinderItem extends ComponentItem
 
         ButtonWidget<?> highlightButton = new ButtonWidget<>();
         highlightButton.onMousePressed((context, button) -> {
-                    if (player.level().isClientSide) {
-                        TeslaHighlightRenderer.highlight(pos, 200);
-                    }
-                    return true;
-                })
+            if (player.level().isClientSide) {
+                TeslaHighlightRenderer.highlight(pos, 200);
+            }
+            return true;
+        })
                 .background(GTGuiTextures.TOOL_COVER_SETTINGS)
                 .size(18);
         row.child(highlightButton.getThis());
@@ -541,9 +536,9 @@ public class TeslaBinderItem extends ComponentItem
         TextWidget backLabel = new TextWidget(Component.literal("< Back").withStyle(ChatFormatting.GRAY));
         backLabel.alignment(Alignment.CENTER);
         backButton.onMousePressed((context, button) -> {
-                    selectedKey.setStringValue("");
-                    return true;
-                })
+            selectedKey.setStringValue("");
+            return true;
+        })
                 .background(GTGuiTextures.BUTTON)
                 .width(40)
                 .height(18)
@@ -567,14 +562,14 @@ public class TeslaBinderItem extends ComponentItem
                 .withStyle(ChatFormatting.AQUA));
         highlightDeviceLabel.alignment(Alignment.CENTER);
         highlightDeviceButton.onMousePressed((context, button) -> {
-                    if (player.level().isClientSide) {
-                        CompoundTag hTag = resolveSelected(stack, selectedKey);
-                        if (hTag != null) {
-                            TeslaHighlightRenderer.highlight(BlockPos.of(hTag.getLong("pos")), 200);
-                        }
-                    }
-                    return true;
-                })
+            if (player.level().isClientSide) {
+                CompoundTag hTag = resolveSelected(stack, selectedKey);
+                if (hTag != null) {
+                    TeslaHighlightRenderer.highlight(BlockPos.of(hTag.getLong("pos")), 200);
+                }
+            }
+            return true;
+        })
                 .background(GTGuiTextures.BUTTON)
                 .widthRel(1f)
                 .height(18)
@@ -727,9 +722,8 @@ public class TeslaBinderItem extends ComponentItem
             tier++;
         }
 
-        return dN.compareTo(BigDecimal.valueOf(100)) >= 0
-                ? String.format("%.0f%s", dN, suffixes[tier])
-                : String.format("%.1f%s", dN, suffixes[tier]);
+        return dN.compareTo(BigDecimal.valueOf(100)) >= 0 ? String.format("%.0f%s", dN, suffixes[tier]) :
+                String.format("%.1f%s", dN, suffixes[tier]);
     }
 
     @Override

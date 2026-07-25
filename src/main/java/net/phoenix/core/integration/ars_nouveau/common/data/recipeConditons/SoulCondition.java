@@ -37,7 +37,8 @@ public class SoulCondition extends RecipeCondition<SoulCondition> {
     @Override
     protected boolean testCondition(@NotNull GTRecipe recipe, @NotNull RecipeLogic recipeLogic) {
         if (recipeLogic.getMachine().getLevel() instanceof ServerLevel level) {
-            float currentSoul = SoulSavedData.get(level).getMultiplier(new ChunkPos(recipeLogic.getMachine().getBlockPos()));
+            float currentSoul = SoulSavedData.get(level)
+                    .getMultiplier(new ChunkPos(recipeLogic.getMachine().getBlockPos()));
             return currentSoul >= minSoul;
         }
         return false;

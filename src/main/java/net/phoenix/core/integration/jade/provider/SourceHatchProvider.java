@@ -1,7 +1,5 @@
 package net.phoenix.core.integration.jade.provider;
 
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +23,6 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
-        
         if (!(accessor.getBlockEntity() instanceof SourceHatchPartMachine hatch)) return;
 
         ISourceTile source = hatch.getSource();
@@ -37,7 +34,6 @@ public class SourceHatchProvider implements IBlockComponentProvider, IServerData
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-        
         if (!(accessor.getBlockEntity() instanceof SourceHatchPartMachine)) return;
 
         CompoundTag data = accessor.getServerData();
