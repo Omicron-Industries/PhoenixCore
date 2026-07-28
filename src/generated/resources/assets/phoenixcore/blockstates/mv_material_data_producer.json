@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "phoenixcore:block/machine/mv_material_data_producer",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "phoenixcore:block/machine/mv_material_data_producer"
+    },
+    "facing=south": {
+      "model": "phoenixcore:block/machine/mv_material_data_producer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "phoenixcore:block/machine/mv_material_data_producer",
+      "y": 270
+    }
+  }
+}

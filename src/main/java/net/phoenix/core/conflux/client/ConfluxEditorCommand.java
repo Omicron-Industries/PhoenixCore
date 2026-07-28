@@ -39,6 +39,11 @@ public final class ConfluxEditorCommand {
                         .executes(ctx -> {
                             Minecraft.getInstance().setScreen(new DisciplinePickerScreen());
                             return 1;
+                        }))
+                .then(literal("wiki")
+                        .executes(ctx -> {
+                            Minecraft.getInstance().setScreen(new ConfluxWikiScreen(null));
+                            return 1;
                         })));
 
         d.register(literal("confluxeditor")

@@ -1,7 +1,6 @@
 package net.phoenix.core.client;
 
 import com.gregtechceu.gtceu.api.registry.registrate.provider.GTBlockstateProvider;
-import com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderManager;
 import com.gregtechceu.gtceu.data.pack.event.RegisterDynamicResourcesEvent;
 
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -36,7 +35,6 @@ import net.phoenix.core.conflux.tools.capture.bakers.AxiomSculkBaker;
 import net.phoenix.core.conflux.tools.capture.bakers.AxiomSealedBaker;
 import net.phoenix.core.conflux.tools.capture.bakers.AxiomVoidBaker;
 import net.phoenix.core.integration.phoenix_tesla_network.client.particles.TeslaSparkParticle;
-import net.phoenix.core.integration.phoenix_tesla_network.client.renderer.machine.TeslaTowerRenderer;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
 import net.phoenix.core.integration.vocal_vibrancy.VocalVibrancyClient;
 
@@ -116,14 +114,7 @@ public class PhoenixClient {
 
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
-        DynamicRenderManager.register(PhoenixCore.id("eye_of_harmony"), EyeOfHarmonyRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("artificial_star"), ArtificialStarRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("plasma_arc_furnace"), PlasmaArcFurnaceRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("custom_fluid"), CustomFluidRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("helical_fusion"), HelicalFusionRenderer.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("honey_chamber"), HoneyChamberDynamicRender.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("tesla_tower"), TeslaTowerRenderer.TYPE);
-        DynamicRenderManager.register(PhoenixCore.id("engine_gearbox"), EngineGearboxRenderer.TYPE);
+        net.phoenix.core.client.renderer.machine.multiblock.PhoenixDynamicRenderHelpers.registerAll();
 
         event.enqueueWork(() -> {
             MenuScreens.register(PhoenixCore.RECIPE_BUILDER_MENU.get(), RecipeBuilderScreen::new);

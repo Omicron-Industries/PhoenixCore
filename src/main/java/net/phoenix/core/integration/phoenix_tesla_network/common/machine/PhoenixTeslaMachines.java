@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties;
+import com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic;
 import com.gregtechceu.gtceu.api.multiblock.Predicates;
 import com.gregtechceu.gtceu.api.multiblock.pattern.MultiblockPatternBuilder;
 import com.gregtechceu.gtceu.api.multiblock.util.RelativeDirection;
@@ -65,7 +66,6 @@ public class PhoenixTeslaMachines {
         list.add(
                 Component.literal("Internal buffer is §7determined§f by the tier of §7Tesla Battery§f it has."));
     };
-
     public static final MultiblockMachineDefinition TESLA_TOWER = REGISTRATE
             .multiblock("tesla_tower", TeslaTowerMachine::new)
             .langValue("Tesla Tower")
@@ -357,6 +357,10 @@ public class PhoenixTeslaMachines {
                             .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1))
                             .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(10)
                                     .setPreviewCount(1))
+                            .or(Predicates.abilities(PartAbility.SUBSTATION_INPUT_ENERGY).setMaxGlobalLimited(10)
+                                    .setPreviewCount(1))
+                            .or(Predicates.abilities(PartAbility.SUBSTATION_OUTPUT_ENERGY).setMaxGlobalLimited(10)
+                                    .setPreviewCount(1))
                             .or(Predicates.abilities(PartAbility.INPUT_LASER).setMaxGlobalLimited(10)
                                     .setPreviewCount(1)))
                     .where('K', blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get()))
@@ -365,6 +369,8 @@ public class PhoenixTeslaMachines {
                     .where('N', blocks(GTBlocks.COIL_CUPRONICKEL.get()))
                     .where('O', controller(blocks(definition.get())))
                     .build())
+
+            .modelProperty(GTMachineModelProperties.RECIPE_LOGIC_STATUS, RecipeLogic.Status.IDLE)
             .model(
                     createWorkableCasingMachineModel(
                             PhoenixCore.id("block/casings/multiblock/tesla_casing"),
@@ -411,27 +417,6 @@ public class PhoenixTeslaMachines {
                 tiers);
     }
 
-    public static final MachineDefinition[] TESLA_LASER_INPUT_256A = registerTeslaLaserHatch(
-            "tesla_laser_input_hatch_256a", IO.OUT, 256,
-            PartAbility.INPUT_LASER);
-    public static final MachineDefinition[] TESLA_LASER_OUTPUT_256A = registerTeslaLaserHatch(
-            "tesla_laser_output_hatch_256a", IO.IN, 256,
-            PartAbility.OUTPUT_LASER);
-
-    public static final MachineDefinition[] TESLA_LASER_INPUT_1024A = registerTeslaLaserHatch(
-            "tesla_laser_input_hatch_1024a", IO.OUT, 1024,
-            PartAbility.INPUT_LASER);
-    public static final MachineDefinition[] TESLA_LASER_OUTPUT_1024A = registerTeslaLaserHatch(
-            "tesla_laser_output_hatch_1024a", IO.IN, 1024,
-            PartAbility.OUTPUT_LASER);
-
-    public static final MachineDefinition[] TESLA_LASER_INPUT_4096A = registerTeslaLaserHatch(
-            "tesla_laser_input_hatch_4096a", IO.OUT, 4096,
-            PartAbility.INPUT_LASER);
-    public static final MachineDefinition[] TESLA_LASER_OUTPUT_4096A = registerTeslaLaserHatch(
-            "tesla_laser_output_hatch_4096a", IO.IN, 4096,
-            PartAbility.OUTPUT_LASER);
-
     private static String getLaserName(IO io, int amperage) {
         if (io == IO.OUT) {
             if (amperage >= 4096) return "Phased Tesla Beam Matrix";
@@ -473,6 +458,27 @@ public class PhoenixTeslaMachines {
     private static String getTeslaLaserOverlay(String iomode, int amperage) {
         return "tesla_hatches/tesla_" + iomode + "_" + "laser" + "_" + amperage + "a";
     }
+
+    public static final MachineDefinition[] TESLA_LASER_INPUT_256A = registerTeslaLaserHatch(
+            "tesla_laser_input_hatch_256a", IO.OUT, 256,
+            PartAbility.INPUT_LASER);
+    public static final MachineDefinition[] TESLA_LASER_OUTPUT_256A = registerTeslaLaserHatch(
+            "tesla_laser_output_hatch_256a", IO.IN, 256,
+            PartAbility.OUTPUT_LASER);
+
+    public static final MachineDefinition[] TESLA_LASER_INPUT_1024A = registerTeslaLaserHatch(
+            "tesla_laser_input_hatch_1024a", IO.OUT, 1024,
+            PartAbility.INPUT_LASER);
+    public static final MachineDefinition[] TESLA_LASER_OUTPUT_1024A = registerTeslaLaserHatch(
+            "tesla_laser_output_hatch_1024a", IO.IN, 1024,
+            PartAbility.OUTPUT_LASER);
+
+    public static final MachineDefinition[] TESLA_LASER_INPUT_4096A = registerTeslaLaserHatch(
+            "tesla_laser_input_hatch_4096a", IO.OUT, 4096,
+            PartAbility.INPUT_LASER);
+    public static final MachineDefinition[] TESLA_LASER_OUTPUT_4096A = registerTeslaLaserHatch(
+            "tesla_laser_output_hatch_4096a", IO.IN, 4096,
+            PartAbility.OUTPUT_LASER);
 
     public static final MachineDefinition[] TESLA_INPUT_2A = registerTeslaHatch("tesla_energy_input_hatch", IO.OUT, 2,
             PartAbility.OUTPUT_ENERGY, GTValues.ALL_TIERS);

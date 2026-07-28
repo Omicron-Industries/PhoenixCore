@@ -100,6 +100,7 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.phantasia_menu", "Open Phantasia Menu");
         provider.add("key.phoenixcore.recipe_builder", "Open Recipe Builder");
         provider.add("key.phoenixcore.spray_can_menu", "Open Spray Can Menu");
+        provider.add("key.phoenixcore.open_emi_favorite_pages", "Open EMI pages settings.");
 
         provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
         provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint");
@@ -125,12 +126,6 @@ public class PhoenixLangHandler {
                 "Note that not having a shield projected may result in nonsense values of integrity.",
                 "Usage:",
                 "  {shieldStability} -> shield integrity: (integrity, in percent)");
-    }
-
-    public static void multiLang(RegistrateLangProvider provider, String key, String... values) {
-        for (var i = 0; i < values.length; i++) {
-            provider.add(getSubKey(key, i), values[i]);
-        }
 
         provider.add("phoenixcore.research.multiblock_locked",
                 "Research required: unlock this machine before it can form.");
@@ -144,6 +139,12 @@ public class PhoenixLangHandler {
                 "Discipline abandoned. You may now choose a new path.");
         provider.add("phoenixcore.research.discipline.abandon_failed",
                 "Cannot abandon Discipline: insufficient resources or already committed.");
+    }
+
+    public static void multiLang(RegistrateLangProvider provider, String key, String... values) {
+        for (var i = 0; i < values.length; i++) {
+            provider.add(getSubKey(key, i), values[i]);
+        }
     }
 
     protected static void multilineLang(RegistrateLangProvider provider, String key, String multiline) {

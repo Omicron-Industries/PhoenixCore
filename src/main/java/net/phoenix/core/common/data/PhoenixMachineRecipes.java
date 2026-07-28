@@ -158,6 +158,12 @@ public class PhoenixMachineRecipes {
                 .fusionStartEU(140_000_000)
                 .save(provider);
 
+        GROWTH_RECIPES.recipeBuilder(PhoenixCore.id("crystal_garden_growth"))
+                .inputItems(Items.EMERALD, 4)
+                .EUt(30)
+                .duration(200)
+                .save(provider);
+
         PhoenixRecipeTypes.HONEY_CHAMBER_RECIPES.recipeBuilder("mercury_and_magnesium_to_uranium_235_plasma")
                 .inputFluids(GTMaterials.Mercury.getFluid(125))
                 .inputFluids(GTMaterials.Magnesium.getFluid(16))
@@ -630,7 +636,6 @@ public class PhoenixMachineRecipes {
                         ForgeRegistries.ITEMS.getValue(new ResourceLocation("megacells", "fluid_storage_cell_64m")), 8)
                 .duration(100).EUt(491520).save(provider);
 
-        // --- MegaCells 256m Tier ---
         ASSEMBLER_RECIPES.recipeBuilder(PhoenixCore.id("megacells_cell_component_256m"))
                 .inputItems(HIGHLY_ADVANCED_SOC, 4)
                 .inputItems(ForgeRegistries.ITEMS.getValue(new ResourceLocation("megacells", "cell_component_64m")), 3)

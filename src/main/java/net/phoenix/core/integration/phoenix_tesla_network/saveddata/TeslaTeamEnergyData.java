@@ -120,8 +120,9 @@ public class TeslaTeamEnergyData extends SavedData {
 
         public int getLiveHatchCount(long gameTime) {
             int count = 0;
-            for (long time : lastSeen.values()) {
-                if (gameTime - time < 40) {
+            for (var entry : lastSeen.entrySet()) {
+                if (!energyBuffered.containsKey(entry.getKey())) continue;
+                if (gameTime - entry.getValue() < 40) {
                     count++;
                 }
             }

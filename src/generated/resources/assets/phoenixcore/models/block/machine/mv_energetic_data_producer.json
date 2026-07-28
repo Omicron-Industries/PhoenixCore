@@ -1,0 +1,18 @@
+{
+  "parent": "minecraft:block/block",
+  "loader": "gtceu:machine",
+  "machine": "phoenixcore:mv_energetic_data_producer",
+  "replaceable_textures": [
+    "all"
+  ],
+  "variants": {
+    "": {
+      "model": {
+        "parent": "gtceu:block/overlay/2_layer/front_emissive",
+        "textures": {
+          "all": "phoenixcore:block/casings/multiblock/machine_casing_invariant_naquadah_alloy"
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package net.phoenix.core.conflux.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -187,6 +188,16 @@ public class ResearchTerminalScreen extends Screen {
             g.drawString(font, tree.title, tabX + 10, (TAB_H - 8) / 2, textColor, false);
             tabX += tw + 1;
         }
+
+        int[] wb = wikiButtonBounds();
+        boolean wikiHover = mx >= wb[0] && mx < wb[2] && my >= wb[1] && my < wb[3];
+        g.fill(wb[0], wb[1], wb[2], wb[3], wikiHover ? 0xFF2A2A4A : C_HEADER);
+        g.drawCenteredString(font, "?", (wb[0] + wb[2]) / 2, wb[1] + (TAB_H - 2 - 8) / 2,
+                wikiHover ? C_TEXT : C_DIM);
+    }
+
+    private int[] wikiButtonBounds() {
+        return new int[] { canvasW() - 18, 2, canvasW() - 2, TAB_H - 2 };
     }
 
     private void renderCanvas(GuiGraphics g, int mx, int my, RenderContext ctx) {
@@ -451,6 +462,12 @@ public class ResearchTerminalScreen extends Screen {
         int cw = canvasW(), ct = canvasTop(), ch = canvasH();
 
         if (my < TAB_H) {
+            int[] wb = wikiButtonBounds();
+            if (mx >= wb[0] && mx < wb[2] && my >= wb[1] && my < wb[3]) {
+                Minecraft.getInstance().setScreen(new ConfluxWikiScreen(this));
+                return true;
+            }
+
             int tabX = 4;
             for (int i = 0; i < trees.size(); i++) {
                 int tw = font.width(trees.get(i).title) + 20;

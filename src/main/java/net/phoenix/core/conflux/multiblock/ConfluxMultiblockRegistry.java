@@ -1,6 +1,5 @@
 package net.phoenix.core.conflux.multiblock;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
@@ -10,9 +9,10 @@ import com.gregtechceu.gtceu.api.multiblock.pattern.MultiblockPatternBuilder;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 
 import net.minecraft.network.chat.Component;
+import net.phoenix.core.PhoenixCore;
 
 import static com.gregtechceu.gtceu.api.multiblock.Predicates.*;
-import static com.gregtechceu.gtceu.common.data.models.GTMachineModels.createWorkableCasingMachineModel;
+import static com.gregtechceu.gtceu.common.data.models.GTMachineModels.createOverlayCasingMachineModel;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
 public final class ConfluxMultiblockRegistry {
@@ -50,9 +50,9 @@ public final class ConfluxMultiblockRegistry {
                             .or(abilities(PartAbility.MAINTENANCE).setMinGlobalLimited(1)))
                     .where(' ', Predicates.air())
                     .build())
-            .model(createWorkableCasingMachineModel(
-                    GTCEu.id("block/casings/solid/machine_casing_robust_tungstensteel"),
-                    GTCEu.id("block/multiblock/electric_blast_furnace")))
+            .model(createOverlayCasingMachineModel(
+                    PhoenixCore.id("block/casings/multiblock/machine_casing_invariant_naquadah_alloy"),
+                    com.gregtechceu.gtceu.GTCEu.id("block/overlay/2_layer/front_emissive")))
             .register();
 
     public static final MultiblockMachineDefinition RESONANCE_WEB = REGISTRATE
@@ -96,9 +96,9 @@ public final class ConfluxMultiblockRegistry {
                             .or(abilities(PartAbility.MAINTENANCE).setMinGlobalLimited(1)))
                     .where(' ', Predicates.air())
                     .build())
-            .model(createWorkableCasingMachineModel(
-                    GTCEu.id("block/casings/solid/machine_casing_sturdy_hsse"),
-                    GTCEu.id("block/multiblock/large_chemical_reactor")))
+            .model(createOverlayCasingMachineModel(
+                    PhoenixCore.id("block/casings/multiblock/machine_casing_invariant_naquadah_alloy"),
+                    com.gregtechceu.gtceu.GTCEu.id("block/overlay/2_layer/front_emissive")))
             .register();
 
     public static final MultiblockMachineDefinition HARMONIC_LENS = REGISTRATE
@@ -138,9 +138,9 @@ public final class ConfluxMultiblockRegistry {
                             .or(abilities(PartAbility.MAINTENANCE).setMinGlobalLimited(1)))
                     .where(' ', Predicates.air())
                     .build())
-            .model(createWorkableCasingMachineModel(
-                    GTCEu.id("block/casings/solid/machine_casing_robust_tungstensteel"),
-                    GTCEu.id("block/multiblock/implosion_compressor")))
+            .model(createOverlayCasingMachineModel(
+                    PhoenixCore.id("block/casings/multiblock/machine_casing_invariant_naquadah_alloy"),
+                    com.gregtechceu.gtceu.GTCEu.id("block/overlay/2_layer/front_emissive")))
             .register();
 
     public static void init() {}

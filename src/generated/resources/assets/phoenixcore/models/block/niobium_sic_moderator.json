@@ -1,7 +1,0 @@
-{
-  "parent": "phoenixcore:block/cube_2_layer_all_tinted",
-  "textures": {
-    "bot_all": "phoenixcore:block/fission/moderators/niobium_sic_moderator",
-    "top_all": "phoenixcore:block/fission/masks/moderator_mask"
-  }
-}

@@ -20,8 +20,8 @@ def generatedResources = file("src/generated")
 
 sourceSets {
     main.resources {
-        srcDir 'src/main/resources'
         srcDir 'src/generated/resources'
+        srcDir 'src/main/resources'
     }
 }
 
@@ -256,6 +256,7 @@ tasks.named('processResources', ProcessResources).configure {
             "forge_version": forge_version.split("\\.")[0],
             "minecraft_version": minecraft_version,
             "gtceu_version": gtceu_version,
+            "gtceu_version_min": gtceu_version_min,
     ]
     inputs.properties(properties)
 
@@ -268,6 +269,20 @@ tasks.named('processResources', ProcessResources).configure {
 tasks.named('jar', Jar).configure {
     archiveClassifier.set('slim')
     finalizedBy 'reobfJar'
+}
+
+// Publishes the reobfuscated 'slim' jar to the local maven repo so sibling projects
+// (e.g. PhoenixChronicles' optional Conflux integration) can depend on it via
+// `net.phoenix.core:PhoenixCore:<version>:slim`. Run `./gradlew publishToMavenLocal`.
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact(tasks.named('jar').get().archiveFile) {
+                builtBy tasks.named('reobfJar')
+                classifier = 'slim'
+            }
+        }
+    }
 }
 
 // ── Axiom sprite baker ────────────────────────────────────────────────────────

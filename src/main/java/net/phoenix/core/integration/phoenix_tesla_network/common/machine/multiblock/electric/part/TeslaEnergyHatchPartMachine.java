@@ -275,6 +275,11 @@ public class TeslaEnergyHatchPartMachine extends EnergyHatchPartMachine implemen
     }
 
     @Override
+    public InteractionResult onDataStickShiftUse(Player player, ItemStack binder) {
+        return onDataStickUse(player, binder);
+    }
+
+    @Override
     public InteractionResult onDataStickUse(Player player, ItemStack binder) {
         if (!binder.is(PhoenixItems.TESLA_BINDER.get())) return InteractionResult.PASS;
 

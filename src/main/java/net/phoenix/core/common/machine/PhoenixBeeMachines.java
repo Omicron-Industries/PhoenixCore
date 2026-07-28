@@ -81,6 +81,11 @@ public class PhoenixBeeMachines {
                             .or(Predicates.autoAbilities(true, false, true)))
                     .where('H', Predicates.controller(definition))
                     .build())
+
+            .model(
+                    createWorkableCasingMachineModel(
+                            GTCEu.id("block/casings/solid/machine_casing_clean_stainless_steel"),
+                            GTCEu.id("block/multiblock/large_miner")))
             .register();
 
     public static final MultiblockMachineDefinition COMB_DECANTER = REGISTRATE

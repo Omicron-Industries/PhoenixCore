@@ -1,7 +1,0 @@
-{
-  "parent": "phoenixcore:block/cube_2_layer_all_tinted",
-  "textures": {
-    "bot_all": "phoenixcore:block/fission/blankets/americium_blanket",
-    "top_all": "phoenixcore:block/fission/masks/blanket_mask_active"
-  }
-}

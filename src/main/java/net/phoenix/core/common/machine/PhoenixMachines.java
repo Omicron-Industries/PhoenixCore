@@ -347,7 +347,7 @@ public class PhoenixMachines {
                 .rotationState(RotationState.NONE)
                 .tooltips(Component.translatable("gtceu.universal.tooltip.item_storage_capacity", capacity))
                 .modelProperty(GTMachineModelProperties.IS_TAPED, false)
-                .model((definition, frontCasing, renderer) -> GTMachineModels.createCrateModel(wooden))
+                .model(GTMachineModels.createCrateModel(wooden))
 
                 .itemColor((itemStack, tintIndex) -> {
                     if (wooden) return 0xFFFFFF;
@@ -487,9 +487,12 @@ public class PhoenixMachines {
                     .where('L', Predicates.blocks(CASING_PRIMITIVE_BRICKS.get()))
                     .build())
             .modelProperty(GTMachineModelProperties.RECIPE_LOGIC_STATUS, RecipeLogic.Status.IDLE)
+
             .model(createWorkableCasingMachineModel(
                     new ResourceLocation(PhoenixCore.MOD_ID, "block/casings/multiblock/tesla_casing"),
-                    GTCEu.id("block/multiblock/fusion_reactor")))
+                    GTCEu.id("block/multiblock/fusion_reactor"))
+                    .andThen(b -> b.addDynamicRenderer(
+                            com.gregtechceu.gtceu.client.renderer.machine.DynamicRenderHelper::createFusionRingRender)))
             .hasBER(true)
             .register();
 
@@ -616,6 +619,9 @@ public class PhoenixMachines {
                         .where('I', Predicates.abilities(PartAbility.MUFFLER))
                         .build();
             })
+
+            .modelProperty(com.gregtechceu.gtceu.api.machine.property.GTMachineModelProperties.RECIPE_LOGIC_STATUS,
+                    com.gregtechceu.gtceu.api.machine.trait.recipe.RecipeLogic.Status.IDLE)
             .model(
                     createWorkableCasingMachineModel(
                             PhoenixCore.id("block/casings/multiblock/machine_casing_source_fiber_mesh"),

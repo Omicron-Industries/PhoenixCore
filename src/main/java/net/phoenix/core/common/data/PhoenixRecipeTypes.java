@@ -34,8 +34,15 @@ public class PhoenixRecipeTypes {
     public static GTRecipeType HIGH_PRESSURE_ARC_FURNACE;
     public static GTRecipeType PHOENIXWARE_FUSION_MK1;
     public static GTRecipeType DIMENSIONAL_ANCHORING_RECIPES, AETHERIAL_FABIRCATION_RECIPES;
+    public static GTRecipeType GROWTH_RECIPES;
 
     public static void init() {
+        GROWTH_RECIPES = register("growth", MULTIBLOCK)
+                .setMaxIOSize(4, 1, 1, 1)
+                .setEUIO(IO.IN)
+                .UI(builder -> builder.setProgressBar(GTGuiTextures.PROGRESS_EXTRACT))
+                .setSound(GTSoundEntries.MIXER);
+
         AETHERIAL_FABIRCATION_RECIPES = register("aetherial_fabrication", MULTIBLOCK)
                 .setEUIO(IO.IN)
                 .setMaxIOSize(3, 25, 1, 0)

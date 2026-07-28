@@ -39,6 +39,16 @@ public class WorldResearchData extends SavedData {
         return teamSet(unlocked, team).contains(nodeId);
     }
 
+    public void grantUnlock(UUID team, ResourceLocation nodeId) {
+        teamSet(unlocked, team).add(nodeId);
+        setDirty();
+    }
+
+    public void grantFlag(UUID team, String flag) {
+        teamSet(flags, team).add(flag);
+        setDirty();
+    }
+
     public boolean isLockedOut(UUID team, ResourceLocation nodeId) {
         return teamSet(lockedOut, team).contains(nodeId);
     }

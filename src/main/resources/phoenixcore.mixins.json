@@ -7,6 +7,7 @@
   "mixins": [
     "accessor.AbilitiesAccessor",
     "accessor.GTOresAccessor",
+    "accessor.MinecraftServerStorageAccessor",
     "accessor.RelayTileDisabledAccessor",
     "ae2.MEPatternBufferAccessor",
     "ae2.MEPatternBufferInvoker",
@@ -24,6 +25,9 @@
   "client": [
     "accessor.PostChainAccessor",
     "ars.RelayTileMixin",
+    "emi.EmiFavoritesMixin",
+    "emi.EmiScreenManagerAccessor",
+    "emi.EmiScreenManagerMixin",
     "minecraft.ChannelMixin",
     "minecraft.GameRendererMixin",
     "minecraft.GuiGraphicsCountSuffixMixin",

@@ -45,6 +45,12 @@ public class PhoenixKeybinds {
             GLFW.GLFW_KEY_R,
             "key.categories.phoenixcore");
 
+    public static final KeyMapping OPEN_EMI_FAVORITE_PAGES = new KeyMapping(
+            "key.phoenixcore.open_emi_favorite_pages",
+            InputConstants.Type.KEYSYM,
+            InputConstants.UNKNOWN.getValue(),
+            "key.categories.phoenixcore");
+
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(OPEN_WING_GUI);
@@ -53,5 +59,6 @@ public class PhoenixKeybinds {
         event.register(MANIPULATOR_MENU);
         event.register(OPEN_RECIPE_BUILDER);
         event.register(SPRAY_CAN_MENU);
+        event.register(OPEN_EMI_FAVORITE_PAGES);
     }
 }

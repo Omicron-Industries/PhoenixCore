@@ -53,7 +53,8 @@ import net.phoenix.core.conflux.producer.ConfluxProducerMachines;
 import net.phoenix.core.conflux.research.AxiomResearchCondition;
 import net.phoenix.core.conflux.research.PlayerResearchCapability;
 import net.phoenix.core.conflux.research.ResearchTreeRegistry;
-import net.phoenix.core.datagen.PhoenixDatagen;
+import net.phoenix.core.growth.GrowthBlocks;
+import net.phoenix.core.growth.GrowthMachines;
 import net.phoenix.core.integration.ars_nouveau.api.recipe.lookup.MapSourceIngredient;
 import net.phoenix.core.integration.ars_nouveau.client.gui.SourceHatchMenu;
 import net.phoenix.core.integration.ars_nouveau.common.data.recipe.custom.SourceIngredient;
@@ -135,12 +136,9 @@ public class PhoenixCore {
 
     private void onRegisterBlocksAndItems(net.minecraftforge.registries.RegisterEvent event) {
         PhoenixBlocks.init();
+        GrowthBlocks.init();
         PhoenixItems.init();
         ManipulaterItems.init();
-
-        if (FMLLoader.getDist().isClient()) {
-            PhoenixDatagen.init();
-        }
     }
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES,
@@ -222,6 +220,7 @@ public class PhoenixCore {
         PhoenixTeslaMachines.init();
         ConfluxProducerMachines.init();
         ConfluxMultiblockRegistry.init();
+        GrowthMachines.init();
     }
 
     public static ResourceLocation id(String path) {

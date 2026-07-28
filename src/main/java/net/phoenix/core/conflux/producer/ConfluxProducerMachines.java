@@ -4,11 +4,13 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 
+import net.phoenix.core.PhoenixCore;
 import net.phoenix.core.conflux.ConfluxDataType;
 
 import java.util.EnumMap;
 import java.util.Map;
 
+import static com.gregtechceu.gtceu.common.data.models.GTMachineModels.createOverlayCasingMachineModel;
 import static net.phoenix.core.common.registry.PhoenixRegistration.REGISTRATE;
 
 public final class ConfluxProducerMachines {
@@ -37,6 +39,10 @@ public final class ConfluxProducerMachines {
                                         "Produces §b" + type.displayName + "§r research data."),
                                 net.minecraft.network.chat.Component.literal(
                                         "Output: §e" + (16L * tier) + "§r units/t | Fuel: §e1 item / 10s"))
+
+                        .model(createOverlayCasingMachineModel(
+                                PhoenixCore.id("block/casings/multiblock/machine_casing_invariant_naquadah_alloy"),
+                                com.gregtechceu.gtceu.GTCEu.id("block/overlay/2_layer/front_emissive")))
                         .register();
             }
             PRODUCERS.put(type, defs);

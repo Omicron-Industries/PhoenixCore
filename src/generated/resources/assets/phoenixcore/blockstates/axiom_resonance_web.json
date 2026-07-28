@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "facing=east,upwards_facing=down": {
+      "gtceu:z": 180,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 90
+    },
+    "facing=east,upwards_facing=east": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=east,upwards_facing=north": {
+      "gtceu:z": 270,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 90
+    },
+    "facing=east,upwards_facing=south": {
+      "gtceu:z": 90,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 90
+    },
+    "facing=east,upwards_facing=up": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 90
+    },
+    "facing=east,upwards_facing=west": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=north,upwards_facing=down": {
+      "gtceu:z": 180,
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=north,upwards_facing=east": {
+      "gtceu:z": 90,
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=north,upwards_facing=north": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=north,upwards_facing=south": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=north,upwards_facing=up": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=north,upwards_facing=west": {
+      "gtceu:z": 270,
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=south,upwards_facing=down": {
+      "gtceu:z": 180,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 180
+    },
+    "facing=south,upwards_facing=east": {
+      "gtceu:z": 270,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 180
+    },
+    "facing=south,upwards_facing=north": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=south,upwards_facing=south": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=south,upwards_facing=up": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 180
+    },
+    "facing=south,upwards_facing=west": {
+      "gtceu:z": 90,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 180
+    },
+    "facing=west,upwards_facing=down": {
+      "gtceu:z": 180,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 270
+    },
+    "facing=west,upwards_facing=east": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    },
+    "facing=west,upwards_facing=north": {
+      "gtceu:z": 90,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 270
+    },
+    "facing=west,upwards_facing=south": {
+      "gtceu:z": 270,
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 270
+    },
+    "facing=west,upwards_facing=up": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web",
+      "y": 270
+    },
+    "facing=west,upwards_facing=west": {
+      "model": "phoenixcore:block/machine/axiom_resonance_web"
+    }
+  }
+}

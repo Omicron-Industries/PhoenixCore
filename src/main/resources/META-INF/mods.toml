@@ -35,7 +35,7 @@ side = "BOTH"
 [[dependencies.phoenixcore]]
 modId = "gtceu"
 mandatory = true
-versionRange = "[${gtceu_version},)"
+versionRange = "[${gtceu_version_min},)"
 ordering = "AFTER"
 side = "BOTH"
 [[dependencies.phoenixcore]]

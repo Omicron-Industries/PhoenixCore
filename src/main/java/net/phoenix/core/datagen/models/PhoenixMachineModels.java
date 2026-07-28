@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.phoenix.core.PhoenixCore;
+import net.phoenix.core.api.model.PartRenderProfile;
 import net.phoenix.core.common.machine.multiblock.part.ShieldRenderProperty;
 import net.phoenix.core.integration.phoenix_tesla_network.api.machine.trait.ITeslaBattery;
 import net.phoenix.core.integration.phoenix_tesla_network.common.block.TeslaBatteryBlock;
@@ -122,6 +123,32 @@ public class PhoenixMachineModels {
 
                 model.texture("overlay_emissive",
                         PhoenixCore.id("block/overlay/machine/" + overlayName + "_emissive"));
+
+                return model;
+            });
+
+            builder.addReplaceableTextures("bottom", "top", "side");
+        };
+    }
+
+    public static MachineBuilder.ModelInitializer profileModel(PartRenderProfile profile) {
+        return (ctx, prov, builder) -> {
+            builder.forAllStatesModels(state -> {
+                BlockModelBuilder model = prov.models().nested()
+                        .parent(prov.models().getExistingFile(
+                                GTCEu.id("block/overlay/2_layer/front_emissive")));
+
+                if (profile.casingTexturePath() != null) {
+                    casingTextures(model, profile.casingTexturePath());
+                } else {
+                    tieredHullTextures(model, builder.getOwner().getTier());
+                }
+
+                model.texture("overlay",
+                        PhoenixCore.id("block/overlay/machine/" + profile.overlayName() + "_base"));
+
+                model.texture("overlay_emissive",
+                        PhoenixCore.id("block/overlay/machine/" + profile.overlayName() + "_emissive"));
 
                 return model;
             });
