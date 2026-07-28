@@ -80,6 +80,10 @@ public class ClientTickHandler {
                 }
             }
         }
+
+        while (PhoenixKeybinds.OPEN_EMI_FAVORITE_PAGES.consumeClick()) {
+            mc.setScreen(new net.phoenix.core.client.emi.EmiFavoritePagesScreen(mc.screen));
+        }
     }
 
     @SubscribeEvent

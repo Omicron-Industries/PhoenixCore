@@ -100,6 +100,7 @@ public class PhoenixLangHandler {
         provider.add("key.phoenixcore.phantasia_menu", "Open Phantasia Menu");
         provider.add("key.phoenixcore.recipe_builder", "Open Recipe Builder");
         provider.add("key.phoenixcore.spray_can_menu", "Open Spray Can Menu");
+        provider.add("key.phoenixcore.open_emi_favorite_pages", "Open EMI pages settings.");
 
         provider.add("creativetab.phoenix_creative_tab", "Phoenix Core");
         provider.add("fluid.phoenixcore.prismatic_paint", "Prismatic Paint");

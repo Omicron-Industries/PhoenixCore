@@ -1,12 +1,19 @@
 package net.phoenix.core.integration.emi;
 
+import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fml.ModList;
 import net.phoenix.core.integration.phoenix_fission.common.PhoenixFissionMachines;
 import net.phoenix.core.integration.phoenix_fission.common.data.block.*;
 import net.phoenix.core.integration.recipe_helper.RecipeBuilderScreen;
@@ -41,6 +48,10 @@ public class PhoenixEmiPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
+        // Phoenix Fission is being split out of PhoenixCore into its own mod. Fission-specific formula
+        // search aliases only make sense while that content is actually present.
+        boolean fissionLoaded = ModList.get().isLoaded("phoenix_fission");
+
         registry.addCategory(FISSION_FUEL);
         registry.addCategory(FISSION_COOLANT);
         registry.addCategory(FISSION_BREEDING);
@@ -52,6 +63,9 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             if (!stack.isEmpty()) {
                 registry.addWorkstation(FISSION_FUEL, stack);
                 registry.addWorkstation(FISSION_BREEDING, stack);
+                if (fissionLoaded) {
+                    addFormulaAliases(registry, stack, "neutron bias", "heat curve", "base heat");
+                }
             }
         }
 
@@ -69,6 +83,9 @@ public class PhoenixEmiPlugin implements EmiPlugin {
             EmiStack stack = FuelRodEmiRecipe.getEmiStackFromId("phoenixcore:" + type.getName());
             if (!stack.isEmpty()) {
                 registry.addWorkstation(FISSION_BREEDING, stack);
+                if (fissionLoaded) {
+                    addFormulaAliases(registry, stack, "breeding formula", "breeding ratio", "instability");
+                }
             }
         }
 
@@ -96,6 +113,34 @@ public class PhoenixEmiPlugin implements EmiPlugin {
                 screen.getGuiLeft(), screen.getGuiTop(),
                 screen.getXSize(), screen.getYSize())));
         registry.addDragDropHandler(RecipeBuilderScreen.class, new RecipeBuilderDragDrop());
+
+        registerMaterialFluidSearchAliases(registry);
+    }
+
+    /**
+     * GTCEU material fluids are indexed by EMI as their own EmiStack, but their baked search name often
+     * doesn't resolve to the material's real display name (missing/mismatched fluid translation keys), so
+     * searching by material name only ever matches the bucket item. Aliasing the fluid stack to the material's
+     * known localized name fixes lookup regardless of the fluid's own translation state.
+     */
+    private static void registerMaterialFluidSearchAliases(EmiRegistry registry) {
+        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+            if (!material.hasProperty(PropertyKey.FLUID)) continue;
+
+            Fluid fluid = material.getFluid();
+            if (fluid == null || fluid == Fluids.EMPTY) continue;
+
+            EmiStack fluidStack = EmiStack.of(fluid);
+            if (fluidStack.isEmpty()) continue;
+
+            registry.addAlias(fluidStack, material.getLocalizedName());
+        }
+    }
+
+    private static void addFormulaAliases(EmiRegistry registry, EmiStack stack, String... terms) {
+        for (String term : terms) {
+            registry.addAlias(stack, Component.literal(term));
+        }
     }
 
     private static class RecipeBuilderDragDrop implements EmiDragDropHandler<RecipeBuilderScreen> {
